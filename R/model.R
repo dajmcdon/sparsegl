@@ -39,12 +39,12 @@ ls_sparse <- function(bn, bs, ix, iy, nobs, nvars, x, y, pf, dfmax,
 
 strong_rule <- function(jxx, bn, ga, pf, tlam, alsparse) {
 
-
+    jxx <- as.integer(jxx)
+    bn <- as.integer(bn)
     fit <- .Fortran("strong_rule", jxx, bn, ga, pf, tlam, alsparse)
     ###############################################################
     # output
-    outlist <- getoutput(fit, jxx)
-    outlist
+    fit
 }
 
 softthresh <- function(vec, thresh, n) {
