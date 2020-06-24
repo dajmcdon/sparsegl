@@ -339,7 +339,7 @@ subroutine strong_rule (jxx, bn, ga, pf, tlam, alsparse)
         implicit none
 
         !strong rule check
-        integer :: pmax, bn
+        integer :: bn
         integer :: g
         integer :: jxx(bn)
         double precision :: ga(bn)
