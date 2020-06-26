@@ -356,15 +356,52 @@ end subroutine strong_rule
 
 
 
-
+! Need to add thresh to allocation
 !--------------------------------------------
 SUBROUTINE softthresh(vec, thresh, n)
         !------------------------------------
   INTEGER :: n, it
   DOUBLE PRECISION :: vec(n)
-  DOUBLE PRECISION :: sg
+  DOUBLE PRECISION :: sg, thresh
   DO it=1,n
     sg = vec(it)
     vec(it) = sign(max(abs(sg) - thresh, 0.0D0), sg)
   ENDDO
 END SUBROUTINE softthresh
+
+
+!----------------------------------------------
+subroutine kkt_check()
+        !--------------------------------------
+        implicit none
+        
+        integer :: g, bn, soft_g, jx, startix, endix
+        integer :: jxx(bn)
+        integer :: ix(bn)
+        integer :: iy(bn)
+        integer :: bs(bn)
+        double precision :: x(nobs, nvars)
+        double precision :: s ! variable size, what to do??
+        double precision :: snorm, lama, lam1ma
+        double precision :: ga(bn)
+        double precision :: pf(bn)
+
+        do g = 1, bn
+                if (jxx(g) == 1) cycle
+                startix = ix(g)
+                endix = iy(g)
+                allocate (s(bs(g)))
+                s = matmul(r,x(:,startix:endix))/nobs
+                do soft_g = 1,bs(g)
+                        s(soft_g) = sign(max(abs(s(soft_g))-lama, 0.0D0), s(soft_g))
+                enddo
+                snorm = sqrt(dot_product(s,s))
+                ga(g) = snorm
+                deallocate(s)
+                if(ga(g) > pf(g)*lam1ma) then
+                        jxx(g) = 1
+                        jx = 1
+                endif
+        enddo
+end subroutine
+
