@@ -337,7 +337,6 @@ END SUBROUTINE ls_f_sparse
 subroutine strong_rule (jxx, bn, ga, pf, tlam, alsparse)
         !-------------------------------------------
         implicit none
-
         !strong rule check
         integer :: bn
         integer :: g
@@ -345,7 +344,7 @@ subroutine strong_rule (jxx, bn, ga, pf, tlam, alsparse)
         double precision :: ga(bn)
         double precision :: pf(bn)
         double precision :: tlam, alsparse
-
+        !------------------------------------------
         do g = 1, bn
                 if(jxx(g) == 1) cycle
                 if(ga(g) > pf(g)*tlam*(1-alsparse)) jxx(g) = 1
@@ -371,27 +370,26 @@ END SUBROUTINE softthresh
 
 
 !----------------------------------------------
-subroutine kkt_check()
+subroutine kkt_check(bn, soft_g, jx, startix, endix, jxx, ix, iy, bs, vl, snorm, lama, lam1ma, ga, pf, s)
         !--------------------------------------
         implicit none
-        
         integer :: g, bn, soft_g, jx, startix, endix
         integer :: jxx(bn)
         integer :: ix(bn)
         integer :: iy(bn)
         integer :: bs(bn)
-        double precision :: x(nobs, nvars)
-        double precision :: s ! variable size, what to do??
+        double precision :: vl(nvars)
         double precision :: snorm, lama, lam1ma
+        double precision, dimension (:), allocatable :: s
         double precision :: ga(bn)
         double precision :: pf(bn)
-
+        !---------------------------------------
         do g = 1, bn
                 if (jxx(g) == 1) cycle
                 startix = ix(g)
                 endix = iy(g)
                 allocate (s(bs(g)))
-                s = matmul(r,x(:,startix:endix))/nobs
+                s = vl(startix:endix)
                 do soft_g = 1,bs(g)
                         s(soft_g) = sign(max(abs(s(soft_g))-lama, 0.0D0), s(soft_g))
                 enddo
