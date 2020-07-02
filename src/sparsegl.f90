@@ -1,6 +1,6 @@
 ! --------------------------------------------------
 SUBROUTINE ls_f_sparse (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,flmin,ulam,&
-     eps,maxit,intr,nalam,b0,beta,idx,nbeta,alam,npass,jerr,alsparse)
+     eps,maxit,nalam,beta,idx,nbeta,alam,npass,jerr,alsparse)
   ! --------------------------------------------------
   
   IMPLICIT NONE
@@ -22,7 +22,6 @@ SUBROUTINE ls_f_sparse (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,flmin,
   INTEGER::npass
   INTEGER::jerr
   INTEGER::maxit
-  INTEGER::intr
   INTEGER:: idx(pmax)
   INTEGER::nbeta(nlam)
   DOUBLE PRECISION:: flmin
@@ -32,7 +31,6 @@ SUBROUTINE ls_f_sparse (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,flmin,
   DOUBLE PRECISION::pf(bn)
   DOUBLE PRECISION::ulam(nlam)
   DOUBLE PRECISION::gam(bn)
-  DOUBLE PRECISION:: b0(nlam)
   DOUBLE PRECISION::beta(nvars,nlam)
   DOUBLE PRECISION::alam(nlam)
   DOUBLE PRECISION::alsparse ! Should be alpha for the sparsity weight
@@ -78,8 +76,8 @@ SUBROUTINE ls_f_sparse (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,flmin,
   DOUBLE PRECISION:: vl(nvars) ! What is this for?
   DOUBLE PRECISION:: al0
   ! - - - allocate variables - - -
-  ALLOCATE(b(0:nvars))
-  ALLOCATE(oldbeta(0:nvars))
+  ALLOCATE(b(1:nvars))
+  ALLOCATE(oldbeta(1:nvars))
   ALLOCATE(r(1:nobs))
   ALLOCATE(oidx(1:bn))
   !    ALLOCATE(al_sparse)
@@ -156,8 +154,6 @@ SUBROUTINE ls_f_sparse (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,flmin,
      ENDDO
      ! --------- outer loop ---------------------------- ! 
      DO
-        oldbeta(0)=b(0) 
-        ! print *, "Here is the outer loop, and here's oldbeta:", oldbeta
         IF(ni>0) THEN
            DO j=1,ni
               g=idx(j)
@@ -205,14 +201,6 @@ SUBROUTINE ls_f_sparse (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,flmin,
               DEALLOCATE(s,dd,oldb)
               ! DEALLOCATE(u,dd,oldb)
            ENDDO ! End middle loop
-           IF(intr /= 0) THEN
-              d=sum(r)/nobs
-              IF(d/=0.0D0) THEN
-                 b(0)=b(0)+d
-                 r=r-d
-                 dif=max(dif,d**2)
-              ENDIF
-           ENDIF
            IF (ni > pmax) EXIT
            IF (dif < eps) EXIT
            IF(npass > maxit) THEN
@@ -229,7 +217,7 @@ SUBROUTINE ls_f_sparse (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,flmin,
                  startix=ix(g)
                  endix=iy(g)
                  ALLOCATE(s(bs(g)))
-                 ALLOCATE(dd(bs(g)))
+                 ALLOCATE(dd(bs(g))) !outside function
                  ALLOCATE(oldb(bs(g)))
                  oldb=b(startix:endix)
                  s = matmul(r,x(:,startix:endix))/nobs
@@ -252,14 +240,6 @@ SUBROUTINE ls_f_sparse (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,flmin,
                  DEALLOCATE(s,dd,oldb)
                  ! DEALLOCATE(u,dd,oldb)
               ENDDO ! END INNER LOOP
-              IF(intr /= 0) THEN ! intr is whether to include intercept
-                 d=sum(r)/nobs
-                 IF(d/=0.0D0) THEN
-                    b(0)=b(0)+d
-                    r=r-d
-                    dif=max(dif,d**2)
-                 ENDIF
-              ENDIF
               IF(dif<eps) EXIT ! Exit nearest loop. This is till convergence.
               IF(npass > maxit) THEN
                  jerr=-l
@@ -316,7 +296,6 @@ SUBROUTINE ls_f_sparse (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,flmin,
         ENDDO
      ENDIF
      nbeta(l)=ni
-     b0(l)=b(0)
      alam(l)=al
      nalam=l
      IF (l < mnl) CYCLE

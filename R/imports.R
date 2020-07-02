@@ -3,7 +3,7 @@
 #' There are two main functions in the gglasso: \code{\link{gglasso}} and
 #' \code{\link{cv.gglasso}}
 #'
-#' @useDynLib gglasso, .registration = TRUE
+#' @useDynLib sparsegl, .registration = TRUE
 #' @importFrom utils head tail packageDescription
 #' @importFrom grDevices rainbow
 #' @importFrom graphics abline axis par plot.default points segments
