@@ -116,93 +116,31 @@
 !-
 
 
-!-!----------------------------------------------
-!-subroutine update_step(bn, soft_g, jx, startix, b, oldb, t_for_s, tea, endix, jxx, ix, iy, bs, vl, snorm, lama, lam1ma, ga, pf, s)
-!-        !--------------------------------------
-!-        implicit none
-!-        integer :: g, bn, soft_g, jx, startix, endix
-!-        integer :: jxx(bn)
-!-        integer :: ix(bn)
-!-        integer :: iy(bn)
-!-        integer :: bs(bn)
-!-        double precision :: vl(nvars)
-!-        double precision :: snorm, lama, lam1ma
-!-        double precision, dimension (:), allocatable :: s
-!-        double precision :: ga(bn), oldb(bs(g))
-!-        double precision :: pf(bn)
-!-        !---------------------------------------
-!-
-!-        DO g=1,bn
-!-           IF(jxx(g) == 0) CYCLE
-!-           startix=ix(g)
-!-           endix=iy(g)
-!-           ALLOCATE(dd(bs(g)))
-!-           ALLOCATE(oldb(bs(g)))
-!-           !oldb=b(startix:endix) JUST PASS IN
-!-           ALLOCATE(s(bs(g)))
-!-           s = vl(startix:endix)
-!-           s = s*t_for_s(g) + b(startix:endix)
-!-           DO soft_g = 1, bs(g)
-!-              sg = s(soft_g)
-!-              s(soft_g) = sign(max(abs(s(soft_g))-lama*t_for_s(g), 0.0D0), s(soft_g))
-!-           ENDDO
-!-           snorm = sqrt(dot_product(s,s))
-!-           tea = snorm - t_for_s(g)*lam1ma*pf(g)
-!-           IF(tea>0.0D0) THEN
-!-              b(startix:endix) = s*tea/snorm
-!-           ELSE
-!-              b(startix:endix) = 0.0D0
-!-           ENDIF
-!-           dd=b(startix:endix)-oldb
-!-           IF(any(dd/=0.0D0)) THEN
-!-              dif=max(dif,gam(g)**2*dot_product(dd,dd))
-!-              r=r-matmul(x(:,startix:endix),dd)
-!-              IF(oidx(g)==0) THEN ! Here is where middle loop is different; if group g was not in oidx (active), and the
-!-                 ! difference was nonzero, put it in active (ni)
-!-                 ni=ni+1
-!-                 IF(ni>pmax) EXIT
-!-                 oidx(g)=ni
-!-                 idx(ni)=g
-!-              ENDIF
-!-           ENDIF
-!-           DEALLOCATE(s,dd,oldb)
-!-        ENDDO ! End middle loop
-!-end subroutine
-!-
-!-subroutine update_step(ni)
-!-        implicit none
-!-        integer :: j, g, ni, startix, endix
-!-        integer :: startix(ni)
-!-        integer :: endix(ni)
-!-        double precision :: vl
-!-        double precision :: s(bs(g)), dd(bs(g)), oldb(bs(g)), b
-!-        double precision :: t_for_s, bs, lama, soft_g, snorm, tea, lam1ma, dif, dd
-!-              DO j=1,ni
-!-                 g=idx(j)
-!-                 startix=ix(g)
-!-                 endix=iy(g)
-!-                 ALLOCATE(s(bs(g)))
-!-                 ALLOCATE(dd(bs(g)))
-!-                 ALLOCATE(oldb(bs(g)))
-!-                 oldb=b(startix:endix)
-!-                 s = matmul(r,x(:,startix:endix))/nobs
-!-                 s = s*t_for_s(g) + b(startix:endix)
-!-                 DO soft_g = 1, bs(g)
-!-                    s(soft_g) = sign(max(abs(s(soft_g))-lama*t_for_s(g), 0.0D0), s(soft_g))
-!-                 ENDDO
-!-                 snorm = sqrt(dot_product(s,s))
-!-                 tea = snorm - t_for_s(g)*lam1ma*pf(g)
-!-                 IF(tea>0.0D0) THEN
-!-                    b(startix:endix) = s*tea/snorm
-!-                 ELSE
-!-                    b(startix:endix) = 0.0D0
-!-                 ENDIF
-!-                 dd=b(startix:endix)-oldb
-!-                 IF(any(dd/=0.0D0)) THEN
-!-                    dif=max(dif,gam(g)**2*dot_product(dd,dd))
-!-                    r=r-matmul(x(:,startix:endix),dd)
-!-                 ENDIF
-!-                 DEALLOCATE(s,dd,oldb)
-!-                 ! DEALLOCATE(u,dd,oldb)
-!-              ENDDO ! END INNER LOOP
-!-end subroutine
+!---------------------------------------
+subroutine update_step(bsg, startix, endix, dd, b, lama, t_for_sg, pfg, lam1ma, vl)
+        implicit none
+        integer, intent(in) :: bsg
+        integer, intent(in) :: startix, endix
+        double precision, dimension (:), allocatable :: oldb, s
+        double precision, dimension (:), intent(inout) :: dd
+        double precision, dimension (:), intent(inout) :: b
+        double precision :: snorm, tea 
+        double precision, intent(in) :: lama, t_for_sg, pfg, lam1ma
+        double precision, dimension (:), intent(in) :: vl
+        !------------------------------
+        allocate(s(bsg))
+        allocate(oldb(bsg))
+        oldb = b(startix:endix)
+        s = vl(startix:endix)
+        s = s*t_for_sg + b(startix:endix)
+        softthresh(s, lama*t_for_sg)
+        snorm = sqrt(dot_product(s,s))
+        tea = snorm - t_for_sg*lam1ma*pfg
+        if(tea > 0.0D0) then
+                b(startix:endix) = s*tea/snorm
+        else
+                b(startix:endix) = 0.0D0
+        endif
+        dd = b(startix:endix) - oldb
+        deallocate(s, oldb)
+end subroutine update_step

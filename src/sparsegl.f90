@@ -147,11 +147,7 @@ SUBROUTINE ls_f_sparse (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,flmin,
      lama = al*alsparse
      lam1ma = al*(1-alsparse)
      ! This is the start of the algorithm, for a given lambda...
-     ! print *, "Here is tlam = ", tlam
-     DO g = 1, bn 
-        IF(jxx(g) == 1)  CYCLE
-        IF(ga(g) > pf(g)*tlam*(1-alsparse)) jxx(g) = 1 ! Implementing the strong rule
-     ENDDO
+     strong_rule (jxx, ga, pf, tlam, alsparse) !implementing strong rule, updates jxx
      ! --------- outer loop ---------------------------- ! 
      DO
         IF(ni>0) THEN
@@ -170,23 +166,8 @@ SUBROUTINE ls_f_sparse (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,flmin,
               startix=ix(g)
               endix=iy(g)
               ALLOCATE(dd(bs(g)))
-              ALLOCATE(oldb(bs(g)))
-              oldb=b(startix:endix)
-              ALLOCATE(s(bs(g)))
-              s = matmul(r,x(:,startix:endix))/nobs
-              s = s*t_for_s(g) + b(startix:endix)
-              DO soft_g = 1, bs(g)
-                 sg = s(soft_g)
-                 s(soft_g) = sign(max(abs(s(soft_g))-lama*t_for_s(g), 0.0D0), s(soft_g))
-              ENDDO
-              snorm = sqrt(dot_product(s,s))
-              tea = snorm - t_for_s(g)*lam1ma*pf(g)
-              IF(tea>0.0D0) THEN
-                 b(startix:endix) = s*tea/snorm
-              ELSE
-                 b(startix:endix) = 0.0D0
-              ENDIF
-              dd=b(startix:endix)-oldb
+              vl = matmul(r, x)/nobs
+              update_step(bs(g), startix, endix, dd, b, lama, t_for_s(g), pf(g), lam1ma, vl)
               IF(any(dd/=0.0D0)) THEN
                  dif=max(dif,gam(g)**2*dot_product(dd,dd))
                  r=r-matmul(x(:,startix:endix),dd)
@@ -198,7 +179,7 @@ SUBROUTINE ls_f_sparse (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,flmin,
                     idx(ni)=g
                  ENDIF
               ENDIF
-              DEALLOCATE(s,dd,oldb)
+              DEALLOCATE(dd)
               ! DEALLOCATE(u,dd,oldb)
            ENDDO ! End middle loop
            IF (ni > pmax) EXIT
@@ -216,23 +197,9 @@ SUBROUTINE ls_f_sparse (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,flmin,
                  g=idx(j)
                  startix=ix(g)
                  endix=iy(g)
-                 ALLOCATE(s(bs(g)))
                  ALLOCATE(dd(bs(g))) !outside function
-                 ALLOCATE(oldb(bs(g)))
-                 oldb=b(startix:endix)
-                 s = matmul(r,x(:,startix:endix))/nobs
-                 s = s*t_for_s(g) + b(startix:endix)
-                 DO soft_g = 1, bs(g)
-                    s(soft_g) = sign(max(abs(s(soft_g))-lama*t_for_s(g), 0.0D0), s(soft_g))
-                 ENDDO
-                 snorm = sqrt(dot_product(s,s))
-                 tea = snorm - t_for_s(g)*lam1ma*pf(g)
-                 IF(tea>0.0D0) THEN
-                    b(startix:endix) = s*tea/snorm
-                 ELSE
-                    b(startix:endix) = 0.0D0
-                 ENDIF
-                 dd=b(startix:endix)-oldb
+                 vl = matmul(r, x)/nobs
+                 update_step(bs(g), startix, endix, dd, b, lama, t_for_s(g), pf(g), lam1ma, vl)
                  IF(any(dd/=0.0D0)) THEN
                     dif=max(dif,gam(g)**2*dot_product(dd,dd))
                     r=r-matmul(x(:,startix:endix),dd)
@@ -253,27 +220,11 @@ SUBROUTINE ls_f_sparse (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,flmin,
         jx = 0
         max_gam = maxval(gam)
         IF(any((max_gam*(b-oldbeta)/(1+abs(b)))**2 >= eps)) jx = 1
-        IF (jx /= 0) CYCLE
+        IF (jx == 1) CYCLE
         vl = matmul(r, x)/nobs
-        DO g = 1, bn
-           IF(jxx(g) == 1) CYCLE
-           startix=ix(g)
-           endix=iy(g)
-           ALLOCATE(s(bs(g)))
-           s = matmul(r,x(:,startix:endix))/nobs
-           DO soft_g = 1, bs(g)
-              s(soft_g) = sign(max(abs(s(soft_g))-lama, 0.0D0), s(soft_g))
-           ENDDO
-           snorm = sqrt(dot_product(s,s))
-           ga(g) = snorm
-           DEALLOCATE(s)
-           IF(ga(g) > pf(g)*lam1ma)THEN
-              jxx(g) = 1
-              jx = 1
-           ENDIF
-        ENDDO
+        kkt_check(jxx, jx, bn, ix, iy, vl, pf, lam1ma) ! kkt subroutine
         IF(jx == 1) CYCLE ! This goes all the way back to outer loop
-        EXIT
+        EXIT 
      ENDDO ! Ends outer loop
      !---------- final update variable and save results------------
      IF(l==0) THEN
@@ -313,34 +264,30 @@ END SUBROUTINE ls_f_sparse
 
 
 !----------------------------------------------------
-subroutine strong_rule (jxx, bn, ga, pf, tlam, alsparse)
+subroutine strong_rule (jxx, ga, pf, tlam, alsparse)
         !-------------------------------------------
         implicit none
-        !strong rule check
-        integer :: bn
         integer :: g
-        integer :: jxx(bn)
-        double precision :: ga(bn)
-        double precision :: pf(bn)
-        double precision :: tlam, alsparse
+        integer, dimension (:), intent(inout) :: jxx
+        double precision, dimension (:), intent(in) :: ga
+        double precision, dimension (:), intent(in) :: pf
+        double precision, intent(in) :: tlam, alsparse
         !------------------------------------------
-        do g = 1, bn
+        do g = 1, size(jxx) 
                 if(jxx(g) == 1) cycle
                 if(ga(g) > pf(g)*tlam*(1-alsparse)) jxx(g) = 1
         enddo
 end subroutine strong_rule
 
 
-
-
-
-! Need to add thresh to allocation
 !--------------------------------------------
-SUBROUTINE softthresh(vec, thresh, n)
+SUBROUTINE softthresh(vec, thresh)
         !------------------------------------
   INTEGER :: n, it
-  DOUBLE PRECISION :: vec(n)
-  DOUBLE PRECISION :: sg, thresh
+  double precision :: sg
+  DOUBLE PRECISION, dimension (:), intent(inout) :: vec
+  double precision, intent(in) :: thresh
+  n = size(vec)
   DO it=1,n
     sg = vec(it)
     vec(it) = sign(max(abs(sg) - thresh, 0.0D0), sg)
@@ -348,129 +295,62 @@ SUBROUTINE softthresh(vec, thresh, n)
 END SUBROUTINE softthresh
 
 
+
 !----------------------------------------------
-subroutine kkt_check(bn, soft_g, jx, startix, endix, jxx, ix, iy, bs, vl, snorm, lama, lam1ma, ga, pf, s)
-        !--------------------------------------
+subroutine kkt_check(jxx, jx, bn, ix, iy, vl, pf, lam1ma)
         implicit none
-        integer :: g, bn, soft_g, jx, startix, endix
-        integer :: jxx(bn)
-        integer :: ix(bn)
-        integer :: iy(bn)
-        integer :: bs(bn)
-        double precision :: vl(nvars)
-        double precision :: snorm, lama, lam1ma
+        integer :: g, startix, endix
+        integer, intent(in) :: bn
+        integer, intent(in) :: ix(bn), iy(bn)
+        integer, dimension(:), intent(inout) :: jxx
+        double precision, dimension (:), intent(in) :: vl 
         double precision, dimension (:), allocatable :: s
-        double precision :: ga(bn)
-        double precision :: pf(bn)
-        !---------------------------------------
+        double precision :: snorm
+        double precision, intent(in) :: pf(bn)
+        integer, intent(inout) :: jx
+        double precision, intent(in) :: lam1ma
+        !------------------------
         do g = 1, bn
-                if (jxx(g) == 1) cycle
+                if(jxx(g) ==1) cycle
                 startix = ix(g)
                 endix = iy(g)
-                allocate (s(bs(g)))
+                allocate(s(bs(g)))
                 s = vl(startix:endix)
-                do soft_g = 1,bs(g)
-                        s(soft_g) = sign(max(abs(s(soft_g))-lama, 0.0D0), s(soft_g))
-                enddo
-                snorm = sqrt(dot_product(s,s))
-                ga(g) = snorm
-                deallocate(s)
-                if(ga(g) > pf(g)*lam1ma) then
+                softthresh(s, lama)
+                snorm = sqrt(dot_product(s,s)
+                if(snorm > pf(g)*lam1ma) then
                         jxx(g) = 1
                         jx = 1
                 endif
+                deallocate(s)
         enddo
-end subroutine
+end subroutine kkt_check
 
-
-
-!----------------------------------------------
-subroutine update_step(bn, soft_g, jx, startix, b, oldb, t_for_s, tea, endix, jxx, ix, iy, bs, vl, snorm, lama, lam1ma, ga, pf, s)
-        !--------------------------------------
+!---------------------------------------
+subroutine update_step(bsg, startix, endix, dd, b, lama, t_for_sg, pfg, lam1ma, vl)
         implicit none
-        integer :: g, bn, soft_g, jx, startix, endix
-        integer :: jxx(bn)
-        integer :: ix(bn)
-        integer :: iy(bn)
-        integer :: bs(bn)
-        double precision :: vl(nvars)
-        double precision :: snorm, lama, lam1ma
-        double precision, dimension (:), allocatable :: s
-        double precision :: ga(bn), oldb(bs(g))
-        double precision :: pf(bn)
-        !---------------------------------------
-
-        DO g=1,bn
-           IF(jxx(g) == 0) CYCLE
-           startix=ix(g)
-           endix=iy(g)
-           ALLOCATE(dd(bs(g)))
-           ALLOCATE(oldb(bs(g)))
-           !oldb=b(startix:endix) JUST PASS IN
-           ALLOCATE(s(bs(g)))
-           s = vl(startix:endix)
-           s = s*t_for_s(g) + b(startix:endix)
-           DO soft_g = 1, bs(g)
-              sg = s(soft_g)
-              s(soft_g) = sign(max(abs(s(soft_g))-lama*t_for_s(g), 0.0D0), s(soft_g))
-           ENDDO
-           snorm = sqrt(dot_product(s,s))
-           tea = snorm - t_for_s(g)*lam1ma*pf(g)
-           IF(tea>0.0D0) THEN
-              b(startix:endix) = s*tea/snorm
-           ELSE
-              b(startix:endix) = 0.0D0
-           ENDIF
-           dd=b(startix:endix)-oldb
-           IF(any(dd/=0.0D0)) THEN
-              dif=max(dif,gam(g)**2*dot_product(dd,dd))
-              r=r-matmul(x(:,startix:endix),dd)
-              IF(oidx(g)==0) THEN ! Here is where middle loop is different; if group g was not in oidx (active), and the
-                 ! difference was nonzero, put it in active (ni)
-                 ni=ni+1
-                 IF(ni>pmax) EXIT
-                 oidx(g)=ni
-                 idx(ni)=g
-              ENDIF
-           ENDIF
-           DEALLOCATE(s,dd,oldb)
-        ENDDO ! End middle loop
-end subroutine
-
-subroutine update_step(ni)
-        implicit none
-        integer :: j, g, ni, startix, endix
-        integer :: startix(ni)
-        integer :: endix(ni)
-        double precision :: vl
-        double precision :: s(bs(g)), dd(bs(g)), oldb(bs(g)), b
-        double precision :: t_for_s, bs, lama, soft_g, snorm, tea, lam1ma, dif, dd
-              DO j=1,ni
-                 g=idx(j)
-                 startix=ix(g)
-                 endix=iy(g)
-                 ALLOCATE(s(bs(g)))
-                 ALLOCATE(dd(bs(g)))
-                 ALLOCATE(oldb(bs(g)))
-                 oldb=b(startix:endix)
-                 s = matmul(r,x(:,startix:endix))/nobs
-                 s = s*t_for_s(g) + b(startix:endix)
-                 DO soft_g = 1, bs(g)
-                    s(soft_g) = sign(max(abs(s(soft_g))-lama*t_for_s(g), 0.0D0), s(soft_g))
-                 ENDDO
-                 snorm = sqrt(dot_product(s,s))
-                 tea = snorm - t_for_s(g)*lam1ma*pf(g)
-                 IF(tea>0.0D0) THEN
-                    b(startix:endix) = s*tea/snorm
-                 ELSE
-                    b(startix:endix) = 0.0D0
-                 ENDIF
-                 dd=b(startix:endix)-oldb
-                 IF(any(dd/=0.0D0)) THEN
-                    dif=max(dif,gam(g)**2*dot_product(dd,dd))
-                    r=r-matmul(x(:,startix:endix),dd)
-                 ENDIF
-                 DEALLOCATE(s,dd,oldb)
-                 ! DEALLOCATE(u,dd,oldb)
-              ENDDO ! END INNER LOOP
-end subroutine
+        integer, intent(in) :: bsg
+        integer, intent(in) :: startix, endix
+        double precision, dimension (:), allocatable :: oldb, s
+        double precision, dimension (:), intent(inout) :: dd
+        double precision, dimension (:), intent(inout) :: b
+        double precision :: snorm, tea 
+        double precision, intent(in) :: lama, t_for_sg, pfg, lam1ma
+        double precision, dimension (:), intent(in) :: vl
+        !------------------------------
+        allocate(s(bsg))
+        allocate(oldb(bsg))
+        oldb = b(startix:endix)
+        s = vl(startix:endix)
+        s = s*t_for_sg + b(startix:endix)
+        softthresh(s, lama*t_for_sg)
+        snorm = sqrt(dot_product(s,s))
+        tea = snorm - t_for_sg*lam1ma*pfg
+        if(tea > 0.0D0) then
+                b(startix:endix) = s*tea/snorm
+        else
+                b(startix:endix) = 0.0D0
+        endif
+        dd = b(startix:endix) - oldb
+        deallocate(s, oldb)
+end subroutine update_step
