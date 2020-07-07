@@ -161,26 +161,18 @@ SUBROUTINE ls_f_sparse (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,flmin,
            ! print *, "This is where we enter the middle loop"
            npass=npass+1 
            dif=0.0D0
+           isddzero = 0 !Boolean to check if b-oldb nonzero
            DO g=1,bn
               IF(jxx(g) == 0) CYCLE
               startix=ix(g)
               endix=iy(g)
-              ALLOCATE(dd(bs(g)))
-              vl = matmul(r, x)/nobs
-              update_step(bs(g), startix, endix, dd, b, lama, t_for_s(g), pf(g), lam1ma, vl)
-              IF(any(dd/=0.0D0)) THEN
-                 dif=max(dif,gam(g)**2*dot_product(dd,dd))
-                 r=r-matmul(x(:,startix:endix),dd)
-                 IF(oidx(g)==0) THEN ! Here is where middle loop is different; if group g was not in oidx (active), and the
-                    ! difference was nonzero, put it in active (ni)
+              update_step(bs(g), startix, endix, b, lama, t_for_s(g), pf(g), lam1ma, x, isddzero, nobs, r, gam(g), dif)
+              IF(oidx(g)==0) .and. (isddzero == 1) THEN 
                     ni=ni+1
                     IF(ni>pmax) EXIT
                     oidx(g)=ni
                     idx(ni)=g
-                 ENDIF
               ENDIF
-              DEALLOCATE(dd)
-              ! DEALLOCATE(u,dd,oldb)
            ENDDO ! End middle loop
            IF (ni > pmax) EXIT
            IF (dif < eps) EXIT
@@ -193,19 +185,12 @@ SUBROUTINE ls_f_sparse (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,flmin,
               ! PRINT *, "Here is where the inner loop starts"
               npass=npass+1
               dif=0.0D0
+              isddzero = 0
               DO j=1,ni
                  g=idx(j)
                  startix=ix(g)
                  endix=iy(g)
-                 ALLOCATE(dd(bs(g))) !outside function
-                 vl = matmul(r, x)/nobs
-                 update_step(bs(g), startix, endix, dd, b, lama, t_for_s(g), pf(g), lam1ma, vl)
-                 IF(any(dd/=0.0D0)) THEN
-                    dif=max(dif,gam(g)**2*dot_product(dd,dd))
-                    r=r-matmul(x(:,startix:endix),dd)
-                 ENDIF
-                 DEALLOCATE(s,dd,oldb)
-                 ! DEALLOCATE(u,dd,oldb)
+                 update_step(bs(g), startix, endix, b, lama, t_for_s(g), pf(g), lam1ma, x, isddzero, nobs, r, gam(g), dif)
               ENDDO ! END INNER LOOP
               IF(dif<eps) EXIT ! Exit nearest loop. This is till convergence.
               IF(npass > maxit) THEN
@@ -327,21 +312,23 @@ subroutine kkt_check(jxx, jx, bn, ix, iy, vl, pf, lam1ma)
 end subroutine kkt_check
 
 !---------------------------------------
-subroutine update_step(bsg, startix, endix, dd, b, lama, t_for_sg, pfg, lam1ma, vl)
+subroutine update_step(bsg, startix, endix, b, lama, t_for_sg, pfg, lam1ma, x, isddzero, nobs, r, gamg, dif)
         implicit none
-        integer, intent(in) :: bsg
+        integer, intent(in) :: bsg, gamg, nobs
         integer, intent(in) :: startix, endix
-        double precision, dimension (:), allocatable :: oldb, s
-        double precision, dimension (:), intent(inout) :: dd
-        double precision, dimension (:), intent(inout) :: b
+        double precision, intent(inout) :: dif
+        double precision, dimension (:), allocatable :: oldb, s, dd
+        double precision, dimension (:), intent(inout) :: b, r
         double precision :: snorm, tea 
         double precision, intent(in) :: lama, t_for_sg, pfg, lam1ma
-        double precision, dimension (:), intent(in) :: vl
+        double precision, dimension (:), intent(in) :: x
+        integer, intent(inout) :: isddzero
         !------------------------------
         allocate(s(bsg))
         allocate(oldb(bsg))
+        isddzero = 0
         oldb = b(startix:endix)
-        s = vl(startix:endix)
+        s = matmul(r, x(:, startix:endix))/nobs 
         s = s*t_for_sg + b(startix:endix)
         softthresh(s, lama*t_for_sg)
         snorm = sqrt(dot_product(s,s))
@@ -351,6 +338,11 @@ subroutine update_step(bsg, startix, endix, dd, b, lama, t_for_sg, pfg, lam1ma, 
         else
                 b(startix:endix) = 0.0D0
         endif
+        allocate(dd(bsg))
         dd = b(startix:endix) - oldb
-        deallocate(s, oldb)
+        if(any(dd/=0.0D0)) then
+                dif = max(dif,gam(g)**2*dot_product(dd,dd))
+                r=r-matmul(x(:,startix:endix),dd)
+                isddzero = 1
+        deallocate(s, oldb, dd)
 end subroutine update_step
