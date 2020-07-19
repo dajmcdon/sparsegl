@@ -1,18 +1,18 @@
 #' Fits the regularization paths for group-lasso penalized learning problems
-#' 
+#'
 #' Fits regularization paths for group-lasso penalized learning problems at a
 #' sequence of regularization parameters lambda.
-#' 
+#'
 #' Note that the objective function for \code{"ls"} least squares is
 #' \deqn{RSS/(2*n) + lambda * penalty;} for \code{"hsvm"} Huberized squared
 #' hinge loss, \code{"sqsvm"} Squared hinge loss and \code{"logit"} logistic
 #' regression, the objective function is \deqn{-loglik/n + lambda * penalty.}
 #' Users can also tweak the penalty by choosing different penalty factor.
-#' 
+#'
 #' For computing speed reason, if models are not converging or running slow,
 #' consider increasing \code{eps}, decreasing \code{nlambda}, or increasing
 #' \code{lambda.factor} before increasing \code{maxit}.
-#' 
+#'
 #' @param x matrix of predictors, of dimension \eqn{n \times p}{n*p}; each row
 #' is an observation vector.
 #' @param y response variable. This argument should be quantitative for
@@ -20,11 +20,11 @@
 #' (logistic model, huberized SVM, squared SVM).
 #' @param group a vector of consecutive integers describing the grouping of the
 #' coefficients (see example below).
-#' @param loss a character string specifying the loss function to use, valid
-#' options are: \itemize{ \item \code{"ls"} least squares loss (regression),
-#' \item \code{"logit"} logistic loss (classification).  \item \code{"hsvm"}
-#' Huberized squared hinge loss (classification), \item \code{"sqsvm"} Squared
-#' hinge loss (classification), }Default is \code{"ls"}.
+#' @param pen a character string specifying the penalty function to use, valid
+#' options are: \itemize{ \item \code{"sparsegl"} for group plus l1 penalty,
+#' \item \code{"gglasso"} for group penalty only }Default is \code{"sparsegl"}.
+#' @param algorithm a character string specifying the algorithm for sparse
+#' group lasso (sparsegl). Valid options are: \itemize{ }
 #' @param nlambda the number of \code{lambda} values - default is 100.
 #' @param lambda.factor the factor for getting the minimal lambda in
 #' \code{lambda} sequence, where \code{min(lambda)} = \code{lambda.factor} *
@@ -63,8 +63,8 @@
 #' @param delta the parameter \eqn{\delta}{delta} in \code{"hsvm"} (Huberized
 #' squared hinge loss). Default is 1.
 #' @param intercept Whether to include intercept in the model. Default is TRUE.
-#' @param asparse the weight to put on the ell1 norm in sparse group lasso. Default 
-#' is 0.05 
+#' @param asparse the weight to put on the ell1 norm in sparse group lasso. Default
+#' is 0.05
 #' @return An object with S3 class \code{\link{gglasso}}.  \item{call}{the call
 #' that produced this object} \item{b0}{intercept sequence of length
 #' \code{length(lambda)}} \item{beta}{a \code{p*length(lambda)} matrix of
@@ -77,92 +77,83 @@
 #' grouping of the coefficients.}
 #' @author Yi Yang and Hui Zou\cr Maintainer: Yi Yang <yi.yang6@@mcgill.ca>
 #' @seealso \code{plot.gglasso}
-#' @references Yang, Y. and Zou, H. (2015), ``A Fast Unified Algorithm for
-#' Computing Group-Lasso Penalized Learning Problems,'' \emph{Statistics and
-#' Computing}. 25(6), 1129-1141.\cr BugReport:
-#' \url{https://github.com/emeryyi/gglasso}\cr
 #' @keywords models regression
 #' @examples
-#' 
-#' # load gglasso library
-#' library(gglasso)
-#' 
+#'
+#' # load sparsegl library
+#' library(sparsegl)
+#'
 #' # load bardet data set
 #' data(bardet)
-#' 
+#'
 #' # define group index
 #' group1 <- rep(1:20,each=5)
-#' 
+#'
 #' # fit group lasso penalized least squares
-#' m1 <- gglasso(x=bardet$x,y=bardet$y,group=group1,loss="ls")
-#' 
+#' m1 <- sparsegl(x=bardet$x,y=bardet$y,group=group1,loss="ls")
+#'
 #' # load colon data set
 #' data(colon)
-#' 
+#'
 #' # define group index
 #' group2 <- rep(1:20,each=5)
-#' 
+#'
 #' # fit group lasso penalized logistic regression
-#' m2 <- gglasso(x=colon$x,y=colon$y,group=group2,loss="logit")
-#' 
+#' m2 <- sparsegl(x=colon$x,y=colon$y,group=group2,loss="logit")
+#'
 #' @export
-gglasso <- function(x, y, group = NULL, loss = c("ls", "ls_sparse", "sparsegl", "logit", "sqsvm", 
-    "hsvm","wls"), nlambda = 100, lambda.factor = ifelse(nobs < nvars, 0.01, 1e-04), 
-    lambda = NULL, pf = sqrt(bs), weight = NULL, dfmax = as.integer(max(group)) + 
-        1, pmax = min(dfmax * 1.2, as.integer(max(group))), eps = 1e-08, maxit = 3e+08, 
-    delta, intercept=TRUE, asparse = 0.05, standardize=TRUE) {
+sparsegl <- function(
+  x, y, group = NULL, pen = c("sparsegl", "gglasso"),
+  algorithm = c("original", "threestep", "fivestep"),
+  nlambda = 100, lambda.factor = ifelse(nobs < nvars, 0.01, 1e-04),
+  lambda = NULL, pf = sqrt(bs), weight = NULL, dfmax = as.integer(max(group)) + 1,
+  pmax = min(dfmax * 1.2, as.integer(max(group))), eps = 1e-08, maxit = 3e+08,
+  delta, intercept=TRUE, asparse = 0.05, standardize=TRUE) {
     #################################################################################
     #\tDesign matrix setup, error checking
     this.call <- match.call()
     loss <- match.arg(loss)
-    
-    if (!is.matrix(x)) 
+
+    if (!is.matrix(x))
         stop("x has to be a matrix")
-    
-    if (any(is.na(x))) 
+
+    if (any(is.na(x)))
         stop("Missing values in x not allowed!")
-    
+
     y <- drop(y)
     np <- dim(x)
     nobs <- as.integer(np[1])
     nvars <- as.integer(np[2])
     vnames <- colnames(x)
-    
-    if (is.null(vnames)) 
+
+    if (is.null(vnames))
         vnames <- paste("V", seq(nvars), sep = "")
-    
-    if (length(y) != nobs) 
+
+    if (length(y) != nobs)
         stop("x and y have different number of rows")
-    
-    if (!is.numeric(y)) 
-        stop("The response y must be numeric. Factors must be converted to numeric")
-    
-    c1 <- loss %in% c("logit", "sqsvm", "hsvm")
-    c2 <- any(y %in% c(-1, 1) == FALSE)
-    if (c1 && c2) 
-        stop("Classification method requires the response y to be in {-1,1}")
-	
-    if (loss=="wls" & !is.matrix(weight)) 
-        stop("User must specify weight matrix for (loss='wls')")
+
+    if (!is.numeric(y))
+        stop("The response y must be numeric.")
+
     #################################################################################
     #    group setup
     if (is.null(group)) {
         group <- 1:nvars
-    } else if (length(group) != nvars) 
+    } else if (length(group) != nvars)
         stop("group length does not match the number of predictors in x")
-    
+
     bn <- as.integer(max(group))
     bs <- as.integer(as.numeric(table(group)))
-    
-    if (!identical(as.integer(sort(unique(group))), as.integer(1:bn))) 
+
+    if (!identical(as.integer(sort(unique(group))), as.integer(1:bn)))
         stop("Groups must be consecutively numbered 1,2,3,...")
     #Need to add if(loss=sparsegl)...
-    if (loss=="ls_sparse" && (asparse>1 || asparse<0)){
+    if (pen=="sparsegl" && (asparse>1 || asparse<0)){
       asparse = 0
-      loss="ls"
+      pen="gglasso"
       warning("asparse must be in [0,1], running ordinary group lasso.")
-    } 
-    
+    }
+
     ix <- rep(NA, bn)
     iy <- rep(NA, bn)
     j <- 1
@@ -176,12 +167,12 @@ gglasso <- function(x, y, group = NULL, loss = c("ls", "ls_sparse", "sparsegl", 
     group <- as.integer(group)
     #################################################################################
     #parameter setup
-    if (missing(delta)) 
+    if (missing(delta))
         delta <- 1
-    if (delta < 0) 
+    if (delta < 0)
         stop("delta must be non-negtive")
     delta <- as.double(delta)
-    if (length(pf) != bn) 
+    if (length(pf) != bn)
         stop("The size of group-lasso penalty factor must be same as the number of groups")
     maxit <- as.integer(maxit)
     pf <- as.double(pf)
@@ -192,14 +183,14 @@ gglasso <- function(x, y, group = NULL, loss = c("ls", "ls_sparse", "sparsegl", 
     #lambda setup
     nlam <- as.integer(nlambda)
     if (is.null(lambda)) {
-        if (lambda.factor >= 1) 
+        if (lambda.factor >= 1)
             stop("lambda.factor should be less than 1")
         flmin <- as.double(lambda.factor)
         ulam <- double(1)
     } else {
         #flmin=1 if user define lambda
         flmin <- as.double(1)
-        if (any(lambda < 0)) 
+        if (any(lambda < 0))
             stop("lambdas should be non-negative")
         ulam <- as.double(rev(sort(lambda)))
         nlam <- as.integer(length(lambda))
@@ -207,31 +198,20 @@ gglasso <- function(x, y, group = NULL, loss = c("ls", "ls_sparse", "sparsegl", 
     intr <- as.integer(intercept)
     #################################################################################
     # call R sub-functions
-    fit <- switch(loss, 
-	ls = ls(bn, bs, ix, iy, nobs, nvars, x, y, pf, 
-        dfmax, pmax, nlam, flmin, ulam, eps, maxit, vnames, group, intr), 
-	ls_sparse = ls_sparse(bn, bs, ix, iy, nobs, nvars, x, y, pf, 
-        dfmax, pmax, nlam, flmin, ulam, eps, maxit, vnames, group, intr, 
-        asparse, standardize), 
-	sparsegl = sparsegl(bn, bs, ix, iy, nobs, nvars, x, y, pf, 
-        dfmax, pmax, nlam, flmin, ulam, eps, maxit, vnames, group, intr, 
-        asparse, standardize), 
-	logit = logit(bn, 
-        bs, ix, iy, nobs, nvars, x, y, pf, dfmax, pmax, nlam, flmin, 
-        ulam, eps, maxit, vnames, group, intr), 
-	sqsvm = sqsvm(bn, bs, ix, iy, 
-        nobs, nvars, x, y, pf, dfmax, pmax, nlam, flmin, ulam, eps, maxit, vnames, 
-        group, intr), 
-	hsvm = hsvm(delta, bn, bs, ix, iy, nobs, nvars, x, y, 
-        pf, dfmax, pmax, nlam, flmin, ulam, eps, maxit, vnames, group, intr),
-	wls = wls(bn, bs, ix, iy, nobs, nvars, x, y, pf, weight, 
-        dfmax, pmax, nlam, flmin, ulam, eps, maxit, vnames, group, intr)
+    fit <- switch(
+      pen,
+      sparsegl = sparsegl(
+          bn, bs, ix, iy, nobs, nvars, x, y, pf, dfmax, pmax, nlam, flmin, ulam,
+          eps, maxit, vnames, group, intr, asparse, standardize, algorithm),
+      gglasso = gglasso(
+        bn, bs, ix, iy, nobs, nvars, x, y, pf, dfmax,
+        pmax, nlam, flmin, ulam, eps, maxit, vnames, group, intr)
 		)
     #################################################################################
     # output
-    if (is.null(lambda)) 
+    if (is.null(lambda))
         fit$lambda <- lamfix(fit$lambda)
     fit$call <- this.call
-    class(fit) <- c("gglasso", class(fit))
+    class(fit) <- c("sparsegl", class(fit))
     fit
-} 
+}
