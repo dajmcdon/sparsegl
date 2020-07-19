@@ -1,7 +1,6 @@
 sparsegl <- function(
     bn, bs, ix, iy, nobs, nvars, x, y, pf, dfmax, pmax, nlam, flmin, ulam, eps,
     maxit, vnames, group, intr, asparse, standardize, algorithm) {
-    #################################################################################
     # call Fortran core
     intercept = 0L
     if(intr){
@@ -38,7 +37,6 @@ sparsegl <- function(
         #     nbeta = integer(nlam), alam = double(nlam), npass = integer(1), jerr = integer(1),
         #     alsparse = asparse)
         )
-    #################################################################################
     # output
     outlist <- getoutput(fit, maxit, pmax, nvars, vnames)
     if(standardize){
@@ -55,8 +53,6 @@ sparsegl <- function(
 
 gglasso <- function(bn, bs, ix, iy, nobs, nvars, x, y, pf, dfmax,
     pmax, nlam, flmin, ulam, eps, maxit, vnames, group, intr, standardize) {
-    #################################################################################
-    # call Fortran core
     intercept = 0L
     if(intr){
         ym = mean(y)
@@ -76,8 +72,6 @@ gglasso <- function(bn, bs, ix, iy, nobs, nvars, x, y, pf, dfmax,
         as.double(y), pf, dfmax, pmax, nlam, flmin, ulam, eps, maxit, intr, nalam = integer(1),
         b0 = double(nlam), beta = double(nvars * nlam), idx = integer(pmax),
         nbeta = integer(nlam), alam = double(nlam), npass = integer(1), jerr = integer(1))
-    #################################################################################
-    # output
     outlist <- getoutput(fit, maxit, pmax, nvars, vnames)
     if(standardize){
         outlist$beta = outlist$beta/xs

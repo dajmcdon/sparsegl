@@ -202,7 +202,8 @@ sparsegl <- function(
       pen,
       sparsegl = sparsegl(
           bn, bs, ix, iy, nobs, nvars, x, y, pf, dfmax, pmax, nlam, flmin, ulam,
-          eps, maxit, vnames, group, intr, asparse, standardize, algorithm),
+          eps, maxit, vnames, group, intr, as.double(asparse),
+          standardize, algorithm),
       gglasso = gglasso(
         bn, bs, ix, iy, nobs, nvars, x, y, pf, dfmax,
         pmax, nlam, flmin, ulam, eps, maxit, vnames, group, intr)
