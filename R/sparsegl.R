@@ -112,7 +112,7 @@ sparsegl <- function(
     #################################################################################
     #\tDesign matrix setup, error checking
     this.call <- match.call()
-    loss <- match.arg(loss)
+    #loss <- match.arg(loss)
 
     if (!is.matrix(x))
         stop("x has to be a matrix")
