@@ -1,3 +1,7 @@
+module mySubs
+
+contains
+
 !----------------------------------------------------
 subroutine strong_rule (jxx, ga, pf, tlam, alsparse)
         !-------------------------------------------
@@ -34,7 +38,7 @@ END SUBROUTINE softthresh
 
 
 !----------------------------------------------
-subroutine kkt_check(jxx, jx, bn, ix, iy, vl, pf, lam1ma, bs)
+subroutine kkt_check(jxx, jx, bn, ix, iy, vl, pf, lam1ma, bs, lama)
         implicit none
         integer :: g, startix, endix
         integer, intent(in) :: bn
@@ -46,7 +50,7 @@ subroutine kkt_check(jxx, jx, bn, ix, iy, vl, pf, lam1ma, bs)
         double precision :: snorm
         double precision, intent(in) :: pf(bn)
         integer, intent(inout) :: jx
-        double precision, intent(in) :: lam1ma
+        double precision, intent(in) :: lam1ma, lama
         !------------------------
         do g = 1, bn
                 if(jxx(g) ==1) cycle
@@ -54,7 +58,7 @@ subroutine kkt_check(jxx, jx, bn, ix, iy, vl, pf, lam1ma, bs)
                 endix = iy(g)
                 allocate(s(bs(g)))
                 s = vl(startix:endix)
-                softthresh(s, lama, bs(g))
+                call softthresh(s, lama, bs(g))
                 snorm = sqrt(dot_product(s,s))
                 if(snorm > pf(g)*lam1ma) then
                         jxx(g) = 1
@@ -86,7 +90,7 @@ subroutine update_step(bsg, startix, endix, b, lama, t_for_sg, pfg, lam1ma, x,&
         oldb = b(startix:endix)
         s = matmul(r, x(:, startix:endix))/nobs
         s = s*t_for_sg + b(startix:endix)
-        softthresh(s, lama*t_for_sg, bsg)
+        call softthresh(s, lama*t_for_sg, bsg)
         snorm = sqrt(dot_product(s,s))
         tea = snorm - t_for_sg*lam1ma*pfg
         if(tea > 0.0D0) then
@@ -107,10 +111,9 @@ end subroutine update_step
 
 
 ! --------------------------------------------------
-SUBROUTINE ls_f_sparse (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,flmin,ulam,&
+SUBROUTINE sparsegl (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,flmin,ulam,&
      eps,maxit,nalam,beta,idx,nbeta,alam,npass,jerr,alsparse)
   ! --------------------------------------------------
-
   IMPLICIT NONE
   ! - - - arg types - - -
   DOUBLE PRECISION, PARAMETER :: big=9.9E30
@@ -256,7 +259,7 @@ SUBROUTINE ls_f_sparse (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,flmin,
      lama = al*alsparse
      lam1ma = al*(1-alsparse)
      ! This is the start of the algorithm, for a given lambda...
-     strong_rule (jxx, ga, pf, tlam, alsparse) !implementing strong rule, updates jxx
+     call strong_rule (jxx, ga, pf, tlam, alsparse) !implementing strong rule, updates jxx
      ! --------- outer loop ---------------------------- !
      DO
         IF(ni>0) THEN
@@ -275,7 +278,7 @@ SUBROUTINE ls_f_sparse (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,flmin,
               IF(jxx(g) == 0) CYCLE
               startix=ix(g)
               endix=iy(g)
-              update_step(bs(g), startix, endix, b, lama, t_for_s(g), pf(g), lam1ma, x,&
+              call update_step(bs(g), startix, endix, b, lama, t_for_s(g), pf(g), lam1ma, x,&
                   isddzero, nobs, r, gam(g), dif, nvars)
               IF(oidx(g)==0 .and. isddzero == 1) THEN
                     ni=ni+1
@@ -286,29 +289,29 @@ SUBROUTINE ls_f_sparse (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,flmin,
            ENDDO ! End middle loop
            IF (ni > pmax) EXIT
            IF (dif < eps) EXIT
-           IF(npass > maxit) THEN
+           IF(npass > maxit) THEN !Is this needed?
               jerr=-l
               RETURN
            ENDIF
            ! --inner loop----------------------
-           DO
-              ! PRINT *, "Here is where the inner loop starts"
-              npass=npass+1
-              dif=0.0D0
-              isddzero = 0
-              DO j=1,ni
-                 g=idx(j)
-                 startix=ix(g)
-                 endix=iy(g)
-                 update_step(bs(g), startix, endix, b, lama, t_for_s(g), pf(g),&
-                    lam1ma, x, isddzero, nobs, r, gam(g), dif, nvars)
-              ENDDO ! END INNER LOOP
-              IF(dif<eps) EXIT ! Exit nearest loop. This is till convergence.
-              IF(npass > maxit) THEN
-                 jerr=-l
-                 RETURN
-              ENDIF
-           ENDDO ! End Inner loop
+!           DO
+!              ! PRINT *, "Here is where the inner loop starts"
+!              npass=npass+1
+!              dif=0.0D0
+!              isddzero = 0
+!              DO j=1,ni
+!                 g=idx(j)
+!                 startix=ix(g)
+!                 endix=iy(g)
+!                 call update_step(bs(g), startix, endix, b, lama, t_for_s(g), pf(g),&
+!                    lam1ma, x, isddzero, nobs, r, gam(g), dif, nvars)
+!              ENDDO ! END INNER LOOP
+!              IF(dif<eps) EXIT ! Exit nearest loop. This is till convergence.
+!              IF(npass > maxit) THEN
+!                 jerr=-l
+!                 RETURN
+!              ENDIF
+!           ENDDO ! End Inner loop
         ENDDO ! End middle loop
         IF(ni>pmax) EXIT
         !--- final check ------------------------ ! This checks which violate KKT condition
@@ -318,7 +321,7 @@ SUBROUTINE ls_f_sparse (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,flmin,
         IF(any((max_gam*(b-oldbeta)/(1+abs(b)))**2 >= eps)) jx = 1
         IF (jx == 1) CYCLE
         vl = matmul(r, x)/nobs
-        kkt_check(jxx, jx, bn, ix, iy, vl, pf, lam1ma, bs) ! kkt subroutine
+        call kkt_check(jxx, jx, bn, ix, iy, vl, pf, lam1ma, bs, lama) ! kkt subroutine
         IF(jx == 1) CYCLE ! This goes all the way back to outer loop
         EXIT
      ENDDO ! Ends outer loop
@@ -355,7 +358,7 @@ SUBROUTINE ls_f_sparse (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,flmin,
   ENDDO ! end lambda loop
   DEALLOCATE(b,oldbeta,r,oidx)
   RETURN
-END SUBROUTINE ls_f_sparse
+END SUBROUTINE sparsegl
 
 
-
+end module mySubs
