@@ -142,7 +142,7 @@ data(colon)
 group2 <- rep(1:20,each=5)
 
 # fit group lasso penalized logistic regression
-m2 <- sparsegl(x=colon$x,y=colon$y,group=group2,loss="logit")
+m2 <- sparsegl(x=colon$x,y=colon$y,group=group2,algorithm="original")
 
 }
 \seealso{
