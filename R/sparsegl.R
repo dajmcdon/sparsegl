@@ -90,7 +90,7 @@
 #' group1 <- rep(1:20,each=5)
 #'
 #' # fit group lasso penalized least squares
-#' m1 <- sparsegl(x=bardet$x,y=bardet$y,group=group1,loss="ls")
+#' m1 <- sparsegl(x=bardet$x,y=bardet$y,group=group1,pen="gglasso")
 #'
 #' # load colon data set
 #' data(colon)
@@ -112,7 +112,8 @@ sparsegl <- function(
     #################################################################################
     #\tDesign matrix setup, error checking
     this.call <- match.call()
-    loss <- match.arg(loss)
+    pen = match.arg(pen)
+    algorithm = match.arg(algorithm)
 
     if (!is.matrix(x))
         stop("x has to be a matrix")
@@ -200,13 +201,13 @@ sparsegl <- function(
     # call R sub-functions
     fit <- switch(
       pen,
-      sparsegl = sparsegl(
+      sparsegl = sgl(
           bn, bs, ix, iy, nobs, nvars, x, y, pf, dfmax, pmax, nlam, flmin, ulam,
           eps, maxit, vnames, group, intr, as.double(asparse),
           standardize, algorithm),
       gglasso = gglasso(
         bn, bs, ix, iy, nobs, nvars, x, y, pf, dfmax,
-        pmax, nlam, flmin, ulam, eps, maxit, vnames, group, intr)
+        pmax, nlam, flmin, ulam, eps, maxit, vnames, group, intr, standardize)
 		)
     #################################################################################
     # output
