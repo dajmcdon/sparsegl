@@ -113,6 +113,8 @@ sparsegl <- function(
     #\tDesign matrix setup, error checking
     this.call <- match.call()
     #loss <- match.arg(loss)
+    pen <- match.arg(pen)
+    algorithm <- match.arg(algorithm)
 
     if (!is.matrix(x))
         stop("x has to be a matrix")
