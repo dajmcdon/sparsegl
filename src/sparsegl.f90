@@ -151,19 +151,19 @@ SUBROUTINE sparse_three (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,flmin
   DOUBLE PRECISION::alsparse ! Should be alpha for the sparsity weight
   ! - - - local declarations - - -
   DOUBLE PRECISION:: max_gam
-  DOUBLE PRECISION::d
+  ! DOUBLE PRECISION::d
   ! DOUBLE PRECISION::t ! No longer using this
   DOUBLE PRECISION::dif
   ! DOUBLE PRECISION::unorm ! No longer using this for ls_new
   DOUBLE PRECISION::al
   DOUBLE PRECISION::alf
-  DOUBLE PRECISION::sg
+  ! DOUBLE PRECISION::sg
   DOUBLE PRECISION, DIMENSION (:), ALLOCATABLE :: b
   DOUBLE PRECISION, DIMENSION (:), ALLOCATABLE :: oldbeta
   DOUBLE PRECISION, DIMENSION (:), ALLOCATABLE :: r ! Residue y-beta_k*x etc
-  DOUBLE PRECISION, DIMENSION (:), ALLOCATABLE :: oldb
+  ! DOUBLE PRECISION, DIMENSION (:), ALLOCATABLE :: oldb
   DOUBLE PRECISION, DIMENSION (:), ALLOCATABLE :: u ! No longer using this for update step, but still need for other parts
-  DOUBLE PRECISION, DIMENSION (:), ALLOCATABLE :: dd
+  ! DOUBLE PRECISION, DIMENSION (:), ALLOCATABLE :: dd
   INTEGER, DIMENSION (:), ALLOCATABLE :: oidx
   INTEGER:: g
   INTEGER::j
@@ -173,11 +173,11 @@ SUBROUTINE sparse_three (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,flmin
   INTEGER::startix
   INTEGER::endix
   ! - - - Aaron's declarations
-  DOUBLE PRECISION::snorm
+  ! DOUBLE PRECISION::snorm
   DOUBLE PRECISION::t_for_s(bn) ! this is for now just 1/gamma
-  DOUBLE PRECISION::tea ! this takes the place of 't' in the update step for ls
-  DOUBLE PRECISION, DIMENSION (:), ALLOCATABLE :: s ! takes the place of 'u' in update for ls
-  INTEGER::soft_g ! this is an iterating variable 'vectorizing' the soft thresholding operator
+  ! DOUBLE PRECISION::tea ! this takes the place of 't' in the update step for ls
+  ! DOUBLE PRECISION, DIMENSION (:), ALLOCATABLE :: s ! takes the place of 'u' in update for ls
+  ! INTEGER::soft_g ! this is an iterating variable 'vectorizing' the soft thresholding operator
   INTEGER::vl_iter ! for iterating over columns(?) of x*r
   INTEGER::kill_count
   ! - - - begin - - -
@@ -638,7 +638,7 @@ END SUBROUTINE gglasso
 
 ! --------------------------------------------------
 SUBROUTINE sparse_orig (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,flmin,ulam,&
-     eps,maxit,intr,nalam,b0,beta,idx,nbeta,alam,npass,jerr,alsparse)
+     eps,maxit,nalam,beta,idx,nbeta,alam,npass,jerr,alsparse)
   ! --------------------------------------------------
 
   IMPLICIT NONE
@@ -660,7 +660,6 @@ SUBROUTINE sparse_orig (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,flmin,
   INTEGER::npass
   INTEGER::jerr
   INTEGER::maxit
-  INTEGER::intr
   INTEGER:: idx(pmax)
   INTEGER::nbeta(nlam)
   DOUBLE PRECISION:: flmin
@@ -670,13 +669,12 @@ SUBROUTINE sparse_orig (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,flmin,
   DOUBLE PRECISION::pf(bn)
   DOUBLE PRECISION::ulam(nlam)
   DOUBLE PRECISION::gam(bn)
-  DOUBLE PRECISION:: b0(nlam)
   DOUBLE PRECISION::beta(nvars,nlam)
   DOUBLE PRECISION::alam(nlam)
   DOUBLE PRECISION::alsparse ! Should be alpha for the sparsity weight
   ! - - - local declarations - - -
   DOUBLE PRECISION:: max_gam
-  DOUBLE PRECISION::d
+  ! DOUBLE PRECISION::d
   ! DOUBLE PRECISION::t ! No longer using this
   DOUBLE PRECISION::dif
   ! DOUBLE PRECISION::unorm ! No longer using this for ls_new
@@ -716,8 +714,8 @@ SUBROUTINE sparse_orig (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,flmin,
   DOUBLE PRECISION:: vl(nvars) ! What is this for?
   DOUBLE PRECISION:: al0
   ! - - - allocate variables - - -
-  ALLOCATE(b(0:nvars))
-  ALLOCATE(oldbeta(0:nvars))
+  ALLOCATE(b(1:nvars))
+  ALLOCATE(oldbeta(1:nvars))
   ALLOCATE(r(1:nobs))
   ALLOCATE(oidx(1:bn))
   !    ALLOCATE(al_sparse)
@@ -794,7 +792,6 @@ SUBROUTINE sparse_orig (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,flmin,
      ENDDO
      ! --------- outer loop ---------------------------- !
      DO
-        oldbeta(0)=b(0)
         ! print *, "Here is the outer loop, and here's oldbeta:", oldbeta
         IF(ni>0) THEN
            DO j=1,ni
@@ -843,14 +840,6 @@ SUBROUTINE sparse_orig (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,flmin,
               DEALLOCATE(s,dd,oldb)
               ! DEALLOCATE(u,dd,oldb)
            ENDDO ! End middle loop
-           IF(intr /= 0) THEN
-              d=sum(r)/nobs
-              IF(d/=0.0D0) THEN
-                 b(0)=b(0)+d
-                 r=r-d
-                 dif=max(dif,d**2)
-              ENDIF
-           ENDIF
            IF (ni > pmax) EXIT
            IF (dif < eps) EXIT
            IF(npass > maxit) THEN
@@ -890,14 +879,6 @@ SUBROUTINE sparse_orig (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,flmin,
                  DEALLOCATE(s,dd,oldb)
                  ! DEALLOCATE(u,dd,oldb)
               ENDDO ! END INNER LOOP
-              IF(intr /= 0) THEN ! intr is whether to include intercept
-                 d=sum(r)/nobs
-                 IF(d/=0.0D0) THEN
-                    b(0)=b(0)+d
-                    r=r-d
-                    dif=max(dif,d**2)
-                 ENDIF
-              ENDIF
               IF(dif<eps) EXIT ! Exit nearest loop. This is till convergence.
               IF(npass > maxit) THEN
                  jerr=-l
@@ -954,7 +935,6 @@ SUBROUTINE sparse_orig (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,flmin,
         ENDDO
      ENDIF
      nbeta(l)=ni
-     b0(l)=b(0)
      alam(l)=al
      nalam=l
      IF (l < mnl) CYCLE

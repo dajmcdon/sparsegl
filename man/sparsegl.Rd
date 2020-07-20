@@ -133,7 +133,7 @@ data(bardet)
 group1 <- rep(1:20,each=5)
 
 # fit group lasso penalized least squares
-m1 <- sparsegl(x=bardet$x,y=bardet$y,group=group1,loss="ls")
+m1 <- sparsegl(x=bardet$x,y=bardet$y,group=group1,pen="gglasso")
 
 # load colon data set
 data(colon)
@@ -142,7 +142,7 @@ data(colon)
 group2 <- rep(1:20,each=5)
 
 # fit group lasso penalized logistic regression
-m2 <- sparsegl(x=colon$x,y=colon$y,group=group2,loss="logit")
+m2 <- sparsegl(x=colon$x,y=colon$y,group=group2,algorithm="original")
 
 }
 \seealso{
