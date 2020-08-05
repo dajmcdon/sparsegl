@@ -71,22 +71,22 @@ end subroutine kkt_check
 
 !---------------------------------------
 subroutine update_step(bsg, startix, endix, b, lama, t_for_sg, pfg, lam1ma, x,&
-    isMaxDifZero, nobs, r, gamg, dif,nvars)
+    isDifZero, nobs, r, gamg, maxDif,nvars)
         implicit none
         integer, intent(in) :: bsg, nobs, nvars
         integer, intent(in) :: startix, endix
         double precision :: gamg
-        double precision, intent(inout) :: dif
+        double precision, intent(inout) :: maxDif
         double precision, dimension (:), allocatable :: oldb, s, dd
         double precision, dimension (:), intent(inout) :: b, r
         double precision :: snorm, tea
         double precision, intent(in) :: lama, t_for_sg, pfg, lam1ma
         double precision, dimension (:), intent(in) :: x(nobs,nvars)
-        integer, intent(inout) :: isMaxDifZero
+        integer, intent(inout) :: isDifZero
         !------------------------------
         allocate(s(bsg))
         allocate(oldb(bsg))
-        isMaxDifZero = 0
+        isDifZero = 0
         oldb = b(startix:endix)
         s = matmul(r, x(:, startix:endix))/nobs
         s = s*t_for_sg + b(startix:endix)
@@ -101,9 +101,9 @@ subroutine update_step(bsg, startix, endix, b, lama, t_for_sg, pfg, lam1ma, x,&
         allocate(dd(bsg))
         dd = b(startix:endix) - oldb
         if(any(dd/=0.0D0)) then
-                dif = max(dif,gamg**2*dot_product(dd,dd))
+                maxDif = max(maxDif,gamg**2*dot_product(dd,dd))
                 r=r-matmul(x(:,startix:endix),dd)
-                isMaxDifZero = 1
+                isDifZero = 1
         endif
         deallocate(s, oldb, dd)
         RETURN
@@ -121,7 +121,7 @@ SUBROUTINE sparse_three (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,flmin
   DOUBLE PRECISION, PARAMETER :: big=9.9E30
   DOUBLE PRECISION, PARAMETER :: mfl = 1.0E-6
   INTEGER, PARAMETER :: mnlam = 6
-  INTEGER:: isMaxDifZero
+  INTEGER:: isDifZero
   INTEGER:: mnl
   INTEGER:: bn
   INTEGER::bs(bn)
@@ -152,7 +152,7 @@ SUBROUTINE sparse_three (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,flmin
   DOUBLE PRECISION:: max_gam
   ! DOUBLE PRECISION::d
   ! DOUBLE PRECISION::t ! No longer using this
-  DOUBLE PRECISION::dif
+  DOUBLE PRECISION::maxDif
   ! DOUBLE PRECISION::unorm ! No longer using this for ls_new
   DOUBLE PRECISION::al
   DOUBLE PRECISION::alf
@@ -274,15 +274,15 @@ SUBROUTINE sparse_three (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,flmin
         DO
            ! print *, "This is where we enter the middle loop"
            npass=npass+1
-           dif=0.0D0
-           isMaxDifZero = 0 !Boolean to check if b-oldb nonzero
+           maxDif=0.0D0
+           ! isDifZero = 0 !Boolean to check if b-oldb nonzero. Unnec, in fn.
            DO g=1,bn
               IF(is_in_E_set(g) == 0) CYCLE
               startix=ix(g)
               endix=iy(g)
               call update_step(bs(g), startix, endix, b, lama, t_for_s(g), pf(g), lam1ma, x,&
-                  isMaxDifZero, nobs, r, gam(g), dif, nvars)
-              IF(activeGroupIndex(g)==0 .and. isMaxDifZero == 1) THEN
+                  isDifZero, nobs, r, gam(g), maxDif, nvars)
+              IF(activeGroupIndex(g)==0 .and. isDifZero == 1) THEN
                     ni=ni+1
                     IF(ni>pmax) EXIT
                     activeGroupIndex(g)=ni
@@ -290,7 +290,7 @@ SUBROUTINE sparse_three (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,flmin
               ENDIF
            ENDDO ! End middle loop
            IF (ni > pmax) EXIT
-           IF (dif < eps) EXIT
+           IF (maxDif < eps) EXIT
            IF(npass > maxit) THEN !Is this needed?
               jerr=-l
               RETURN
@@ -299,16 +299,16 @@ SUBROUTINE sparse_three (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,flmin
           DO
              ! PRINT *, "Here is where the inner loop starts"
              npass=npass+1
-             dif=0.0D0
-             isMaxDifZero = 0
+             maxDif=0.0D0
+             isDifZero = 0
              DO j=1,ni
                 g=activeGroup(j)
                 startix=ix(g)
                 endix=iy(g)
                 call update_step(bs(g), startix, endix, b, lama, t_for_s(g), pf(g),&
-                   lam1ma, x, isMaxDifZero, nobs, r, gam(g), dif, nvars)
+                   lam1ma, x, isDifZero, nobs, r, gam(g), maxDif, nvars)
              ENDDO ! END INNER LOOP
-             IF(dif<eps) EXIT ! Exit nearest loop. This is till convergence.
+             IF(maxDif<eps) EXIT ! Exit nearest loop. This is till convergence.
              IF(npass > maxit) THEN
                 jerr=-l
                 RETURN
@@ -372,7 +372,7 @@ SUBROUTINE sparse_four (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,flmin,
   DOUBLE PRECISION, PARAMETER :: big=9.9E30
   DOUBLE PRECISION, PARAMETER :: mfl = 1.0E-6
   INTEGER, PARAMETER :: mnlam = 6
-  INTEGER:: isMaxDifZero
+  INTEGER:: isDifZero
   INTEGER:: mnl
   INTEGER:: bn
   INTEGER::bs(bn)
@@ -403,7 +403,7 @@ SUBROUTINE sparse_four (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,flmin,
   DOUBLE PRECISION:: max_gam
   ! DOUBLE PRECISION::d
   ! DOUBLE PRECISION::t ! No longer using this
-  DOUBLE PRECISION::dif
+  DOUBLE PRECISION::maxDif
   ! DOUBLE PRECISION::unorm ! No longer using this for ls_new
   DOUBLE PRECISION::al
   DOUBLE PRECISION::alf
@@ -525,15 +525,15 @@ SUBROUTINE sparse_four (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,flmin,
         DO
            ! print *, "This is where we enter the middle loop"
            npass=npass+1
-           dif=0.0D0
-           isMaxDifZero = 0 !Boolean to check if b-oldb nonzero
+           maxDif=0.0D0
+           isDifZero = 0 !Boolean to check if b-oldb nonzero
            DO g=1,bn
               IF(is_in_E_set(g) == 0) CYCLE
               startix=ix(g)
               endix=iy(g)
               call update_step(bs(g), startix, endix, b, lama, t_for_s(g), pf(g), lam1ma, x,&
-                  isMaxDifZero, nobs, r, gam(g), dif, nvars)
-              IF(activeGroupIndex(g)==0 .and. isMaxDifZero == 1) THEN
+                  isDifZero, nobs, r, gam(g), maxDif, nvars)
+              IF(activeGroupIndex(g)==0 .and. isDifZero == 1) THEN
                     ni=ni+1
                     IF(ni>pmax) EXIT
                     activeGroupIndex(g)=ni
@@ -541,7 +541,7 @@ SUBROUTINE sparse_four (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,flmin,
               ENDIF
            ENDDO ! End middle loop
            IF (ni > pmax) EXIT
-           IF (dif < eps) EXIT
+           IF (maxDif < eps) EXIT
            IF(npass > maxit) THEN !Is this needed?
               jerr=-l
               RETURN
@@ -550,16 +550,16 @@ SUBROUTINE sparse_four (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,flmin,
           DO
              ! PRINT *, "Here is where the inner loop starts"
              npass=npass+1
-             dif=0.0D0
-             isMaxDifZero = 0
+             maxDif=0.0D0
+             isDifZero = 0
              DO j=1,ni
                 g=activeGroup(j)
                 startix=ix(g)
                 endix=iy(g)
                 call update_step(bs(g), startix, endix, b, lama, t_for_s(g), pf(g),&
-                   lam1ma, x, isMaxDifZero, nobs, r, gam(g), dif, nvars)
+                   lam1ma, x, isDifZero, nobs, r, gam(g), maxDif, nvars)
              ENDDO ! END INNER LOOP
-             IF(dif<eps) EXIT ! Exit nearest loop. This is till convergence.
+             IF(maxDif<eps) EXIT ! Exit nearest loop. This is till convergence.
              IF(npass > maxit) THEN
                 jerr=-l
                 RETURN
@@ -653,7 +653,7 @@ SUBROUTINE gglasso (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,flmin,ulam
   DOUBLE PRECISION:: max_gam
   DOUBLE PRECISION::d
   DOUBLE PRECISION::t
-  DOUBLE PRECISION::dif
+  DOUBLE PRECISION::maxDif
   DOUBLE PRECISION::unorm
   DOUBLE PRECISION::al
   DOUBLE PRECISION::alf
@@ -750,7 +750,7 @@ SUBROUTINE gglasso (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,flmin,ulam
         ! --middle loop-------------------------------------
         DO
            npass=npass+1
-           dif=0.0D0
+           maxDif=0.0D0
            DO g=1,bn
               IF(is_in_E_set(g) == 0) CYCLE
               startix=ix(g)
@@ -770,7 +770,7 @@ SUBROUTINE gglasso (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,flmin,ulam
               ENDIF
               dd=b(startix:endix)-oldb
               IF(any(dd/=0.0D0)) THEN
-                 dif=max(dif,gam(g)**2*dot_product(dd,dd))
+                 maxDif=max(maxDif,gam(g)**2*dot_product(dd,dd))
                  r=r-matmul(x(:,startix:endix),dd)
                  IF(activeGroupIndex(g)==0) THEN
                     ni=ni+1
@@ -786,11 +786,11 @@ SUBROUTINE gglasso (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,flmin,ulam
               IF(d/=0.0D0) THEN
                  b(0)=b(0)+d
                  r=r-d
-                 dif=max(dif,d**2)
+                 maxDif=max(maxDif,d**2)
               ENDIF
            ENDIF
            IF (ni > pmax) EXIT
-           IF (dif < eps) EXIT
+           IF (maxDif < eps) EXIT
            IF(npass > maxit) THEN
               jerr=-l
               RETURN
@@ -798,7 +798,7 @@ SUBROUTINE gglasso (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,flmin,ulam
            ! --inner loop----------------------
            DO
               npass=npass+1
-              dif=0.0D0
+              maxDif=0.0D0
               DO j=1,ni
                  g=activeGroup(j)
                  startix=ix(g)
@@ -818,7 +818,7 @@ SUBROUTINE gglasso (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,flmin,ulam
                  ENDIF
                  dd=b(startix:endix)-oldb
                  IF(any(dd/=0.0D0)) THEN
-                    dif=max(dif,gam(g)**2*dot_product(dd,dd))
+                    maxDif=max(maxDif,gam(g)**2*dot_product(dd,dd))
                     r=r-matmul(x(:,startix:endix),dd)
                  ENDIF
                  DEALLOCATE(u,dd,oldb)
@@ -828,10 +828,10 @@ SUBROUTINE gglasso (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,flmin,ulam
                  IF(d/=0.0D0) THEN
                     b(0)=b(0)+d
                     r=r-d
-                    dif=max(dif,d**2)
+                    maxDif=max(maxDif,d**2)
                  ENDIF
               ENDIF
-              IF(dif<eps) EXIT
+              IF(maxDif<eps) EXIT
               IF(npass > maxit) THEN
                  jerr=-l
                  RETURN
@@ -925,7 +925,7 @@ SUBROUTINE sparse_orig (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,flmin,
   DOUBLE PRECISION:: max_gam
   ! DOUBLE PRECISION::d
   ! DOUBLE PRECISION::t ! No longer using this
-  DOUBLE PRECISION::dif
+  DOUBLE PRECISION::maxDif
   ! DOUBLE PRECISION::unorm ! No longer using this for ls_new
   DOUBLE PRECISION::al
   DOUBLE PRECISION::alf
@@ -1052,7 +1052,7 @@ SUBROUTINE sparse_orig (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,flmin,
         DO
            ! print *, "This is where we enter the middle loop"
            npass=npass+1
-           dif=0.0D0
+           maxDif=0.0D0
            DO g=1,bn
               IF(is_in_E_set(g) == 0) CYCLE
               startix=ix(g)
@@ -1076,7 +1076,7 @@ SUBROUTINE sparse_orig (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,flmin,
               ENDIF
               dd=b(startix:endix)-oldb
               IF(any(dd/=0.0D0)) THEN
-                 dif=max(dif,gam(g)**2*dot_product(dd,dd))
+                 maxDif=max(maxDif,gam(g)**2*dot_product(dd,dd))
                  r=r-matmul(x(:,startix:endix),dd)
                  IF(activeGroupIndex(g)==0) THEN ! Here is where middle loop is different; if group g was not in activeGroupIndex (active), and the
                     ! difference was nonzero, put it in active (ni)
@@ -1090,7 +1090,7 @@ SUBROUTINE sparse_orig (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,flmin,
               ! DEALLOCATE(u,dd,oldb)
            ENDDO ! End middle loop
            IF (ni > pmax) EXIT
-           IF (dif < eps) EXIT
+           IF (maxDif < eps) EXIT
            IF(npass > maxit) THEN
               jerr=-l
               RETURN
@@ -1099,7 +1099,7 @@ SUBROUTINE sparse_orig (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,flmin,
            DO
               ! PRINT *, "Here is where the inner loop starts"
               npass=npass+1
-              dif=0.0D0
+              maxDif=0.0D0
               DO j=1,ni
                  g=activeGroup(j)
                  startix=ix(g)
@@ -1122,13 +1122,13 @@ SUBROUTINE sparse_orig (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,flmin,
                  ENDIF
                  dd=b(startix:endix)-oldb
                  IF(any(dd/=0.0D0)) THEN
-                    dif=max(dif,gam(g)**2*dot_product(dd,dd))
+                    maxDif=max(maxDif,gam(g)**2*dot_product(dd,dd))
                     r=r-matmul(x(:,startix:endix),dd)
                  ENDIF
                  DEALLOCATE(s,dd,oldb)
                  ! DEALLOCATE(u,dd,oldb)
               ENDDO ! END INNER LOOP
-              IF(dif<eps) EXIT ! Exit nearest loop. This is till convergence.
+              IF(maxDif<eps) EXIT ! Exit nearest loop. This is till convergence.
               IF(npass > maxit) THEN
                  jerr=-l
                  RETURN
