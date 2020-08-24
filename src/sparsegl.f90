@@ -38,13 +38,14 @@ END SUBROUTINE softthresh
 
 
 !----------------------------------------------
-subroutine kkt_check(is_in_E_set, violation, bn, ix, iy, vl, pf, lam1ma, bs, lama)
+subroutine kkt_check(is_in_E_set, violation, bn, ix, iy, vl, pf, lam1ma, bs, lama, ga)
         implicit none
         integer :: g, startix, endix
         integer, intent(in) :: bn
         INTEGER, intent(in) ::bs(bn)
         integer, intent(in) :: ix(bn), iy(bn)
         integer, dimension(:), intent(inout) :: is_in_E_set
+        double precision, dimension (:), intent(inout) :: ga
         double precision, dimension (:), intent(in) :: vl
         double precision, dimension (:), allocatable :: s
         double precision :: snorm
@@ -60,7 +61,8 @@ subroutine kkt_check(is_in_E_set, violation, bn, ix, iy, vl, pf, lam1ma, bs, lam
                 s = vl(startix:endix)
                 call softthresh(s, lama, bs(g))
                 snorm = sqrt(dot_product(s,s))
-                if(snorm > pf(g)*lam1ma) then
+                ga(g) = snorm
+                if(ga(g) > pf(g)*lam1ma) then
                         is_in_E_set(g) = 1
                         violation = 1
                 endif
@@ -110,13 +112,14 @@ subroutine update_step(bsg, startix, endix, b, lama, t_for_sg, pfg, lam1ma, x,&
 end subroutine update_step
 
 !----------------------------------------------
-subroutine strong_kkt_check(is_in_E_set, violation, bn, ix, iy, vl, pf, lam1ma, bs, lama, tlam, alsparse)
+subroutine strong_kkt_check(is_in_E_set, violation, bn, ix, iy, vl, pf, lam1ma, bs, lama, tlam, alsparse, ga)
         implicit none
         integer :: g, startix, endix
         integer, intent(in) :: bn
         INTEGER, intent(in) ::bs(bn)
         integer, intent(in) :: ix(bn), iy(bn)
         integer, dimension(:), intent(inout) :: is_in_E_set
+        double precision, dimension (:), intent(in) :: ga
         double precision, dimension (:), intent(in) :: vl
         double precision, dimension (:), allocatable :: s
         double precision :: snorm
@@ -126,19 +129,17 @@ subroutine strong_kkt_check(is_in_E_set, violation, bn, ix, iy, vl, pf, lam1ma, 
         double precision, intent(in) :: lam1ma, lama
         !------------------------
         do g = 1, bn
-                if(is_in_E_set(g) ==1) cycle
+                if(ga(g) < pf(g)*tlam*(1-alsparse)) cycle ! strong rule, prev ga used
                 startix = ix(g)
                 endix = iy(g)
                 allocate(s(bs(g)))
                 s = vl(startix:endix)
                 call softthresh(s, lama, bs(g))
                 snorm = sqrt(dot_product(s,s))
-                if(snorm > pf(g)*tlam*(1-alsparse)) then
-                        if(snorm > pf(g)*lam1ma) then
-                                is_in_E_set(g) = 1
-                                violation = 1
-                        endif
-                endif
+                    if(snorm > pf(g)*lam1ma) then
+                            is_in_E_set(g) = 1
+                            violation = 1
+                    endif
                 deallocate(s)
         enddo
         RETURN
@@ -358,7 +359,7 @@ SUBROUTINE sparse_three (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,flmin
         IF(any((max_gam*(b-oldbeta)/(1+abs(b)))**2 >= eps)) violation = 1
         IF (violation == 1) CYCLE
         vl = matmul(r, x)/nobs
-        call kkt_check(is_in_E_set, violation, bn, ix, iy, vl, pf, lam1ma, bs, lama) ! kkt subroutine
+        call kkt_check(is_in_E_set, violation, bn, ix, iy, vl, pf, lam1ma, bs, lama, ga) ! kkt subroutine
         IF(violation == 1) CYCLE ! This goes all the way back to outer loop
         EXIT
      ENDDO ! Ends outer loop
@@ -590,7 +591,7 @@ SUBROUTINE sparse_three_alt (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,f
         IF(any((max_gam*(b-oldbeta)/(1+abs(b)))**2 >= eps)) violation = 1 !has beta moved globally
         IF (violation == 1) CYCLE
         vl = matmul(r, x)/nobs
-        call kkt_check(is_in_E_set, violation, bn, ix, iy, vl, pf, lam1ma, bs, lama) ! kkt subroutine
+        call kkt_check(is_in_E_set, violation, bn, ix, iy, vl, pf, lam1ma, bs, lama, ga) ! kkt subroutine
         IF(violation == 1) CYCLE ! This goes all the way back to outer loop
         EXIT
      ENDDO ! Ends outer loop
@@ -779,7 +780,7 @@ SUBROUTINE sparse_four (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,flmin,
      lama = al*alsparse
      lam1ma = al*(1-alsparse)
      ! This is the start of the algorithm, for a given lambda...
-     call strong_rule (is_in_E_set, ga, pf, tlam, alsparse) !implementing strong rule, updates is_in_E_set
+     !call strong_rule (is_in_E_set, ga, pf, tlam, alsparse) !For 4step we don't do this
      ! --------- outer loop ---------------------------- !
      DO
         IF(ni>0) THEN
@@ -822,9 +823,9 @@ SUBROUTINE sparse_four (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,flmin,
         IF(any((max_gam*(b-oldbeta)/(1+abs(b)))**2 >= eps)) violation = 1 !has beta moved globally
         IF (violation == 1) CYCLE
         vl = matmul(r, x)/nobs
-        call strong_kkt_check(is_in_E_set, violation, bn, ix, iy, vl, pf, lam1ma, bs, lama, tlam, alsparse) ! Step 3
+        call strong_kkt_check(is_in_E_set, violation, bn, ix, iy, vl, pf, lam1ma, bs, lama, tlam, alsparse, ga) ! Step 3
         if(violation == 1) cycle
-        call kkt_check(is_in_E_set, violation, bn, ix, iy, vl, pf, lam1ma, bs, lama) ! Step 4
+        call kkt_check(is_in_E_set, violation, bn, ix, iy, vl, pf, lam1ma, bs, lama, ga) ! Step 4
         IF(violation == 1) CYCLE 
         EXIT
      ENDDO ! Ends outer loop

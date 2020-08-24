@@ -104,7 +104,7 @@
 #' @export
 sparsegl <- function(
   x, y, group = NULL, pen = c("sparsegl", "gglasso"),
-  algorithm = c("original", "threestep", "threestepalt", "fivestep"),
+  algorithm = c("original", "threestep", "threestepalt", "fourstep"),
   nlambda = 100, lambda.factor = ifelse(nobs < nvars, 0.01, 1e-04),
   lambda = NULL, pf = sqrt(bs), weight = NULL, dfmax = as.integer(max(group)) + 1,
   pmax = min(dfmax * 1.2, as.integer(max(group))), eps = 1e-08, maxit = 3e+08,

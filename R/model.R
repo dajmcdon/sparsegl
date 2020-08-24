@@ -35,13 +35,13 @@ sgl <- function(
             as.double(y), pf, dfmax, pmax, nlam, flmin, ulam, eps, maxit, nalam = integer(1),
             beta = double(nvars * nlam), idx = integer(pmax),
             nbeta = integer(nlam), alam = double(nlam), npass = integer(1), jerr = integer(1),
-            alsparse = asparse)#,
-        # fivestep = .Fortran(
-        #     "sparse_five", bn, bs, ix, iy, gamma, nobs, nvars, as.double(x),
-        #     as.double(y), pf, dfmax, pmax, nlam, flmin, ulam, eps, maxit, nalam = integer(1),
-        #     beta = double(nvars * nlam), idx = integer(pmax),
-        #     nbeta = integer(nlam), alam = double(nlam), npass = integer(1), jerr = integer(1),
-        #     alsparse = asparse)
+            alsparse = asparse),
+        fourstep = .Fortran(
+            "sparse_four", bn, bs, ix, iy, gamma, nobs, nvars, as.double(x),
+            as.double(y), pf, dfmax, pmax, nlam, flmin, ulam, eps, maxit, nalam = integer(1),
+            beta = double(nvars * nlam), idx = integer(pmax),
+            nbeta = integer(nlam), alam = double(nlam), npass = integer(1), jerr = integer(1),
+            alsparse = asparse)
         )
     # output
     outlist <- getoutput(fit, maxit, pmax, nvars, vnames)
