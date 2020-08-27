@@ -26,9 +26,11 @@ mysparse4 <- sparsegl(x = X, y = y, group = groups, pen = "sparsegl", algorithm 
 beta1 <- mysparse1$beta
 beta2 <- mysparse2$beta
 beta3 <- mysparse3$beta
+beta4 <- mysparse4$beta
 max(beta2-beta1)
 max(beta3-beta1)
 max(beta3-beta2)
+max(beta4-beta1)
 # Now we need to try the lassos
 
 # out <- gglasso(X, y, group = groups, loss = 'ls')
