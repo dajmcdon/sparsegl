@@ -840,8 +840,8 @@ SUBROUTINE sparse_four (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,flmin,
         ! PRINT *, "Here is where the final check starts"
         violation = 0
         max_gam = maxval(gam)
-        IF(any((max_gam*(b-oldbeta)/(1+abs(b)))**2 >= eps)) violation = 1 !has beta moved globally
-        IF (violation == 1) CYCLE
+        !IF(any((max_gam*(b-oldbeta)/(1+abs(b)))**2 >= eps)) violation = 1 !has beta moved globally
+        !IF (violation == 1) CYCLE
         call strong_kkt_check(is_in_E_set, violation, bn, ix, iy, pf, lam1ma, bs, lama, tlam, alsparse,&
                 ga, is_in_S_set, x,r, nobs,nvars) ! Step 3
         if(violation == 1) cycle
@@ -852,12 +852,15 @@ SUBROUTINE sparse_four (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,flmin,
                         endix = iy(g)
                         allocate(s(bs(g)))
                         s = matmul(r,x(:,startix:endix))/nobs
+                        vl(startix:endix) = s
                         call softthresh(x, lama, bs(g))
                         snorm = sqrt(dot_product(s,s))
                         ga(g) = snorm
                         deallocate(s)
                 endif
         enddo
+        IF(any((max_gam*(b-oldbeta)/(1+abs(b)))**2 >= eps)) violation = 1 !has beta moved globally
+        IF (violation == 1) CYCLE
         call kkt_check(is_in_E_set, violation, bn, ix, iy, vl, pf, lam1ma, bs, lama, ga) ! Step 4
         IF(violation == 1) CYCLE 
         EXIT
