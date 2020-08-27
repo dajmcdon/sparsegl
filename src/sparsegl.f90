@@ -112,15 +112,19 @@ subroutine update_step(bsg, startix, endix, b, lama, t_for_sg, pfg, lam1ma, x,&
 end subroutine update_step
 
 !----------------------------------------------
-subroutine strong_kkt_check(is_in_E_set, violation, bn, ix, iy, vl, pf, lam1ma, bs, lama, tlam, alsparse, ga)
+subroutine strong_kkt_check(is_in_E_set,violation,bn,ix,iy,pf,lam1ma,bs,lama,tlam,alsparse,ga,is_in_S_set,x,r,nobs,nvars)
         implicit none
+        integer, intent(in)::nobs
+        integer, intent(in)::nvars
+        double precision,intent(in):: x(nobs, nvars)
+        double precision, intent(in):: r(nobs)
         integer :: g, startix, endix
         integer, intent(in) :: bn
         INTEGER, intent(in) ::bs(bn)
         integer, intent(in) :: ix(bn), iy(bn)
         integer, dimension(:), intent(inout) :: is_in_E_set
-        double precision, dimension (:), intent(in) :: ga
-        double precision, dimension (:), intent(in) :: vl
+        integer, dimension(:), intent(in) :: is_in_S_set
+        double precision, dimension (:), intent(inout) :: ga
         double precision, dimension (:), allocatable :: s
         double precision :: snorm
         double precision, intent(in) :: tlam, alsparse
@@ -128,19 +132,33 @@ subroutine strong_kkt_check(is_in_E_set, violation, bn, ix, iy, vl, pf, lam1ma, 
         integer, intent(inout) :: violation
         double precision, intent(in) :: lam1ma, lama
         !------------------------
+        violation = 0
         do g = 1, bn
-                if(ga(g) < pf(g)*tlam*(1-alsparse)) cycle ! strong rule, prev ga used
-                startix = ix(g)
-                endix = iy(g)
-                allocate(s(bs(g)))
-                s = vl(startix:endix)
-                call softthresh(s, lama, bs(g))
-                snorm = sqrt(dot_product(s,s))
-                    if(snorm > pf(g)*lam1ma) then
-                            is_in_E_set(g) = 1
-                            violation = 1
-                    endif
-                deallocate(s)
+                if(is_in_E_set(g) == 1) then
+                        startix = ix(g)
+                        endix = iy(g)
+                        allocate(s(bs(g)))
+                        s = matmul(r,x(:,startix:endix))/nobs 
+                        call softthresh(s, lama, bs(g))
+                        snorm = sqrt(dot_product(s,s))
+                        ga(g) = snorm
+                        deallocate(s)
+                        cycle
+                endif
+                if(is_in_S_set(g) == 1) then
+                        startix = ix(g)
+                        endix = iy(g)
+                        allocate(s(bs(g)))
+                        s = matmul(r,x(:,startix:endix))/nobs 
+                        call softthresh(s, lama, bs(g))
+                        snorm = sqrt(dot_product(s,s))
+                        ga(g) = snorm
+                        if(ga(g) > pf(g)*lam1ma) then
+                                    is_in_E_set(g) = 1
+                                    violation = 1
+                        endif
+                        deallocate(s)
+                endif
         enddo
         RETURN
 end subroutine strong_kkt_check
@@ -676,6 +694,7 @@ SUBROUTINE sparse_four (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,flmin,
   DOUBLE PRECISION::al
   DOUBLE PRECISION::alf
   ! DOUBLE PRECISION::sg
+  double precision, dimension (:), allocatable :: s !need for sparse_four
   DOUBLE PRECISION, DIMENSION (:), ALLOCATABLE :: b
   DOUBLE PRECISION, DIMENSION (:), ALLOCATABLE :: oldbeta
   DOUBLE PRECISION, DIMENSION (:), ALLOCATABLE :: r ! Residue y-beta_k*x etc
@@ -691,7 +710,7 @@ SUBROUTINE sparse_four (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,flmin,
   INTEGER::startix
   INTEGER::endix
   ! - - - Aaron's declarations
-  ! DOUBLE PRECISION::snorm
+  DOUBLE PRECISION::snorm
   DOUBLE PRECISION::t_for_s(bn) ! this is for now just 1/gamma
   ! DOUBLE PRECISION::tea ! this takes the place of 't' in the update step for ls
   ! DOUBLE PRECISION, DIMENSION (:), ALLOCATABLE :: s ! takes the place of 'u' in update for ls
@@ -705,6 +724,7 @@ SUBROUTINE sparse_four (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,flmin,
   DOUBLE PRECISION:: lam1ma
   INTEGER:: violation
   INTEGER:: is_in_E_set(bn)
+  INTEGER:: is_in_S_set(bn) !this is for 4-step alg
   DOUBLE PRECISION:: ga(bn) ! What is this for??
   DOUBLE PRECISION:: vl(nvars) ! What is this for?
   DOUBLE PRECISION:: al0
@@ -780,7 +800,7 @@ SUBROUTINE sparse_four (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,flmin,
      lama = al*alsparse
      lam1ma = al*(1-alsparse)
      ! This is the start of the algorithm, for a given lambda...
-     !call strong_rule (is_in_E_set, ga, pf, tlam, alsparse) !For 4step we don't do this
+     call strong_rule (is_in_S_set, ga, pf, tlam, alsparse) !uses s_set instead of e_set...
      ! --------- outer loop ---------------------------- !
      DO
         IF(ni>0) THEN
@@ -822,9 +842,22 @@ SUBROUTINE sparse_four (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,flmin,
         max_gam = maxval(gam)
         IF(any((max_gam*(b-oldbeta)/(1+abs(b)))**2 >= eps)) violation = 1 !has beta moved globally
         IF (violation == 1) CYCLE
-        vl = matmul(r, x)/nobs
-        call strong_kkt_check(is_in_E_set, violation, bn, ix, iy, vl, pf, lam1ma, bs, lama, tlam, alsparse, ga) ! Step 3
+        call strong_kkt_check(is_in_E_set, violation, bn, ix, iy, pf, lam1ma, bs, lama, tlam, alsparse,&
+                ga, is_in_S_set, x,r, nobs,nvars) ! Step 3
         if(violation == 1) cycle
+        ! Need to compute vl/ga for the ones that aren't already updated, before kkt_check
+        do g = 1, bn
+                if(is_in_S_set(g)==0 .and. is_in_E_set(g) == 0) then
+                        startix = ix(g)
+                        endix = iy(g)
+                        allocate(s(bs(g)))
+                        s = matmul(r,x(:,startix:endix))/nobs
+                        call softthresh(x, lama, bs(g))
+                        snorm = sqrt(dot_product(s,s))
+                        ga(g) = snorm
+                        deallocate(s)
+                endif
+        enddo
         call kkt_check(is_in_E_set, violation, bn, ix, iy, vl, pf, lam1ma, bs, lama, ga) ! Step 4
         IF(violation == 1) CYCLE 
         EXIT

@@ -22,6 +22,7 @@ groups <- rep(1:(p/5), each=5)
 mysparse1 <- sparsegl(x = X, y = y, group = groups, pen = "sparsegl", algorithm = "threestep")
 mysparse2 <- sparsegl(x = X, y = y, group = groups, pen = "sparsegl", algorithm = "threestepalt")
 mysparse3 <- sparsegl(x = X, y = y, group = groups, pen = "sparsegl", algorithm = "original")
+mysparse4 <- sparsegl(x = X, y = y, group = groups, pen = "sparsegl", algorithm = "fourstep")
 beta1 <- mysparse1$beta
 beta2 <- mysparse2$beta
 beta3 <- mysparse3$beta
