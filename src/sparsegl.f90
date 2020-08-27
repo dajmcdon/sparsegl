@@ -112,12 +112,13 @@ subroutine update_step(bsg, startix, endix, b, lama, t_for_sg, pfg, lam1ma, x,&
 end subroutine update_step
 
 !----------------------------------------------
-subroutine strong_kkt_check(is_in_E_set,violation,bn,ix,iy,pf,lam1ma,bs,lama,tlam,alsparse,ga,is_in_S_set,x,r,nobs,nvars)
+subroutine strong_kkt_check(is_in_E_set,violation,bn,ix,iy,pf,lam1ma,bs,lama,tlam,alsparse,ga,is_in_S_set,x,r,nobs,nvars,vl)
         implicit none
         integer, intent(in)::nobs
         integer, intent(in)::nvars
         double precision,intent(in):: x(nobs, nvars)
         double precision, intent(in):: r(nobs)
+        double precision, dimension (:), intent(in) :: vl
         integer :: g, startix, endix
         integer, intent(in) :: bn
         INTEGER, intent(in) ::bs(bn)
@@ -139,6 +140,7 @@ subroutine strong_kkt_check(is_in_E_set,violation,bn,ix,iy,pf,lam1ma,bs,lama,tla
                         endix = iy(g)
                         allocate(s(bs(g)))
                         s = matmul(r,x(:,startix:endix))/nobs 
+                        vl(startix:endix) = s
                         call softthresh(s, lama, bs(g))
                         snorm = sqrt(dot_product(s,s))
                         ga(g) = snorm
@@ -150,6 +152,7 @@ subroutine strong_kkt_check(is_in_E_set,violation,bn,ix,iy,pf,lam1ma,bs,lama,tla
                         endix = iy(g)
                         allocate(s(bs(g)))
                         s = matmul(r,x(:,startix:endix))/nobs 
+                        vl(startix:endix) = s
                         call softthresh(s, lama, bs(g))
                         snorm = sqrt(dot_product(s,s))
                         ga(g) = snorm
@@ -843,7 +846,7 @@ SUBROUTINE sparse_four (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,flmin,
         !IF(any((max_gam*(b-oldbeta)/(1+abs(b)))**2 >= eps)) violation = 1 !has beta moved globally
         !IF (violation == 1) CYCLE
         call strong_kkt_check(is_in_E_set, violation, bn, ix, iy, pf, lam1ma, bs, lama, tlam, alsparse,&
-                ga, is_in_S_set, x,r, nobs,nvars) ! Step 3
+                ga, is_in_S_set, x,r, nobs,nvars, vl) ! Step 3
         if(violation == 1) cycle
         ! Need to compute vl/ga for the ones that aren't already updated, before kkt_check
         do g = 1, bn
