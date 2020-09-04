@@ -118,7 +118,7 @@ subroutine strong_kkt_check(is_in_E_set,violation,bn,ix,iy,pf,lam1ma,bs,lama,tla
         integer, intent(in)::nvars
         double precision,intent(in):: x(nobs, nvars)
         double precision, intent(in):: r(nobs)
-        double precision, dimension (:), intent(in) :: vl
+        double precision, dimension (:), intent(inout) :: vl
         integer :: g, startix, endix
         integer, intent(in) :: bn
         INTEGER, intent(in) ::bs(bn)
@@ -480,6 +480,7 @@ SUBROUTINE sparse_three_alt (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,f
   INTEGER::startix
   INTEGER::endix
   ! - - - Aaron's declarations
+  integer :: i ! Just to check how many final checks etc.
   ! DOUBLE PRECISION::snorm
   DOUBLE PRECISION::t_for_s(bn) ! this is for now just 1/gamma
   ! DOUBLE PRECISION::tea ! this takes the place of 't' in the update step for ls
@@ -510,6 +511,7 @@ SUBROUTINE sparse_three_alt (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,f
   ENDIF
   pf=max(0.0D0,pf)
   ! - - - some initial setup - - -
+  i = 0
   is_in_E_set = 0
   al = 0.0D0
   mnl = Min (mnlam, nlam)
@@ -573,6 +575,7 @@ SUBROUTINE sparse_three_alt (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,f
      ! --------- outer loop ---------------------------- !
      DO
         IF(ni>0) THEN
+           print *, "ni > 0"
            DO j=1,ni
               g=activeGroup(j)
               oldbeta(ix(g):iy(g))=b(ix(g):iy(g))
@@ -606,7 +609,9 @@ SUBROUTINE sparse_three_alt (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,f
         ENDDO ! End middle loop
         IF(ni>pmax) EXIT
         !--- final check ------------------------ ! This checks which violate KKT condition
-        ! PRINT *, "Here is where the final check starts"
+        PRINT *, "Here is where the final check starts"
+        print *, i
+        i = i + 1
         violation = 0
         max_gam = maxval(gam)
         IF(any((max_gam*(b-oldbeta)/(1+abs(b)))**2 >= eps)) violation = 1 !has beta moved globally
@@ -713,6 +718,7 @@ SUBROUTINE sparse_four (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,flmin,
   INTEGER::startix
   INTEGER::endix
   ! - - - Aaron's declarations
+  integer:: i !Just to check how many final checks etc.
   DOUBLE PRECISION::snorm
   DOUBLE PRECISION::t_for_s(bn) ! this is for now just 1/gamma
   ! DOUBLE PRECISION::tea ! this takes the place of 't' in the update step for ls
@@ -744,6 +750,7 @@ SUBROUTINE sparse_four (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,flmin,
   ENDIF
   pf=max(0.0D0,pf)
   ! - - - some initial setup - - -
+  i = 0
   is_in_E_set = 0
   al = 0.0D0
   mnl = Min (mnlam, nlam)
@@ -807,6 +814,7 @@ SUBROUTINE sparse_four (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,flmin,
      ! --------- outer loop ---------------------------- !
      DO
         IF(ni>0) THEN
+           print *, "ni > 0"
            DO j=1,ni
               g=activeGroup(j)
               oldbeta(ix(g):iy(g))=b(ix(g):iy(g))
@@ -840,14 +848,19 @@ SUBROUTINE sparse_four (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,flmin,
         ENDDO ! End middle loop
         IF(ni>pmax) EXIT
         !--- final check ------------------------ ! This checks which violate KKT condition
-        ! PRINT *, "Here is where the final check starts"
+        PRINT *, "Here is where the final check starts"
+        print *, i ! Just to check how many final checks...
+        i = i+1
         violation = 0
         max_gam = maxval(gam)
         !IF(any((max_gam*(b-oldbeta)/(1+abs(b)))**2 >= eps)) violation = 1 !has beta moved globally
         !IF (violation == 1) CYCLE
         call strong_kkt_check(is_in_E_set, violation, bn, ix, iy, pf, lam1ma, bs, lama, tlam, alsparse,&
                 ga, is_in_S_set, x,r, nobs,nvars, vl) ! Step 3
-        if(violation == 1) cycle
+        if(violation == 1) then
+                print *, "violation from strong kkt check"
+                cycle
+        endif
         ! Need to compute vl/ga for the ones that aren't already updated, before kkt_check
         do g = 1, bn
                 if(is_in_S_set(g)==0 .and. is_in_E_set(g) == 0) then
@@ -863,9 +876,15 @@ SUBROUTINE sparse_four (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,flmin,
                 endif
         enddo
         IF(any((max_gam*(b-oldbeta)/(1+abs(b)))**2 >= eps)) violation = 1 !has beta moved globally
-        IF (violation == 1) CYCLE
+        IF (violation == 1) then
+                print *, "violation from beta moving globally"
+                CYCLE
+        endif
         call kkt_check(is_in_E_set, violation, bn, ix, iy, vl, pf, lam1ma, bs, lama, ga) ! Step 4
-        IF(violation == 1) CYCLE 
+        IF(violation == 1) then
+                print *, "violation from final kkt check"
+                CYCLE 
+        endif
         EXIT
      ENDDO ! Ends outer loop
      !---------- final update variable and save results------------

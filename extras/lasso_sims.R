@@ -18,6 +18,9 @@ y <- X%*%beta_star + eps
 
 groups <- rep(1:(p/5), each=5)
 
+# Testing/debugging fourstep algorithm...
+sparsegl(x = X, y = y, group = groups, pen = "sparsegl", algorithm = "fourstep")
+
 # Compare threestep and threestep alt
 mysparse1 <- sparsegl(x = X, y = y, group = groups, pen = "sparsegl", algorithm = "threestep")
 mysparse2 <- sparsegl(x = X, y = y, group = groups, pen = "sparsegl", algorithm = "threestepalt")
@@ -30,7 +33,10 @@ beta4 <- mysparse4$beta
 max(beta2-beta1)
 max(beta3-beta1)
 max(beta3-beta2)
-max(beta4-beta1)
+max(beta4-beta2)
+
+
+
 # Now we need to try the lassos
 
 # out <- gglasso(X, y, group = groups, loss = 'ls')
