@@ -574,6 +574,7 @@ SUBROUTINE sparse_three_alt (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,f
      call strong_rule (is_in_E_set, ga, pf, tlam, alsparse) !implementing strong rule, updates is_in_E_set
      ! --------- outer loop ---------------------------- !
      DO
+        print *, is_in_E_set
         IF(ni>0) THEN
            print *, "ni > 0"
            DO j=1,ni
@@ -652,6 +653,7 @@ SUBROUTINE sparse_three_alt (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,f
      ENDDO
      IF(me>dfmax) EXIT
   ENDDO ! end lambda loop
+  print *, is_in_E_set
   DEALLOCATE(b,oldbeta,r,activeGroupIndex)
   RETURN
 END SUBROUTINE sparse_three_alt
@@ -813,6 +815,7 @@ SUBROUTINE sparse_four (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,flmin,
      call strong_rule (is_in_S_set, ga, pf, tlam, alsparse) !uses s_set instead of e_set...
      ! --------- outer loop ---------------------------- !
      DO
+        print *, is_in_E_set
         IF(ni>0) THEN
            print *, "ni > 0"
            DO j=1,ni
@@ -826,8 +829,8 @@ SUBROUTINE sparse_four (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,flmin,
            npass=npass+1
            maxDif=0.0D0
            isDifZero = 0 !Boolean to check if b-oldb nonzero. Unnec, in fn.
-           DO j=1,ni
-              g=activeGroup(j)
+           DO g=1,bn
+              if(is_in_E_set(g)==0) cycle
               startix=ix(g)
               endix=iy(g)
               call update_step(bs(g), startix, endix, b, lama, t_for_s(g), pf(g), lam1ma, x,&
@@ -852,9 +855,9 @@ SUBROUTINE sparse_four (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,flmin,
         print *, i ! Just to check how many final checks...
         i = i+1
         violation = 0
-        max_gam = maxval(gam)
-        !IF(any((max_gam*(b-oldbeta)/(1+abs(b)))**2 >= eps)) violation = 1 !has beta moved globally
-        !IF (violation == 1) CYCLE
+        max_gam = maxval(gam) !should be outside of loop...
+        IF(any((max_gam*(b-oldbeta)/(1+abs(b)))**2 >= eps)) violation = 1 !has beta moved globally
+        IF (violation == 1) CYCLE
         call strong_kkt_check(is_in_E_set, violation, bn, ix, iy, pf, lam1ma, bs, lama, tlam, alsparse,&
                 ga, is_in_S_set, x,r, nobs,nvars, vl) ! Step 3
         if(violation == 1) then
@@ -875,11 +878,11 @@ SUBROUTINE sparse_four (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,flmin,
                         deallocate(s)
                 endif
         enddo
-        IF(any((max_gam*(b-oldbeta)/(1+abs(b)))**2 >= eps)) violation = 1 !has beta moved globally
-        IF (violation == 1) then
-                print *, "violation from beta moving globally"
-                CYCLE
-        endif
+        !IF(any((max_gam*(b-oldbeta)/(1+abs(b)))**2 >= eps)) violation = 1 !has beta moved globally
+        !IF (violation == 1) then
+        !        print *, "violation from beta moving globally"
+        !        CYCLE
+        !endif
         call kkt_check(is_in_E_set, violation, bn, ix, iy, vl, pf, lam1ma, bs, lama, ga) ! Step 4
         IF(violation == 1) then
                 print *, "violation from final kkt check"
@@ -918,6 +921,7 @@ SUBROUTINE sparse_four (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,flmin,
      ENDDO
      IF(me>dfmax) EXIT
   ENDDO ! end lambda loop
+  print *, is_in_E_set
   DEALLOCATE(b,oldbeta,r,activeGroupIndex)
   RETURN
 END SUBROUTINE sparse_four
