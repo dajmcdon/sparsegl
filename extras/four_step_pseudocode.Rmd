@@ -1,0 +1,25 @@
+---
+title: "Pseudo code"
+author: "DJM"
+date: "8/4/2020"
+output: pdf_document
+---
+
+## 4 step algorithm
+
+Input: $\lambda_0 > \lambda_1 > \cdots > \lambda_K$.
+
+Initialize: $\mathcal{A}(\lambda_0) = \varnothing$. $k=1$
+
+While $k \leq K$:
+
+1. Set $\mathcal{E} = \mathcal{A}(\lambda_k) \leftarrow \mathcal{A}(\lambda_{k-1})$.
+2. Solve the problem on groups in $\mathcal{E}$.
+3. Strong rule checks
+    a. Compute $\mathcal{S}(\lambda_k)$. Automatically include all groups in $\mathcal{E}$.
+    b. Check KKT conditions on all groups in $\mathcal{S}(\lambda_k) \setminus \mathcal{E}$.
+    c. If violators, add them to $\mathcal{E}$ and go to 2. Otherwise proceed.
+4. Final KKT check
+    a. Check KKT conditions on all groups.
+    b. If violators, add them to $\mathcal{A}(\lambda_k)$ and to $\mathcal{E}$. Go to 2.
+    c. If no violators, increment $k \leftarrow k+1$ and return to 1.

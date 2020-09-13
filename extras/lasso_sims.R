@@ -35,6 +35,8 @@ max(beta3-beta1)
 max(beta3-beta2)
 max(beta4-beta2)
 
+sp1 <- sparsegl(x = X, y = y, group = groups, pen = "sparsegl", algorithm = "threestep", lambda=c(.5,.4))
+sp4 <- sparsegl(x = X, y = y, group = groups, pen = "sparsegl", algorithm = "fourstep", lambda=c(.5,.4))
 
 
 # Now we need to try the lassos
@@ -75,13 +77,13 @@ matplot(b2, t(out_sp$beta), ty='l', lty=1, col = grp)
 #sp_group_norm <- function(x, alp=.05) group_norm(x)*(1-alp) + alp*sum(abs(x))
 
 
-# 
+#
 # par(mfrow=c(1,2))
 # b1 = apply(out$beta, 2, group_norm)
 # b2 = apply(out_sp$beta, 2, sp_group_norm)
 # matplot(b1, t(out$beta), ty='l', lty=1, col = grp)
 # matplot(b2, t(out_sp$beta), ty='l', lty=1, col = grp)
-# 
+#
 
 ###########################################################################
 ###############################################################################
@@ -110,7 +112,7 @@ for (i in 0:(20-1)) {
 
 
 
-# As per Dan's suggestion, we make a new beta with fewer nonzero coefficients 
+# As per Dan's suggestion, we make a new beta with fewer nonzero coefficients
 # than observations. This is for n = 10,000 and p = 1000...
 ########################################################################
 beta_star2 <- rep(0,p)
