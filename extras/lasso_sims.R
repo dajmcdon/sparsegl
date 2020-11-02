@@ -1,6 +1,8 @@
 # For testing the lasso, group lasso, sparse group lasso
 # In other words, the gglasso DA project
-
+library(sparsegl)
+library(gglasso)
+library(SGL)
 # Set the n and p values
 set.seed(1010)
 n <- 100
@@ -19,7 +21,7 @@ y <- X%*%beta_star + eps
 groups <- rep(1:(p/5), each=5)
 
 # Testing/debugging fourstep algorithm...
-sparsegl(x = X, y = y, group = groups, pen = "sparsegl", algorithm = "fourstep")
+#sparsegl(x = X, y = y, group = groups, pen = "sparsegl", algorithm = "fourstep")
 
 # Compare threestep and threestep alt
 mysparse1 <- sparsegl(x = X, y = y, group = groups, pen = "sparsegl", algorithm = "threestep")
@@ -34,6 +36,64 @@ max(beta2-beta1)
 max(beta3-beta1)
 max(beta3-beta2)
 max(beta4-beta2)
+max(beta4 - beta2)
+
+
+
+
+
+
+
+## I need to compare gglasso, SGL, and sparsegl, using the data generated above...
+library(gglasso)
+my_gglasso <- gglasso(x = X,y = y, group = groups,loss = "ls")
+
+# Compare my_gglasso with mysparse1
+
+beta_gglasso <- my_gglasso$beta
+max(beta1 - beta_gglasso)
+
+
+## compare with SGL...
+library(SGL)
+data <- list(x=X, y=y)
+my_sgl <- SGL(data=data, index = groups,nlam = 100)
+
+beta_sgl <- my_sgl$beta
+
+max(beta1 - beta_sgl)
+
+
+
+
+# Use microbenchmark
+library(microbenchmark)
+
+three_vs_threealt <-microbenchmark(sparsegl(x = X, y = y, group = groups, pen = "sparsegl", algorithm = "threestep"), sparsegl(x = X, y = y, group = groups, pen = "sparsegl", algorithm = "threestepalt"))
+
+# those two are pretty close...
+
+four_vs_threealt <- microbenchmark(sparsegl(x = X, y = y, group = groups, pen = "sparsegl", algorithm = "fourstep"), sparsegl(x = X, y = y, group = groups, pen = "sparsegl", algorithm = "threestepalt"))
+# mean for fourstep is 33.75 vs 36.70 for threestepalt
+
+four_vs_gglasso <- microbenchmark(sparsegl(x = X, y = y, group = groups, pen = "sparsegl", algorithm = "fourstep"), gglasso(x = X,y = y, group = groups,loss = "ls"))
+
+microbenchmark(sparsegl(x = X, y = y, group = groups, pen = "sparsegl", algorithm = "fourstep"), SGL(data=data, index = groups,nlam = 100), times = 20)
+
+
+# Code for generating plots
+group_norm <- function(x,grp) sum(by(x, grp, function(x) sqrt(sum(x^2))))
+sparse_grp_norm <- function(x, grp, alp=.05) group_norm(x)*(1-alp) + alp*sum(abs(x))
+
+b1 = apply(mysparse1$beta, 2, sparse_grp_norm, grp=groups)
+b2 = apply(out_sp$beta, 2, sparse_group_norm, grp=grp)
+
+par(mfcol=c(2,2))
+matplot(b1/max(b1), t(out$beta[beta_star2 ==0,]), ty='l', lty=1, col = grp)
+matplot(b2/max(b2), t(out_sp$beta[beta_star2==0,]), ty='l', lty=1, col = grp)
+plot(b1/max(b1), apply(out$beta == 0 & beta_star2 == 0, 2, sum)/sum(beta_star2==0), ty='l')
+lines(b2/max(b2), apply(out_sp$beta == 0 & beta_star2 == 0, 2, sum)/sum(beta_star2==0), col=2)
+par(mfcol=c(1,1))
 
 
 
@@ -47,14 +107,14 @@ out_sp <- gglasso(X,y, group = groups, loss="ls_sparse")
 out_sparsegl <- gglasso(X,y, group = groups, loss="sparsegl")
 
 ## Dan's updated (better) versions
-grp_norm <- function(x, grp, pf = sqrt(table(grp))){
-  out = by(x,grp,function(x) sqrt(sum(x^2)))
-  sum(out*pf)
-}
-sparse_grp_norm <- function(x, grp, alpha = .05, pf = sqrt(table(grp))){
-  out1 = grp_norm(x,grp,pf)
-  (1-alpha)*out1 + alpha*sum(abs(x))
-}
+  grp_norm <- function(x, grp, pf = sqrt(table(grp))){
+    out = by(x,grp,function(x) sqrt(sum(x^2)))
+    sum(out*pf)
+  }
+  sparse_grp_norm <- function(x, grp, alpha = .05, pf = sqrt(table(grp))){
+    out1 = grp_norm(x,grp,pf)
+    (1-alpha)*out1 + alpha*sum(abs(x))
+  }
 
 # Dan's code
 par(mfrow=c(2,2))
@@ -67,7 +127,7 @@ matplot(b1, t(out$beta), ty='l', lty=1, col = grp)
 matplot(b2, t(out_sp$beta), ty='l', lty=1, col = grp)
 
 
-
+b2 = apply(my_gglasso$beta, 2, grp_norm, grp=groups)
 
 ###########################################################################
 # Dan's code, redux (using group_norm instead of sd)
@@ -128,15 +188,15 @@ y <- X%*%beta_star2 + eps
 
 # Now we need to try the lassos
 out <- gglasso(X,y,group=grp, loss='ls')
-
+out <- sparsegl(X,y,group=grp, pen="sparsegl",algorithm = "threestep")
 # Next we try ls_sparse
 out_sp <- gglasso(X,y,group=grp, loss = 'ls_sparse')
 
 #The below code uses grp_norm etc, not group_norm. See above for grp_norm
-group_norm <- function(x) sum(by(x, grp, function(x) sqrt(sum(x^2))))
-sp_group_norm <- function(x, alp=.05) group_norm(x)*(1-alp) + alp*sum(abs(x))
+group_norm <- function(x,grp) sum(by(x, grp, function(x) sqrt(sum(x^2))))
+sp_group_norm <- function(x, grp, alp=.05) group_norm(x)*(1-alp) + alp*sum(abs(x))
 
-b1 = apply(out$beta, 2, group_norm, grp=grp)
+b1 = apply(mysparse1$beta, 2, sparse_grp_norm, grp=groups)
 b2 = apply(out_sp$beta, 2, sparse_group_norm, grp=grp)
 
 par(mfcol=c(2,2))
@@ -145,3 +205,9 @@ matplot(b2/max(b2), t(out_sp$beta[beta_star2==0,]), ty='l', lty=1, col = grp)
 plot(b1/max(b1), apply(out$beta == 0 & beta_star2 == 0, 2, sum)/sum(beta_star2==0), ty='l')
 lines(b2/max(b2), apply(out_sp$beta == 0 & beta_star2 == 0, 2, sum)/sum(beta_star2==0), col=2)
 par(mfcol=c(1,1))
+
+my_gglasso <- gglasso(x = X,y = y, group = groups,loss = "ls")
+b2 = apply(my_gglasso$beta, 2, sparse_grp_norm, grp=groups)
+
+matplot(b1/max(b1), t(mysparse1$beta), ty='l', lty=1, col = groups)
+matplot(b2/max(b2), t(my_gglasso$beta), ty='l', lty=1, col = groups)
