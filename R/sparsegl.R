@@ -75,9 +75,9 @@
 #' all lambda values} \item{jerr}{error flag, for warnings and errors, 0 if no
 #' error.} \item{group}{a vector of consecutive integers describing the
 #' grouping of the coefficients.}
-#' @author Yi Yang and Hui Zou\cr Maintainer: Yi Yang <yi.yang6@@mcgill.ca>
+#' @author Aaron Cohen and Dan Mcdonald\cr Maintainer: Aaron Cohen <cohenaa@indiana.edu>
 #' @seealso \code{plot.gglasso}
-#' @keywords models regression
+#' @keywords models regression sparse
 #' @examples
 #'
 #' # load sparsegl library
