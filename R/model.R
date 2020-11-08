@@ -1,3 +1,4 @@
+#' @importFrom Rspectra svds
 sgl <- function(
     bn, bs, ix, iy, nobs, nvars, x, y, pf, dfmax, pmax, nlam, flmin, ulam, eps,
     maxit, vnames, group, intr, asparse, standardize, algorithm) {

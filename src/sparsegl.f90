@@ -1,163 +1,218 @@
-module mySubby
+MODULE mySubby
 
-contains
-!
-!----------------------------------------------------
-subroutine strong_rule (is_in_E_set, ga, pf, tlam, alsparse)
-        !-------------------------------------------
-        implicit none
-        integer :: g
-        integer, dimension (:), intent(inout) :: is_in_E_set
-        double precision, dimension (:), intent(in) :: ga
-        double precision, dimension (:), intent(in) :: pf
-        double precision, intent(in) :: tlam, alsparse
-        !------------------------------------------
-        do g = 1, size(is_in_E_set)
-                if(is_in_E_set(g) == 1) cycle
-                if(ga(g) > pf(g)*tlam*(1-alsparse)) is_in_E_set(g) = 1
-        enddo
-        RETURN
-end subroutine strong_rule
+CONTAINS
+  SUBROUTINE strong_rule (is_in_E_set, ga, pf, tlam, alsparse)
+    IMPLICIT NONE
+    INTEGER :: g
+    INTEGER, DIMENSION (:), INTENT(inout) :: is_in_E_set
+    DOUBLE PRECISION, DIMENSION (:), INTENT(in) :: ga
+    DOUBLE PRECISION, DIMENSION (:), INTENT(in) :: pf
+    DOUBLE PRECISION, INTENT(in) :: tlam, alsparse
+    !------------------------------------------
+    DO g = 1, SIZE(is_in_E_set)
+       IF(is_in_E_set(g) == 1) CYCLE
+       IF(ga(g) > pf(g)*tlam*(1-alsparse)) is_in_E_set(g) = 1
+    ENDDO
+    RETURN
+  END SUBROUTINE strong_rule
 
 
-!--------------------------------------------
-SUBROUTINE softthresh(vec, thresh, n)
-        !------------------------------------
-  implicit none
-  INTEGER :: n, it
-  double precision :: sg
-  DOUBLE PRECISION :: vec(n)
-  double precision :: thresh
-  DO it=1,n
-    sg = vec(it)
-    vec(it) = sign(max(abs(sg) - thresh, 0.0D0), sg)
-  ENDDO
-  RETURN
-END SUBROUTINE softthresh
+  SUBROUTINE softthresh(vec, thresh, n)
+    IMPLICIT NONE
+    INTEGER :: n, it
+    DOUBLE PRECISION :: sg
+    DOUBLE PRECISION :: vec(n)
+    DOUBLE PRECISION :: thresh
+    DO it=1,n
+       sg = vec(it)
+       vec(it) = SIGN(MAX(ABS(sg) - thresh, 0.0D0), sg)
+    ENDDO
+    RETURN
+  END SUBROUTINE softthresh
 
 
 
-!----------------------------------------------
-subroutine kkt_check(is_in_E_set, violation, bn, ix, iy, vl, pf, lam1ma, bs, lama, ga)
-        implicit none
-        integer :: g, startix, endix
-        integer, intent(in) :: bn
-        INTEGER, intent(in) ::bs(bn)
-        integer, intent(in) :: ix(bn), iy(bn)
-        integer, dimension(:), intent(inout) :: is_in_E_set
-        double precision, dimension (:), intent(inout) :: ga
-        double precision, dimension (:), intent(in) :: vl
-        double precision, dimension (:), allocatable :: s
-        double precision :: snorm
-        double precision, intent(in) :: pf(bn)
-        integer, intent(inout) :: violation
-        double precision, intent(in) :: lam1ma, lama
-        !------------------------
-        do g = 1, bn
-                if(is_in_E_set(g) ==1) cycle
-                startix = ix(g)
-                endix = iy(g)
-                allocate(s(bs(g)))
-                s = vl(startix:endix)
-                call softthresh(s, lama, bs(g))
-                snorm = sqrt(dot_product(s,s))
-                ga(g) = snorm
-                if(ga(g) > pf(g)*lam1ma) then
-                        is_in_E_set(g) = 1
-                        violation = 1
-                endif
-                deallocate(s)
-        enddo
-        RETURN
-end subroutine kkt_check
+  SUBROUTINE kkt_check(is_in_E_set, violation, bn, ix, iy, vl, pf, lam1ma, bs, lama, ga)
+    IMPLICIT NONE
+    INTEGER :: g, startix, endix
+    INTEGER, INTENT(in) :: bn
+    INTEGER, INTENT(in) ::bs(bn)
+    INTEGER, INTENT(in) :: ix(bn), iy(bn)
+    INTEGER, DIMENSION(:), INTENT(inout) :: is_in_E_set
+    DOUBLE PRECISION, DIMENSION (:), INTENT(inout) :: ga
+    DOUBLE PRECISION, DIMENSION (:), INTENT(in) :: vl
+    DOUBLE PRECISION, DIMENSION (:), ALLOCATABLE :: s
+    DOUBLE PRECISION :: snorm
+    DOUBLE PRECISION, INTENT(in) :: pf(bn)
+    INTEGER, INTENT(inout) :: violation
+    DOUBLE PRECISION, INTENT(in) :: lam1ma, lama
 
-!---------------------------------------
-subroutine update_step(bsg, startix, endix, b, lama, t_for_sg, pfg, lam1ma, x,&
-    isDifZero, nobs, r, gamg, maxDif,nvars)
-        implicit none
-        integer, intent(in) :: bsg, nobs, nvars
-        integer, intent(in) :: startix, endix
-        double precision :: gamg
-        double precision, intent(inout) :: maxDif
-        double precision, dimension (:), allocatable :: oldb, s, dd
-        double precision, dimension (:), intent(inout) :: b, r
-        double precision :: snorm, tea
-        double precision, intent(in) :: lama, t_for_sg, pfg, lam1ma
-        double precision, dimension (:), intent(in) :: x(nobs,nvars)
-        integer, intent(inout) :: isDifZero
-        !------------------------------
-        allocate(s(bsg))
-        allocate(oldb(bsg))
-        isDifZero = 0
-        oldb = b(startix:endix)
-        s = matmul(r, x(:, startix:endix))/nobs
-        s = s*t_for_sg + b(startix:endix)
-        call softthresh(s, lama*t_for_sg, bsg)
-        snorm = sqrt(dot_product(s,s))
-        tea = snorm - t_for_sg*lam1ma*pfg
-        if(tea > 0.0D0) then
-                b(startix:endix) = s*tea/snorm
-        else
-                b(startix:endix) = 0.0D0
-        endif
-        allocate(dd(bsg))
-        dd = b(startix:endix) - oldb
-        if(any(dd/=0.0D0)) then
-                maxDif = max(maxDif,gamg**2*dot_product(dd,dd))
-                r=r-matmul(x(:,startix:endix),dd)
-                isDifZero = 1
-        endif
-        deallocate(s, oldb, dd)
-        RETURN
-end subroutine update_step
+    DO g = 1, bn
+       IF(is_in_E_set(g) ==1) CYCLE
+       startix = ix(g)
+       endix = iy(g)
+       ALLOCATE(s(bs(g)))
+       s = vl(startix:endix)
+       CALL softthresh(s, lama, bs(g))
+       snorm = SQRT(dot_PRODUCT(s,s))
+       ga(g) = snorm
+       IF(ga(g) > pf(g)*lam1ma) THEN
+          is_in_E_set(g) = 1
+          violation = 1
+       ENDIF
+       DEALLOCATE(s)
+    ENDDO
+    RETURN
+  END SUBROUTINE kkt_check
 
-!----------------------------------------------
-subroutine strong_kkt_check(is_in_E_set,violation,bn,ix,iy,pf,lam1ma,bs,&
-      lama,ga,is_in_S_set,x,r,nobs,nvars,vl)
-    implicit none
-    integer, intent(in)::nobs
-    integer, intent(in)::nvars
-    double precision,intent(in):: x(nobs, nvars)
-    double precision, intent(in):: r(nobs)
-    double precision, dimension (:), intent(inout) :: vl
-    integer :: g, startix, endix
-    integer, intent(in) :: bn
-    INTEGER, intent(in) ::bs(bn)
-    integer, intent(in) :: ix(bn), iy(bn)
-    integer, dimension(:), intent(inout) :: is_in_E_set
-    integer, dimension(:), intent(in) :: is_in_S_set
-        double precision, dimension (:), intent(inout) :: ga
-        double precision, dimension (:), allocatable :: s
-        double precision :: snorm
-        double precision, intent(in) :: pf(bn)
-        integer, intent(inout) :: violation
-        double precision, intent(in) :: lam1ma, lama
-        !------------------------
-        violation = 0
-        do g = 1, bn
-          if(is_in_S_set(g) == 1) then
-            startix = ix(g)
-            endix = iy(g)
-            allocate(s(bs(g)))
-            s = matmul(r,x(:,startix:endix))/nobs
-            vl(startix:endix) = s
-            call softthresh(s, lama, bs(g))
-            snorm = sqrt(dot_product(s,s))
-            ga(g) = snorm
-            deallocate(s)
-            if(is_in_E_set(g) == 1) CYCLE
-            if(ga(g) > pf(g)*lam1ma) then
-              is_in_E_set(g) = 1
-              violation = 1
-            endif
-          endif
-        enddo
-        RETURN
-end subroutine strong_kkt_check
 
-end module mySubby
+  SUBROUTINE update_step(bsg, startix, endix, b, lama, t_for_sg, pfg, lam1ma, x,&
+       isDifZero, nobs, r, gamg, maxDif,nvars)
+    IMPLICIT NONE
+    INTEGER, INTENT(in) :: bsg, nobs, nvars
+    INTEGER, INTENT(in) :: startix, endix
+    DOUBLE PRECISION :: gamg
+    DOUBLE PRECISION, INTENT(inout) :: maxDif
+    DOUBLE PRECISION, DIMENSION (:), ALLOCATABLE :: oldb, s, dd
+    DOUBLE PRECISION, DIMENSION (:), INTENT(inout) :: b, r
+    DOUBLE PRECISION :: snorm, tea
+    DOUBLE PRECISION, INTENT(in) :: lama, t_for_sg, pfg, lam1ma
+    DOUBLE PRECISION, DIMENSION (:), INTENT(in) :: x(nobs,nvars)
+    INTEGER, INTENT(inout) :: isDifZero
 
-! --------------------------------------------------
+    ALLOCATE(s(bsg))
+    ALLOCATE(oldb(bsg))
+    isDifZero = 0
+    oldb = b(startix:endix)
+    s = MATMUL(r, x(:, startix:endix))/nobs
+    s = s*t_for_sg + b(startix:endix)
+    CALL softthresh(s, lama*t_for_sg, bsg)
+    snorm = SQRT(dot_PRODUCT(s,s))
+    tea = snorm - t_for_sg*lam1ma*pfg
+    IF(tea > 0.0D0) THEN
+       b(startix:endix) = s*tea/snorm
+    ELSE
+       b(startix:endix) = 0.0D0
+    ENDIF
+    ALLOCATE(dd(bsg))
+    dd = b(startix:endix) - oldb
+    IF(ANY(dd/=0.0D0)) THEN
+       maxDif = MAX(maxDif,gamg**2*dot_PRODUCT(dd,dd))
+       r=r-MATMUL(x(:,startix:endix),dd)
+       isDifZero = 1
+    ENDIF
+    DEALLOCATE(s, oldb, dd)
+    RETURN
+  END SUBROUTINE update_step
+
+
+  SUBROUTINE strong_kkt_check(is_in_E_set,violation,bn,ix,iy,pf,lam1ma,bs,&
+       lama,ga,is_in_S_set,x,r,nobs,nvars,vl)
+    IMPLICIT NONE
+    INTEGER, INTENT(in)::nobs
+    INTEGER, INTENT(in)::nvars
+    DOUBLE PRECISION,INTENT(in):: x(nobs, nvars)
+    DOUBLE PRECISION, INTENT(in):: r(nobs)
+    DOUBLE PRECISION, DIMENSION (:), INTENT(inout) :: vl
+    INTEGER :: g, startix, endix
+    INTEGER, INTENT(in) :: bn
+    INTEGER, INTENT(in) ::bs(bn)
+    INTEGER, INTENT(in) :: ix(bn), iy(bn)
+    INTEGER, DIMENSION(:), INTENT(inout) :: is_in_E_set
+    INTEGER, DIMENSION(:), INTENT(in) :: is_in_S_set
+    DOUBLE PRECISION, DIMENSION (:), INTENT(inout) :: ga
+    DOUBLE PRECISION, DIMENSION (:), ALLOCATABLE :: s
+    DOUBLE PRECISION :: snorm
+    DOUBLE PRECISION, INTENT(in) :: pf(bn)
+    INTEGER, INTENT(inout) :: violation
+    DOUBLE PRECISION, INTENT(in) :: lam1ma, lama
+
+    violation = 0
+    DO g = 1, bn
+       IF(is_in_S_set(g) == 1) THEN
+          startix = ix(g)
+          endix = iy(g)
+          ALLOCATE(s(bs(g)))
+          s = MATMUL(r,x(:,startix:endix))/nobs
+          vl(startix:endix) = s
+          CALL softthresh(s, lama, bs(g))
+          snorm = SQRT(dot_PRODUCT(s,s))
+          ga(g) = snorm
+          DEALLOCATE(s)
+          IF(is_in_E_set(g) == 1) CYCLE
+          IF(ga(g) > pf(g)*lam1ma) THEN
+             is_in_E_set(g) = 1
+             violation = 1
+          ENDIF
+       ENDIF
+    ENDDO
+    RETURN
+  END SUBROUTINE strong_kkt_check
+
+END MODULE mySubby
+
+
+!--------------------------------------------------------------
+
+
+MODULE spmatmul
+
+CONTAINS
+
+  ! ----
+  ! These functions perform Ax=y and Atx = y for A in CSC form
+  ! A is given by (a, ridx, cptr)
+  ! a is the value, size nnz
+  ! ridx is the row index of each nz
+  ! cptr is of length ncol(A)+1 where cptr[j] is the first entry of a in column j, last entry == nnz
+
+  ! to slice into columns j:k, you need a[cptr[j]:(cptrr[k]-1)] and 
+  ! ridx[cptr[j]:(cptr[k]-1)] and cptr[j:k])
+  SUBROUTINE spax (a, ridx, cptr, n, p, nnz, x, y)
+    IMPLICIT NONE
+    INTEGER n, p, nnz
+    DOUBLE PRECISION, INTENT(in) :: a(nnz)
+    DOUBLE PRECISION, INTENT(in) :: ridx(nnz)
+    DOUBLE PRECISION, INTENT(in) :: cptr(p+1)
+    DOUBLE PRECISION, INTENT(in) :: x(p)
+    DOUBLE PRECISION, INTENT(inout) :: y(n)
+
+    INTEGER i, j
+    y = 0;
+    
+    DO i = 1, p
+       DO j = cptr(i), (cptr(i+1)-1)
+          y(ridx(j)) += x(i)*a(j)
+       ENDDO
+    ENDDO
+    RETURN
+  END SUBROUTINE spax
+  
+  SUBROUTINE spatx (a, ridx, cptr, n, p, nnz, x, y)
+    IMPLICIT NONE
+    INTEGER n, p, nnz
+    DOUBLE PRECISION, INTENT(in) :: a(nnz)
+    DOUBLE PRECISION, INTENT(in) :: ridx(nnz)
+    DOUBLE PRECISION, INTENT(in) :: cptr(p+1)
+    DOUBLE PRECISION, INTENT(in) :: x(n)
+    DOUBLE PRECISION, INTENT(inout) :: y(p)
+    
+    INTEGER i, j
+    y = 0;
+    
+    DO i = 1, p
+       DO j = cptr(i), (cptr(i+1)-1)
+          y(i) += x(ridx(j))*a(j)
+       ENDDO
+    ENDDO
+    RETURN
+  END SUBROUTINE spatx
+
+END MODULE spmatmul
+
+!-------------------------------------------------------------
+
+
 SUBROUTINE sparse_three (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,flmin,ulam,&
      eps,maxit,nalam,beta,activeGroup,nbeta,alam,npass,jerr,alsparse)
   ! --------------------------------------------------
@@ -242,15 +297,15 @@ SUBROUTINE sparse_three (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,flmin
   ALLOCATE(activeGroupIndex(1:bn))
   !    ALLOCATE(al_sparse)
   ! - - - checking pf - ! pf is the relative penalties for each group
-  IF(maxval(pf) <= 0.0D0) THEN
+  IF(MAXVAL(pf) <= 0.0D0) THEN
      jerr=10000
      RETURN
   ENDIF
-  pf=max(0.0D0,pf)
+  pf=MAX(0.0D0,pf)
   ! - - - some initial setup - - -
   is_in_E_set = 0
   al = 0.0D0
-  mnl = Min (mnlam, nlam)
+  mnl = MIN (mnlam, nlam)
   r = y
   b = 0.0D0
   oldbeta = 0.0D0
@@ -263,20 +318,20 @@ SUBROUTINE sparse_three (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,flmin
   t_for_s = 1/gam ! might need to use a loop if no vectorization.........
   ! --------- lambda loop ----------------------------
   IF(flmin < 1.0D0) THEN ! THIS is the default...
-     flmin = Max (mfl, flmin) ! just sets a threshold above zero
+     flmin = MAX (mfl, flmin) ! just sets a threshold above zero
      alf=flmin**(1.0D0/(nlam-1.0D0))
   ENDIF
   ! PRINT *, alf
-  vl = matmul(r, x)/nobs ! Note r gets updated in middle and inner loop
+  vl = MATMUL(r, x)/nobs ! Note r gets updated in middle and inner loop
   al0 = 0.0D0
   DO g = 1,bn ! For each group...
      ALLOCATE(u(bs(g)))
      u = vl(ix(g):iy(g))
-     ga(g) = sqrt(dot_product(u,u))
+     ga(g) = SQRT(dot_PRODUCT(u,u))
      DEALLOCATE(u)
   ENDDO
   DO vl_iter = 1,nvars
-     al0 = max(al0, abs(vl(vl_iter))) ! Infty norm of X'y, big overkill for lam_max
+     al0 = MAX(al0, ABS(vl(vl_iter))) ! Infty norm of X'y, big overkill for lam_max
   ENDDO
   ! PRINT *, alsparse
   al = al0 ! / (1-alsparse) ! this value ensures all betas are 0 , divide by 1-a?
@@ -294,20 +349,20 @@ SUBROUTINE sparse_three (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,flmin
         ! print *, "This is at the flmin step of the while loop"
      ELSE
         IF(l > 1) THEN ! have some active groups
-          al=al*alf
-          tlam = max((2.0*al-al0), 0.0) ! Here is the strong rule...
-          l = l+1
-          ! print *, "This is the l>1 step of while loop"
+           al=al*alf
+           tlam = MAX((2.0*al-al0), 0.0) ! Here is the strong rule...
+           l = l+1
+           ! print *, "This is the l>1 step of while loop"
         ELSE IF(l==0) THEN
-          al=al*.99
-          tlam=al
-          ! Trying to find an active group
+           al=al*.99
+           tlam=al
+           ! Trying to find an active group
         ENDIF
      ENDIF
      lama = al*alsparse
      lam1ma = al*(1-alsparse)
      ! This is the start of the algorithm, for a given lambda...
-     call strong_rule (is_in_E_set, ga, pf, tlam, alsparse) !implementing strong rule, updates is_in_E_set
+     CALL strong_rule (is_in_E_set, ga, pf, tlam, alsparse) !implementing strong rule, updates is_in_E_set
      ! --------- outer loop ---------------------------- !
      DO
         IF(ni>0) THEN
@@ -326,13 +381,13 @@ SUBROUTINE sparse_three (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,flmin
               IF(is_in_E_set(g) == 0) CYCLE
               startix=ix(g)
               endix=iy(g)
-              call update_step(bs(g), startix, endix, b, lama, t_for_s(g), pf(g), lam1ma, x,&
-                  isDifZero, nobs, r, gam(g), maxDif, nvars)
-              IF(activeGroupIndex(g)==0 .and. isDifZero == 1) THEN
-                    ni=ni+1
-                    IF(ni>pmax) EXIT
-                    activeGroupIndex(g)=ni
-                    activeGroup(ni)=g
+              CALL update_step(bs(g), startix, endix, b, lama, t_for_s(g), pf(g), lam1ma, x,&
+                   isDifZero, nobs, r, gam(g), maxDif, nvars)
+              IF(activeGroupIndex(g)==0 .AND. isDifZero == 1) THEN
+                 ni=ni+1
+                 IF(ni>pmax) EXIT
+                 activeGroupIndex(g)=ni
+                 activeGroup(ni)=g
               ENDIF
            ENDDO ! End middle loop
            IF (ni > pmax) EXIT
@@ -342,44 +397,44 @@ SUBROUTINE sparse_three (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,flmin
               RETURN
            ENDIF
            ! --inner loop----------------------
-          DO
-             ! PRINT *, "Here is where the inner loop starts"
-             npass=npass+1
-             maxDif=0.0D0
-             isDifZero = 0
-             DO j=1,ni
-                g=activeGroup(j)
-                startix=ix(g)
-                endix=iy(g)
-                call update_step(bs(g), startix, endix, b, lama, t_for_s(g), pf(g),&
-                   lam1ma, x, isDifZero, nobs, r, gam(g), maxDif, nvars)
-             ENDDO ! END INNER LOOP
-             IF(maxDif<eps) EXIT ! Exit nearest loop. This is till convergence.
-             IF(npass > maxit) THEN
-                jerr=-l
-                RETURN
-             ENDIF
-          ENDDO ! End Inner loop
+           DO
+              ! PRINT *, "Here is where the inner loop starts"
+              npass=npass+1
+              maxDif=0.0D0
+              isDifZero = 0
+              DO j=1,ni
+                 g=activeGroup(j)
+                 startix=ix(g)
+                 endix=iy(g)
+                 CALL update_step(bs(g), startix, endix, b, lama, t_for_s(g), pf(g),&
+                      lam1ma, x, isDifZero, nobs, r, gam(g), maxDif, nvars)
+              ENDDO ! END INNER LOOP
+              IF(maxDif<eps) EXIT ! Exit nearest loop. This is till convergence.
+              IF(npass > maxit) THEN
+                 jerr=-l
+                 RETURN
+              ENDIF
+           ENDDO ! End Inner loop
         ENDDO ! End middle loop
         IF(ni>pmax) EXIT
         !--- final check ------------------------ ! This checks which violate KKT condition
         ! PRINT *, "Here is where the final check starts"
         violation = 0
-        max_gam = maxval(gam)
-        IF(any((max_gam*(b-oldbeta)/(1+abs(b)))**2 >= eps)) violation = 1
+        max_gam = MAXVAL(gam)
+        IF(ANY((max_gam*(b-oldbeta)/(1+ABS(b)))**2 >= eps)) violation = 1
         IF (violation == 1) CYCLE
-        vl = matmul(r, x)/nobs
-        call kkt_check(is_in_E_set, violation, bn, ix, iy, vl, pf, lam1ma, bs, lama, ga) ! kkt subroutine
+        vl = MATMUL(r, x)/nobs
+        CALL kkt_check(is_in_E_set, violation, bn, ix, iy, vl, pf, lam1ma, bs, lama, ga) ! kkt subroutine
         IF(violation == 1) CYCLE ! This goes all the way back to outer loop
         EXIT
      ENDDO ! Ends outer loop
      !---------- final update variable and save results------------
      IF(l==0) THEN
-        IF(maxval(is_in_E_set)==0) THEN
+        IF(MAXVAL(is_in_E_set)==0) THEN
            CYCLE ! don't save anything, we're still decrementing lambda
         ELSE
            l=2
-           alam(1) = al / max(alf,.99) ! store previous, larger value
+           alam(1) = al / MAX(alf,.99) ! store previous, larger value
         ENDIF
      ENDIF
      ! PRINT *, "Here is where the final update starts"
@@ -400,7 +455,7 @@ SUBROUTINE sparse_three (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,flmin
      me=0
      DO j=1,ni
         g=activeGroup(j)
-        IF(any(beta(ix(g):iy(g),l)/=0.0D0)) me=me+1
+        IF(ANY(beta(ix(g):iy(g),l)/=0.0D0)) me=me+1
      ENDDO
      IF(me>dfmax) EXIT
   ENDDO ! end lambda loop
@@ -494,16 +549,16 @@ SUBROUTINE sparse_three_alt (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,f
   ALLOCATE(activeGroupIndex(1:bn))
   !    ALLOCATE(al_sparse)
   ! - - - checking pf - ! pf is the relative penalties for each group
-  IF(maxval(pf) <= 0.0D0) THEN
+  IF(MAXVAL(pf) <= 0.0D0) THEN
      jerr=10000
      RETURN
   ENDIF
-  pf=max(0.0D0,pf)
+  pf=MAX(0.0D0,pf)
   ! - - - some initial setup - - -
   ! i = 0
   is_in_E_set = 0
   al = 0.0D0
-  mnl = Min (mnlam, nlam)
+  mnl = MIN (mnlam, nlam)
   r = y
   b = 0.0D0
   oldbeta = 0.0D0
@@ -516,20 +571,20 @@ SUBROUTINE sparse_three_alt (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,f
   t_for_s = 1/gam ! might need to use a loop if no vectorization.........
   ! --------- lambda loop ----------------------------
   IF(flmin < 1.0D0) THEN ! THIS is the default...
-     flmin = Max (mfl, flmin) ! just sets a threshold above zero
+     flmin = MAX (mfl, flmin) ! just sets a threshold above zero
      alf=flmin**(1.0D0/(nlam-1.0D0))
   ENDIF
   ! PRINT *, alf
-  vl = matmul(r, x)/nobs ! Note r gets updated in middle and inner loop
+  vl = MATMUL(r, x)/nobs ! Note r gets updated in middle and inner loop
   al0 = 0.0D0
   DO g = 1,bn ! For each group...
      ALLOCATE(u(bs(g)))
      u = vl(ix(g):iy(g))
-     ga(g) = sqrt(dot_product(u,u))
+     ga(g) = SQRT(dot_PRODUCT(u,u))
      DEALLOCATE(u)
   ENDDO
   DO vl_iter = 1,nvars
-     al0 = max(al0, abs(vl(vl_iter))) ! Infty norm of X'y, big overkill for lam_max
+     al0 = MAX(al0, ABS(vl(vl_iter))) ! Infty norm of X'y, big overkill for lam_max
   ENDDO
   ! PRINT *, alsparse
   al = al0 ! / (1-alsparse) ! this value ensures all betas are 0 , divide by 1-a?
@@ -547,20 +602,20 @@ SUBROUTINE sparse_three_alt (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,f
         ! print *, "This is at the flmin step of the while loop"
      ELSE
         IF(l > 1) THEN ! have some active groups
-          al=al*alf
-          tlam = max((2.0*al-al0), 0.0) ! Here is the strong rule...
-          l = l+1
-          ! print *, "This is the l>1 step of while loop"
+           al=al*alf
+           tlam = MAX((2.0*al-al0), 0.0) ! Here is the strong rule...
+           l = l+1
+           ! print *, "This is the l>1 step of while loop"
         ELSE IF(l==0) THEN
-          al=al*.99
-          tlam=al
-          ! Trying to find an active group
+           al=al*.99
+           tlam=al
+           ! Trying to find an active group
         ENDIF
      ENDIF
      lama = al*alsparse
      lam1ma = al*(1-alsparse)
      ! This is the start of the algorithm, for a given lambda...
-     call strong_rule (is_in_E_set, ga, pf, tlam, alsparse) !implementing strong rule, updates is_in_E_set
+     CALL strong_rule (is_in_E_set, ga, pf, tlam, alsparse) !implementing strong rule, updates is_in_E_set
      ! --------- outer loop ---------------------------- !
      DO
         ! print *, is_in_E_set
@@ -581,15 +636,15 @@ SUBROUTINE sparse_three_alt (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,f
               IF(is_in_E_set(g) == 0) CYCLE
               startix=ix(g)
               endix=iy(g)
-              call update_step(bs(g), startix, endix, b, lama, t_for_s(g), pf(g), lam1ma, x,&
-                  isDifZero, nobs, r, gam(g), maxDif, nvars)
-              IF(activeGroupIndex(g)==0 .and. isDifZero == 1) THEN
-                    ni=ni+1
-                    IF(ni>pmax) EXIT
-                    activeGroupIndex(g)=ni
-                    activeGroup(ni)=g
+              CALL update_step(bs(g), startix, endix, b, lama, t_for_s(g), pf(g), lam1ma, x,&
+                   isDifZero, nobs, r, gam(g), maxDif, nvars)
+              IF(activeGroupIndex(g)==0 .AND. isDifZero == 1) THEN
+                 ni=ni+1
+                 IF(ni>pmax) EXIT
+                 activeGroupIndex(g)=ni
+                 activeGroup(ni)=g
               ENDIF
-           ENDDO 
+           ENDDO
            IF (ni > pmax) EXIT
            IF (maxDif < eps) EXIT
            IF(npass > maxit) THEN 
@@ -603,21 +658,21 @@ SUBROUTINE sparse_three_alt (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,f
         ! print *, i
         ! i = i + 1
         violation = 0
-        max_gam = maxval(gam)
-        IF(any((max_gam*(b-oldbeta)/(1+abs(b)))**2 >= eps)) violation = 1 !has beta moved globally
+        max_gam = MAXVAL(gam)
+        IF(ANY((max_gam*(b-oldbeta)/(1+ABS(b)))**2 >= eps)) violation = 1 !has beta moved globally
         IF (violation == 1) CYCLE
-        vl = matmul(r, x)/nobs
-        call kkt_check(is_in_E_set, violation, bn, ix, iy, vl, pf, lam1ma, bs, lama, ga) ! kkt subroutine
+        vl = MATMUL(r, x)/nobs
+        CALL kkt_check(is_in_E_set, violation, bn, ix, iy, vl, pf, lam1ma, bs, lama, ga) ! kkt subroutine
         IF(violation == 1) CYCLE ! This goes all the way back to outer loop
         EXIT
      ENDDO ! Ends outer loop
      !---------- final update variable and save results------------
      IF(l==0) THEN
-        IF(maxval(is_in_E_set)==0) THEN
+        IF(MAXVAL(is_in_E_set)==0) THEN
            CYCLE ! don't save anything, we're still decrementing lambda
         ELSE
            l=2
-           alam(1) = al / max(alf,.99) ! store previous, larger value
+           alam(1) = al / MAX(alf,.99) ! store previous, larger value
         ENDIF
      ENDIF
      ! PRINT *, "Here is where the final update starts"
@@ -638,7 +693,7 @@ SUBROUTINE sparse_three_alt (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,f
      me=0
      DO j=1,ni
         g=activeGroup(j)
-        IF(any(beta(ix(g):iy(g),l)/=0.0D0)) me=me+1
+        IF(ANY(beta(ix(g):iy(g),l)/=0.0D0)) me=me+1
      ENDDO
      IF(me>dfmax) EXIT
   ENDDO ! end lambda loop
@@ -693,7 +748,7 @@ SUBROUTINE sparse_four (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,flmin,
   DOUBLE PRECISION::al
   DOUBLE PRECISION::alf
   ! DOUBLE PRECISION::sg
-  double precision, dimension (:), allocatable :: s !need for sparse_four
+  DOUBLE PRECISION, DIMENSION (:), ALLOCATABLE :: s !need for sparse_four
   DOUBLE PRECISION, DIMENSION (:), ALLOCATABLE :: b
   DOUBLE PRECISION, DIMENSION (:), ALLOCATABLE :: oldbeta
   DOUBLE PRECISION, DIMENSION (:), ALLOCATABLE :: r ! Residue y-beta_k*x etc
@@ -735,16 +790,16 @@ SUBROUTINE sparse_four (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,flmin,
   ALLOCATE(activeGroupIndex(1:bn))
   !    ALLOCATE(al_sparse)
   ! - - - checking pf - ! pf is the relative penalties for each group
-  IF(maxval(pf) <= 0.0D0) THEN
+  IF(MAXVAL(pf) <= 0.0D0) THEN
      jerr=10000
      RETURN
   ENDIF
-  pf=max(0.0D0,pf)
+  pf=MAX(0.0D0,pf)
   ! - - - some initial setup - - -
   ! i = 0
   is_in_E_set = 0
   al = 0.0D0
-  mnl = Min (mnlam, nlam)
+  mnl = MIN (mnlam, nlam)
   r = y
   b = 0.0D0
   oldbeta = 0.0D0
@@ -754,24 +809,24 @@ SUBROUTINE sparse_four (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,flmin,
   npass = 0 ! This is a count, correct?
   ni = npass ! This controls so-called "outer loop"
   alf = 0.0D0
-  max_gam = maxval(gam) !should be outside of loop...
+  max_gam = MAXVAL(gam) !should be outside of loop...
   t_for_s = 1/gam ! might need to use a loop if no vectorization.........
   ! --------- lambda loop ----------------------------
   IF(flmin < 1.0D0) THEN ! THIS is the default...
-     flmin = Max (mfl, flmin) ! just sets a threshold above zero
+     flmin = MAX (mfl, flmin) ! just sets a threshold above zero
      alf=flmin**(1.0D0/(nlam-1.0D0))
   ENDIF
   ! PRINT *, alf
-  vl = matmul(r, x)/nobs ! Note r gets updated in middle and inner loop
+  vl = MATMUL(r, x)/nobs ! Note r gets updated in middle and inner loop
   al0 = 0.0D0
   DO g = 1,bn ! For each group...
      ALLOCATE(u(bs(g)))
      u = vl(ix(g):iy(g))
-     ga(g) = sqrt(dot_product(u,u))
+     ga(g) = SQRT(dot_PRODUCT(u,u))
      DEALLOCATE(u)
   ENDDO
   DO vl_iter = 1,nvars
-     al0 = max(al0, abs(vl(vl_iter))) ! Infty norm of X'y, big overkill for lam_max
+     al0 = MAX(al0, ABS(vl(vl_iter))) ! Infty norm of X'y, big overkill for lam_max
   ENDDO
   ! PRINT *, alsparse
   al = al0 ! / (1-alsparse) ! this value ensures all betas are 0 , divide by 1-a?
@@ -789,20 +844,20 @@ SUBROUTINE sparse_four (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,flmin,
         ! print *, "This is at the flmin step of the while loop"
      ELSE
         IF(l > 1) THEN ! have some active groups
-          al=al*alf
-          tlam = max((2.0*al-al0), 0.0) ! Here is the strong rule...
-          l = l+1
-          ! print *, "This is the l>1 step of while loop"
+           al=al*alf
+           tlam = MAX((2.0*al-al0), 0.0) ! Here is the strong rule...
+           l = l+1
+           ! print *, "This is the l>1 step of while loop"
         ELSE IF(l==0) THEN
-          al=al*.99
-          tlam=al
-          ! Trying to find an active group
+           al=al*.99
+           tlam=al
+           ! Trying to find an active group
         ENDIF
      ENDIF
      lama = al*alsparse
      lam1ma = al*(1-alsparse)
      ! This is the start of the algorithm, for a given lambda...
-     call strong_rule (is_in_S_set, ga, pf, tlam, alsparse) !uses s_set instead of e_set...
+     CALL strong_rule (is_in_S_set, ga, pf, tlam, alsparse) !uses s_set instead of e_set...
      ! --------- outer loop ---------------------------- !
      DO
         ! print *, is_in_E_set
@@ -820,16 +875,16 @@ SUBROUTINE sparse_four (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,flmin,
            maxDif=0.0D0
            isDifZero = 0 !Boolean to check if b-oldb nonzero. Unnec, in fn.
            DO g=1,bn
-              if(is_in_E_set(g)==0) cycle
+              IF(is_in_E_set(g)==0) CYCLE
               startix=ix(g)
               endix=iy(g)
-              call update_step(bs(g), startix, endix, b, lama, t_for_s(g), pf(g), lam1ma, x,&
-                  isDifZero, nobs, r, gam(g), maxDif, nvars)
-              IF(activeGroupIndex(g)==0 .and. isDifZero == 1) THEN
-                    ni=ni+1
-                    IF(ni>pmax) EXIT
-                    activeGroupIndex(g)=ni
-                    activeGroup(ni)=g
+              CALL update_step(bs(g), startix, endix, b, lama, t_for_s(g), pf(g), lam1ma, x,&
+                   isDifZero, nobs, r, gam(g), maxDif, nvars)
+              IF(activeGroupIndex(g)==0 .AND. isDifZero == 1) THEN
+                 ni=ni+1
+                 IF(ni>pmax) EXIT
+                 activeGroupIndex(g)=ni
+                 activeGroup(ni)=g
               ENDIF
            ENDDO ! End middle loop
            IF (ni > pmax) EXIT
@@ -845,41 +900,41 @@ SUBROUTINE sparse_four (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,flmin,
         ! print *, i ! Just to check how many final checks...
         ! i = i+1
         violation = 0
-        IF(any((max_gam*(b-oldbeta)/(1+abs(b)))**2 >= eps)) violation = 1 !has beta moved globally
+        IF(ANY((max_gam*(b-oldbeta)/(1+ABS(b)))**2 >= eps)) violation = 1 !has beta moved globally
         IF (violation == 1) CYCLE
-        call strong_kkt_check(is_in_E_set, violation, bn, ix, iy, pf, lam1ma,&
-              bs, lama, ga, is_in_S_set, x,r, nobs,nvars, vl) ! Step 3
-        if(violation == 1) CYCLE
+        CALL strong_kkt_check(is_in_E_set, violation, bn, ix, iy, pf, lam1ma,&
+             bs, lama, ga, is_in_S_set, x,r, nobs,nvars, vl) ! Step 3
+        IF(violation == 1) CYCLE
         ! Need to compute vl/ga for the ones that aren't already updated, before kkt_check
-        do g = 1, bn
-          if(is_in_S_set(g)==0) then
-            startix = ix(g)
-            endix = iy(g)
-            allocate(s(bs(g)))
-            s = matmul(r,x(:,startix:endix))/nobs
-            vl(startix:endix) = s
-            call softthresh(s, lama, bs(g))
-            snorm = sqrt(dot_product(s,s))
-            ga(g) = snorm
-            deallocate(s)
-          endif
-        enddo
+        DO g = 1, bn
+           IF(is_in_S_set(g)==0) THEN
+              startix = ix(g)
+              endix = iy(g)
+              ALLOCATE(s(bs(g)))
+              s = MATMUL(r,x(:,startix:endix))/nobs
+              vl(startix:endix) = s
+              CALL softthresh(s, lama, bs(g))
+              snorm = SQRT(dot_PRODUCT(s,s))
+              ga(g) = snorm
+              DEALLOCATE(s)
+           ENDIF
+        ENDDO
         !IF(any((max_gam*(b-oldbeta)/(1+abs(b)))**2 >= eps)) violation = 1 !has beta moved globally
         !IF (violation == 1) then
         !        print *, "violation from beta moving globally"
         !        CYCLE
         !endif
-        call kkt_check(is_in_E_set, violation, bn, ix, iy, vl, pf, lam1ma, bs, lama, ga) ! Step 4
+        CALL kkt_check(is_in_E_set, violation, bn, ix, iy, vl, pf, lam1ma, bs, lama, ga) ! Step 4
         IF(violation == 1) CYCLE
         EXIT
      ENDDO ! Ends outer loop
      !---------- final update variable and save results------------
      IF(l==0) THEN
-        IF(maxval(is_in_E_set)==0) THEN
+        IF(MAXVAL(is_in_E_set)==0) THEN
            CYCLE ! don't save anything, we're still decrementing lambda
         ELSE
            l=2
-           alam(1) = al / max(alf,.99) ! store previous, larger value
+           alam(1) = al / MAX(alf,.99) ! store previous, larger value
         ENDIF
      ENDIF
      ! PRINT *, "Here is where the final update starts"
@@ -900,7 +955,7 @@ SUBROUTINE sparse_four (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,flmin,
      me=0
      DO j=1,ni
         g=activeGroup(j)
-        IF(any(beta(ix(g):iy(g),l)/=0.0D0)) me=me+1
+        IF(ANY(beta(ix(g):iy(g),l)/=0.0D0)) me=me+1
      ENDDO
      IF(me>dfmax) EXIT
   ENDDO ! end lambda loop
@@ -981,15 +1036,15 @@ SUBROUTINE gglasso (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,flmin,ulam
   ALLOCATE(r(1:nobs))
   ALLOCATE(activeGroupIndex(1:bn))
   ! - - - checking pf - - -
-  IF(maxval(pf) <= 0.0D0) THEN
+  IF(MAXVAL(pf) <= 0.0D0) THEN
      jerr=10000
      RETURN
   ENDIF
-  pf=max(0.0D0,pf)
+  pf=MAX(0.0D0,pf)
   ! - - - some initial setup - - -
   is_in_E_set = 0
   al = 0.0D0
-  mnl = Min (mnlam, nlam)
+  mnl = MIN (mnlam, nlam)
   r = y
   b = 0.0D0
   oldbeta = 0.0D0
@@ -1000,14 +1055,14 @@ SUBROUTINE gglasso (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,flmin,ulam
   alf = 0.0D0
   ! --------- lambda loop ----------------------------
   IF(flmin < 1.0D0) THEN ! flmin <1 means NOT user-supplied, so this is default
-     flmin = Max (mfl, flmin)
+     flmin = MAX (mfl, flmin)
      alf=flmin**(1.0D0/(nlam-1.0D0))
   ENDIF
-  vl = matmul(r, x)/nobs
+  vl = MATMUL(r, x)/nobs
   DO g = 1,bn
      ALLOCATE(u(bs(g)))
      u = vl(ix(g):iy(g))
-     ga(g) = sqrt(dot_product(u,u))
+     ga(g) = SQRT(dot_PRODUCT(u,u))
      DEALLOCATE(u)
   ENDDO
   DO l=1,nlam
@@ -1023,7 +1078,7 @@ SUBROUTINE gglasso (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,flmin,ulam
            al0 = 0.0D0
            DO g = 1,bn
               IF(pf(g)>0.0D0) THEN
-                 al0 = max(al0, ga(g) / pf(g))
+                 al0 = MAX(al0, ga(g) / pf(g))
               ENDIF
            ENDDO
            al = al0 * alf
@@ -1055,9 +1110,9 @@ SUBROUTINE gglasso (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,flmin,ulam
               ALLOCATE(dd(bs(g)))
               ALLOCATE(oldb(bs(g)))
               oldb=b(startix:endix)
-              u=matmul(r,x(:,startix:endix))/nobs
+              u=MATMUL(r,x(:,startix:endix))/nobs
               u=gam(g)*b(startix:endix)+u
-              unorm=sqrt(dot_product(u,u))
+              unorm=SQRT(dot_PRODUCT(u,u))
               t=unorm-pf(g)*al
               IF(t>0.0D0) THEN
                  b(startix:endix)=u*t/(gam(g)*unorm)
@@ -1065,9 +1120,9 @@ SUBROUTINE gglasso (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,flmin,ulam
                  b(startix:endix)=0.0D0
               ENDIF
               dd=b(startix:endix)-oldb
-              IF(any(dd/=0.0D0)) THEN
-                 maxDif=max(maxDif,gam(g)**2*dot_product(dd,dd))
-                 r=r-matmul(x(:,startix:endix),dd)
+              IF(ANY(dd/=0.0D0)) THEN
+                 maxDif=MAX(maxDif,gam(g)**2*dot_PRODUCT(dd,dd))
+                 r=r-MATMUL(x(:,startix:endix),dd)
                  IF(activeGroupIndex(g)==0) THEN
                     ni=ni+1
                     IF(ni>pmax) EXIT
@@ -1078,11 +1133,11 @@ SUBROUTINE gglasso (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,flmin,ulam
               DEALLOCATE(u,dd,oldb)
            ENDDO
            IF(intr /= 0) THEN
-              d=sum(r)/nobs
+              d=SUM(r)/nobs
               IF(d/=0.0D0) THEN
                  b(0)=b(0)+d
                  r=r-d
-                 maxDif=max(maxDif,d**2)
+                 maxDif=MAX(maxDif,d**2)
               ENDIF
            ENDIF
            IF (ni > pmax) EXIT
@@ -1103,9 +1158,9 @@ SUBROUTINE gglasso (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,flmin,ulam
                  ALLOCATE(dd(bs(g)))
                  ALLOCATE(oldb(bs(g)))
                  oldb=b(startix:endix)
-                 u=matmul(r,x(:,startix:endix))/nobs
+                 u=MATMUL(r,x(:,startix:endix))/nobs
                  u=gam(g)*b(startix:endix)+u
-                 unorm=sqrt(dot_product(u,u))
+                 unorm=SQRT(dot_PRODUCT(u,u))
                  t=unorm-pf(g)*al
                  IF(t>0.0D0) THEN
                     b(startix:endix)=u*t/(gam(g)*unorm)
@@ -1113,18 +1168,18 @@ SUBROUTINE gglasso (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,flmin,ulam
                     b(startix:endix)=0.0D0
                  ENDIF
                  dd=b(startix:endix)-oldb
-                 IF(any(dd/=0.0D0)) THEN
-                    maxDif=max(maxDif,gam(g)**2*dot_product(dd,dd))
-                    r=r-matmul(x(:,startix:endix),dd)
+                 IF(ANY(dd/=0.0D0)) THEN
+                    maxDif=MAX(maxDif,gam(g)**2*dot_PRODUCT(dd,dd))
+                    r=r-MATMUL(x(:,startix:endix),dd)
                  ENDIF
                  DEALLOCATE(u,dd,oldb)
               ENDDO
               IF(intr /= 0) THEN
-                 d=sum(r)/nobs
+                 d=SUM(r)/nobs
                  IF(d/=0.0D0) THEN
                     b(0)=b(0)+d
                     r=r-d
-                    maxDif=max(maxDif,d**2)
+                    maxDif=MAX(maxDif,d**2)
                  ENDIF
               ENDIF
               IF(maxDif<eps) EXIT
@@ -1137,15 +1192,15 @@ SUBROUTINE gglasso (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,flmin,ulam
         IF(ni>pmax) EXIT
         !--- final check ------------------------
         violation = 0
-        max_gam = maxval(gam)
-        IF(any((max_gam*(b-oldbeta)/(1+abs(b)))**2 >= eps)) violation = 1
+        max_gam = MAXVAL(gam)
+        IF(ANY((max_gam*(b-oldbeta)/(1+ABS(b)))**2 >= eps)) violation = 1
         IF (violation /= 0) CYCLE
-        vl = matmul(r, x)/nobs
+        vl = MATMUL(r, x)/nobs
         DO g = 1, bn
            IF(is_in_E_set(g) == 1) CYCLE
            ALLOCATE(u(bs(g)))
            u = vl(ix(g):iy(g))
-           ga(g) = sqrt(dot_product(u,u))
+           ga(g) = SQRT(dot_PRODUCT(u,u))
            IF(ga(g) > al*pf(g))THEN
               is_in_E_set(g) = 1
               violation = 1
@@ -1174,7 +1229,7 @@ SUBROUTINE gglasso (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,flmin,ulam
      me=0
      DO j=1,ni
         g=activeGroup(j)
-        IF(any(beta(ix(g):iy(g),l)/=0.0D0)) me=me+1
+        IF(ANY(beta(ix(g):iy(g),l)/=0.0D0)) me=me+1
      ENDDO
      IF(me>dfmax) EXIT
   ENDDO ! end lambda loop
@@ -1265,15 +1320,15 @@ SUBROUTINE sparse_orig (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,flmin,
   ALLOCATE(activeGroupIndex(1:bn))
   !    ALLOCATE(al_sparse)
   ! - - - checking pf - ! pf is the relative penalties for each group
-  IF(maxval(pf) <= 0.0D0) THEN
+  IF(MAXVAL(pf) <= 0.0D0) THEN
      jerr=10000
      RETURN
   ENDIF
-  pf=max(0.0D0,pf)
+  pf=MAX(0.0D0,pf)
   ! - - - some initial setup - - -
   is_in_E_set = 0
   al = 0.0D0
-  mnl = Min (mnlam, nlam)
+  mnl = MIN (mnlam, nlam)
   r = y
   b = 0.0D0
   oldbeta = 0.0D0
@@ -1286,20 +1341,20 @@ SUBROUTINE sparse_orig (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,flmin,
   t_for_s = 1/gam ! might need to use a loop if no vectorization.........
   ! --------- lambda loop ----------------------------
   IF(flmin < 1.0D0) THEN ! THIS is the default...
-     flmin = Max (mfl, flmin) ! just sets a threshold above zero
+     flmin = MAX (mfl, flmin) ! just sets a threshold above zero
      alf=flmin**(1.0D0/(nlam-1.0D0))
   ENDIF
   ! PRINT *, alf
-  vl = matmul(r, x)/nobs ! Note r gets updated in middle and inner loop
+  vl = MATMUL(r, x)/nobs ! Note r gets updated in middle and inner loop
   al0 = 0.0D0
   DO g = 1,bn ! For each group...
      ALLOCATE(u(bs(g)))
      u = vl(ix(g):iy(g))
-     ga(g) = sqrt(dot_product(u,u))
+     ga(g) = SQRT(dot_PRODUCT(u,u))
      DEALLOCATE(u)
   ENDDO
   DO vl_iter = 1,nvars
-     al0 = max(al0, abs(vl(vl_iter))) ! Infty norm of X'y, big overkill for lam_max
+     al0 = MAX(al0, ABS(vl(vl_iter))) ! Infty norm of X'y, big overkill for lam_max
   ENDDO
   ! PRINT *, alsparse
   al = al0 ! / (1-alsparse) ! this value ensures all betas are 0 , divide by 1-a?
@@ -1317,14 +1372,14 @@ SUBROUTINE sparse_orig (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,flmin,
         ! print *, "This is at the flmin step of the while loop"
      ELSE
         IF(l > 1) THEN ! have some active groups
-          al=al*alf
-          tlam = max((2.0*al-al0), 0.0) ! Here is the strong rule...
-          l = l+1
-          ! print *, "This is the l>1 step of while loop"
+           al=al*alf
+           tlam = MAX((2.0*al-al0), 0.0) ! Here is the strong rule...
+           l = l+1
+           ! print *, "This is the l>1 step of while loop"
         ELSE IF(l==0) THEN
-          al=al*.99
-          tlam=al
-          ! Trying to find an active group
+           al=al*.99
+           tlam=al
+           ! Trying to find an active group
         ENDIF
      ENDIF
      lama = al*alsparse
@@ -1357,13 +1412,13 @@ SUBROUTINE sparse_orig (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,flmin,
               ALLOCATE(oldb(bs(g)))
               oldb=b(startix:endix)
               ALLOCATE(s(bs(g)))
-              s = matmul(r,x(:,startix:endix))/nobs
+              s = MATMUL(r,x(:,startix:endix))/nobs
               s = s*t_for_s(g) + b(startix:endix)
               DO soft_g = 1, bs(g)
                  sg = s(soft_g)
-                 s(soft_g) = sign(max(abs(s(soft_g))-lama*t_for_s(g), 0.0D0), s(soft_g))
+                 s(soft_g) = SIGN(MAX(ABS(s(soft_g))-lama*t_for_s(g), 0.0D0), s(soft_g))
               ENDDO
-              snorm = sqrt(dot_product(s,s))
+              snorm = SQRT(dot_PRODUCT(s,s))
               tea = snorm - t_for_s(g)*lam1ma*pf(g)
               IF(tea>0.0D0) THEN
                  b(startix:endix) = s*tea/snorm
@@ -1371,9 +1426,9 @@ SUBROUTINE sparse_orig (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,flmin,
                  b(startix:endix) = 0.0D0
               ENDIF
               dd=b(startix:endix)-oldb
-              IF(any(dd/=0.0D0)) THEN
-                 maxDif=max(maxDif,gam(g)**2*dot_product(dd,dd))
-                 r=r-matmul(x(:,startix:endix),dd)
+              IF(ANY(dd/=0.0D0)) THEN
+                 maxDif=MAX(maxDif,gam(g)**2*dot_PRODUCT(dd,dd))
+                 r=r-MATMUL(x(:,startix:endix),dd)
                  IF(activeGroupIndex(g)==0) THEN ! Here is where middle loop is different; if group g was not in activeGroupIndex (active), and the
                     ! difference was nonzero, put it in active (ni)
                     ni=ni+1
@@ -1404,12 +1459,12 @@ SUBROUTINE sparse_orig (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,flmin,
                  ALLOCATE(dd(bs(g)))
                  ALLOCATE(oldb(bs(g)))
                  oldb=b(startix:endix)
-                 s = matmul(r,x(:,startix:endix))/nobs
+                 s = MATMUL(r,x(:,startix:endix))/nobs
                  s = s*t_for_s(g) + b(startix:endix)
                  DO soft_g = 1, bs(g)
-                    s(soft_g) = sign(max(abs(s(soft_g))-lama*t_for_s(g), 0.0D0), s(soft_g))
+                    s(soft_g) = SIGN(MAX(ABS(s(soft_g))-lama*t_for_s(g), 0.0D0), s(soft_g))
                  ENDDO
-                 snorm = sqrt(dot_product(s,s))
+                 snorm = SQRT(dot_PRODUCT(s,s))
                  tea = snorm - t_for_s(g)*lam1ma*pf(g)
                  IF(tea>0.0D0) THEN
                     b(startix:endix) = s*tea/snorm
@@ -1417,9 +1472,9 @@ SUBROUTINE sparse_orig (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,flmin,
                     b(startix:endix) = 0.0D0
                  ENDIF
                  dd=b(startix:endix)-oldb
-                 IF(any(dd/=0.0D0)) THEN
-                    maxDif=max(maxDif,gam(g)**2*dot_product(dd,dd))
-                    r=r-matmul(x(:,startix:endix),dd)
+                 IF(ANY(dd/=0.0D0)) THEN
+                    maxDif=MAX(maxDif,gam(g)**2*dot_PRODUCT(dd,dd))
+                    r=r-MATMUL(x(:,startix:endix),dd)
                  ENDIF
                  DEALLOCATE(s,dd,oldb)
                  ! DEALLOCATE(u,dd,oldb)
@@ -1435,20 +1490,20 @@ SUBROUTINE sparse_orig (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,flmin,
         !--- final check ------------------------ ! This checks which violate KKT condition
         ! PRINT *, "Here is where the final check starts"
         violation = 0
-        max_gam = maxval(gam)
-        IF(any((max_gam*(b-oldbeta)/(1+abs(b)))**2 >= eps)) violation = 1
+        max_gam = MAXVAL(gam)
+        IF(ANY((max_gam*(b-oldbeta)/(1+ABS(b)))**2 >= eps)) violation = 1
         IF (violation /= 0) CYCLE
-        vl = matmul(r, x)/nobs
+        vl = MATMUL(r, x)/nobs
         DO g = 1, bn
            IF(is_in_E_set(g) == 1) CYCLE
            startix=ix(g)
            endix=iy(g)
            ALLOCATE(s(bs(g)))
-           s = matmul(r,x(:,startix:endix))/nobs
+           s = MATMUL(r,x(:,startix:endix))/nobs
            DO soft_g = 1, bs(g)
-              s(soft_g) = sign(max(abs(s(soft_g))-lama, 0.0D0), s(soft_g))
+              s(soft_g) = SIGN(MAX(ABS(s(soft_g))-lama, 0.0D0), s(soft_g))
            ENDDO
-           snorm = sqrt(dot_product(s,s))
+           snorm = SQRT(dot_PRODUCT(s,s))
            ga(g) = snorm
            DEALLOCATE(s)
            IF(ga(g) > pf(g)*lam1ma)THEN
@@ -1461,11 +1516,11 @@ SUBROUTINE sparse_orig (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,flmin,
      ENDDO ! Ends outer loop
      !---------- final update variable and save results------------
      IF(l==0) THEN
-        IF(maxval(is_in_E_set)==0) THEN
+        IF(MAXVAL(is_in_E_set)==0) THEN
            CYCLE ! don't save anything, we're still decrementing lambda
         ELSE
            l=2
-           alam(1) = al / max(alf,.99) ! store previous, larger value
+           alam(1) = al / MAX(alf,.99) ! store previous, larger value
         ENDIF
      ENDIF
      ! PRINT *, "Here is where the final update starts"
@@ -1486,7 +1541,7 @@ SUBROUTINE sparse_orig (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,flmin,
      me=0
      DO j=1,ni
         g=activeGroup(j)
-        IF(any(beta(ix(g):iy(g),l)/=0.0D0)) me=me+1
+        IF(ANY(beta(ix(g):iy(g),l)/=0.0D0)) me=me+1
      ENDDO
      IF(me>dfmax) EXIT
   ENDDO ! end lambda loop

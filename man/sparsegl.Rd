@@ -9,7 +9,7 @@ sparsegl(
   y,
   group = NULL,
   pen = c("sparsegl", "gglasso"),
-  algorithm = c("original", "threestep", "fivestep"),
+  algorithm = c("original", "threestep", "threestepalt", "fourstep"),
   nlambda = 100,
   lambda.factor = ifelse(nobs < nvars, 0.01, 1e-04),
   lambda = NULL,
