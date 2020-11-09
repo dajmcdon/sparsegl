@@ -4,7 +4,17 @@ sgl <- function(
     maxit, vnames, group, intr, asparse, standardize, algorithm) {
     # call Fortran core
     intercept = 0L
-    if(intr){
+    is.sparse=FALSE
+    if(inherits(x,"sparseMatrix")){##Sparse case
+        is.sparse=TRUE
+        x=as(x,"CsparseMatrix")
+        x=as(x,"dgCMatrix")
+        xidx=as.integer(x@i+1)
+        xcptr=as.integer(x@p+1)
+        xval=as.double(x@x)
+        algorithm="fourstepspx"
+    }
+    if(intr && !is.sparse){
         ym = mean(y)
         xm = colMeans(x)
         x = sweep(x,2,xm)
@@ -19,37 +29,33 @@ sgl <- function(
     gamma <- gamma/nobs
     gamma <- as.double(gamma)
     fit <- switch(algorithm,
-        original = .Fortran(
-            "sparse_orig", bn, bs, ix, iy, gamma, nobs, nvars, as.double(x),
-            as.double(y), pf, dfmax, pmax, nlam, flmin, ulam, eps, maxit, nalam = integer(1),
-            beta = double(nvars * nlam), idx = integer(pmax),
-            nbeta = integer(nlam), alam = double(nlam), npass = integer(1), jerr = integer(1),
-            alsparse = asparse),
         threestep = .Fortran(
             "sparse_three", bn, bs, ix, iy, gamma, nobs, nvars, as.double(x),
-            as.double(y), pf, dfmax, pmax, nlam, flmin, ulam, eps, maxit, nalam = integer(1),
-            beta = double(nvars * nlam), idx = integer(pmax),
-            nbeta = integer(nlam), alam = double(nlam), npass = integer(1), jerr = integer(1),
-            alsparse = asparse),
-        threestepalt= .Fortran(
-            "sparse_three_alt", bn, bs, ix, iy, gamma, nobs, nvars, as.double(x),
-            as.double(y), pf, dfmax, pmax, nlam, flmin, ulam, eps, maxit, nalam = integer(1),
-            beta = double(nvars * nlam), idx = integer(pmax),
-            nbeta = integer(nlam), alam = double(nlam), npass = integer(1), jerr = integer(1),
-            alsparse = asparse),
+            as.double(y), pf, dfmax, pmax, nlam, flmin, ulam, eps, maxit, nalam = 0L,
+            beta = double(nvars * nlam), activeGroup = integer(pmax),
+            nbeta = integer(nlam), alam = double(nlam), npass = 0L, jerr = 0L,
+            alsparse = as.double(asparse)),
         fourstep = .Fortran(
             "sparse_four", bn, bs, ix, iy, gamma, nobs, nvars, as.double(x),
-            as.double(y), pf, dfmax, pmax, nlam, flmin, ulam, eps, maxit, nalam = integer(1),
-            beta = double(nvars * nlam), idx = integer(pmax),
-            nbeta = integer(nlam), alam = double(nlam), npass = integer(1), jerr = integer(1),
-            alsparse = asparse)
+            as.double(y), pf, dfmax, pmax, nlam, flmin, ulam, eps, maxit, nalam = 0L,
+            beta = double(nvars * nlam), activeGroup = integer(pmax),
+            nbeta = integer(nlam), alam = double(nlam), npass = 0L, jerr = 0L,
+            alsparse = as.double(asparse)),
+        ## CHECK THESE!!
+        fourstepspx = .Fortran(
+            "spmat_four", bn,bs,ix,iy,gam,nobs,nvars,xval,xidx,xcptr,nnz,
+            as.double(y), pf, dfmax, pmax, nlam, flmin, ulam, eps, maxit,
+            as.integer(intr), nalam=0L, b0=double(nlam), beta=double(nvaras*nlam),
+            activeGroup=integer(pmax),nbeta=integer(nlam),alam=double(nlam),
+            npass=0L,jerr=0L,alsparse=as.double(asparse)),
+        stop("Requested algorithm is not implemented.")
         )
     # output
     outlist <- getoutput(fit, maxit, pmax, nvars, vnames)
     if(standardize){
         outlist$beta = outlist$beta/xs
     }
-    if(intr){
+    if(intr && !is.sparse){
         outlist$b0 = ym - xm %*% outlist$beta
     }
     outlist <- c(outlist, list(npasses = fit$npass, jerr = fit$jerr, group = group))
