@@ -83,7 +83,7 @@ microbenchmark(sparsegl(x = X, y = y, group = groups, pen = "sparsegl", algorith
 
 # Code for generating plots
 group_norm <- function(x,grp) sum(by(x, grp, function(x) sqrt(sum(x^2))))
-sparse_grp_norm <- function(x, grp, alp=.05) group_norm(x)*(1-alp) + alp*sum(abs(x))
+sparse_grp_norm <- function(x, grp, alp=.05) group_norm(x,grp)*(1-alp) + alp*sum(abs(x))
 
 b1 = apply(mysparse1$beta, 2, sparse_grp_norm, grp=groups)
 b2 = apply(out_sp$beta, 2, sparse_group_norm, grp=grp)

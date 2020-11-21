@@ -1,4 +1,3 @@
-#' @importFrom Rspectra svds
 sgl <- function(
     bn, bs, ix, iy, nobs, nvars, x, y, pf, dfmax, pmax, nlam, flmin, ulam, eps,
     maxit, vnames, group, intr, asparse, standardize, algorithm) {
@@ -12,6 +11,7 @@ sgl <- function(
         xidx=as.integer(x@i+1)
         xcptr=as.integer(x@p+1)
         xval=as.double(x@x)
+        nnz=as.integer(tail(x@p,1))
         algorithm="fourstepspx"
     }
     if(intr && !is.sparse){
@@ -21,8 +21,8 @@ sgl <- function(
         y = y-ym
     }
     if(standardize){
-        xs = sqrt(colSums(x^2))
-        x = sweep(x,2,xs,"/")
+        xs = 1/sqrt(Matrix::colSums(x^2))
+        x = x %*% Matrix::Diagonal(x=xs)
     }
     gamma <- rep(NA, bn)
     for (g in 1:bn) gamma[g] <- RSpectra::svds(x[,ix[g]:iy[g]],1,0,0)$d^2
@@ -43,9 +43,9 @@ sgl <- function(
             alsparse = as.double(asparse)),
         ## CHECK THESE!!
         fourstepspx = .Fortran(
-            "spmat_four", bn,bs,ix,iy,gam,nobs,nvars,xval,xidx,xcptr,nnz,
+            "spmat_four", bn,bs,ix,iy,gamma,nobs,nvars,xval,xidx,xcptr,nnz,
             as.double(y), pf, dfmax, pmax, nlam, flmin, ulam, eps, maxit,
-            as.integer(intr), nalam=0L, b0=double(nlam), beta=double(nvaras*nlam),
+            as.integer(intr), nalam=0L, b0=double(nlam), beta=double(nvars*nlam),
             activeGroup=integer(pmax),nbeta=integer(nlam),alam=double(nlam),
             npass=0L,jerr=0L,alsparse=as.double(asparse)),
         stop("Requested algorithm is not implemented.")

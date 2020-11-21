@@ -149,7 +149,8 @@ m2 <- sparsegl(x=colon$x,y=colon$y,group=group2,algorithm="original")
 \code{plot.gglasso}
 }
 \author{
-Yi Yang and Hui Zou\cr Maintainer: Yi Yang <yi.yang6@mcgill.ca>
+Aaron Cohen and Dan Mcdonald\cr Maintainer: Aaron Cohen <cohenaa@indiana.edu>
 }
 \keyword{models}
 \keyword{regression}
+\keyword{sparse}

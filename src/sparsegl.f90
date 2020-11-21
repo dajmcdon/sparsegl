@@ -1,4 +1,69 @@
+MODULE spmatmul
+
+IMPLICIT NONE
+
+CONTAINS
+  ! ----
+  ! These functions perform Ax=y and Atx = y for A in CSC form
+  ! A is given by (a, ridx, cptr)
+  ! a is the value, size nnz
+  ! ridx is the row index of each nz
+  ! cptr is of length ncol(A)+1 where cptr[j] is the first entry of a in column j, last entry == nnz
+  ! to slice into columns cj:ck, you need a[cptr[cj]:(cptrr[ck+1]-1)] and
+  ! ridx[cptr[cj]:(cptr[ck+1]-1)] and cptr[cj:ck])
+  ! We don't actually need Ax->y ever, we need y <- y-Ax
+  SUBROUTINE ymspax (a, ridx, cptr, n, p, nnz, x, y, cj, ck)
+    IMPLICIT NONE
+    INTEGER n, p, nnz, cj, ck
+    DOUBLE PRECISION, INTENT(in) :: a(nnz)
+    INTEGER, INTENT(in) :: ridx(nnz)
+    INTEGER, INTENT(in) :: cptr(p+1)
+    DOUBLE PRECISION, INTENT(in) :: x(p)
+    DOUBLE PRECISION, INTENT(inout) :: y(n)
+
+    INTEGER i, j
+
+    DO i = cj, ck
+       DO j = cptr(i), (cptr(i+1)-1)
+          y(ridx(j)) = y(ridx(j)) - x(i)*a(j)
+       ENDDO
+    ENDDO
+    RETURN
+  END SUBROUTINE ymspax
+
+  SUBROUTINE spatx (a, ridx, cptr, n, p, nnz, x, y, cj, ck)
+    IMPLICIT NONE
+    INTEGER n, p, nnz, cj, ck
+    DOUBLE PRECISION, INTENT(in) :: a(nnz)
+    INTEGER, INTENT(in) :: ridx(nnz)
+    INTEGER, INTENT(in) :: cptr(p+1)
+    DOUBLE PRECISION, INTENT(in) :: x(n)
+    DOUBLE PRECISION, INTENT(inout) :: y(ck-cj+1)
+
+    INTEGER i, j, k
+    y = 0;
+
+    DO i = cj, ck
+       k = i - cj + 1
+       DO j = cptr(i), (cptr(i+1)-1)
+          y(k) = y(k) + x(ridx(j))*a(j)
+       ENDDO
+    ENDDO
+    RETURN
+  END SUBROUTINE spatx
+
+
+END MODULE spmatmul
+
+!-------------------------------------------------------------
+
+
+
+
 MODULE mySubby
+
+USE spmatmul
+IMPLICIT NONE
 
 CONTAINS
   SUBROUTINE strong_rule (is_in_E_set, ga, pf, tlam, alsparse)
@@ -151,7 +216,7 @@ CONTAINS
 
   SUBROUTINE sp_update_step(bsg, startix, endix, b, lama, t_for_sg, pfg, lam1ma, x,&
        xidx, xcptr, nnz, isDifZero, nobs, r, gamg, maxDif,nvars)
-    USE spmatmul
+
     IMPLICIT NONE
     INTEGER, INTENT(in) :: bsg, nobs, nvars, nnz
     INTEGER, INTENT(in) :: startix, endix
@@ -170,7 +235,8 @@ CONTAINS
     ALLOCATE(oldb(bsg))
     isDifZero = 0
     oldb = b(startix:endix)
-    spatx(x, xidx, xcptr, nobs, nvars, nnz, r, s, startix, endix)
+
+    CALL spatx(x, xidx, xcptr, nobs, nvars, nnz, r, s, startix, endix)
     s = s / nobs
     s = s*t_for_sg + b(startix:endix)
     CALL softthresh(s, lama*t_for_sg, bsg)
@@ -185,7 +251,7 @@ CONTAINS
     dd = b(startix:endix) - oldb
     IF(ANY(dd/=0.0D0)) THEN
        maxDif = MAX(maxDif,gamg**2*dot_PRODUCT(dd,dd))
-       ymspax(x, xidx, xcptr, nobs, nvars, nnz, dd, r, startix, endix)
+       CALL ymspax(x, xidx, xcptr, nobs, nvars, nnz, dd, r, startix, endix)
        isDifZero = 1
     ENDIF
     DEALLOCATE(s, oldb, dd)
@@ -195,7 +261,7 @@ CONTAINS
 
   SUBROUTINE sp_strong_kkt_check(is_in_E_set,violation,bn,ix,iy,pf,lam1ma,bs,&
        lama,ga,is_in_S_set,x,xidx,xcptr,nnz,r,nobs,nvars,vl)
-    USE spmatmul
+
     IMPLICIT NONE
     INTEGER, INTENT(in) :: nobs, nvars, nnz
     DOUBLE PRECISION, INTENT(in) :: x(nnz)
@@ -222,7 +288,7 @@ CONTAINS
           startix = ix(g)
           endix = iy(g)
           ALLOCATE(s(bs(g)))
-          spatx(x, xidx, xcptr, nobs, nvars, nnz, r, s, startix, endix)
+          CALL spatx(x, xidx, xcptr, nobs, nvars, nnz, r, s, startix, endix)
           s = s / nobs
           vl(startix:endix) = s
           CALL softthresh(s, lama, bs(g))
@@ -244,67 +310,6 @@ END MODULE mySubby
 
 
 !--------------------------------------------------------------
-
-
-MODULE spmatmul
-
-CONTAINS
-
-  ! ----
-  ! These functions perform Ax=y and Atx = y for A in CSC form
-  ! A is given by (a, ridx, cptr)
-  ! a is the value, size nnz
-  ! ridx is the row index of each nz
-  ! cptr is of length ncol(A)+1 where cptr[j] is the first entry of a in column j, last entry == nnz
-
-  ! to slice into columns cj:ck, you need a[cptr[cj]:(cptrr[ck+1]-1)] and
-  ! ridx[cptr[cj]:(cptr[ck+1]-1)] and cptr[cj:ck])
-
-  ! We don't actually need Ax->y ever, we need y <- y-Ax
-  SUBROUTINE ymspax (a, ridx, cptr, n, p, nnz, x, y, cj, ck)
-    IMPLICIT NONE
-    INTEGER n, p, nnz, cj, ck
-    DOUBLE PRECISION, INTENT(in) :: a(nnz)
-    DOUBLE PRECISION, INTENT(in) :: ridx(nnz)
-    DOUBLE PRECISION, INTENT(in) :: cptr(p+1)
-    DOUBLE PRECISION, INTENT(in) :: x(p)
-    DOUBLE PRECISION, INTENT(inout) :: y(n)
-
-    INTEGER i, j
-
-    DO i = cj, ck
-       DO j = cptr(i), (cptr(i+1)-1)
-          y(ridx(j)) = y(ridx(j)) - x(i)*a(j)
-       ENDDO
-    ENDDO
-    RETURN
-  END SUBROUTINE ymspax
-
-  SUBROUTINE spatx (a, ridx, cptr, n, p, nnz, x, y, cj, ck)
-    IMPLICIT NONE
-    INTEGER n, p, nnz, cj, ck, nout
-    DOUBLE PRECISION, INTENT(in) :: a(nnz)
-    DOUBLE PRECISION, INTENT(in) :: ridx(nnz)
-    DOUBLE PRECISION, INTENT(in) :: cptr(p+1)
-    DOUBLE PRECISION, INTENT(in) :: x(n)
-    nout = ck-cj+1
-    DOUBLE PRECISION, INTENT(inout) :: y(nout)
-
-    INTEGER i, j
-    y = 0;
-
-    DO i = cj, ck
-       DO j = cptr(i), (cptr(i+1)-1)
-          y(i-cj+1) = y(i-cj+1) + x(ridx(j))*a(j)
-       ENDDO
-    ENDDO
-    RETURN
-  END SUBROUTINE spatx
-
-
-END MODULE spmatmul
-
-!-------------------------------------------------------------
 
 
 SUBROUTINE sparse_three (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,flmin,ulam,&
@@ -822,8 +827,9 @@ END SUBROUTINE sparse_four
 
 
 ! --------------------------------------------------
-SUBROUTINE spmat_four (bn,bs,ix,iy,gam,nobs,nvars,x,xidx,xcptr,nnz,y,pf,dfmax,pmax,nlam,flmin,ulam,&
-     eps,maxit,intr,nalam,b0,beta,activeGroup,nbeta,alam,npass,jerr,alsparse)
+SUBROUTINE spmat_four (bn,bs,ix,iy,gam,nobs,nvars,x,xidx,xcptr,nnz,y,pf,&
+      dfmax,pmax,nlam,flmin,ulam,eps,maxit,intr,nalam,b0,beta,&
+      activeGroup,nbeta,alam,npass,jerr,alsparse)
   ! --------------------------------------------------
   USE mySubby
   USE spmatmul
@@ -866,7 +872,7 @@ SUBROUTINE spmat_four (bn,bs,ix,iy,gam,nobs,nvars,x,xidx,xcptr,nnz,y,pf,dfmax,pm
   DOUBLE PRECISION::alsparse ! Should be alpha for the sparsity weight
   ! - - - local declarations - - -
   DOUBLE PRECISION:: max_gam
-  ! DOUBLE PRECISION::d
+  DOUBLE PRECISION::d
   ! DOUBLE PRECISION::t ! No longer using this
   DOUBLE PRECISION::maxDif
   ! DOUBLE PRECISION::unorm ! No longer using this for ls_new
@@ -942,7 +948,7 @@ SUBROUTINE spmat_four (bn,bs,ix,iy,gam,nobs,nvars,x,xidx,xcptr,nnz,y,pf,dfmax,pm
      alf=flmin**(1.0D0/(nlam-1.0D0))
   ENDIF
   ! PRINT *, alf
-  spatx(x, xidx, xcptr, nobs, nvars, nnz, r, vl, 1, nvars)
+  CALL spatx(x, xidx, xcptr, nobs, nvars, nnz, r, vl, 1, nvars)
   vl = vl/nobs
   al0 = 0.0D0
   DO g = 1,bn ! For each group...
@@ -1005,8 +1011,10 @@ SUBROUTINE spmat_four (bn,bs,ix,iy,gam,nobs,nvars,x,xidx,xcptr,nnz,y,pf,dfmax,pm
               IF(is_in_E_set(g)==0) CYCLE
               startix=ix(g)
               endix=iy(g)
-              CALL sp_update_step(bs(g), startix, endix, b, lama, t_for_s(g), pf(g), lam1ma, x,&
-                   isDifZero, nobs, r, gam(g), maxDif, nvars)
+
+              CALL sp_update_step(bs(g), startix, endix, b, lama, t_for_s(g),&
+                        pf(g), lam1ma, x, xidx, xcptr, nnz, isDifZero, nobs,&
+                        r, gam(g), maxDif, nvars)
               IF(activeGroupIndex(g)==0 .AND. isDifZero == 1) THEN
                  ni=ni+1
                  IF(ni>pmax) EXIT
@@ -1037,8 +1045,9 @@ SUBROUTINE spmat_four (bn,bs,ix,iy,gam,nobs,nvars,x,xidx,xcptr,nnz,y,pf,dfmax,pm
         violation = 0
         IF(ANY((max_gam*(b-oldbeta)/(1+ABS(b)))**2 >= eps)) violation = 1 !has beta moved globally
         IF (violation == 1) CYCLE
-        CALL sp_strong_kkt_check(is_in_E_set, violation, bn, ix, iy, pf, lam1ma,&
-             bs, lama, ga, is_in_S_set, x,r, nobs,nvars, vl) ! Step 3
+        CALL sp_strong_kkt_check(is_in_E_set, violation, bn, ix, iy, pf,&
+                lam1ma, bs, lama, ga, is_in_S_set, x, xidx, xcptr, nnz,&
+                r,nobs,nvars, vl)
         IF(violation == 1) CYCLE
         ! Need to compute vl/ga for the ones that aren't already updated, before kkt_check
         DO g = 1, bn
@@ -1046,7 +1055,7 @@ SUBROUTINE spmat_four (bn,bs,ix,iy,gam,nobs,nvars,x,xidx,xcptr,nnz,y,pf,dfmax,pm
               startix = ix(g)
               endix = iy(g)
               ALLOCATE(s(bs(g)))
-              spatx(x, xidx, xcptr, nobs, pvars, nnz, r, s, startix, endix)
+              CALL spatx(x, xidx, xcptr, nobs, nvars, nnz, r, s, startix, endix)
               s = s/nobs
               vl(startix:endix) = s
               CALL softthresh(s, lama, bs(g))
@@ -1100,3 +1109,5 @@ SUBROUTINE spmat_four (bn,bs,ix,iy,gam,nobs,nvars,x,xidx,xcptr,nnz,y,pf,dfmax,pm
   DEALLOCATE(b,oldbeta,r,activeGroupIndex)
   RETURN
 END SUBROUTINE spmat_four
+
+

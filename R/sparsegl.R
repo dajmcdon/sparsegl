@@ -115,7 +115,7 @@ sparsegl <- function(
     pen = match.arg(pen)
     algorithm = match.arg(algorithm)
 
-    if (!is.matrix(x))
+    if (!is.matrix(x) && !inherits(x, "sparseMatrix"))
         stop("x has to be a matrix")
 
     if (any(is.na(x)))
