@@ -60,8 +60,6 @@
 #' @param maxit maximum number of outer-loop iterations allowed at fixed lambda
 #' value. Default is 3e8. If models do not converge, consider increasing
 #' \code{maxit}.
-#' @param delta the parameter \eqn{\delta}{delta} in \code{"hsvm"} (Huberized
-#' squared hinge loss). Default is 1.
 #' @param intercept Whether to include intercept in the model. Default is TRUE.
 #' @param asparse the weight to put on the ell1 norm in sparse group lasso. Default
 #' is 0.05
@@ -104,11 +102,11 @@
 #' @export
 sparsegl <- function(
   x, y, group = NULL, pen = c("sparsegl", "gglasso"),
-  algorithm = c("original", "threestep", "threestepalt", "fourstep"),
+  algorithm = c("fourstep", "threestep"),
   nlambda = 100, lambda.factor = ifelse(nobs < nvars, 0.01, 1e-04),
   lambda = NULL, pf = sqrt(bs), weight = NULL, dfmax = as.integer(max(group)) + 1,
   pmax = min(dfmax * 1.2, as.integer(max(group))), eps = 1e-08, maxit = 3e+08,
-  delta, intercept=TRUE, asparse = 0.05, standardize=TRUE) {
+  intercept=TRUE, asparse = 0.05, standardize=TRUE) {
     #################################################################################
     #\tDesign matrix setup, error checking
     this.call <- match.call()
@@ -168,11 +166,6 @@ sparsegl <- function(
     group <- as.integer(group)
     #################################################################################
     #parameter setup
-    if (missing(delta))
-        delta <- 1
-    if (delta < 0)
-        stop("delta must be non-negtive")
-    delta <- as.double(delta)
     if (length(pf) != bn)
         stop("The size of group-lasso penalty factor must be same as the number of groups")
     maxit <- as.integer(maxit)
@@ -211,8 +204,7 @@ sparsegl <- function(
 		)
     #################################################################################
     # output
-    if (is.null(lambda))
-        fit$lambda <- lamfix(fit$lambda)
+    if (is.null(lambda)) fit$lambda <- lamfix(fit$lambda)
     fit$call <- this.call
     class(fit) <- c("sparsegl", class(fit))
     fit

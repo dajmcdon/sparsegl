@@ -1,10 +1,10 @@
 set.seed(1010)
 n <- 100
-p <- 10
+p <- 200
 X <- matrix(data = rnorm(n*p, mean=0, sd=1), nrow = n, ncol = p)
 eps <- rnorm(n, mean = 0, sd=1)
 beta_star = c(rep(5,5),rep(0,5))
-# beta_star <- c(rep(5,5), c(5,-5,2,0,0), rep(-5,5), c(2,-3,8,0,0), rep(0,(p-20)))
+beta_star <- c(rep(5,5), c(5,-5,2,0,0), rep(-5,5), c(2,-3,8,0,0), rep(0,(p-20)))
 y <- X%*%beta_star + eps
 groups <- rep(1:(p/5), each=5)
 sgl <- sparsegl(x = X, y = y, group = groups, pen = "sparsegl", algorithm = "fourstep")
@@ -29,3 +29,5 @@ Xs_sp = Matrix(Xs, sparse=TRUE)
 
 t1 <- sparsegl(Xs_sp, ys, groups, pen="sparsegl")
 bt <- apply(t1$beta, 2, sparse_grp_norm, grp=groups)
+
+matplot(bt/max(bt), t(t1$beta), ty='l', lty=1, col=groups)

@@ -11,14 +11,14 @@
    ! cptr is of length ncol(A)+1 where cptr[j] is the first entry of a in column j, last entry == nnz
    ! to slice into columns cj:ck, you need a[cptr[cj]:(cptrr[ck+1]-1)] and
    ! ridx[cptr[cj]:(cptr[ck+1]-1)] and cptr[cj:ck])
-   ! We don't actually need Ax->y ever, we need y <- y-Ax
-   SUBROUTINE ymspax (a, ridx, cptr, n, p, nnz, x, y, cj, ck)
+   ! We don't actually need Ax->y ever, we need y <- y-A[,cj:ck] x
+   SUBROUTINE ymspax (a, ridx, cptr, n, p, nnz, x, y, cj, ck, lx)
       IMPLICIT NONE
-      INTEGER n, p, nnz, cj, ck
+      INTEGER n, p, nnz, cj, ck, lx
       DOUBLE PRECISION, INTENT(in) :: a(nnz)
       INTEGER, INTENT(in) :: ridx(nnz)
       INTEGER, INTENT(in) :: cptr(p+1)
-      DOUBLE PRECISION, INTENT(in) :: x(p)
+      DOUBLE PRECISION, INTENT(in) :: x(lx)
       DOUBLE PRECISION, INTENT(inout) :: y(n)
 
       INTEGER i, j, k
@@ -26,7 +26,7 @@
       DO i = cj, ck
          k = cptr(i+1) - 1
          DO j = cptr(i), k
-            y(ridx(j)) = y(ridx(j)) - x(i)*a(j)
+            y(ridx(j)) = y(ridx(j)) - x(i - cj + 1)*a(j)
          ENDDO
       ENDDO
       RETURN
@@ -44,7 +44,7 @@
       DOUBLE PRECISION, INTENT(inout) :: y(ck-cj+1)
 
       INTEGER i, j, k
-      y = 0
+      y = 0.0D0
 
       DO i = cj, ck
          k = i - cj + 1
@@ -228,8 +228,9 @@
       DOUBLE PRECISION :: gamg
       DOUBLE PRECISION, INTENT(inout) :: maxDif
       DOUBLE PRECISION, DIMENSION (:), ALLOCATABLE :: oldb, s, dd
-      DOUBLE PRECISION, DIMENSION (:), INTENT(inout) :: b, r
-      DOUBLE PRECISION :: snorm, tea
+      DOUBLE PRECISION, DIMENSION (0:nvars), INTENT(inout) :: b
+      DOUBLE PRECISION, DIMENSION (:), INTENT(inout) :: r
+      DOUBLE PRECISION :: snorm, tea, maxr
       DOUBLE PRECISION, INTENT(in) :: lama, t_for_sg, pfg, lam1ma
       DOUBLE PRECISION, INTENT(in) :: x(nnz)
       INTEGER, INTENT(in) :: xidx(nnz)
@@ -239,12 +240,15 @@
       ALLOCATE(s(bsg))
       ALLOCATE(oldb(bsg))
       isDifZero = 0
+      s = 0.0D0
       oldb = b(startix:endix)
+      ! print *, oldb
 
       CALL spatx(x, xidx, xcptr, nobs, nvars, nnz, r, s, startix, endix)
       s = s*t_for_sg/nobs + b(startix:endix)
       CALL softthresh(s, lama*t_for_sg, bsg)
       snorm = SQRT(dot_PRODUCT(s,s))
+      ! print *, "update snorm = ", snorm, "startix", startix
       tea = snorm - t_for_sg*lam1ma*pfg
       IF(tea > 0.0D0) THEN
          b(startix:endix) = s*tea/snorm
@@ -252,12 +256,17 @@
          b(startix:endix) = 0.0D0
       ENDIF
       ALLOCATE(dd(bsg))
+      maxr = maxval(abs(r))
+      ! print *, "max r before = ", maxr
       dd = b(startix:endix) - oldb
       IF(ANY(dd/=0.0D0)) THEN
          maxDif = MAX(maxDif,gamg**2*dot_PRODUCT(dd,dd))
-         CALL ymspax(x, xidx, xcptr, nobs, nvars, nnz, dd, r, startix, endix)
+         ! print *, "maxDif inside = ", maxDif
+         CALL ymspax(x, xidx, xcptr, nobs, nvars, nnz, dd, r, startix, endix, bsg)
          isDifZero = 1
       ENDIF
+      maxr = maxval(abs(r))
+      ! print *, "max r after = ", maxr
       DEALLOCATE(s, oldb, dd)
       RETURN
    END SUBROUTINE sp_update_step
@@ -292,10 +301,12 @@
             startix = ix(g)
             endix = iy(g)
             ALLOCATE(s(bs(g)))
+            s = 0.0D0
             CALL spatx(x, xidx, xcptr, nobs, nvars, nnz, r, s, startix, endix)
             vl(startix:endix) = s / nobs
             CALL softthresh(s, lama, bs(g))
             snorm = SQRT(dot_PRODUCT(s,s))
+            ! print *, "kkt snorm = ", snorm
             ga(g) = snorm
             DEALLOCATE(s)
             IF(is_in_E_set(g) == 1) CYCLE
@@ -764,14 +775,14 @@
          ! print *, i ! Just to check how many final checks...
          ! i = i+1
          violation = 0
-         IF(ANY((max_gam*(b-oldbeta)/(1+ABS(b)))**2 >= eps)) violation = 1 !has beta moved globally
+         IF (ANY((max_gam*(b-oldbeta)/(1+ABS(b)))**2 >= eps)) violation = 1 !has beta moved globally
          IF (violation == 1) CYCLE
          CALL strong_kkt_check(is_in_E_set, violation, bn, ix, iy, pf, lam1ma,&
                bs, lama, ga, is_in_S_set, x,r, nobs,nvars, vl) ! Step 3
-         IF(violation == 1) CYCLE
+         IF (violation == 1) CYCLE
          ! Need to compute vl/ga for the ones that aren't already updated, before kkt_check
          DO g = 1, bn
-            IF(is_in_S_set(g)==0) THEN
+            IF (is_in_S_set(g)==0) THEN
                startix = ix(g)
                endix = iy(g)
                ALLOCATE(s(bs(g)))
@@ -789,7 +800,7 @@
          !        CYCLE
          !endif
          CALL kkt_check(is_in_E_set, violation, bn, ix, iy, vl, pf, lam1ma, bs, lama, ga) ! Step 4
-         IF(violation == 1) CYCLE
+         IF (violation == 1) CYCLE
          EXIT
       ENDDO ! Ends outer loop
       !---------- final update variable and save results------------
@@ -928,7 +939,7 @@ SUBROUTINE spmat_four (bn,bs,ix,iy,gam,nobs,nvars,x,xidx,xcptr,nnz,y,pf,&
       jerr=10000
       RETURN
    ENDIF
-   pf=MAX(0.0D0,pf)
+   pf = MAX(0.0D0,pf)
    ! - - - some initial setup - - -
    ! i = 0
    is_in_E_set = 0
@@ -951,6 +962,7 @@ SUBROUTINE spmat_four (bn,bs,ix,iy,gam,nobs,nvars,x,xidx,xcptr,nnz,y,pf,&
       alf=flmin**(1.0D0/(nlam-1.0D0))
    ENDIF
    ! PRINT *, alf
+   vl = 0.0D0
    CALL spatx(x, xidx, xcptr, nobs, nvars, nnz, r, vl, 1, nvars)
    vl = vl/nobs
    al0 = 0.0D0
@@ -968,21 +980,20 @@ SUBROUTINE spmat_four (bn,bs,ix,iy,gam,nobs,nvars,x,xidx,xcptr,nnz,y,pf,&
    l = 0
    tlam = 0.0D0
    DO WHILE (l < nlam) !! This is the start of the loop over all lambda values...
-      print *, "l = ", l
-      print *, "al = ", al
       ! IF(kill_count > 1000) RETURN
       ! kill_count = kill_count + 1
       al0 = al ! store old al value on subsequent loops, first set to al
       IF(flmin>=1.0D0) THEN ! user supplied lambda value, break out of everything
          l = l+1
          al=ulam(l)
-         print *, "This is at the flmin step of the while loop"
+         ! print *, "This is at the flmin step of the while loop"
       ELSE
          IF(l > 1) THEN ! have some active groups
+            ! print *, "l = ", l
             al=al*alf
             tlam = MAX((2.0*al-al0), 0.0) ! Here is the strong rule...
             l = l+1
-            print *, "This is the l>1 step of while loop"
+            ! print *, "This is the l>1 step of while loop"
          ELSE IF(l==0) THEN
             al=al*.99
             tlam=al
@@ -998,7 +1009,6 @@ SUBROUTINE spmat_four (bn,bs,ix,iy,gam,nobs,nvars,x,xidx,xcptr,nnz,y,pf,&
          ! print *, is_in_E_set
          oldbeta(0) = b(0)
          IF(ni>0) THEN
-            print *, "ni > 0"
             DO j=1,ni
                g=activeGroup(j)
                oldbeta(ix(g):iy(g))=b(ix(g):iy(g))
@@ -1006,7 +1016,7 @@ SUBROUTINE spmat_four (bn,bs,ix,iy,gam,nobs,nvars,x,xidx,xcptr,nnz,y,pf,&
          ENDIF
          ! --middle loop-------------------------------------
          DO
-            print *, "This is where we enter the middle loop"
+            ! print *, "This is where we enter the middle loop"
             npass=npass+1
             maxDif=0.0D0
             isDifZero = 0 !Boolean to check if b-oldb nonzero. Unnec, in fn.
@@ -1026,41 +1036,45 @@ SUBROUTINE spmat_four (bn,bs,ix,iy,gam,nobs,nvars,x,xidx,xcptr,nnz,y,pf,&
             ENDDO ! End middle loop
             IF(intr /= 0) THEN
                d=sum(r)/nobs
+               ! print *, "d = ", d
                IF(d/=0.0D0) THEN
                   b(0)=b(0)+d
                   r=r-d
                   maxDif=max(maxDif,d**2)
+                  ! print *, "maxDif = ", maxDif
                ENDIF
             ENDIF
             IF (ni > pmax) EXIT
             IF (maxDif < eps) EXIT
-            IF(npass > maxit) THEN !Is this needed?
+            IF (npass > maxit) THEN !Is this needed?
                jerr=-l
                RETURN
             ENDIF
          ENDDO ! End middle loop
-         IF(ni>pmax) EXIT
+         IF (ni>pmax) EXIT
          !--- final check ------------------------ ! This checks which violate KKT condition
-         PRINT *, "Here is where the final check starts"
-         print *, i ! Just to check how many final checks...
+         ! PRINT *, "Here is where the final check starts"
+         ! print *, i ! Just to check how many final checks...
          i = i+1
          violation = 0
-         IF(ANY((max_gam*(b-oldbeta)/(1+ABS(b)))**2 >= eps)) violation = 1 !has beta moved globally
+         IF (ANY((max_gam*(b-oldbeta)/(1+ABS(b)))**2 >= eps)) violation = 1 !has beta moved globally
          IF (violation == 1) CYCLE
          CALL sp_strong_kkt_check(is_in_E_set, violation, bn, ix, iy, pf,&
                   lam1ma, bs, lama, ga, is_in_S_set, x, xidx, xcptr, nnz,&
                   r,nobs,nvars, vl)
-         IF(violation == 1) CYCLE
+         IF (violation == 1) CYCLE
          ! Need to compute vl/ga for the ones that aren't already updated, before kkt_check
          DO g = 1, bn
-            IF(is_in_S_set(g)==0) THEN
+            IF (is_in_S_set(g)==0) THEN
                startix = ix(g)
                endix = iy(g)
                ALLOCATE(s(bs(g)))
+               s = 0.0D0
                CALL spatx(x, xidx, xcptr, nobs, nvars, nnz, r, s, startix, endix)
                vl(startix:endix) = s/nobs
                CALL softthresh(s, lama, bs(g))
                snorm = SQRT(dot_PRODUCT(s,s))
+               ! print *, "vl/ga snorm = ", snorm, "g = ", g
                ga(g) = snorm
                DEALLOCATE(s)
             ENDIF
@@ -1071,19 +1085,19 @@ SUBROUTINE spmat_four (bn,bs,ix,iy,gam,nobs,nvars,x,xidx,xcptr,nnz,y,pf,&
          !        CYCLE
          !endif
          CALL kkt_check(is_in_E_set, violation, bn, ix, iy, vl, pf, lam1ma, bs, lama, ga) ! Step 4
-         IF(violation == 1) CYCLE
+         IF (violation == 1) CYCLE
          EXIT
       ENDDO ! Ends outer loop
       !---------- final update variable and save results------------
       IF(l==0) THEN
-         IF(MAXVAL(is_in_E_set)==0) THEN
+         IF (MAXVAL(is_in_E_set)==0) THEN
             CYCLE ! don't save anything, we're still decrementing lambda
          ELSE
             l=2
             alam(1) = al / MAX(alf,.99) ! store previous, larger value
          ENDIF
       ENDIF
-      PRINT *, "Here is where the final update starts"
+      ! PRINT *, "Here is where the final update starts"
       IF(ni>pmax) THEN
          jerr=-10000-l
          EXIT

@@ -2,36 +2,36 @@ sgl <- function(
     bn, bs, ix, iy, nobs, nvars, x, y, pf, dfmax, pmax, nlam, flmin, ulam, eps,
     maxit, vnames, group, intr, asparse, standardize, algorithm) {
     # call Fortran core
-    intercept <- 0L
     is.sparse <- FALSE
     if (inherits(x,"sparseMatrix")) {
         is.sparse <- TRUE
         x <- as(x,"CsparseMatrix")
         x <- as(x,"dgCMatrix")
-        xidx <- as.integer(x@i + 1)
-        xcptr <- as.integer(x@p + 1)
-        xval <- as.double(x@x)
-        nnz <- as.integer(tail(x@p, 1))
-        algorithm="fourstepspx"
-        if (intr) {
-            ym <- mean(y)
-            y <- y - ym
-        }
     }
-    if (intr && !is.sparse) {
+    if (intr) {
         ym <- mean(y)
-        xm <- colMeans(x)
-        x <- sweep(x,2,xm)
         y <- y - ym
+        if (!is.sparse) {
+            xm <- colMeans(x)
+            x <- sweep(x,2,xm)
+        }
     }
     if (standardize) {
         xs <- 1 / sqrt(Matrix::colSums(x^2))
         x <- x %*% Matrix::Diagonal(x = xs)
     }
+    if (is.sparse) {
+        xidx <- as.integer(x@i + 1)
+        xcptr <- as.integer(x@p + 1)
+        xval <- as.double(x@x)
+        nnz <- as.integer(tail(x@p, 1))
+        algorithm="fourstepspx"
+    }
     gamma <- rep(NA, bn)
     for (g in 1:bn) gamma[g] <- RSpectra::svds(x[,ix[g]:iy[g]], 1, 0, 0)$d^2
     gamma <- gamma/nobs
     gamma <- as.double(gamma)
+
     fit <- switch(algorithm,
         threestep = .Fortran(
             "sparse_three", bn, bs, ix, iy, gamma, nobs, nvars, as.double(x),
@@ -45,7 +45,6 @@ sgl <- function(
             beta = double(nvars * nlam), activeGroup = integer(pmax),
             nbeta = integer(nlam), alam = double(nlam), npass = 0L, jerr = 0L,
             alsparse = as.double(asparse)),
-        ## CHECK THESE!!
         fourstepspx = .Fortran(
             "spmat_four", bn,bs,ix,iy,gamma,nobs,nvars,xval,xidx,xcptr,nnz,
             as.double(y), pf, dfmax, pmax, nlam, flmin, ulam, eps, maxit,
@@ -57,7 +56,7 @@ sgl <- function(
     # output
     outlist <- getoutput(fit, maxit, pmax, nvars, vnames)
     if (standardize) {
-        outlist$beta = outlist$beta/xs
+        outlist$beta = outlist$beta*xs
     }
     if (intr) {
         if (is.sparse) {
@@ -74,7 +73,6 @@ sgl <- function(
 
 gglasso <- function(bn, bs, ix, iy, nobs, nvars, x, y, pf, dfmax,
     pmax, nlam, flmin, ulam, eps, maxit, vnames, group, intr, standardize) {
-    intercept = 0L
     if(intr){
         ym = mean(y)
         xm = colMeans(x)
