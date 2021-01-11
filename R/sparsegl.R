@@ -101,12 +101,14 @@
 #'
 #' @export
 sparsegl <- function(
-  x, y, group = NULL, pen = c("sparsegl", "gglasso"),
-  algorithm = c("fourstep", "threestep"),
+  x, y, group = NULL,
   nlambda = 100, lambda.factor = ifelse(nobs < nvars, 0.01, 1e-04),
-  lambda = NULL, pf = sqrt(bs), weight = NULL, dfmax = as.integer(max(group)) + 1,
-  pmax = min(dfmax * 1.2, as.integer(max(group))), eps = 1e-08, maxit = 3e+08,
-  intercept=TRUE, asparse = 0.05, standardize=TRUE) {
+  lambda = NULL, pf = sqrt(bs),
+  intercept = TRUE, asparse = 0.05, standardize = TRUE,
+  lower_bnd = -Inf, upper_bnd = Inf,
+  dfmax = as.integer(max(group)) + 1,
+  pmax = min(dfmax * 1.2, as.integer(max(group))), eps = 1e-08, maxit = 3e+08
+  ) {
     #################################################################################
     #\tDesign matrix setup, error checking
     this.call <- match.call()
@@ -190,18 +192,41 @@ sparsegl <- function(
         nlam <- as.integer(length(lambda))
     }
     intr <- as.integer(intercept)
+
+    ### check on upper/lower bounds
+    if (any(lower_bnd > 0)) stop("Lower bounds should be non-positive")
+    if (any(upper_bnd < 0)) stop("Upper bounds should be non-negative")
+    lower_bnd[lower_bnd == -Inf] <- -9.9e30
+    upper_bnd[upper_bnd == Inf] <- 9.9e30
+    if (length(lower_bnd) < bn) {
+      if (length(lower_bnd) == 1) {
+        lower_bnd <- rep(lower_bnd, bn)
+      } else {
+        stop("Lower bounds must be length 1 or length the number of groups")
+      }
+    } else {
+      lower_bnd <- lower_bnd[seq(bn)]
+    }
+    if (length(upper_bnd) < bn) {
+      if (length(upper_bnd) == 1) {
+        upper_bnd <- rep(upper_bnd, bn)
+      } else {
+        stop("Upper bounds must be length 1 or length the number of groups")
+      }
+    } else {
+      upper_bnd <- upper_bnd[seq(bn)]
+    }
+    storage.mode(upper_bnd) <- "double"
+    storage.mode(lower_bnd) <- "double"
+    ### end check on limits
+
+
     #################################################################################
-    # call R sub-functions
-    fit <- switch(
-      pen,
-      sparsegl = sgl(
-          bn, bs, ix, iy, nobs, nvars, x, y, pf, dfmax, pmax, nlam, flmin, ulam,
-          eps, maxit, vnames, group, intr, as.double(asparse),
-          standardize, algorithm),
-      gglasso = gglasso(
-        bn, bs, ix, iy, nobs, nvars, x, y, pf, dfmax,
-        pmax, nlam, flmin, ulam, eps, maxit, vnames, group, intr, standardize)
-		)
+    # call R sub-function
+    fit <- sgl(
+      bn, bs, ix, iy, nobs, nvars, x, y, pf, dfmax, pmax, nlam, flmin, ulam,
+      eps, maxit, vnames, group, intr, as.double(asparse),
+      standardize, algorithm, lower_bnd, upper_bnd)
     #################################################################################
     # output
     if (is.null(lambda)) fit$lambda <- lamfix(fit$lambda)
