@@ -106,7 +106,7 @@ sparsegl <- function(
   lambda = NULL, pf = sqrt(bs),
   intercept = TRUE, asparse = 0.05, standardize = TRUE,
   lower_bnd = -Inf, upper_bnd = Inf,
-  dfmax = as.integer(max(group)) + 1,
+  dfmax = as.integer(max(group)) + 1L,
   pmax = min(dfmax * 1.2, as.integer(max(group))), eps = 1e-08, maxit = 3e+08
   ) {
     #################################################################################
@@ -130,18 +130,18 @@ sparsegl <- function(
     if (is.null(vnames))
         vnames <- paste("V", seq(nvars), sep = "")
 
-    if (length(y) != nobs)
-        stop("x and y have different number of rows")
-
-    if (!is.numeric(y))
-        stop("The response y must be numeric.")
-
+    assertthat::assert_that(length(y) == nobs,
+                            msg = "x and y have different number of rows")
+    assertthat::assert_that(is.numeric(y),
+                            msg = "The response y must be numeric.")
     #################################################################################
     #    group setup
     if (is.null(group)) {
         group <- 1:nvars
-    } else if (length(group) != nvars)
-        stop("group length does not match the number of predictors in x")
+    } else {
+      assertthat::assert_that(
+        length(group) == nvars,
+        msg = "group length does not match the number of predictors in x")
 
     bn <- as.integer(max(group))
     bs <- as.integer(as.numeric(table(group)))
@@ -149,16 +149,16 @@ sparsegl <- function(
     if (!identical(as.integer(sort(unique(group))), as.integer(1:bn)))
         stop("Groups must be consecutively numbered 1,2,3,...")
     #Need to add if(loss=sparsegl)...
-    if (pen=="sparsegl" && (asparse>1 || asparse<0)){
-      asparse = 0
-      pen="gglasso"
+    if (pen == "sparsegl" && (asparse>1 || asparse<0)){
+      asparse <- 0
+      pen <- "gglasso"
       warning("asparse must be in [0,1], running ordinary group lasso.")
     }
 
     ix <- rep(NA, bn)
     iy <- rep(NA, bn)
     j <- 1
-    for (g in 1:bn) {
+    for (g in seq_len(bn)) {
         ix[g] <- j
         iy[g] <- j + bs[g] - 1
         j <- j + bs[g]
@@ -168,8 +168,10 @@ sparsegl <- function(
     group <- as.integer(group)
     #################################################################################
     #parameter setup
-    if (length(pf) != bn)
-        stop("The size of group-lasso penalty factor must be same as the number of groups")
+    assertthat::assert_that(
+      length(pf) == bn,
+      msg = paste("The length of group-lasso penalty factor must be",
+                  "same as the number of groups"))
     maxit <- as.integer(maxit)
     pf <- as.double(pf)
     eps <- as.double(eps)
@@ -179,23 +181,25 @@ sparsegl <- function(
     #lambda setup
     nlam <- as.integer(nlambda)
     if (is.null(lambda)) {
-        if (lambda.factor >= 1)
-            stop("lambda.factor should be less than 1")
+        assertthat::assert_that(lambda.factor < 1,
+                                msg = "lambda.factor should be less than 1")
         flmin <- as.double(lambda.factor)
         ulam <- double(1)
     } else {
         #flmin=1 if user define lambda
         flmin <- as.double(1)
-        if (any(lambda < 0))
-            stop("lambdas should be non-negative")
+        assertthat::assert_that(all(lambda >= 0),
+            msg = "lambdas must be non-negative")
         ulam <- as.double(rev(sort(lambda)))
         nlam <- as.integer(length(lambda))
     }
     intr <- as.integer(intercept)
 
     ### check on upper/lower bounds
-    if (any(lower_bnd > 0)) stop("Lower bounds should be non-positive")
-    if (any(upper_bnd < 0)) stop("Upper bounds should be non-negative")
+    assertthat::assert_that(all(lower_bnd <= 0),
+                            msg = "Lower bounds should be non-positive")
+    assertthat::assert_that(all(upper_bnd >= 0),
+                            msg = "Upper bounds should be non-negative")
     lower_bnd[lower_bnd == -Inf] <- -9.9e30
     upper_bnd[upper_bnd == Inf] <- 9.9e30
     if (length(lower_bnd) < bn) {
@@ -205,7 +209,7 @@ sparsegl <- function(
         stop("Lower bounds must be length 1 or length the number of groups")
       }
     } else {
-      lower_bnd <- lower_bnd[seq(bn)]
+      lower_bnd <- lower_bnd[seq_len(bn)]
     }
     if (length(upper_bnd) < bn) {
       if (length(upper_bnd) == 1) {
@@ -214,7 +218,7 @@ sparsegl <- function(
         stop("Upper bounds must be length 1 or length the number of groups")
       }
     } else {
-      upper_bnd <- upper_bnd[seq(bn)]
+      upper_bnd <- upper_bnd[seq_len(bn)]
     }
     storage.mode(upper_bnd) <- "double"
     storage.mode(lower_bnd) <- "double"
