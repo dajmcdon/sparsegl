@@ -7,8 +7,8 @@ sgl <- function(
     algorithm <- "sgl"
     if (inherits(x,"sparseMatrix")) {
         is.sparse <- TRUE
-        x <- as(x,"CsparseMatrix")
-        x <- as(x,"dgCMatrix")
+        x <- methods::as(x,"CsparseMatrix")
+        x <- methods::as(x,"dgCMatrix")
         algorithm <- "sp_sgl"
     }
     if (intr) {

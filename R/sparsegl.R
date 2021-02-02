@@ -77,27 +77,17 @@
 #' @seealso \code{plot.gglasso}
 #' @keywords models regression sparse
 #' @examples
-#'
 #' # load sparsegl library
 #' library(sparsegl)
-#'
-#' # load bardet data set
-#' data(bardet)
 #'
 #' # define group index
 #' group1 <- rep(1:20,each=5)
 #'
 #' # fit group lasso penalized least squares
-#' m1 <- sparsegl(x=bardet$x,y=bardet$y,group=group1,pen="gglasso")
-#'
-#' # load colon data set
-#' data(colon)
-#'
+#' # m1 <- sparsegl(x=bardet$x,y=bardet$y,group=group1,pen="gglasso")
 #' # define group index
 #' group2 <- rep(1:20,each=5)
 #'
-#' # fit group lasso penalized logistic regression
-#' m2 <- sparsegl(x=colon$x,y=colon$y,group=group2,algorithm="original")
 #'
 #' @export
 sparsegl <- function(

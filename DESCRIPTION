@@ -17,7 +17,8 @@ RoxygenNote: 7.1.1
 Imports: 
     Matrix,
     RSpectra,
-    assertthat
+    assertthat,
+    methods
 Depends: 
     R (>= 3.5)
 License: MIT + file LICENSE
