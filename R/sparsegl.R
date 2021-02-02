@@ -107,134 +107,133 @@ sparsegl <- function(
   intercept = TRUE, asparse = 0.05, standardize = TRUE,
   lower_bnd = -Inf, upper_bnd = Inf,
   dfmax = as.integer(max(group)) + 1L,
-  pmax = min(dfmax * 1.2, as.integer(max(group))), eps = 1e-08, maxit = 3e+08
-  ) {
-    #################################################################################
-    #\tDesign matrix setup, error checking
-    this.call <- match.call()
-    pen = match.arg(pen)
-    algorithm = match.arg(algorithm)
+  pmax = min(dfmax * 1.2, as.integer(max(group))), eps = 1e-08, maxit = 3e+08) {
+  #################################################################################
+  #\tDesign matrix setup, error checking
+  this.call <- match.call()
+  pen = match.arg(pen)
+  algorithm = match.arg(algorithm)
 
-    if (!is.matrix(x) && !inherits(x, "sparseMatrix"))
-        stop("x has to be a matrix")
+  if (!is.matrix(x) && !inherits(x, "sparseMatrix"))
+    stop("x has to be a matrix")
 
-    if (any(is.na(x)))
-        stop("Missing values in x not allowed!")
+  if (any(is.na(x)))
+    stop("Missing values in x not allowed!")
 
-    y <- drop(y)
-    np <- dim(x)
-    nobs <- as.integer(np[1])
-    nvars <- as.integer(np[2])
-    vnames <- colnames(x)
+  y <- drop(y)
+  np <- dim(x)
+  nobs <- as.integer(np[1])
+  nvars <- as.integer(np[2])
+  vnames <- colnames(x)
 
-    if (is.null(vnames))
-        vnames <- paste("V", seq(nvars), sep = "")
+  if (is.null(vnames)) vnames <- paste("V", seq(nvars), sep = "")
 
-    assertthat::assert_that(length(y) == nobs,
-                            msg = "x and y have different number of rows")
-    assertthat::assert_that(is.numeric(y),
-                            msg = "The response y must be numeric.")
-    #################################################################################
-    #    group setup
-    if (is.null(group)) {
-        group <- 1:nvars
-    } else {
-      assertthat::assert_that(
-        length(group) == nvars,
-        msg = "group length does not match the number of predictors in x")
-
-    bn <- as.integer(max(group))
-    bs <- as.integer(as.numeric(table(group)))
-
-    if (!identical(as.integer(sort(unique(group))), as.integer(1:bn)))
-        stop("Groups must be consecutively numbered 1,2,3,...")
-    #Need to add if(loss=sparsegl)...
-    if (pen == "sparsegl" && (asparse>1 || asparse<0)){
-      asparse <- 0
-      pen <- "gglasso"
-      warning("asparse must be in [0,1], running ordinary group lasso.")
-    }
-
-    ix <- rep(NA, bn)
-    iy <- rep(NA, bn)
-    j <- 1
-    for (g in seq_len(bn)) {
-        ix[g] <- j
-        iy[g] <- j + bs[g] - 1
-        j <- j + bs[g]
-    }
-    ix <- as.integer(ix)
-    iy <- as.integer(iy)
-    group <- as.integer(group)
-    #################################################################################
-    #parameter setup
+  assertthat::assert_that(length(y) == nobs,
+                          msg = "x and y have different number of rows")
+  assertthat::assert_that(is.numeric(y),
+                          msg = "The response y must be numeric.")
+  #################################################################################
+  #    group setup
+  if (is.null(group)) {
+    group <- 1:nvars
+  } else {
     assertthat::assert_that(
-      length(pf) == bn,
-      msg = paste("The length of group-lasso penalty factor must be",
-                  "same as the number of groups"))
-    maxit <- as.integer(maxit)
-    pf <- as.double(pf)
-    eps <- as.double(eps)
-    dfmax <- as.integer(dfmax)
-    pmax <- as.integer(pmax)
-    #################################################################################
-    #lambda setup
-    nlam <- as.integer(nlambda)
-    if (is.null(lambda)) {
-        assertthat::assert_that(lambda.factor < 1,
-                                msg = "lambda.factor should be less than 1")
-        flmin <- as.double(lambda.factor)
-        ulam <- double(1)
-    } else {
-        #flmin=1 if user define lambda
-        flmin <- as.double(1)
-        assertthat::assert_that(all(lambda >= 0),
-            msg = "lambdas must be non-negative")
-        ulam <- as.double(rev(sort(lambda)))
-        nlam <- as.integer(length(lambda))
-    }
-    intr <- as.integer(intercept)
+      length(group) == nvars,
+      msg = "group length does not match the number of predictors in x")
+  }
 
-    ### check on upper/lower bounds
-    assertthat::assert_that(all(lower_bnd <= 0),
-                            msg = "Lower bounds should be non-positive")
-    assertthat::assert_that(all(upper_bnd >= 0),
-                            msg = "Upper bounds should be non-negative")
-    lower_bnd[lower_bnd == -Inf] <- -9.9e30
-    upper_bnd[upper_bnd == Inf] <- 9.9e30
-    if (length(lower_bnd) < bn) {
-      if (length(lower_bnd) == 1) {
-        lower_bnd <- rep(lower_bnd, bn)
-      } else {
-        stop("Lower bounds must be length 1 or length the number of groups")
-      }
+  bn <- as.integer(max(group))
+  bs <- as.integer(as.numeric(table(group)))
+
+  if (!identical(as.integer(sort(unique(group))), as.integer(1:bn)))
+    stop("Groups must be consecutively numbered 1,2,3,...")
+  #Need to add if(loss=sparsegl)...
+  if (pen == "sparsegl" && (asparse>1 || asparse<0)){
+    asparse <- 0
+    pen <- "gglasso"
+    warning("asparse must be in [0,1], running ordinary group lasso.")
+  }
+
+  ix <- rep(NA, bn)
+  iy <- rep(NA, bn)
+  j <- 1
+  for (g in seq_len(bn)) {
+    ix[g] <- j
+    iy[g] <- j + bs[g] - 1
+    j <- j + bs[g]
+  }
+  ix <- as.integer(ix)
+  iy <- as.integer(iy)
+  group <- as.integer(group)
+  #################################################################################
+  #parameter setup
+  assertthat::assert_that(
+    length(pf) == bn,
+    msg = paste("The length of group-lasso penalty factor must be",
+                "same as the number of groups"))
+  maxit <- as.integer(maxit)
+  pf <- as.double(pf)
+  eps <- as.double(eps)
+  dfmax <- as.integer(dfmax)
+  pmax <- as.integer(pmax)
+  #################################################################################
+  #lambda setup
+  nlam <- as.integer(nlambda)
+  if (is.null(lambda)) {
+    assertthat::assert_that(lambda.factor < 1,
+                            msg = "lambda.factor should be less than 1")
+    flmin <- as.double(lambda.factor)
+    ulam <- double(1)
+  } else {
+    #flmin=1 if user define lambda
+    flmin <- as.double(1)
+    assertthat::assert_that(all(lambda >= 0),
+                            msg = "lambdas must be non-negative")
+    ulam <- as.double(rev(sort(lambda)))
+    nlam <- as.integer(length(lambda))
+  }
+  intr <- as.integer(intercept)
+
+  ### check on upper/lower bounds
+  assertthat::assert_that(all(lower_bnd <= 0),
+                          msg = "Lower bounds should be non-positive")
+  assertthat::assert_that(all(upper_bnd >= 0),
+                          msg = "Upper bounds should be non-negative")
+  lower_bnd[lower_bnd == -Inf] <- -9.9e30
+  upper_bnd[upper_bnd == Inf] <- 9.9e30
+  if (length(lower_bnd) < bn) {
+    if (length(lower_bnd) == 1) {
+      lower_bnd <- rep(lower_bnd, bn)
     } else {
-      lower_bnd <- lower_bnd[seq_len(bn)]
+      stop("Lower bounds must be length 1 or length the number of groups")
     }
-    if (length(upper_bnd) < bn) {
-      if (length(upper_bnd) == 1) {
-        upper_bnd <- rep(upper_bnd, bn)
-      } else {
-        stop("Upper bounds must be length 1 or length the number of groups")
-      }
+  } else {
+    lower_bnd <- lower_bnd[seq_len(bn)]
+  }
+  if (length(upper_bnd) < bn) {
+    if (length(upper_bnd) == 1) {
+      upper_bnd <- rep(upper_bnd, bn)
     } else {
-      upper_bnd <- upper_bnd[seq_len(bn)]
+      stop("Upper bounds must be length 1 or length the number of groups")
     }
-    storage.mode(upper_bnd) <- "double"
-    storage.mode(lower_bnd) <- "double"
-    ### end check on limits
+  } else {
+    upper_bnd <- upper_bnd[seq_len(bn)]
+  }
+  storage.mode(upper_bnd) <- "double"
+  storage.mode(lower_bnd) <- "double"
+  ### end check on limits
 
 
-    #################################################################################
-    # call R sub-function
-    fit <- sgl(
-      bn, bs, ix, iy, nobs, nvars, x, y, pf, dfmax, pmax, nlam, flmin, ulam,
-      eps, maxit, vnames, group, intr, as.double(asparse),
-      standardize, algorithm, lower_bnd, upper_bnd)
-    #################################################################################
-    # output
-    if (is.null(lambda)) fit$lambda <- lamfix(fit$lambda)
-    fit$call <- this.call
-    class(fit) <- c("sparsegl", class(fit))
-    fit
+  #################################################################################
+  # call R sub-function
+  fit <- sgl(
+    bn, bs, ix, iy, nobs, nvars, x, y, pf, dfmax, pmax, nlam, flmin, ulam,
+    eps, maxit, vnames, group, intr, as.double(asparse),
+    standardize, algorithm, lower_bnd, upper_bnd)
+  #################################################################################
+  # output
+  if (is.null(lambda)) fit$lambda <- lamfix(fit$lambda)
+  fit$call <- this.call
+  class(fit) <- c("sparsegl", class(fit))
+  fit
 }

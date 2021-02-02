@@ -111,7 +111,7 @@ Computing}. 25(6), 1129-1141.\cr BugReport:
 \code{\link{predict.cv.gglasso}}, and \code{\link{coef.cv.gglasso}} methods.
 }
 \author{
-Yi Yang and Hui Zou\cr Maintainer: Yi Yang <yi.yang6@mcgill.ca>
+Yi Yang and Hui Zou\cr Maintainer: Yi Yang \href{mailto:yi.yang6@mcgill.ca}{yi.yang6@mcgill.ca}
 }
 \keyword{models}
 \keyword{regression}

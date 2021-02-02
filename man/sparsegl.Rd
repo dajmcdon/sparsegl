@@ -8,21 +8,19 @@ sparsegl(
   x,
   y,
   group = NULL,
-  pen = c("sparsegl", "gglasso"),
-  algorithm = c("original", "threestep", "threestepalt", "fourstep"),
   nlambda = 100,
   lambda.factor = ifelse(nobs < nvars, 0.01, 1e-04),
   lambda = NULL,
   pf = sqrt(bs),
-  weight = NULL,
-  dfmax = as.integer(max(group)) + 1,
-  pmax = min(dfmax * 1.2, as.integer(max(group))),
-  eps = 1e-08,
-  maxit = 3e+08,
-  delta,
   intercept = TRUE,
   asparse = 0.05,
-  standardize = TRUE
+  standardize = TRUE,
+  lower_bnd = -Inf,
+  upper_bnd = Inf,
+  dfmax = as.integer(max(group)) + 1L,
+  pmax = min(dfmax * 1.2, as.integer(max(group))),
+  eps = 1e-08,
+  maxit = 3e+08
 )
 }
 \arguments{
@@ -35,13 +33,6 @@ regression (least squares), and a two-level factor for classification
 
 \item{group}{a vector of consecutive integers describing the grouping of the
 coefficients (see example below).}
-
-\item{pen}{a character string specifying the penalty function to use, valid
-options are: \itemize{ \item \code{"sparsegl"} for group plus l1 penalty,
-\item \code{"gglasso"} for group penalty only }Default is \code{"sparsegl"}.}
-
-\item{algorithm}{a character string specifying the algorithm for sparse
-group lasso (sparsegl). Valid options are: \itemize{ }}
 
 \item{nlambda}{the number of \code{lambda} values - default is 100.}
 
@@ -71,6 +62,11 @@ groups, which implies no shrinkage, and results in that group always being
 included in the model. Default value for each entry is the square-root of
 the corresponding size of each group.}
 
+\item{intercept}{Whether to include intercept in the model. Default is TRUE.}
+
+\item{asparse}{the weight to put on the ell1 norm in sparse group lasso. Default
+is 0.05}
+
 \item{dfmax}{limit the maximum number of groups in the model. Useful for
 very large \code{bs} (group size), if a partial path is desired. Default is
 \code{bs+1}.}
@@ -86,13 +82,12 @@ re-enters model through the path, it will be counted only once. Default is
 value. Default is 3e8. If models do not converge, consider increasing
 \code{maxit}.}
 
-\item{delta}{the parameter \eqn{\delta}{delta} in \code{"hsvm"} (Huberized
-squared hinge loss). Default is 1.}
+\item{pen}{a character string specifying the penalty function to use, valid
+options are: \itemize{ \item \code{"sparsegl"} for group plus l1 penalty,
+\item \code{"gglasso"} for group penalty only }Default is \code{"sparsegl"}.}
 
-\item{intercept}{Whether to include intercept in the model. Default is TRUE.}
-
-\item{asparse}{the weight to put on the ell1 norm in sparse group lasso. Default
-is 0.05}
+\item{algorithm}{a character string specifying the algorithm for sparse
+group lasso (sparsegl). Valid options are: \itemize{ }}
 }
 \value{
 An object with S3 class \code{\link{gglasso}}.  \item{call}{the call
@@ -149,7 +144,7 @@ m2 <- sparsegl(x=colon$x,y=colon$y,group=group2,algorithm="original")
 \code{plot.gglasso}
 }
 \author{
-Aaron Cohen and Dan Mcdonald\cr Maintainer: Aaron Cohen <cohenaa@indiana.edu>
+Aaron Cohen and Dan Mcdonald\cr Maintainer: Aaron Cohen \href{mailto:cohenaa@indiana.edu}{cohenaa@indiana.edu}
 }
 \keyword{models}
 \keyword{regression}
