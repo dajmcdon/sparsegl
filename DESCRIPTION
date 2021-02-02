@@ -1,15 +1,24 @@
 Package: sparsegl
 Type: Package
-Title: Sparse Group Lasso (Title Case)
-Version: 0.1.0
-Author: Aaron Cohen and Dan Mcdonald
-Maintainer: Aaron Cohen <cohenaa@indiana.edu>
-Description: Performs sparse group lasso. There are two algorithms that both perform sgl, may be better or worse depending on the dataset. 
-License: What license IS it under?
+Title: Sparse Group Lasso
+Version: 0.2.0
+Authors@R: 
+    person(given = "Daniel J.",
+           family = "McDonald",
+           role = c("aut", "cre"),
+           email = "daniel@stat.ubc.ca")
+Description: Performs sparse group lasso with optional bound constraints on
+  the coefficients. Supports the use of a sparse design matrix as well as 
+  sparse coefficient estimates.
 Encoding: UTF-8
 LazyData: true
+Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.1.1
 Imports: 
-    Matrix
+    Matrix,
+    RSpectra,
+    assertthat,
+    methods
 Depends: 
-    R (>= 2.10)
+    R (>= 3.5)
+License: MIT + file LICENSE

@@ -16,8 +16,8 @@ downloaded from
 colon
 }
 \value{
-A list with the following elements: \item{x}{a [62 x 100] matrix
-(expanded from a [62 x 20] matrix) giving the expression levels of 20 genes
+A list with the following elements: \item{x}{a \link{62 x 100} matrix
+(expanded from a \link{62 x 20} matrix) giving the expression levels of 20 genes
 for the 62 colon tissue samples. Each row corresponds to a patient, each 5
 consecutive columns to a grouped gene.} \item{y}{a numeric vector of length
 62 giving the type of tissue sample (tumor or normal).}

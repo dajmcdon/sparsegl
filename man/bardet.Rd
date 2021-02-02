@@ -11,8 +11,8 @@ An object of class \code{list} of length 2.
 bardet
 }
 \value{
-A list with the following elements: \item{x}{a [120 x 100] matrix
-(expanded from a [120 x 20] matrix) giving the expression levels of 20
+A list with the following elements: \item{x}{a \link{120 x 100} matrix
+(expanded from a \link{120 x 20} matrix) giving the expression levels of 20
 filtered genes for the 120 samples. Each row corresponds to a subject, each
 5 consecutive columns to a grouped gene.} \item{y}{a numeric vector of
 length 120 giving expression level of gene TRIM32, which causes Bardet-Biedl

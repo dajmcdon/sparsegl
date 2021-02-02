@@ -56,7 +56,7 @@ Statistical Software}, 33, 1.\cr \url{http://www.jstatsoft.org/v33/i01/}
 \code{\link{cv.gglasso}}.
 }
 \author{
-Yi Yang and Hui Zou\cr Maintainer: Yi Yang <yi.yang6@mcgill.ca>
+Yi Yang and Hui Zou\cr Maintainer: Yi Yang \href{mailto:yi.yang6@mcgill.ca}{yi.yang6@mcgill.ca}
 }
 \keyword{models}
 \keyword{regression}
