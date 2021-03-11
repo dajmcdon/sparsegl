@@ -101,8 +101,6 @@ sparsegl <- function(
   #################################################################################
   #\tDesign matrix setup, error checking
   this.call <- match.call()
-  pen = match.arg(pen)
-  algorithm = match.arg(algorithm)
 
   if (!is.matrix(x) && !inherits(x, "sparseMatrix"))
     stop("x has to be a matrix")
@@ -138,9 +136,8 @@ sparsegl <- function(
   if (!identical(as.integer(sort(unique(group))), as.integer(1:bn)))
     stop("Groups must be consecutively numbered 1,2,3,...")
   #Need to add if(loss=sparsegl)...
-  if (pen == "sparsegl" && (asparse>1 || asparse<0)){
+  if (asparse>1 || asparse<0){
     asparse <- 0
-    pen <- "gglasso"
     warning("asparse must be in [0,1], running ordinary group lasso.")
   }
 
@@ -219,7 +216,7 @@ sparsegl <- function(
   fit <- sgl(
     bn, bs, ix, iy, nobs, nvars, x, y, pf, dfmax, pmax, nlam, flmin, ulam,
     eps, maxit, vnames, group, intr, as.double(asparse),
-    standardize, algorithm, lower_bnd, upper_bnd)
+    standardize, lower_bnd, upper_bnd)
   #################################################################################
   # output
   if (is.null(lambda)) fit$lambda <- lamfix(fit$lambda)

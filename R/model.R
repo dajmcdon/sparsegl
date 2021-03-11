@@ -1,6 +1,6 @@
 sgl <- function(
     bn, bs, ix, iy, nobs, nvars, x, y, pf, dfmax, pmax, nlam, flmin, ulam, eps,
-    maxit, vnames, group, intr, asparse, standardize, algorithm,
+    maxit, vnames, group, intr, asparse, standardize,
     lower_bnd, upper_bnd) {
     # call Fortran core
     is.sparse <- FALSE
