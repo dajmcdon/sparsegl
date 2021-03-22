@@ -151,14 +151,11 @@ test_that("lasso penalty", {
   for (i in 1 : length(lambda)){
     fit1 <- sparsegl(X, y, asparse = 1, lambda = lambda[i])
     fit2 <- glmnet(X, y, alpha = 1)
-    fit3 <- SGL(data, index = group, type = "linear", alpha = 1)
     print(paste("lasso: lambda = ", lambda[i]))
     coef <- c(fit1$b0, fit1$beta[, 1])
     print(cbind(which(coef != 0), coef[which(coef != 0)]))
     coeff <- coef(fit2, s = lambda[i])
     print(cbind(which(coeff != 0), coeff[which(coeff != 0)]))
-    coefff <- c(fit3$intercept, fit$beta[, i])
-    print(cbind(which(coefff != 0), coeff[which(coefff != 0)]))
     
     # expect_equal(sum(coef != 0), (sum(coeff != 0)), info = paste("lasso: lambda = ", lambda[i]))
     # expect_equal(sum(coef != 0), (sum(coefff != 0)), info = paste("lasso: lambda = ", lambda[i]))
