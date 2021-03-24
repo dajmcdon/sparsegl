@@ -23,5 +23,6 @@ Depends:
     R (>= 3.5)
 License: MIT + file LICENSE
 Suggests: 
-    testthat (>= 3.0.0)
+    testthat (>= 3.0.0),
+    glmnet
 Config/testthat/edition: 3
