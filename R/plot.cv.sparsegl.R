@@ -54,7 +54,7 @@
 #' plot(cv)
 #' @method plot cv.gglasso
 #' @export
-plot.cv.gglasso <- function(x, sign.lambda = 1, ...) {
+plot.cv.sparsegl <- function(x, sign.lambda = 1, ...) {
     cvobj <- x
     xlab <- "log(Lambda)"
     if (sign.lambda < 0) 

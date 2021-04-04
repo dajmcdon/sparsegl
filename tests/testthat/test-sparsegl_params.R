@@ -1,4 +1,3 @@
-library(Matrix)
 
 test_that("input parameter mismatches cause failures", {
   
@@ -16,7 +15,7 @@ test_that("input parameter mismatches cause failures", {
   expect_error(sparsegl(x, y))
   
   i <- c(1,3:8); j <- c(2,9,6:10); x <- 7 * (1:7)
-  A <- sparseMatrix(i, j, x = x)
+  A <- Matrix::sparseMatrix(i, j, x = x)
   y = c(1,2)
   expect_error(sparsegl(A,y))
   
@@ -25,7 +24,7 @@ test_that("input parameter mismatches cause failures", {
   expect_error(sparsegl(x, y))
   
   i <- c(1,3:8); j <- c(2,9,6:10); x <- 7 * (1:7)
-  A <- sparseMatrix(i, j, x = x)
+  A <- Matrix::sparseMatrix(i, j, x = x)
   y <- c(1:8)
   expect_error(sparsegl(A, y), NA)
   

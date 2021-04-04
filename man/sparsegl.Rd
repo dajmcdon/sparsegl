@@ -27,9 +27,7 @@ sparsegl(
 \item{x}{matrix of predictors, of dimension \eqn{n \times p}{n*p}; each row
 is an observation vector.}
 
-\item{y}{response variable. This argument should be quantitative for
-regression (least squares), and a two-level factor for classification
-(logistic model, huberized SVM, squared SVM).}
+\item{y}{real-valued response variable.}
 
 \item{group}{a vector of consecutive integers describing the grouping of the
 coefficients (see example below).}

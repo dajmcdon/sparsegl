@@ -24,5 +24,7 @@ Depends:
 License: MIT + file LICENSE
 Suggests: 
     testthat (>= 3.0.0),
-    glmnet
+    glmnet,
+    gglasso,
+    SGL
 Config/testthat/edition: 3

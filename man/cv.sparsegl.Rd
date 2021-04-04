@@ -14,7 +14,7 @@ cv.sparsegl(
   y,
   group,
   lambda = NULL,
-  pred.loss = c("misclass", "loss", "L1", "L2"),
+  pred.loss = c("L1", "L2"),
   nfolds = 5,
   foldid,
   delta,
@@ -36,9 +36,7 @@ coefficients (see example below).}
 \code{NULL}, and \code{\link{gglasso}} chooses its own sequence.}
 
 \item{pred.loss}{loss to use for cross-validation error. Valid options are:
-\itemize{ \item \code{"loss"} for classification, margin based loss
-function.  \item \code{"misclass"} for classification, it gives
-misclassification error.  \item \code{"L1"} for regression, mean square
+\itemize{ \item \code{"L1"} for regression, mean square
 error used by least squares regression \code{loss="ls"}, it measure the
 deviation from the fitted mean to the response.  \item \code{"L2"} for
 regression, mean absolute error used by least squares regression

@@ -38,7 +38,7 @@
 #' plot(m1,log.l=FALSE) # plots against the lambda sequence
 #' @method plot gglasso
 #' @export
-plot.gglasso <- function(x, group = FALSE, log.l = TRUE, ...) {
+plot.sparsegl <- function(x, group = FALSE, log.l = TRUE, ...) {
     xb <- x$beta
     if (nrow(xb) == 1) {
         if (any(abs(xb) > 0)) {

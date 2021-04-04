@@ -41,7 +41,7 @@
 #' 
 #' @export
 #' @method coef gglasso
-coef.gglasso <- function(object, s = NULL, ...) {
+coef.sparsegl <- function(object, s = NULL, ...) {
     b0 <- t(as.matrix(object$b0))
     rownames(b0) <- "(Intercept)"
     nbeta <- rbind2(b0, object$beta)
@@ -121,7 +121,7 @@ coef.gglasso <- function(object, s = NULL, ...) {
 #' 
 #' @method predict gglasso
 #' @export
-predict.gglasso <- function(object, newx, s = NULL, type = c("class", 
+predict.sparsegl <- function(object, newx, s = NULL, type = c("class", 
     "link"), ...) {
     type <- match.arg(type)
     loss <- class(object)[[2]]
@@ -195,7 +195,7 @@ predict.gglasso <- function(object, newx, s = NULL, type = c("class",
 #' print(m1)
 #' @method print gglasso
 #' @export
-print.gglasso <- function(x, digits = max(3, getOption("digits") - 
+print.sparsegl <- function(x, digits = max(3, getOption("digits") - 
     3), ...) {
     cat("\nCall: ", deparse(x$call), "\n\n")
     print(cbind(Df = x$df, Lambda = signif(x$lambda, digits)))
@@ -255,7 +255,7 @@ print.gglasso <- function(x, digits = max(3, getOption("digits") -
 #' pre = coef(cv$gglasso.fit, s = cv$lambda.1se)
 #' @method coef cv.gglasso
 #' @export
-coef.cv.gglasso <- function(object, s = c("lambda.1se", "lambda.min"), 
+coef.cv.sparsegl <- function(object, s = c("lambda.1se", "lambda.min"), 
     ...) {
     if (is.numeric(s)) 
         lambda <- s else if (is.character(s)) {
@@ -316,7 +316,7 @@ coef.cv.gglasso <- function(object, s = c("lambda.1se", "lambda.min"),
 #' s = cv$lambda.min, type = "class")
 #' @method predict cv.gglasso
 #' @export
-predict.cv.gglasso <- function(object, newx, s = c("lambda.1se", 
+predict.cv.sparsegl <- function(object, newx, s = c("lambda.1se", 
     "lambda.min"), ...) {
     if (is.numeric(s)) 
         lambda <- s else if (is.character(s)) {

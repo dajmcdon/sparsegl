@@ -1,9 +1,3 @@
-library(Matrix)
-library(gglasso)
-library(SGL)
-usethis::use_package("glmnet", type = "Suggests")
-requireNamespace("glmnet", quietly = TRUE)
-
 
 test_that("no penalty", {
   
@@ -20,7 +14,7 @@ test_that("no penalty", {
   
 })
 
-test_that("lasso penalty", {
+test_that("lasso penalty as asparse = 1", {
   
   skip("skip tests or lasso only")
   X <- matrix(c(1,2,3,4,5,6), nrow = 3)
@@ -77,7 +71,7 @@ test_that("lasso penalty", {
   
 })
 
-test_that("group lasso penalty", {
+test_that("group lasso penalty as asparse = 0", {
   
   skip("skip tests for group lasso only")
   set.seed(20200110)
@@ -114,7 +108,7 @@ test_that("group lasso penalty", {
 
 test_that("sgl", {
   
-  skip("skip tests for sparse group lasso")
+  skip("skip tests for sparse group lasso as 0 < asparse < 1")
   set.seed(20200110)
   n <- 100
   p <- 48

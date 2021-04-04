@@ -15,9 +15,7 @@
 #'
 #' @param x matrix of predictors, of dimension \eqn{n \times p}{n*p}; each row
 #' is an observation vector.
-#' @param y response variable. This argument should be quantitative for
-#' regression (least squares), and a two-level factor for classification
-#' (logistic model, huberized SVM, squared SVM).
+#' @param y real-valued response variable. 
 #' @param group a vector of consecutive integers describing the grouping of the
 #' coefficients (see example below).
 #' @param pen a character string specifying the penalty function to use, valid
@@ -224,3 +222,4 @@ sparsegl <- function(
   class(fit) <- c("sparsegl", class(fit))
   fit
 }
+
