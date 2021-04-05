@@ -36,7 +36,7 @@
 #' plot(m1) # plots the coefficients against the log-lambda sequence 
 #' plot(m1,group=TRUE) # plots group norm against the log-lambda sequence 
 #' plot(m1,log.l=FALSE) # plots against the lambda sequence
-#' @method plot gglasso
+#' @method plot sparsegl
 #' @export
 plot.sparsegl <- function(x, group = FALSE, log.l = TRUE, ...) {
     xb <- x$beta

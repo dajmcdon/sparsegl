@@ -2,6 +2,7 @@
 test_that("plot_cv_sparsegl", {
   set.seed(1)
   
+  skip("skip this test")
   data(bardet)
   bardet
   group <- rep(1:20,each=5)

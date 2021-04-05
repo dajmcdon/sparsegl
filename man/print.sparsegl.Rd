@@ -4,7 +4,7 @@
 \alias{print.sparsegl}
 \title{print a gglasso object}
 \usage{
-\method{print}{gglasso}(x, digits = max(3, getOption("digits") - 3), ...)
+\method{print}{sparsegl}(x, digits = max(3, getOption("digits") - 3), ...)
 }
 \arguments{
 \item{x}{fitted \code{\link{gglasso}} object}

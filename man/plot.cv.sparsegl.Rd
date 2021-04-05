@@ -4,7 +4,7 @@
 \alias{plot.cv.sparsegl}
 \title{plot the cross-validation curve produced by cv.gglasso}
 \usage{
-\method{plot}{cv.gglasso}(x, sign.lambda = 1, ...)
+\method{plot}{cv.sparsegl}(x, sign.lambda = 1, ...)
 }
 \arguments{
 \item{x}{fitted \code{\link{cv.gglasso}} object}

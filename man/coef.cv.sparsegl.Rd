@@ -4,7 +4,7 @@
 \alias{coef.cv.sparsegl}
 \title{get coefficients or make coefficient predictions from a "cv.gglasso" object.}
 \usage{
-\method{coef}{cv.gglasso}(object, s = c("lambda.1se", "lambda.min"), ...)
+\method{coef}{cv.sparsegl}(object, s = c("lambda.1se", "lambda.min"), ...)
 }
 \arguments{
 \item{object}{fitted \code{\link{cv.gglasso}} object.}

@@ -52,7 +52,7 @@
 #' 
 #' # make a CV plot
 #' plot(cv)
-#' @method plot cv.gglasso
+#' @method plot cv.sparsegl
 #' @export
 plot.cv.sparsegl <- function(x, sign.lambda = 1, ...) {
     cvobj <- x

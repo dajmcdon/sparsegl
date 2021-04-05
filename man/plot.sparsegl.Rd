@@ -4,7 +4,7 @@
 \alias{plot.sparsegl}
 \title{Plot solution paths from a "gglasso" object}
 \usage{
-\method{plot}{gglasso}(x, group = FALSE, log.l = TRUE, ...)
+\method{plot}{sparsegl}(x, group = FALSE, log.l = TRUE, ...)
 }
 \arguments{
 \item{x}{fitted \code{\link{gglasso}} model}

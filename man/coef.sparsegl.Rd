@@ -4,7 +4,7 @@
 \alias{coef.sparsegl}
 \title{get coefficients or make coefficient predictions from an "gglasso" object.}
 \usage{
-\method{coef}{gglasso}(object, s = NULL, ...)
+\method{coef}{sparsegl}(object, s = NULL, ...)
 }
 \arguments{
 \item{object}{fitted \code{\link{gglasso}} model object.}

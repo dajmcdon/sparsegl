@@ -4,7 +4,7 @@
 \alias{predict.cv.sparsegl}
 \title{make predictions from a "cv.gglasso" object.}
 \usage{
-\method{predict}{cv.gglasso}(object, newx, s = c("lambda.1se", "lambda.min"), ...)
+\method{predict}{cv.sparsegl}(object, newx, s = c("lambda.1se", "lambda.min"), ...)
 }
 \arguments{
 \item{object}{fitted \code{\link{cv.gglasso}} object.}

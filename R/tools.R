@@ -40,7 +40,7 @@
 #' coef(m1,s=c(0.01,0.02))
 #' 
 #' @export
-#' @method coef gglasso
+#' @method coef sparsegl
 coef.sparsegl <- function(object, s = NULL, ...) {
     b0 <- t(as.matrix(object$b0))
     rownames(b0) <- "(Intercept)"
@@ -119,7 +119,7 @@ coef.sparsegl <- function(object, s = NULL, ...) {
 #' # predicted linear predictors at x[1:5,]
 #' print(predict(m1,type="link",newx=colon$x[1:5,]))
 #' 
-#' @method predict gglasso
+#' @method predict sparsegl
 #' @export
 predict.sparsegl <- function(object, newx, s = NULL, type = c("class", 
     "link"), ...) {
@@ -193,7 +193,7 @@ predict.sparsegl <- function(object, newx, s = NULL, type = c("class",
 #' 
 #' # print out results
 #' print(m1)
-#' @method print gglasso
+#' @method print sparsegl
 #' @export
 print.sparsegl <- function(x, digits = max(3, getOption("digits") - 
     3), ...) {
@@ -253,7 +253,7 @@ print.sparsegl <- function(x, digits = max(3, getOption("digits") -
 #' 
 #' # the coefficients at lambda = lambda.1se
 #' pre = coef(cv$gglasso.fit, s = cv$lambda.1se)
-#' @method coef cv.gglasso
+#' @method coef cv.sparsegl
 #' @export
 coef.cv.sparsegl <- function(object, s = c("lambda.1se", "lambda.min"), 
     ...) {
@@ -314,7 +314,7 @@ coef.cv.sparsegl <- function(object, s = c("lambda.1se", "lambda.min"),
 #' # the coefficients at lambda = lambda.min, newx = x[1,]
 #' pre = predict(cv$gglasso.fit, newx = colon$x[1:10,], 
 #' s = cv$lambda.min, type = "class")
-#' @method predict cv.gglasso
+#' @method predict cv.sparsegl
 #' @export
 predict.cv.sparsegl <- function(object, newx, s = c("lambda.1se", 
     "lambda.min"), ...) {
