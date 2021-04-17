@@ -101,8 +101,6 @@ sparsegl <- function(
   #################################################################################
   #\tDesign matrix setup, error checking
   this.call <- match.call()
-  pen = match.arg(pen)
-  algorithm = match.arg(algorithm)
 
   if (!is.matrix(x) && !inherits(x, "sparseMatrix"))
     stop("x has to be a matrix")
@@ -136,22 +134,20 @@ sparsegl <- function(
   bs <- as.integer(as.numeric(table(group)))
 
   if (!identical(as.integer(sort(unique(group))), as.integer(1:bn)))
-    stop("Groups must be consecutively numbered 1,2,3,...")
-  #Need to add if(loss=sparsegl)...
-  if (pen == "sparsegl" && (asparse>1 || asparse<0)){
+    stop("Groups must be consecutively numbered 1, 2, 3, ...")
+
+  assertthat::assert_that(
+    asparse < 1,
+    msg = "asparse must be less than 1, you may want glmnet::glmnet()")
+
+  if (asparse < 0) {
     asparse <- 0
-    pen <- "gglasso"
     warning("asparse must be in [0,1], running ordinary group lasso.")
   }
 
-  ix <- rep(NA, bn)
-  iy <- rep(NA, bn)
-  j <- 1
-  for (g in seq_len(bn)) {
-    ix[g] <- j
-    iy[g] <- j + bs[g] - 1
-    j <- j + bs[g]
-  }
+
+  iy <- cumsum(bs) # last column of x in each group
+  ix <- c(0, iy[-bn]) + 1 # first column of x in each group
   ix <- as.integer(ix)
   iy <- as.integer(iy)
   group <- as.integer(group)
@@ -175,7 +171,7 @@ sparsegl <- function(
     flmin <- as.double(lambda.factor)
     ulam <- double(1)
   } else {
-    #flmin=1 if user define lambda
+    #flmin = 1 if user define lambda
     flmin <- as.double(1)
     assertthat::assert_that(all(lambda >= 0),
                             msg = "lambdas must be non-negative")
@@ -219,7 +215,7 @@ sparsegl <- function(
   fit <- sgl(
     bn, bs, ix, iy, nobs, nvars, x, y, pf, dfmax, pmax, nlam, flmin, ulam,
     eps, maxit, vnames, group, intr, as.double(asparse),
-    standardize, algorithm, lower_bnd, upper_bnd)
+    standardize, lower_bnd, upper_bnd)
   #################################################################################
   # output
   if (is.null(lambda)) fit$lambda <- lamfix(fit$lambda)

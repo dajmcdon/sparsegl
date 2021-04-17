@@ -1,6 +1,6 @@
 sgl <- function(
     bn, bs, ix, iy, nobs, nvars, x, y, pf, dfmax, pmax, nlam, flmin, ulam, eps,
-    maxit, vnames, group, intr, asparse, standardize, algorithm,
+    maxit, vnames, group, intr, asparse, standardize,
     lower_bnd, upper_bnd) {
     # call Fortran core
     is.sparse <- FALSE
@@ -65,35 +65,6 @@ sgl <- function(
     outlist
 }
 
-
-gglasso <- function(bn, bs, ix, iy, nobs, nvars, x, y, pf, dfmax,
-    pmax, nlam, flmin, ulam, eps, maxit, vnames, group, intr, standardize) {
-    if(intr){
-        ym = mean(y)
-        xm = colMeans(x)
-        x = sweep(x,2,xm)
-        y = y-ym
-    }
-    if(standardize){
-        xs = sqrt(colSums(x^2))
-        x = sweep(x,2,xs,"/")
-    }
-    gamma <- calc_gamma(x, ix, iy, bn)
-    fit <- .Fortran("gglasso", bn, bs, ix, iy, gamma, nobs, nvars, as.double(x),
-        as.double(y), pf, dfmax, pmax, nlam, flmin, ulam, eps, maxit, intr, nalam = integer(1),
-        b0 = double(nlam), beta = double(nvars * nlam), idx = integer(pmax),
-        nbeta = integer(nlam), alam = double(nlam), npass = integer(1), jerr = integer(1))
-    outlist <- getoutput(fit, maxit, pmax, nvars, vnames)
-    if(standardize){
-        outlist$beta = outlist$beta/xs
-    }
-    if(intr){
-        outlist$b0 = ym - xm %*% outlist$beta
-    }
-    outlist <- c(outlist, list(npasses = fit$npass, jerr = fit$jerr, group = group))
-    class(outlist) <- c("ls")
-    outlist
-}
 
 
 calc_gamma <- function(x, ix, iy, bn) {
