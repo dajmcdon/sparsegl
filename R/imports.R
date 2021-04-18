@@ -4,6 +4,5 @@
 #' @importFrom graphics abline axis par plot.default points segments
 #' @importFrom methods cbind2 rbind2
 #' @importFrom stats approx coef predict
-#' @importFrom RSpectra svds
 #' @docType package
 NULL

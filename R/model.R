@@ -20,7 +20,9 @@ sgl <- function(
         }
     }
     if (standardize) {
-        xs <- 1 / sqrt(Matrix::colSums(x^2))
+        sx <- sqrt(Matrix::colSums(x^2))
+        sx[sx < sqrt(.Machine$double.eps)] <- 1 # Don't divide by zero!]
+        xs <- 1 / sx
         x <- x %*% Matrix::Diagonal(x = xs)
     }
     if (is.sparse) {
@@ -42,16 +44,18 @@ sgl <- function(
         sp_sgl = .Fortran(
             "spmat_four", bn,bs,ix,iy,gamma,nobs,nvars,xval,xidx,xcptr,nnz,
             as.double(y), pf, dfmax, pmax, nlam, flmin, ulam, eps, maxit,
-            as.integer(intr), nalam=0L, b0=double(nlam),beta=double(nvars*nlam),
-            activeGroup=integer(pmax),nbeta=integer(nlam),alam=double(nlam),
-            npass=0L,jerr=0L,alsparse=as.double(asparse),
+            as.integer(intr), nalam = 0L, b0 = double(nlam),
+            beta = double(nvars * nlam),
+            activeGroup = integer(pmax), nbeta = integer(nlam),
+            alam = double(nlam),
+            npass = 0L, jerr = 0L, alsparse = as.double(asparse),
             lb = lower_bnd, ub = upper_bnd),
         stop("Requested algorithm is not implemented.")
         )
     # output
-    outlist <- getoutput(fit, maxit, pmax, nvars, vnames)
+    outlist <- getoutput(x, group, fit, maxit, pmax, nvars, vnames, eps)
     if (standardize) {
-        outlist$beta = outlist$beta*xs
+        outlist$beta = outlist$beta * xs
     }
     if (intr) {
         if (is.sparse) {

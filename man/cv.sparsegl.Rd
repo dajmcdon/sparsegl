@@ -14,10 +14,9 @@ cv.sparsegl(
   y,
   group,
   lambda = NULL,
-  pred.loss = c("misclass", "loss", "L1", "L2"),
+  pred.loss = c("L2", "L1"),
   nfolds = 5,
   foldid,
-  delta,
   ...
 )
 }
@@ -51,10 +50,7 @@ large datasets. Smallest value allowable is \code{nfolds=3}.}
 
 \item{foldid}{an optional vector of values between 1 and \code{nfold}
 identifying what fold each observation is in. If supplied, \code{nfold} can
-be missing.}
-
-\item{delta}{parameter \eqn{\delta}{delta} only used in huberized SVM for
-computing log-likelihood on validation set, only available with
+be missing.
 \code{pred.loss = "loss"}, \code{loss = "hsvm"}.}
 
 \item{\dots}{other arguments that can be passed to gglasso.}

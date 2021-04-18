@@ -134,7 +134,7 @@ group2 <- rep(1:20,each=5)
 \code{plot.gglasso}
 }
 \author{
-Aaron Cohen and Dan Mcdonald\cr Maintainer: Aaron Cohen \href{mailto:cohenaa@indiana.edu}{cohenaa@indiana.edu}
+Aaron Cohen and Dan McDonald\cr Maintainer: Aaron Cohen \href{mailto:cohenaa@indiana.edu}{cohenaa@indiana.edu}
 }
 \keyword{models}
 \keyword{regression}

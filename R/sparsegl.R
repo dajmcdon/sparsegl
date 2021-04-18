@@ -14,10 +14,8 @@
 #' \code{lambda.factor} before increasing \code{maxit}.
 #'
 #' @param x matrix of predictors, of dimension \eqn{n \times p}{n*p}; each row
-#' is an observation vector.
-#' @param y response variable. This argument should be quantitative for
-#' regression (least squares), and a two-level factor for classification
-#' (logistic model, huberized SVM, squared SVM).
+#'   is a vector of measurement and each column is a feature
+#' @param y real-valued response variable.
 #' @param group a vector of consecutive integers describing the grouping of the
 #' coefficients (see example below).
 #' @param pen a character string specifying the penalty function to use, valid
@@ -73,7 +71,7 @@
 #' all lambda values} \item{jerr}{error flag, for warnings and errors, 0 if no
 #' error.} \item{group}{a vector of consecutive integers describing the
 #' grouping of the coefficients.}
-#' @author Aaron Cohen and Dan Mcdonald\cr Maintainer: Aaron Cohen <cohenaa@indiana.edu>
+#' @author Aaron Cohen and Dan McDonald\cr Maintainer: Aaron Cohen <cohenaa@indiana.edu>
 #' @seealso \code{plot.gglasso}
 #' @keywords models regression sparse
 #' @examples
@@ -97,7 +95,8 @@ sparsegl <- function(
   intercept = TRUE, asparse = 0.05, standardize = TRUE,
   lower_bnd = -Inf, upper_bnd = Inf,
   dfmax = as.integer(max(group)) + 1L,
-  pmax = min(dfmax * 1.2, as.integer(max(group))), eps = 1e-08, maxit = 3e+08) {
+  pmax = min(dfmax * 1.2, as.integer(max(group))),
+  eps = 1e-08, maxit = 3e+08) {
   #################################################################################
   #\tDesign matrix setup, error checking
   this.call <- match.call()
@@ -105,8 +104,7 @@ sparsegl <- function(
   if (!is.matrix(x) && !inherits(x, "sparseMatrix"))
     stop("x has to be a matrix")
 
-  if (any(is.na(x)))
-    stop("Missing values in x not allowed!")
+  if (any(is.na(x))) stop("Missing values in x not allowed!")
 
   y <- drop(y)
   np <- dim(x)
