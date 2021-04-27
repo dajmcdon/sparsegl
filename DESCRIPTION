@@ -1,7 +1,7 @@
 Package: sparsegl
 Type: Package
 Title: Sparse Group Lasso
-Version: 0.2.0
+Version: 0.3.0
 Authors@R: 
     person(given = "Daniel J.",
            family = "McDonald",
@@ -9,7 +9,9 @@ Authors@R:
            email = "daniel@stat.ubc.ca")
 Description: Performs sparse group lasso with optional bound constraints on
   the coefficients. Supports the use of a sparse design matrix as well as 
-  sparse coefficient estimates.
+  returning coefficient estimates in a sparse matrix. Furthermore, it correctly
+  calculates the degrees of freedom to allow for information criteria rather
+  than cross-validation with very large data.
 Encoding: UTF-8
 LazyData: true
 Roxygen: list(markdown = TRUE)
@@ -21,7 +23,7 @@ Imports:
     methods
 Depends: 
     R (>= 3.5)
-License: MIT + file LICENSE
+License: GPL (>= 2)
 Suggests: 
     testthat (>= 3.0.0)
 Config/testthat/edition: 3
