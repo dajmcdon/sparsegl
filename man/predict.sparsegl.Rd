@@ -2,12 +2,12 @@
 % Please edit documentation in R/tools.R
 \name{predict.sparsegl}
 \alias{predict.sparsegl}
-\title{make predictions from a "gglasso" object.}
+\title{make predictions from a "sparsegl" object.}
 \usage{
 \method{predict}{sparsegl}(object, newx, s = NULL, type = c("class", "link"), ...)
 }
 \arguments{
-\item{object}{fitted \code{\link{gglasso}} model object.}
+\item{object}{fitted \code{\link{sparsegl}} model object.}
 
 \item{newx}{matrix of new values for \code{x} at which predictions are to be
 made. Must be a matrix.}
@@ -29,7 +29,7 @@ The object returned depends on type.
 }
 \description{
 Similar to other predict methods, this functions predicts fitted values and
-class labels from a fitted \code{\link{gglasso}} object.
+class labels from a fitted \code{\link{sparsegl}} object.
 }
 \details{
 \code{s} is the new vector at which predictions are requested. If \code{s}
@@ -37,27 +37,6 @@ is not in the lambda sequence used for fitting the model, the \code{predict}
 function will use linear interpolation to make predictions. The new values
 are interpolated using a fraction of predicted values from both left and
 right \code{lambda} indices.
-}
-\examples{
-
-# load gglasso library
-library(gglasso)
-
-# load data set
-data(colon)
-
-# define group index
-group <- rep(1:20,each=5)
-
-# fit group lasso
-m1 <- gglasso(x=colon$x,y=colon$y,group=group,loss="logit")
-
-# predicted class label at x[10,]
-print(predict(m1,type="class",newx=colon$x[10,]))
-
-# predicted linear predictors at x[1:5,]
-print(predict(m1,type="link",newx=colon$x[1:5,]))
-
 }
 \references{
 Yang, Y. and Zou, H. (2015), ``A Fast Unified Algorithm for

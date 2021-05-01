@@ -2,15 +2,15 @@
 % Please edit documentation in R/tools.R
 \name{predict.cv.sparsegl}
 \alias{predict.cv.sparsegl}
-\title{make predictions from a "cv.gglasso" object.}
+\title{make predictions from a "cv.sparsegl" object.}
 \usage{
 \method{predict}{cv.sparsegl}(object, newx, s = c("lambda.1se", "lambda.min"), ...)
 }
 \arguments{
-\item{object}{fitted \code{\link{cv.gglasso}} object.}
+\item{object}{fitted \code{\link{cv.sparsegl}} object.}
 
 \item{newx}{matrix of new values for \code{x} at which predictions are to be
-made. Must be a matrix. See documentation for \code{predict.gglasso}.}
+made. Must be a matrix. See documentation for \code{predict.sparsegl}.}
 
 \item{s}{value(s) of the penalty parameter \code{lambda} at which
 predictions are required. Default is the value \code{s="lambda.1se"} stored
@@ -22,36 +22,16 @@ used.}
 }
 \value{
 The returned object depends on the \dots{} argument which is passed
-on to the \code{\link{predict}} method for \code{\link{gglasso}} objects.
+on to the \code{\link{predict}} method for \code{\link{sparsegl}} objects.
 }
 \description{
-This function makes predictions from a cross-validated \code{gglasso} model,
-using the stored \code{"gglasso.fit"} object, and the optimal value chosen
+This function makes predictions from a cross-validated \code{sparsegl} model,
+using the stored \code{"sparsegl.fit"} object, and the optimal value chosen
 for \code{lambda}.
 }
 \details{
 This function makes it easier to use the results of cross-validation to make
 a prediction.
-}
-\examples{
-
-# load gglasso library
-library(gglasso)
-
-# load data set
-data(colon)
-
-# define group index
-group <- rep(1:20,each=5)
-
-# 5-fold cross validation using group lasso 
-# penalized logisitic regression
-cv <- cv.gglasso(x=colon$x, y=colon$y, group=group, loss="logit",
-pred.loss="misclass", lambda.factor=0.05, nfolds=5)
-
-# the coefficients at lambda = lambda.min, newx = x[1,]
-pre = predict(cv$gglasso.fit, newx = colon$x[1:10,], 
-s = cv$lambda.min, type = "class")
 }
 \references{
 Yang, Y. and Zou, H. (2015), ``A Fast Unified Algorithm for
@@ -60,7 +40,7 @@ Computing}. 25(6), 1129-1141.\cr BugReport:
 \url{https://github.com/emeryyi/gglasso}\cr
 }
 \seealso{
-\code{\link{cv.gglasso}}, and \code{\link{coef.cv.gglasso}}
+\code{\link{cv.sparsegl}}, and \code{\link{coef.cv.sparsegl}}
 methods.
 }
 \author{

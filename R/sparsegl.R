@@ -18,11 +18,6 @@
 #' @param y real-valued response variable. 
 #' @param group a vector of consecutive integers describing the grouping of the
 #' coefficients (see example below).
-#' @param pen a character string specifying the penalty function to use, valid
-#' options are: \itemize{ \item \code{"sparsegl"} for group plus l1 penalty,
-#' \item \code{"gglasso"} for group penalty only }Default is \code{"sparsegl"}.
-#' @param algorithm a character string specifying the algorithm for sparse
-#' group lasso (sparsegl). Valid options are: \itemize{ }
 #' @param nlambda the number of \code{lambda} values - default is 100.
 #' @param lambda.factor the factor for getting the minimal lambda in
 #' \code{lambda} sequence, where \code{min(lambda)} = \code{lambda.factor} *
@@ -61,7 +56,7 @@
 #' @param intercept Whether to include intercept in the model. Default is TRUE.
 #' @param asparse the weight to put on the ell1 norm in sparse group lasso. Default
 #' is 0.05
-#' @return An object with S3 class \code{\link{gglasso}}.  \item{call}{the call
+#' @return An object with S3 class \code{\link{sparsegl}}.  \item{call}{the call
 #' that produced this object} \item{b0}{intercept sequence of length
 #' \code{length(lambda)}} \item{beta}{a \code{p*length(lambda)} matrix of
 #' coefficients.} \item{df}{the number of nonzero groups for each value of
@@ -72,21 +67,8 @@
 #' error.} \item{group}{a vector of consecutive integers describing the
 #' grouping of the coefficients.}
 #' @author Aaron Cohen and Dan Mcdonald\cr Maintainer: Aaron Cohen <cohenaa@indiana.edu>
-#' @seealso \code{plot.gglasso}
+#' @seealso \code{plot.sparsegl}
 #' @keywords models regression sparse
-#' @examples
-#' # load sparsegl library
-#' library(sparsegl)
-#'
-#' # define group index
-#' group1 <- rep(1:20,each=5)
-#'
-#' # fit group lasso penalized least squares
-#' # m1 <- sparsegl(x=bardet$x,y=bardet$y,group=group1,pen="gglasso")
-#' # define group index
-#' group2 <- rep(1:20,each=5)
-#'
-#'
 #' @export
 sparsegl <- function(
   x, y, group = NULL,

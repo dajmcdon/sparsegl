@@ -2,12 +2,12 @@
 % Please edit documentation in R/tools.R
 \name{print.sparsegl}
 \alias{print.sparsegl}
-\title{print a gglasso object}
+\title{print a sparsegl object}
 \usage{
 \method{print}{sparsegl}(x, digits = max(3, getOption("digits") - 3), ...)
 }
 \arguments{
-\item{x}{fitted \code{\link{gglasso}} object}
+\item{x}{fitted \code{\link{sparsegl}} object}
 
 \item{digits}{significant digits in printout}
 
@@ -18,31 +18,14 @@ a two-column matrix, the first columns is the number of nonzero
 group counts and the second column is \code{Lambda}.
 }
 \description{
-Print the nonzero group counts at each lambda along the gglasso path.
+Print the nonzero group counts at each lambda along the sparsegl path.
 }
 \details{
 Print the information about the nonzero group counts at each lambda step in
-the \code{\link{gglasso}} object. The result is a two-column matrix with
+the \code{\link{sparsegl}} object. The result is a two-column matrix with
 columns \code{Df} and \code{Lambda}. The \code{Df} column is the number of
 the groups that have nonzero within-group coefficients, the \code{Lambda}
 column is the the corresponding lambda.
-}
-\examples{
-
-# load gglasso library
-library(gglasso)
-
-# load data set
-data(colon)
-
-# define group index
-group <- rep(1:20,each=5)
-
-# fit group lasso
-m1 <- gglasso(x=colon$x,y=colon$y,group=group,loss="logit")
-
-# print out results
-print(m1)
 }
 \references{
 Yang, Y. and Zou, H. (2015), ``A Fast Unified Algorithm for

@@ -2,12 +2,12 @@
 % Please edit documentation in R/tools.R
 \name{coef.cv.sparsegl}
 \alias{coef.cv.sparsegl}
-\title{get coefficients or make coefficient predictions from a "cv.gglasso" object.}
+\title{get coefficients or make coefficient predictions from a "cv.sparsegl" object.}
 \usage{
 \method{coef}{cv.sparsegl}(object, s = c("lambda.1se", "lambda.min"), ...)
 }
 \arguments{
-\item{object}{fitted \code{\link{cv.gglasso}} object.}
+\item{object}{fitted \code{\link{cv.sparsegl}} object.}
 
 \item{s}{value(s) of the penalty parameter \code{lambda} at which
 predictions are required. Default is the value \code{s="lambda.1se"} stored
@@ -24,31 +24,12 @@ The coefficients at the requested values for \code{lambda}.
 }
 \description{
 This function gets coefficients or makes coefficient predictions from a
-cross-validated \code{gglasso} model, using the stored \code{"gglasso.fit"}
+cross-validated \code{sparsegl} model, using the stored \code{"sparsegl.fit"}
 object, and the optimal value chosen for \code{lambda}.
 }
 \details{
 This function makes it easier to use the results of cross-validation to get
 coefficients or make coefficient predictions.
-}
-\examples{
-
-# load gglasso library
-library(gglasso)
-
-# load data set
-data(colon)
-
-# define group index
-group <- rep(1:20,each=5)
-
-# 5-fold cross validation using group lasso 
-# penalized logisitic regression
-cv <- cv.gglasso(x=colon$x, y=colon$y, group=group, loss="logit",
-pred.loss="misclass", lambda.factor=0.05, nfolds=5)
-
-# the coefficients at lambda = lambda.1se
-pre = coef(cv$gglasso.fit, s = cv$lambda.1se)
 }
 \references{
 Yang, Y. and Zou, H. (2015), ``A Fast Unified Algorithm for
@@ -61,7 +42,7 @@ for generalized linear models via coordinate descent," \emph{Journal of
 Statistical Software, 33, 1.}\cr \url{http://www.jstatsoft.org/v33/i01/}
 }
 \seealso{
-\code{\link{cv.gglasso}}, and \code{\link{predict.cv.gglasso}}
+\code{\link{cv.sparsegl}}, and \code{\link{predict.cv.sparsegl}}
 methods.
 }
 \author{
