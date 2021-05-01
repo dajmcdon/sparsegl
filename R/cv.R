@@ -66,17 +66,14 @@
 #' # pred.loss="L2", lambda.factor=0.05, nfolds=5)
 #'
 #' @export
-cv.sparsegl <- function(x, y, group, lambda = NULL,pred.loss = c("L1", "L2"), nfolds = 5, foldid, delta, ...) {
+cv.sparsegl <- function(x, y, group, lambda = NULL,pred.loss = c("L1", "L2"), nfolds = 5, foldid, ...) {
     if (missing(pred.loss))
         pred.loss <- "default" else pred.loss <- match.arg(pred.loss)
     N <- nrow(x)
     ###Fit the model once to get dimensions etc of output
     y <- drop(y)
-    if (missing(delta))
-        delta <- 1
-    if (delta < 0)
-        stop("delta must be non-negtive")
-    gglasso.object <- gglasso::gglasso(x, y, group, lambda = lambda, delta = delta, ...)
+
+    sprasegl_object <- sparsegl(x, y, group, lambda, ...)
     lambda <- gglasso.object$lambda
     # predict -> coef
     if (missing(foldid))
@@ -88,12 +85,12 @@ cv.sparsegl <- function(x, y, group, lambda = NULL,pred.loss = c("L1", "L2"), nf
     for (i in seq(nfolds)) {
         which <- foldid == i
         y_sub <- y[!which]
-        outlist[[i]] <- gglasso::gglasso(x = x[!which, , drop = FALSE], y = y_sub, group = group,
-            lambda = lambda, delta = delta, ...)
+        outlist[[i]] <- sparsegl(x = x[!which, , drop = FALSE], y = y_sub, group = group,
+            lambda = lambda, ...)
     }
     ###What to do depends on the pred.loss and the model fit
 
-    cvstuff <- cv.ls(outlist, lambda, x, y, foldid, pred.loss, delta)
+    cvstuff <- cv.ls(outlist, lambda, x, y, foldid, pred.loss)
     cvm <- cvstuff$cvm
     cvsd <- cvstuff$cvsd
     cvname <- cvstuff$name
@@ -106,45 +103,6 @@ cv.sparsegl <- function(x, y, group, lambda = NULL,pred.loss = c("L1", "L2"), nf
 }
 
 
-
-#' #' @export
-#' cv.logit <- function(outlist, lambda, x, y, foldid, pred.loss, delta) {
-#'     typenames <- c(misclass = "Misclassification Error", loss = "Margin Based Loss")
-#'     if (pred.loss == "default")
-#'         pred.loss <- "misclass"
-#'     if (!match(pred.loss, c("misclass", "loss"), FALSE)) {
-#'         warning("Only 'misclass' and 'loss' available for logistic regression; 'misclass' used")
-#'         pred.loss <- "misclass"
-#'     }
-#'     prob_min <- 1e-05
-#'     fmax <- log(1/prob_min - 1)
-#'     fmin <- -fmax
-#'     ###Turn y into c(0,1)
-#'     y <- as.factor(y)
-#'     y <- c(-1, 1)[as.numeric(y)]
-#'     nfolds <- max(foldid)
-#'     predmat <- matrix(NA, length(y), length(lambda))
-#'     nlams <- double(nfolds)
-#'     for (i in seq(nfolds)) {
-#'         which <- foldid == i
-#'         fitobj <- outlist[[i]]
-#'         preds <- predict(fitobj, x[which, , drop = FALSE], type = "link")
-#'         nlami <- length(outlist[[i]]$lambda)
-#'         predmat[which, seq(nlami)] <- preds
-#'         nlams[i] <- nlami
-#'     }
-#'     predmat <- pmin(pmax(predmat, fmin), fmax)
-#'     cvraw <- switch(pred.loss, loss = 2 * log(1 + exp(-y * predmat)), misclass = (y !=
-#'         ifelse(predmat > 0, 1, -1)))
-#'     N <- length(y) - apply(is.na(predmat), 2, sum)
-#'     cvm <- apply(cvraw, 2, mean, na.rm = TRUE)
-#'     cvsd <- sqrt(apply(scale(cvraw, cvm, FALSE)^2, 2, mean, na.rm = TRUE)/(N -
-#'         1))
-#'     list(cvm = cvm, cvsd = cvsd, name = typenames[pred.loss])
-#' }
-
-
-#' @export
 cv.ls <- function(outlist, lambda, x, y, foldid, pred.loss, delta) {
     typenames <- c(L2 = "Least-Squared loss", L1 = "Absolute loss")
     if (pred.loss == "default")
