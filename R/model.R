@@ -67,14 +67,40 @@ sgl <- function(
 
 
 
+# calc_gamma <- function(x, ix, iy, bn) {
+#     gamma <- rep(NA, bn)
+#     for (g in seq_len(bn)) {
+#         grabcols <- ix[g]:iy[g]
+#         if (length(grabcols) > 2) {
+#             gamma[g] <- RSpectra::svds(x[ ,grabcols], 1, 0, 0)$d^2
+#         } else {
+#             if (length(grabcols) == 2) {
+#                 gamma[g] <- maxeig2(x[,grabcols])
+#             } else {
+#                 gamma[g] <- sum(x[,grabcols]^2)
+#             }
+#         }
+#     }
+#     return(as.double(gamma / nrow(x)))
+# }
+# 
+# maxeig2 <- function(x) {
+#     mat <- crossprod(x)  
+#     tr <- mat[1] + mat[4]
+#     dt <- mat[1] * mat[4] - mat[2]^2
+#     return((tr + sqrt(tr^2 - 4 * dt)) / 2)
+# }
+
 calc_gamma <- function(x, ix, iy, bn) {
     gamma <- rep(NA, bn)
     for (g in seq_len(bn)) {
         grabcols <- ix[g]:iy[g]
-        if (length(grabcols) > 2) {
+        if (length(grabcols) > 2 && dim(x)[1] > 2)   # add one more condition
+            {
             gamma[g] <- RSpectra::svds(x[ ,grabcols], 1, 0, 0)$d^2
         } else {
-            if (length(grabcols) == 2) {
+            if (dim(x)[1] == 2)  # change condition
+                {
                 gamma[g] <- maxeig2(x[,grabcols])
             } else {
                 gamma[g] <- sum(x[,grabcols]^2)
@@ -85,8 +111,14 @@ calc_gamma <- function(x, ix, iy, bn) {
 }
 
 maxeig2 <- function(x) {
-    mat <- crossprod(x)
+    mat <- crossprod(t(x))   # transpose x
     tr <- mat[1] + mat[4]
     dt <- mat[1] * mat[4] - mat[2]^2
     return((tr + sqrt(tr^2 - 4 * dt)) / 2)
 }
+
+
+
+
+
+

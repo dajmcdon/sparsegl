@@ -110,8 +110,8 @@ sparsegl <- function(
       msg = "group length does not match the number of predictors in x")
   }
 
-  bn <- as.integer(max(group))
-  bs <- as.integer(as.numeric(table(group)))
+  bn <- as.integer(max(group))  # number of group
+  bs <- as.integer(as.numeric(table(group)))  # number of elements within a group
 
   if (!identical(as.integer(sort(unique(group))), as.integer(1:bn)))
     stop("Groups must be consecutively numbered 1,2,3,...")
