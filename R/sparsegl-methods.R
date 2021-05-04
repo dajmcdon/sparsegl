@@ -22,23 +22,7 @@
 #' Computing}. 25(6), 1129-1141.\cr BugReport:
 #' \url{https://github.com/emeryyi/gglasso}\cr
 #' @keywords models regression
-#' @examples
-#'
-#' # load sparsegl library
-#' library(sparsegl)
-#'
-#' # load data set
-#' data(colon)
-#'
-#' # define group index
-#' group <- rep(1:20, each=5)
-#'
-#' # fit group lasso
-#' m1 <- sparsegl(x=colon$x, y=colon$y, group=group)
-#'
-#' # the coefficients at lambda = 0.01 and 0.02
-#' coef(m1, s=c(0.01, 0.02))
-#'
+
 #' @export
 #' @method coef sparsegl
 coef.sparsegl <- function(object, s = NULL, ...) {
@@ -132,7 +116,6 @@ predict.sparsegl <- function(object, newx, s = NULL, ...) {
 #' Computing}. 25(6), 1129-1141.\cr BugReport:
 #' \url{https://github.com/emeryyi/gglasso}\cr
 #' @keywords models regression
-#' @examples
 
 #' @method print sparsegl
 #' @export

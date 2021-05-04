@@ -1,6 +1,6 @@
 
 
-#' Get coefficients or make coefficient predictions from a "cv.gglasso" object.
+#' Get coefficients or make coefficient predictions from a "cv.sparsegl" object.
 #'
 #' This function gets coefficients or makes coefficient predictions from a
 #' cross-validated \code{sparsegl} model, using the stored \code{"sparsegl.fit"}

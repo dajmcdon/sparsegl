@@ -34,7 +34,7 @@ test_that("input parameter mismatches cause failures", {
   expect_error(sparsegl(x, y, group = c(1,2)))
   expect_error(sparsegl(x, y, group = c(1,2,4)))
   expect_error(sparsegl(x, y, group = c(2,3,4)))
-  expect_warning(sparsegl(x, y, group = c(1,2,3), asparse = 1.1))
+  expect_error(sparsegl(x, y, group = c(1,2,3), asparse = 1.1))
   expect_warning(sparsegl(x, y, group = c(1,2,3), asparse = -1))
   expect_error(sparsegl(x, y, pf = c(1,2)))
   expect_error(sparsegl(x, y, lambda.factor = 2))
