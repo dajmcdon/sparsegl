@@ -13,7 +13,11 @@ cv.sparsegl(
   y,
   group,
   lambda = NULL,
+<<<<<<< HEAD
   pred.loss = c("L1", "L2"),
+=======
+  pred.loss = c("L2", "L1"),
+>>>>>>> main
   nfolds = 5,
   foldid,
   ...
@@ -47,9 +51,16 @@ large datasets. Smallest value allowable is \code{nfolds=3}.}
 
 \item{foldid}{an optional vector of values between 1 and \code{nfold}
 identifying what fold each observation is in. If supplied, \code{nfold} can
+<<<<<<< HEAD
 be missing.}
 
 \item{\dots}{other arguments that can be passed to sparsegl}
+=======
+be missing.
+\code{pred.loss = "loss"}, \code{loss = "hsvm"}.}
+
+\item{\dots}{other arguments that can be passed to gglasso.}
+>>>>>>> main
 }
 \value{
 an object of class \code{\link{cv.sparsegl}} is returned, which is a

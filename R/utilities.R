@@ -11,26 +11,25 @@
 ## The original comments and header are preserved.
 
 err <- function(n, maxit, pmax) {
-    if (n == 0) 
-        msg <- ""
+    if (n == 0) msg <- ""
     if (n > 0) {
         #fatal error
-        if (n < 7777) 
+        if (n < 7777)
             msg <- "Memory allocation error; contact package maintainer"
-        if (n == 10000) 
+        if (n == 10000)
             msg <- "All penalty factors are <= 0"
         n <- 1
-        msg <- paste("in gglasso fortran code -", msg)
+        msg <- paste("in sparsegl fortran code -", msg)
     }
     if (n < 0) {
         #non fatal error
-        if (n > -10000) 
-            msg <- paste("Convergence for ", -n, "th lambda value not reached after maxit=", 
-                maxit, " iterations; solutions for larger lambdas returned", 
+        if (n > -10000)
+            msg <- paste("Convergence for ", -n, "th lambda value not reached after maxit=",
+                maxit, " iterations; solutions for larger lambdas returned",
                 sep = "")
-        if (n < -10000) 
-            msg <- paste("Number of nonzero coefficients along the path exceeds pmax=", 
-                pmax, " at ", -n - 10000, "th lambda value; solutions for larger lambdas returned", 
+        if (n < -10000)
+            msg <- paste("Number of nonzero coefficients along the path exceeds pmax=",
+                pmax, " at ", -n - 10000, "th lambda value; solutions for larger lambdas returned",
                 sep = "")
         n <- -1
         msg <- paste("from gglasso fortran code -", msg)
@@ -62,22 +61,25 @@ getmin <- function(lambda, cvm, cvsd) {
 }
 
 
-getoutput <- function(fit, maxit, pmax, nvars, vnames) {
+getoutput <- function(x, group, fit, maxit, pmax, nvars, vnames, eps) {
     nalam <- fit$nalam
     nbeta <- fit$nbeta[seq(nalam)]
     nbetamax <- max(nbeta)
     lam <- fit$alam[seq(nalam)]
     stepnames <- paste("s", seq(nalam) - 1, sep = "")
     errmsg <- err(fit$jerr, maxit, pmax)  ### error messages from fortran
-    switch(paste(errmsg$n), `1` = stop(errmsg$msg, call. = FALSE), `-1` = print(errmsg$msg, 
-        call. = FALSE))
+    switch(paste(errmsg$n),
+           `1` = stop(errmsg$msg, call. = FALSE),
+           `-1` = print(errmsg$msg, call. = FALSE))
     dd <- c(nvars, nalam)
     if (nbetamax > 0) {
-        beta <- matrix(fit$beta[seq(nvars * nalam)], nvars, nalam, dimnames = list(vnames, 
-            stepnames))
-        df <- apply(abs(beta) > 0, 2, sum)
+        beta <- Matrix::drop0(
+            matrix(fit$beta[seq(nvars * nalam)], nvars, nalam,
+                   dimnames = list(vnames, stepnames)),
+            tol = eps^2)
+        df <- apply(abs(beta) > 0, 2, sum) ## this is wrong, but fast
     } else {
-        beta <- matrix(0, nvars, nalam, dimnames = list(vnames, stepnames))
+        beta <- Matrix::Matrix(0, nvars, nalam)
         df <- rep(0, nalam)
     }
     b0 <- fit$b0
@@ -90,12 +92,14 @@ getoutput <- function(fit, maxit, pmax, nvars, vnames) {
 
 
 
+
+
 lambda.interp <- function(lambda, s) {
     ### lambda is the index sequence that is produced by the model
     ### s is the new vector at which evaluations are required.
-    ### the value is a vector of left and right indices, and a
+    ### the value is a vector of left and right indicies, and a
     #   vector of fractions.
-    ### the new values are interpolated bewteen the two using the
+    ### the new values are interpolated between the two using the
     #   fraction
     ### Note: lambda decreases. you take:
     ### sfrac*left+(1-sfrac*right)
@@ -108,12 +112,12 @@ lambda.interp <- function(lambda, s) {
         s[s > max(lambda)] <- max(lambda)
         s[s < min(lambda)] <- min(lambda)
         k <- length(lambda)
-        sfrac <- (lambda[1] - s)/(lambda[1] - lambda[k])
-        lambda <- (lambda[1] - lambda)/(lambda[1] - lambda[k])
+        sfrac <- (lambda[1] - s) / (lambda[1] - lambda[k])
+        lambda <- (lambda[1] - lambda) / (lambda[1] - lambda[k])
         coord <- approx(lambda, seq(lambda), sfrac)$y
         left <- floor(coord)
         right <- ceiling(coord)
-        sfrac <- (sfrac - lambda[right])/(lambda[left] - lambda[right])
+        sfrac <- (sfrac - lambda[right]) / (lambda[left] - lambda[right])
         sfrac[left == right] <- 1
     }
     list(left = left, right = right, frac = sfrac)
@@ -124,4 +128,4 @@ lamfix <- function(lam) {
     llam <- log(lam)
     lam[1] <- exp(2 * llam[2] - llam[3])
     lam
-} 
+}

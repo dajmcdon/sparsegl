@@ -111,7 +111,7 @@ consider increasing \code{eps}, decreasing \code{nlambda}, or increasing
 \code{plot.sparsegl}
 }
 \author{
-Aaron Cohen and Dan Mcdonald\cr Maintainer: Aaron Cohen \href{mailto:cohenaa@indiana.edu}{cohenaa@indiana.edu}
+Aaron Cohen and Dan McDonald\cr Maintainer: Aaron Cohen \href{mailto:cohenaa@indiana.edu}{cohenaa@indiana.edu}
 }
 \keyword{models}
 \keyword{regression}

@@ -14,8 +14,8 @@
 #' \code{lambda.factor} before increasing \code{maxit}.
 #'
 #' @param x matrix of predictors, of dimension \eqn{n \times p}{n*p}; each row
-#' is an observation vector.
-#' @param y real-valued response variable. 
+#'   is a vector of measurements and each column is a feature
+#' @param y real-valued response variable.
 #' @param group a vector of consecutive integers describing the grouping of the
 #' coefficients (see example below).
 #' @param nlambda the number of \code{lambda} values - default is 100.
@@ -77,7 +77,8 @@ sparsegl <- function(
   intercept = TRUE, asparse = 0.05, standardize = TRUE,
   lower_bnd = -Inf, upper_bnd = Inf,
   dfmax = as.integer(max(group)) + 1L,
-  pmax = min(dfmax * 1.2, as.integer(max(group))), eps = 1e-08, maxit = 3e+08) {
+  pmax = min(dfmax * 1.2, as.integer(max(group))),
+  eps = 1e-08, maxit = 3e+08) {
   #################################################################################
   #\tDesign matrix setup, error checking
   this.call <- match.call()
@@ -85,8 +86,7 @@ sparsegl <- function(
   if (!is.matrix(x) && !inherits(x, "sparseMatrix"))
     stop("x has to be a matrix")
 
-  if (any(is.na(x)))
-    stop("Missing values in x not allowed!")
+  if (any(is.na(x))) stop("Missing values in x not allowed!")
 
   y <- drop(y)
   np <- dim(x)
@@ -114,21 +114,20 @@ sparsegl <- function(
   bs <- as.integer(as.numeric(table(group)))  # number of elements within a group
 
   if (!identical(as.integer(sort(unique(group))), as.integer(1:bn)))
-    stop("Groups must be consecutively numbered 1,2,3,...")
-  #Need to add if(loss=sparsegl)...
-  if (asparse>1 || asparse<0){
+    stop("Groups must be consecutively numbered 1, 2, 3, ...")
+
+  assertthat::assert_that(
+    asparse < 1,
+    msg = "asparse must be less than 1, you may want glmnet::glmnet()")
+
+  if (asparse < 0) {
     asparse <- 0
     warning("asparse must be in [0,1], running ordinary group lasso.")
   }
 
-  ix <- rep(NA, bn)
-  iy <- rep(NA, bn)
-  j <- 1
-  for (g in seq_len(bn)) {
-    ix[g] <- j
-    iy[g] <- j + bs[g] - 1
-    j <- j + bs[g]
-  }
+
+  iy <- cumsum(bs) # last column of x in each group
+  ix <- c(0, iy[-bn]) + 1 # first column of x in each group
   ix <- as.integer(ix)
   iy <- as.integer(iy)
   group <- as.integer(group)
@@ -152,7 +151,7 @@ sparsegl <- function(
     flmin <- as.double(lambda.factor)
     ulam <- double(1)
   } else {
-    #flmin=1 if user define lambda
+    #flmin = 1 if user define lambda
     flmin <- as.double(1)
     assertthat::assert_that(all(lambda >= 0),
                             msg = "lambdas must be non-negative")
