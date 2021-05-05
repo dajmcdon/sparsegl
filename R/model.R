@@ -74,17 +74,24 @@ calc_gamma <- function(x, ix, iy, bn) {
     gamma <- rep(NA, bn)
     for (g in seq_len(bn)) {
         grabcols <- ix[g]:iy[g]
+        # when ncol is larger than 2
         if (length(grabcols) > 2) {
             gamma[g] <- RSpectra::svds(x[ ,grabcols], 1, 0, 0)$d^2
-        } else if (length(grabcols) == 2) {
+        } 
+        # when ncol is equal to 2
+        else if (length(grabcols) == 2) {
             gamma[g] <- maxeig2(x[,grabcols])
-        } else {
+        } 
+        # when ncol is 1
+        else {
             gamma[g] <- sum(x[,grabcols]^2)
         }
     }
     return(as.double(gamma / nrow(x)))
 }
 
+# returns the largest squared singular value of n-by-2 matrix x (the largest
+# eigenvalue of 2-by-2 matrix mat)
 maxeig2 <- function(x) {
     mat <- crossprod(x)
     tr <- mat[1] + mat[4]
