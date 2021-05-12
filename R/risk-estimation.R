@@ -66,3 +66,7 @@ delP <- function(beta, group) {
 }
 
 two_norm <- function(x) sqrt(sum(x^2))
+gr_norm <- function(x, gr) sum(as.vector(tapply(x, gr, two_norm)))
+sp_group_norm <- function(x, gr, alpha = 0.05) {
+  alpha * sum(abs(x)) + (1 - alpha) * gr_norm(x, gr)
+}
