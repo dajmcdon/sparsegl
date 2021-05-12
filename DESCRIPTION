@@ -18,7 +18,9 @@ Imports:
     Matrix,
     RSpectra,
     assertthat,
-    methods
+    methods,
+    ggplot2,
+    reshape2
 Depends: 
     R (>= 3.5)
 License: MIT + file LICENSE
