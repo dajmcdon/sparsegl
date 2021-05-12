@@ -1,7 +1,7 @@
-#' get coefficients or make coefficient predictions from an "gglasso" object.
+#' get coefficients or make coefficient predictions from an "sparsegl" object.
 #'
 #' Computes the coefficients at the requested values for \code{lambda} from a
-#' fitted \code{\link{gglasso}} object.
+#' fitted \code{\link{sparsegl}} object.
 #'
 #' \code{s} is the new vector at which predictions are requested. If \code{s}
 #' is not in the lambda sequence used for fitting the model, the \code{coef}
@@ -9,36 +9,20 @@
 #' are interpolated using a fraction of coefficients from both left and right
 #' \code{lambda} indices.
 #'
-#' @param object fitted \code{\link{gglasso}} model object.
+#' @param object fitted \code{\link{sparsegl}} model object.
 #' @param s value(s) of the penalty parameter \code{lambda} at which
 #' predictions are required. Default is the entire sequence used to create the
 #' model.
 #' @param \dots not used. Other arguments to predict.
 #' @return The coefficients at the requested values for \code{lambda}.
 #' @author Yi Yang and Hui Zou\cr Maintainer: Yi Yang <yi.yang6@@mcgill.ca>
-#' @seealso \code{\link{predict.gglasso}} method
+#' @seealso \code{\link{predict.sparsegl}} method
 #' @references Yang, Y. and Zou, H. (2015), ``A Fast Unified Algorithm for
 #' Computing Group-Lasso Penalized Learning Problems,'' \emph{Statistics and
 #' Computing}. 25(6), 1129-1141.\cr BugReport:
 #' \url{https://github.com/emeryyi/gglasso}\cr
 #' @keywords models regression
-#' @examples
-#'
-#' # load sparsegl library
-#' library(sparsegl)
-#'
-#' # load data set
-#' data(colon)
-#'
-#' # define group index
-#' group <- rep(1:20, each=5)
-#'
-#' # fit group lasso
-#' m1 <- sparsegl(x=colon$x, y=colon$y, group=group)
-#'
-#' # the coefficients at lambda = 0.01 and 0.02
-#' coef(m1, s=c(0.01, 0.02))
-#'
+
 #' @export
 #' @method coef sparsegl
 coef.sparsegl <- function(object, s = NULL, ...) {
@@ -76,7 +60,7 @@ coef.sparsegl <- function(object, s = NULL, ...) {
 #' are interpolated using a fraction of predicted values from both left and
 #' right \code{lambda} indices.
 #'
-#' @param object fitted \code{\link{gglasso}} model object.
+#' @param object fitted \code{\link{sparsegl}} model object.
 #' @param newx matrix of new values for \code{x} at which predictions are to be
 #' made. Must be a matrix.
 #' @param s value(s) of the penalty parameter \code{lambda} at which
@@ -97,25 +81,7 @@ coef.sparsegl <- function(object, s = NULL, ...) {
 #' Computing}. 25(6), 1129-1141.\cr BugReport:
 #' \url{https://github.com/emeryyi/gglasso}\cr
 #' @keywords models regression
-#' @examples
-#'
-#' # load gglasso library
-#' library(gglasso)
-#'
-#' # load data set
-#' data(colon)
-#'
-#' # define group index
-#' group <- rep(1:20,each=5)
-#'
-#' # fit group lasso
-#' m1 <- gglasso(x=colon$x,y=colon$y,group=group,loss="logit")
-#'
-#' # predicted class label at x[10,]
-#' print(predict(m1,type="class",newx=colon$x[10,]))
-#'
-#' # predicted linear predictors at x[1:5,]
-#' print(predict(m1,type="link",newx=colon$x[1:5,]))
+
 #'
 #' @method predict sparsegl
 #' @export
@@ -131,15 +97,15 @@ predict.sparsegl <- function(object, newx, s = NULL, ...) {
 
 #' Print a sparsegl object
 #'
-#' Print the nonzero group counts at each lambda along the gglasso path.
+#' Print the nonzero group counts at each lambda along the sparsegl path.
 #'
 #' Print the information about the nonzero group counts at each lambda step in
-#' the \code{\link{gglasso}} object. The result is a two-column matrix with
+#' the \code{\link{sparsegl}} object. The result is a two-column matrix with
 #' columns \code{Df} and \code{Lambda}. The \code{Df} column is the number of
 #' the groups that have nonzero within-group coefficients, the \code{Lambda}
 #' column is the the corresponding lambda.
 #'
-#' @param x fitted \code{\link{gglasso}} object
+#' @param x fitted \code{\link{sparsegl}} object
 #' @param digits significant digits in printout
 #' @param \dots additional print arguments
 #' @return a two-column matrix, the first columns is the number of nonzero
@@ -150,22 +116,7 @@ predict.sparsegl <- function(object, newx, s = NULL, ...) {
 #' Computing}. 25(6), 1129-1141.\cr BugReport:
 #' \url{https://github.com/emeryyi/gglasso}\cr
 #' @keywords models regression
-#' @examples
-#'
-#' # load gglasso library
-#' library(gglasso)
-#'
-#' # load data set
-#' data(colon)
-#'
-#' # define group index
-#' group <- rep(1:20,each=5)
-#'
-#' # fit group lasso
-#' m1 <- gglasso(x=colon$x,y=colon$y,group=group,loss="logit")
-#'
-#' # print out results
-#' print(m1)
+
 #' @method print sparsegl
 #' @export
 print.sparsegl <- function(x, digits = max(3, getOption("digits") - 3), ...) {

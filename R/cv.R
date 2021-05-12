@@ -1,15 +1,15 @@
-#' Cross-validation for gglasso
+#' Cross-validation for sparsegl
 #'
-#' Does k-fold cross-validation for gglasso, produces a plot, and returns a
+#' Does k-fold cross-validation for sparsegl, produces a plot, and returns a
 #' value for \code{lambda}. This function is modified based on the \code{cv}
 #' function from the \code{glmnet} package.
 #'
-#' The function runs \code{\link{gglasso}} \code{nfolds}+1 times; the first to
+#' The function runs \code{\link{sparsegl}} \code{nfolds}+1 times; the first to
 #' get the \code{lambda} sequence, and then the remainder to compute the fit
 #' with each of the folds omitted. The average error and standard deviation
 #' over the folds are computed.
 #'
-#' @aliases cv.gglasso cv.ls cv.logit cv.hsvm cv.sqsvm
+#' @aliases cv.sparsegl cv.ls cv.logit cv.hsvm cv.sqsvm
 #' @param x matrix of predictors, of dimension \eqn{n \times p}{n*p}; each row
 #' is an observation vector.
 #' @param y response variable. This argument should be quantitative for
@@ -18,11 +18,9 @@
 #' @param group a vector of consecutive integers describing the grouping of the
 #' coefficients (see example below).
 #' @param lambda optional user-supplied lambda sequence; default is
-#' \code{NULL}, and \code{\link{gglasso}} chooses its own sequence.
+#' \code{NULL}, and \code{\link{sparsegl}} chooses its own sequence.
 #' @param pred.loss loss to use for cross-validation error. Valid options are:
-#' \itemize{ \item \code{"loss"} for classification, margin based loss
-#' function.  \item \code{"misclass"} for classification, it gives
-#' misclassification error.  \item \code{"L1"} for regression, mean square
+#' \itemize{ \item \code{"L1"} for regression, mean square
 #' error used by least squares regression \code{loss="ls"}, it measure the
 #' deviation from the fitted mean to the response.  \item \code{"L2"} for
 #' regression, mean absolute error used by least squares regression
@@ -35,36 +33,28 @@
 #' identifying what fold each observation is in. If supplied, \code{nfold} can
 #' be missing.
 #' \code{pred.loss = "loss"}, \code{loss = "hsvm"}.
-#' @param \dots other arguments that can be passed to gglasso.
-#' @return an object of class \code{\link{cv.gglasso}} is returned, which is a
+#' @param \dots other arguments that can be passed to sparsegl.
+#' @return an object of class \code{\link{cv.sparsegl}} is returned, which is a
 #' list with the ingredients of the cross-validation fit.  \item{lambda}{the
 #' values of \code{lambda} used in the fits.} \item{cvm}{the mean
 #' cross-validated error - a vector of length \code{length(lambda)}.}
 #' \item{cvsd}{estimate of standard error of \code{cvm}.} \item{cvupper}{upper
 #' curve = \code{cvm+cvsd}.} \item{cvlower}{lower curve = \code{cvm-cvsd}.}
 #' \item{name}{a text string indicating type of measure (for plotting
-#' purposes).} \item{gglasso.fit}{a fitted \code{\link{gglasso}} object for the
+#' purposes).} \item{sparsegl.fit}{a fitted \code{\link{sparsegl}} object for the
 #' full data.} \item{lambda.min}{The optimal value of \code{lambda} that gives
 #' minimum cross validation error \code{cvm}.} \item{lambda.1se}{The largest
 #' value of \code{lambda} such that error is within 1 standard error of the
 #' minimum.}
 #' @author Yi Yang and Hui Zou\cr Maintainer: Yi Yang <yi.yang6@@mcgill.ca>
-#' @seealso \code{\link{gglasso}}, \code{\link{plot.cv.gglasso}},
-#' \code{\link{predict.cv.gglasso}}, and \code{\link{coef.cv.gglasso}} methods.
+#' @seealso \code{\link{sparsegl}}, \code{\link{plot.cv.sparsegl}},
+#' \code{\link{predict.cv.sparsegl}}, and \code{\link{coef.cv.sparsegl}} methods.
 #' @references Yang, Y. and Zou, H. (2015), ``A Fast Unified Algorithm for
 #' Computing Group-Lasso Penalized Learning Problems,'' \emph{Statistics and
 #' Computing}. 25(6), 1129-1141.\cr BugReport:
 #' \url{https://github.com/emeryyi/gglasso}\cr
 #' @keywords models regression
-#' @examples
-#' # define group index
-#' group <- rep(1:20,each=5)
-#'
-#' # 5-fold cross validation using group lasso
-#' # penalized logisitic regression
-#' # cv <- cv.sparsegl(x=bardet$x, y=bardet$y, group=group, loss="ls",
-#' # pred.loss="L2", lambda.factor=0.05, nfolds=5)
-#'
+
 #' @export
 cv.sparsegl <- function(x, y, group, lambda = NULL,
                         pred.loss = c("L2", "L1"),
@@ -103,7 +93,6 @@ cv.sparsegl <- function(x, y, group, lambda = NULL,
     class(obj) <- "cv.sparsegl"
     obj
 }
-
 
 
 cv.ls <- function(outlist, lambda, x, y, foldid, pred.loss = c("L2","L1")) {

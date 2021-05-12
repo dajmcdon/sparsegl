@@ -25,11 +25,9 @@ sparsegl(
 }
 \arguments{
 \item{x}{matrix of predictors, of dimension \eqn{n \times p}{n*p}; each row
-is an observation vector.}
+is a vector of measurements and each column is a feature}
 
-\item{y}{response variable. This argument should be quantitative for
-regression (least squares), and a two-level factor for classification
-(logistic model, huberized SVM, squared SVM).}
+\item{y}{real-valued response variable.}
 
 \item{group}{a vector of consecutive integers describing the grouping of the
 coefficients (see example below).}
@@ -81,16 +79,9 @@ re-enters model through the path, it will be counted only once. Default is
 \item{maxit}{maximum number of outer-loop iterations allowed at fixed lambda
 value. Default is 3e8. If models do not converge, consider increasing
 \code{maxit}.}
-
-\item{pen}{a character string specifying the penalty function to use, valid
-options are: \itemize{ \item \code{"sparsegl"} for group plus l1 penalty,
-\item \code{"gglasso"} for group penalty only }Default is \code{"sparsegl"}.}
-
-\item{algorithm}{a character string specifying the algorithm for sparse
-group lasso (sparsegl). Valid options are: \itemize{ }}
 }
 \value{
-An object with S3 class \code{\link{gglasso}}.  \item{call}{the call
+An object with S3 class \code{\link{sparsegl}}.  \item{call}{the call
 that produced this object} \item{b0}{intercept sequence of length
 \code{length(lambda)}} \item{beta}{a \code{p*length(lambda)} matrix of
 coefficients.} \item{df}{the number of nonzero groups for each value of
@@ -116,25 +107,11 @@ For computing speed reason, if models are not converging or running slow,
 consider increasing \code{eps}, decreasing \code{nlambda}, or increasing
 \code{lambda.factor} before increasing \code{maxit}.
 }
-\examples{
-# load sparsegl library
-library(sparsegl)
-
-# define group index
-group1 <- rep(1:20,each=5)
-
-# fit group lasso penalized least squares
-# m1 <- sparsegl(x=bardet$x,y=bardet$y,group=group1,pen="gglasso")
-# define group index
-group2 <- rep(1:20,each=5)
-
-
-}
 \seealso{
-\code{plot.gglasso}
+\code{plot.sparsegl}
 }
 \author{
-Aaron Cohen and Dan McDonald\cr Maintainer: Aaron Cohen \href{mailto:cohenaa@indiana.edu}{cohenaa@indiana.edu}
+Aaron Cohen and Dan Mcdonald\cr Maintainer: Aaron Cohen \href{mailto:cohenaa@indiana.edu}{cohenaa@indiana.edu}
 }
 \keyword{models}
 \keyword{regression}
