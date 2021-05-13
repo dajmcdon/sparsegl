@@ -19,6 +19,7 @@ Imports:
     RSpectra,
     assertthat,
     methods,
+    tidyverse,
     ggplot2,
     reshape2
 Depends: 
