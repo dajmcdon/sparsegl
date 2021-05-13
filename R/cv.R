@@ -13,8 +13,7 @@
 #' @param x matrix of predictors, of dimension \eqn{n \times p}{n*p}; each row
 #' is an observation vector.
 #' @param y response variable. This argument should be quantitative for
-#' regression (least squares), and a two-level factor for classification
-#' (logistic model, huberized SVM, squared SVM).
+#' regression (least squares).
 #' @param group a vector of consecutive integers describing the grouping of the
 #' coefficients (see example below).
 #' @param lambda optional user-supplied lambda sequence; default is
@@ -25,14 +24,14 @@
 #' deviation from the fitted mean to the response.  \item \code{"L2"} for
 #' regression, mean absolute error used by least squares regression
 #' \code{loss="ls"}, it measure the deviation from the fitted mean to the
-#' response.  } Default is \code{"loss"}.
+#' response.  } Default is \code{"L2"}.
 #' @param nfolds number of folds - default is 5. Although \code{nfolds} can be
 #' as large as the sample size (leave-one-out CV), it is not recommended for
 #' large datasets. Smallest value allowable is \code{nfolds=3}.
 #' @param foldid an optional vector of values between 1 and \code{nfold}
 #' identifying what fold each observation is in. If supplied, \code{nfold} can
 #' be missing.
-#' \code{pred.loss = "loss"}, \code{loss = "hsvm"}.
+#' \code{pred.loss = "loss"}.
 #' @param \dots other arguments that can be passed to sparsegl.
 #' @return an object of class \code{\link{cv.sparsegl}} is returned, which is a
 #' list with the ingredients of the cross-validation fit.  \item{lambda}{the
@@ -59,7 +58,7 @@
 cv.sparsegl <- function(x, y, group, lambda = NULL,
                         pred.loss = c("L2", "L1"),
                         nfolds = 5, foldid, ...) {
-    if (missing(pred.loss)) pred.loss <- "default"
+    if (missing(pred.loss)) pred.loss <- "default" 
     else pred.loss <- match.arg(pred.loss)
     N <- nrow(x)
     ###Fit the model once to get dimensions etc of output
@@ -116,3 +115,5 @@ cv.ls <- function(outlist, lambda, x, y, foldid, pred.loss = c("L2","L1")) {
     cvsd <- sqrt(apply(scaled, 2, mean, na.rm = TRUE) / (N - 1))
     list(cvm = cvm, cvsd = cvsd, name = typenames[pred.loss])
 }
+
+

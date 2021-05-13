@@ -68,11 +68,7 @@ coef.sparsegl <- function(object, s = NULL, ...) {
 #' @param s value(s) of the penalty parameter \code{lambda} at which
 #' predictions are required. Default is the entire sequence used to create the
 #' model.
-#' @param type type of prediction required: \itemize{ \item Type \code{"link"},
-#' for regression it returns the fitted response; for classification it gives
-#' the linear predictors.  \item Type \code{"class"}, only valid for
-#' classification, it produces the predicted class label corresponding to the
-#' maximum probability.}
+
 #' 
 #' @param \dots Not used. Other arguments to predict.
 #' @return The object returned depends on type.
@@ -87,11 +83,9 @@ coef.sparsegl <- function(object, s = NULL, ...) {
 #' 
 #' @method predict sparsegl
 #' @export
-predict.sparsegl <- function(object, newx, s = NULL, type = c("class", 
-    "link"), ...) {
-    type <- match.arg(type)
+predict.sparsegl <- function(object, newx, s = NULL, ...) {
     loss <- class(object)[[2]]
-    b0 <- t(as.matrix(object$b0))
+    b0 <- (as.matrix(object$b0))
     rownames(b0) <- "(Intercept)"
     nbeta <- rbind2(b0, object$beta)
     if (!is.null(s)) {
@@ -99,12 +93,11 @@ predict.sparsegl <- function(object, newx, s = NULL, type = c("class",
         dimnames(nbeta) <- list(NULL, NULL)
         lambda <- object$lambda
         lamlist <- lambda.interp(lambda, s)
-        if(length(s) == 1)
-		{
+        if(length(s) == 1){
 			nbeta = nbeta[, lamlist$left, drop=FALSE] * lamlist$frac +
 			nbeta[, lamlist$right, drop=FALSE] * (1 - lamlist$frac)
-		} else
-		{
+		} 
+        else {
 			nbeta = nbeta[, lamlist$left, drop=FALSE] %*% diag(lamlist$frac) +
 			nbeta[, lamlist$right, drop=FALSE] %*% diag(1 - lamlist$frac)
 		}
@@ -112,11 +105,7 @@ predict.sparsegl <- function(object, newx, s = NULL, type = c("class",
     }
     if (is.null(dim(newx))) newx = matrix(newx, nrow = 1)
     nfit <- as.matrix(as.matrix(cbind2(1, newx)) %*% nbeta)
-    if (loss %in% c("logit", "sqsvm", "hsvm")) {
-        switch(type, link = nfit, class = ifelse(nfit > 0, 1, -1))
-    } else {
-        nfit
-    }
+    nfit
 }
 
 

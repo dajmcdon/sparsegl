@@ -4,9 +4,9 @@
 \alias{predict.sparsegl}
 \title{Make predictions from a "sparsegl" object.}
 \usage{
-\method{predict}{sparsegl}(object, newx, s = NULL, type = c("class", "link"), ...)
+\method{predict}{sparsegl}(object, newx, s = NULL, ...)
 
-\method{predict}{sparsegl}(object, newx, s = NULL, type = c("class", "link"), ...)
+\method{predict}{sparsegl}(object, newx, s = NULL, ...)
 }
 \arguments{
 \item{object}{fitted \code{\link{sparsegl}} model object.}
@@ -18,13 +18,13 @@ made. Must be a matrix.}
 predictions are required. Default is the entire sequence used to create the
 model.}
 
+\item{\dots}{Not used. Other arguments to predict.}
+
 \item{type}{type of prediction required: \itemize{ \item Type \code{"link"},
 for regression it returns the fitted response; for classification it gives
 the linear predictors.  \item Type \code{"class"}, only valid for
 classification, it produces the predicted class label corresponding to the
 maximum probability.}}
-
-\item{\dots}{Not used. Other arguments to predict.}
 }
 \value{
 The object returned depends on type.

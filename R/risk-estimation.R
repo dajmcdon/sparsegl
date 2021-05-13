@@ -63,7 +63,7 @@ delP <- function(beta, group) {
     Matrix::diag(1/bn, nrow = p, ncol = p) - outer(x / bn, x)
   })
   return(Matrix::bdiag(mats))
-}
+} 
 
 two_norm <- function(x) sqrt(sum(x^2))
 gr_norm <- function(x, gr) sum(as.vector(tapply(x, gr, two_norm)))
