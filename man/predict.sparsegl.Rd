@@ -19,12 +19,6 @@ predictions are required. Default is the entire sequence used to create the
 model.}
 
 \item{\dots}{Not used. Other arguments to predict.}
-
-\item{type}{type of prediction required: \itemize{ \item Type \code{"link"},
-for regression it returns the fitted response; for classification it gives
-the linear predictors.  \item Type \code{"class"}, only valid for
-classification, it produces the predicted class label corresponding to the
-maximum probability.}}
 }
 \value{
 The object returned depends on type.

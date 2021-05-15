@@ -10,6 +10,8 @@
 #' \code{TRUE}. Plot each coefficient if \code{FALSE}.
 #' @param log.l what is on the X-axis. Plot against the log-lambda sequence if
 #' \code{TRUE}. Plot against the lambda sequence if \code{FALSE}.
+#' @param asparse the weight to put on the ell1 norm in sparse group lasso. Default
+#' is 0.05
 #' @param \dots other graphical parameters to plot
 #' @author Yi Yang and Hui Zou\cr Maintainer: Yi Yang <yi.yang6@@mcgill.ca>
 #' @references Yang, Y. and Zou, H. (2015), ``A Fast Unified Algorithm for
@@ -19,7 +21,7 @@
 #' @keywords models regression
 #' @method plot sparsegl
 #' @export
-plot.sparsegl <- function(x, group = FALSE, log.l = TRUE, alpha = 0.05, ...) {
+plot.sparsegl <- function(x, group = FALSE, log.l = TRUE, asparse = 0.05, ...) {
     
     xb <- x$beta   # xb is the betas of output
     
@@ -55,7 +57,7 @@ plot.sparsegl <- function(x, group = FALSE, log.l = TRUE, alpha = 0.05, ...) {
         for (g in 1:n.g) {
             # crossp <- apply(tmp[ix[g]:iy[g], ], 2, crossprod)
             # beta[g, ] <- sqrt(crossp)
-            crossp <- apply(tmp[ix[g]:iy[g], ], 2, function(x) {alpha * sum(abs(x)) + (1 - alpha) * sqrt(crossprod(x))})
+            crossp <- apply(tmp[ix[g]:iy[g], ], 2, function(x) {asparse * sum(abs(x)) + (1 - asparse) * sqrt(crossprod(x))})
             beta[g,] <- crossp
         }
     } else beta <- tmp

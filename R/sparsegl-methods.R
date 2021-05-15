@@ -66,11 +66,6 @@ coef.sparsegl <- function(object, s = NULL, ...) {
 #' @param s value(s) of the penalty parameter \code{lambda} at which
 #' predictions are required. Default is the entire sequence used to create the
 #' model.
-#' @param type type of prediction required: \itemize{ \item Type \code{"link"},
-#' for regression it returns the fitted response; for classification it gives
-#' the linear predictors.  \item Type \code{"class"}, only valid for
-#' classification, it produces the predicted class label corresponding to the
-#' maximum probability.}
 #'
 #' @param \dots Not used. Other arguments to predict.
 #' @return The object returned depends on type.

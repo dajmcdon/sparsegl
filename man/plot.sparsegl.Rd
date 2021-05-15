@@ -4,7 +4,7 @@
 \alias{plot.sparsegl}
 \title{Plot solution paths from a "sparsegl" object}
 \usage{
-\method{plot}{sparsegl}(x, group = FALSE, log.l = TRUE, alpha = 0.05, ...)
+\method{plot}{sparsegl}(x, group = FALSE, log.l = TRUE, asparse = 0.05, ...)
 }
 \arguments{
 \item{x}{fitted \code{\link{sparsegl}} model}
@@ -14,6 +14,9 @@
 
 \item{log.l}{what is on the X-axis. Plot against the log-lambda sequence if
 \code{TRUE}. Plot against the lambda sequence if \code{FALSE}.}
+
+\item{asparse}{the weight to put on the ell1 norm in sparse group lasso. Default
+is 0.05}
 
 \item{\dots}{other graphical parameters to plot}
 }
