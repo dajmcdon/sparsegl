@@ -21,9 +21,12 @@ Imports:
     RSpectra,
     assertthat,
     methods,
-    tidyverse,
+    tidyr,
+    dplyr,
+    tibble,
     ggplot2,
-    reshape2
+    ggpubr,
+    magrittr
 Depends: 
     R (>= 3.5)
 License: GPL (>= 2)
@@ -31,5 +34,8 @@ Suggests:
     testthat (>= 3.0.0),
     glmnet,
     gglasso,
-    SGL
+    SGL,
+    knitr,
+    rmarkdown
 Config/testthat/edition: 3
+VignetteBuilder: knitr
