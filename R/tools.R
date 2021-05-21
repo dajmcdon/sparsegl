@@ -26,7 +26,7 @@
 #' @export
 #' @method coef sparsegl
 coef.sparsegl <- function(object, s = NULL, ...) {
-    b0 <- t(as.matrix(object$b0))
+    b0 <- as.matrix(object$b0)
     rownames(b0) <- "(Intercept)"
     nbeta <- rbind2(b0, object$beta)
     if (!is.null(s)) {
@@ -34,14 +34,12 @@ coef.sparsegl <- function(object, s = NULL, ...) {
         dimnames(nbeta) <- list(NULL, NULL)
         lambda <- object$lambda
         lamlist <- lambda.interp(lambda, s)
-        if(length(s) == 1)
-		{
-			nbeta = nbeta[, lamlist$left, drop=FALSE] * lamlist$frac +
-			nbeta[, lamlist$right, drop=FALSE] * (1 - lamlist$frac)
-		} else
-		{
-			nbeta = nbeta[, lamlist$left, drop=FALSE] %*% diag(lamlist$frac) +
-			nbeta[, lamlist$right, drop=FALSE] %*% diag(1 - lamlist$frac)
+        if (length(s) == 1) {
+			nbeta = nbeta[, lamlist$left, drop = FALSE] * lamlist$frac +
+			nbeta[, lamlist$right, drop = FALSE] * (1 - lamlist$frac)
+			} else {
+			nbeta = nbeta[, lamlist$left, drop = FALSE] %*% diag(lamlist$frac) +
+			nbeta[, lamlist$right, drop = FALSE] %*% diag(1 - lamlist$frac)
 		}
         dimnames(nbeta) <- list(vnames, paste(seq(along = s)))
     }
@@ -93,13 +91,13 @@ predict.sparsegl <- function(object, newx, s = NULL, ...) {
         dimnames(nbeta) <- list(NULL, NULL)
         lambda <- object$lambda
         lamlist <- lambda.interp(lambda, s)
-        if(length(s) == 1){
-			nbeta = nbeta[, lamlist$left, drop=FALSE] * lamlist$frac +
-			nbeta[, lamlist$right, drop=FALSE] * (1 - lamlist$frac)
+        if (length(s) == 1) {
+			nbeta = nbeta[, lamlist$left, drop = FALSE] * lamlist$frac +
+			nbeta[, lamlist$right, drop = FALSE] * (1 - lamlist$frac)
 		} 
         else {
-			nbeta = nbeta[, lamlist$left, drop=FALSE] %*% diag(lamlist$frac) +
-			nbeta[, lamlist$right, drop=FALSE] %*% diag(1 - lamlist$frac)
+			nbeta = nbeta[, lamlist$left, drop = FALSE] %*% diag(lamlist$frac) +
+			nbeta[, lamlist$right, drop = FALSE] %*% diag(1 - lamlist$frac)
 		}
         dimnames(nbeta) <- list(vnames, paste(seq(along = s)))
     }
