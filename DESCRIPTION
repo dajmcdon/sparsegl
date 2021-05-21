@@ -36,6 +36,7 @@ Suggests:
     gglasso,
     SGL,
     knitr,
-    rmarkdown
+    rmarkdown,
+    markdown
 Config/testthat/edition: 3
 VignetteBuilder: knitr
