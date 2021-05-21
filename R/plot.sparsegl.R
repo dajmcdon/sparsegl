@@ -1,3 +1,4 @@
+utils::globalVariables(c("starts_with", "lambda", "value","variable"))
 #' Plot solution paths from a "sparsegl" object
 #' 
 #' Produces a coefficient profile plot of the coefficient paths for a fitted

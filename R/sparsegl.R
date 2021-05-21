@@ -1,6 +1,6 @@
 #' Fits the regularization paths for sparse group-lasso penalized learning problems
 #'
-#' Fits regularization paths for group-lasso penalized learning problems at a
+#' Fits regularization paths for sparse group-lasso penalized learning problems at a
 #' sequence of regularization parameters lambda.
 #'
 #' Note that the objective function for \code{"ls"} least squares is

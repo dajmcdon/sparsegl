@@ -104,7 +104,7 @@ error.} \item{group}{a vector of consecutive integers describing the
 grouping of the coefficients.}
 }
 \description{
-Fits regularization paths for group-lasso penalized learning problems at a
+Fits regularization paths for sparse group-lasso penalized learning problems at a
 sequence of regularization parameters lambda.
 }
 \details{

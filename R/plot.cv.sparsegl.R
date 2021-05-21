@@ -8,7 +8,7 @@
 ##        URL http://www.jstatsoft.org/v33/i01/.
 
 
-
+utils::globalVariables(c("X", "y", "lower", "upper"))
 
 #' plot the cross-validation curve produced by cv.sparsegl
 #' 
