@@ -99,10 +99,6 @@ plot.sparsegl <- function(x, group = TRUE, log.l = TRUE, asparse = 0.05, ...) {
         ggplot2::xlab("Standardized Lambda") +
         ggplot2::theme(legend.position = "none")
     
-    # if (group) {p2 <- p2 + ggplot2::scale_color_discrete(name = "Group", labels = paste0("group", 1:n.g))
-    # } else {p2 <- p2 + ggplot2::scale_color_discrete(name = "Variable", labels = paste0("variable", 1:length(x$group)))}
-    
-    
     outputs <- tibble::as_tibble(t(as.matrix(tmp))) 
     names <- c(1:dim(tmp)[1])
     colnames(outputs) <- names
