@@ -3,9 +3,6 @@
 \name{cv.sparsegl}
 \alias{cv.sparsegl}
 \alias{cv.ls}
-\alias{cv.logit}
-\alias{cv.hsvm}
-\alias{cv.sqsvm}
 \title{Cross-validation for sparsegl}
 \usage{
 cv.sparsegl(
@@ -38,7 +35,7 @@ error used by least squares regression \code{loss="ls"}, it measure the
 deviation from the fitted mean to the response.  \item \code{"L2"} for
 regression, mean absolute error used by least squares regression
 \code{loss="ls"}, it measure the deviation from the fitted mean to the
-response.  } Default is \code{"L2"}.}
+response.  }.}
 
 \item{nfolds}{number of folds - default is 5. Although \code{nfolds} can be
 as large as the sample size (leave-one-out CV), it is not recommended for
@@ -46,8 +43,7 @@ large datasets. Smallest value allowable is \code{nfolds=3}.}
 
 \item{foldid}{an optional vector of values between 1 and \code{nfold}
 identifying what fold each observation is in. If supplied, \code{nfold} can
-be missing.
-\code{pred.loss = "loss"}.}
+be missing.}
 
 \item{\dots}{other arguments that can be passed to sparsegl.}
 }

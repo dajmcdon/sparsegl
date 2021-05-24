@@ -55,11 +55,11 @@ plot.sparsegl <- function(x, group = TRUE, log.l = TRUE, asparse = 0.05, ...) {
             beta[i,] <- crossp
         }
     } else beta <- tmp
-
+    
     if (log.l) l <- log(l)
-
+    
     outputs <- as.data.frame(t(as.matrix(beta)))
-    colnames(outputs) <- c(1:n.g)
+    if (group) colnames(outputs) <- c(1:n.g) else colnames(outputs) <- c(1:dim(outputs)[2])
     outputs <- outputs %>% dplyr::mutate(lambda = l)
     outputs1 <- as.data.frame(outputs)
     outputs1 <- outputs1 %>% tidyr::pivot_longer(cols = !starts_with("lambda"), names_to = "variable")
@@ -70,27 +70,27 @@ plot.sparsegl <- function(x, group = TRUE, log.l = TRUE, asparse = 0.05, ...) {
         ggplot2::geom_line() +
         ggplot2::geom_hline(yintercept = 0) + 
         ggplot2::ylab("Coefficients")
-
-        
+    
+    
     if (group) {
         p1 <- p1 + ggplot2::scale_color_discrete(name = "Group", 
                                                  labels = paste0("group", 1:n.g), 
                                                  breaks = sort(as.numeric(levels(factor(outputs1$variable))))); 
     } else {
         p1 <- p1 + ggplot2::scale_color_discrete(name = "Variable", 
-                                                 labels = paste0("variable", 1:n.g),
+                                                 labels = paste0("variable", 1:(dim(outputs)[2] - 1)),
                                                  breaks = sort(as.numeric(levels(factor(outputs1$variable)))))
-        }
-
+    }
+    
     if (log.l) p1 <- p1 + ggplot2::xlab("Log Lambda") else p1 <- p1 + ggplot2::xlab("Lambda")
-
+    
     # standardized group norm on x-axis
     sgnorm <- apply(xb, 2, function(y) sp_group_norm(y, x$group))
     outputs2 <- outputs
     outputs2 <- outputs2 %>% 
         dplyr::mutate(lambda = sgnorm / max(sgnorm)) %>% 
         tidyr::pivot_longer(!starts_with("lambda"), names_to = "variable")
-
+    
     p2 <- outputs2 %>%
         ggplot2::ggplot(ggplot2::aes(x = lambda, y = value, col = factor(variable))) +
         ggplot2::geom_line() +
@@ -99,6 +99,11 @@ plot.sparsegl <- function(x, group = TRUE, log.l = TRUE, asparse = 0.05, ...) {
         ggplot2::xlab("Standardized Lambda") +
         ggplot2::theme(legend.position = "none")
     
+    if (!group) {
+        p <- ggpubr::ggarrange(p1, p2, nrow = 2, common.legend = TRUE, legend = "right")
+        return(p)
+    }
+    
     outputs <- tibble::as_tibble(t(as.matrix(tmp))) 
     names <- c(1:dim(tmp)[1])
     colnames(outputs) <- names
@@ -106,38 +111,36 @@ plot.sparsegl <- function(x, group = TRUE, log.l = TRUE, asparse = 0.05, ...) {
     outputs3 <- outputs %>% tidyr::pivot_longer(cols = !starts_with("lambda"), names_to = "variable")
     outputs4 <- outputs %>% dplyr::mutate(lambda = sgnorm / max(sgnorm)) %>% tidyr::pivot_longer(cols = !starts_with("lambda"), names_to = "variable")
     if (group) {
-        outputs3 <- outputs3 %>% dplyr::mutate(groups = 0)
-        outputs4 <- outputs4 %>% dplyr::mutate(groups = 0)
+        outputs3 <- outputs3 %>% dplyr::mutate(group = 0)
+        outputs4 <- outputs4 %>% dplyr::mutate(group = 0)
         for (i in 1:n.g) {
-           outputs3 <- outputs3 %>% dplyr::mutate(groups = replace(groups, variable %in% names[ix[i]:iy[i]], i))
-           outputs4 <- outputs4 %>% dplyr::mutate(groups = replace(groups, variable %in% names[ix[i]:iy[i]], i))
+            outputs3 <- outputs3 %>% dplyr::mutate(group = replace(group, variable %in% names[ix[i]:iy[i]], i))
+            outputs4 <- outputs4 %>% dplyr::mutate(group = replace(group, variable %in% names[ix[i]:iy[i]], i))
         }
         p3 <- outputs3 %>% 
-            ggplot2::ggplot(ggplot2::aes(x = lambda, y = value, group = variable, color = factor(groups))) +
+            ggplot2::ggplot(ggplot2::aes(x = lambda, y = value, group = variable, color = factor(group))) +
             ggplot2::geom_line() +
             ggplot2::geom_hline(yintercept = 0) +
             ggplot2::ylab("Coefficients") +
             ggplot2::scale_color_discrete(name = "Group", labels = paste0("group", 1:n.g)) 
+        if (log.l) p3 <- p3 + ggplot2::xlab("Log Lambda") else p3 <- p3 + ggplot2::xlab("Lambda")
+        
         
         p4 <- outputs4 %>% 
-            ggplot2::ggplot(ggplot2::aes(x = lambda, y = value, group = variable, col = factor(groups))) +
+            ggplot2::ggplot(ggplot2::aes(x = lambda, y = value, group = variable, col = factor(group))) +
             ggplot2::geom_line() +
             ggplot2::geom_hline(yintercept = 0) +
             ggplot2::scale_color_discrete(name = "Group", labels = paste0("group", 1:n.g)) +
             ggplot2::xlab("Standardized Lambda") +
             ggplot2::ylab("Coefficients")
-            
+        
     }
     
-    if (group) {
-        p_left <- ggpubr::ggarrange(p1, p2, nrow = 2, common.legend = TRUE, legend = "left") 
-        p_right <- ggpubr::ggarrange(p3, p4, nrow = 2, common.legend = TRUE, legend = "right")
-        p <- ggpubr::ggarrange(p_left, p_right, nrow = 1, ncol = 2)
-        return(p)
-    } else {
-        p <- ggpubr::ggarrange(p1, p2, nrow = 2, common.legend = TRUE, legend = "right")
-        return(p)
-    }
+    
+    p_left <- ggpubr::ggarrange(p1, p2, nrow = 2, common.legend = TRUE, legend = "left") 
+    p_right <- ggpubr::ggarrange(p3, p4, nrow = 2, common.legend = TRUE, legend = "right")
+    p <- ggpubr::ggarrange(p_left, p_right, nrow = 1, ncol = 2)
+    return(p)
 }
     
 
