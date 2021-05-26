@@ -16,6 +16,10 @@ risk_estimate <- function(object, x, y,
                           type = c("AIC", "BIC", "GCV"),
                           approx_df = FALSE) {
   type <- match.arg(type)
+  if (is.matrix(y)) {
+    stopifnot(dim(y)[2] == 1)
+    y <- drop(y)
+  }
   preds <- predict(object, x)
   err <- log(colMeans((y - preds)^2))
   n <- length(y)
@@ -67,6 +71,6 @@ delP <- function(beta, group) {
 
 two_norm <- function(x) sqrt(sum(x^2))
 gr_norm <- function(x, gr) sum(as.vector(tapply(x, gr, two_norm)))
-sp_group_norm <- function(x, gr, alpha = 0.05) {
-  alpha * sum(abs(x)) + (1 - alpha) * gr_norm(x, gr)
+sp_group_norm <- function(x, gr, asparse = 0.05) {
+  asparse * sum(abs(x)) + (1 - asparse) * gr_norm(x, gr)
 }

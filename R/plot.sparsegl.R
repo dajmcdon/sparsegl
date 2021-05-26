@@ -1,4 +1,3 @@
-utils::globalVariables(c("starts_with", "lambda", "value","variable"))
 #' Plot solution paths from a "sparsegl" object
 #' 
 #' Produces a coefficient profile plot of the coefficient paths for a fitted
@@ -22,7 +21,8 @@ utils::globalVariables(c("starts_with", "lambda", "value","variable"))
 #' @keywords models regression
 #' @method plot sparsegl
 #' @export
-plot.sparsegl <- function(x, group = TRUE, log.l = TRUE, asparse = 0.05, ...) {
+plot.sparsegl <- function(x, group = FALSE, log.l = TRUE, asparse = 0.05,
+                          ...) {
     
     xb <- x$beta  
     
@@ -35,9 +35,10 @@ plot.sparsegl <- function(x, group = TRUE, log.l = TRUE, asparse = 0.05, ...) {
     }
     
     tmp <- xb[nonzeros, , drop = FALSE]  
-    g <- as.numeric(as.factor(x$group[nonzeros])) 
+    g <- as.numeric(x$group[nonzeros])
     l <- x$lambda  
-    n.g <- max(g) 
+    uni_group <- unique(g)
+    n.g <- length(uni_group)
     
     if (group) {
         bs <- as.integer(as.numeric(table(g)))  
@@ -51,35 +52,42 @@ plot.sparsegl <- function(x, group = TRUE, log.l = TRUE, asparse = 0.05, ...) {
         }
         beta <- matrix(NA, n.g, length(l))  
         for (i in 1:n.g) {
-            crossp <- apply(tmp[ix[i]:iy[i], ], 2, function(x) {asparse * sum(abs(x)) + (1 - asparse) * sqrt(crossprod(x))})
+            crossp <- apply(tmp[ix[i]:iy[i], ], 2, function(x) {
+                asparse * sum(abs(x)) + (1 - asparse) * sqrt(crossprod(x))})
             beta[i,] <- crossp
         }
     } else beta <- tmp
     
     if (log.l) l <- log(l)
     
-    outputs <- as.data.frame(t(as.matrix(beta)))
-    if (group) colnames(outputs) <- c(1:n.g) else colnames(outputs) <- c(1:dim(outputs)[2])
+    outputs <- tibble::as_tibble(t(as.matrix(beta)), .name_repair = "unique")
+    if (group) colnames(outputs) <- uni_group else colnames(outputs) <- c(1:dim(outputs)[2])
     outputs <- outputs %>% dplyr::mutate(lambda = l)
-    outputs1 <- as.data.frame(outputs)
-    outputs1 <- outputs1 %>% tidyr::pivot_longer(cols = !starts_with("lambda"), names_to = "variable")
+    outputs1 <- outputs %>%
+        tidyr::pivot_longer(cols = !.data$lambda, names_to = "variable") %>% 
+        dplyr::mutate(variable = factor(
+            .data$variable, levels = sort(as.numeric(unique(.data$variable)))))
     
     # ggplot
     p1 <- outputs1 %>%
-        ggplot2::ggplot(ggplot2::aes(x = lambda, y = value, col = factor(variable))) +
+        ggplot2::ggplot(ggplot2::aes(x = .data$lambda, 
+                                     y = .data$value, 
+                                     col = .data$variable)) +
         ggplot2::geom_line() +
         ggplot2::geom_hline(yintercept = 0) + 
-        ggplot2::ylab("Coefficients")
+        ggplot2::theme_bw()
     
     
     if (group) {
-        p1 <- p1 + ggplot2::scale_color_discrete(name = "Group", 
-                                                 labels = paste0("group", 1:n.g), 
-                                                 breaks = sort(as.numeric(levels(factor(outputs1$variable))))); 
+        p1 <- p1 + 
+            ggplot2::ylab("Group norm") +
+            ggplot2::scale_color_discrete(name = "Group", 
+                                          labels = paste0("group", uni_group))
     } else {
-        p1 <- p1 + ggplot2::scale_color_discrete(name = "Variable", 
-                                                 labels = paste0("variable", 1:(dim(outputs)[2] - 1)),
-                                                 breaks = sort(as.numeric(levels(factor(outputs1$variable)))))
+        p1 <- p1 + 
+            ggplot2::ylab("Coefficients") +
+            ggplot2::scale_color_discrete(name = "Variable", 
+                                          labels = paste0("variable", as.numeric(nonzeros)))
     }
     
     if (log.l) p1 <- p1 + ggplot2::xlab("Log Lambda") else p1 <- p1 + ggplot2::xlab("Lambda")
@@ -89,58 +97,92 @@ plot.sparsegl <- function(x, group = TRUE, log.l = TRUE, asparse = 0.05, ...) {
     outputs2 <- outputs
     outputs2 <- outputs2 %>% 
         dplyr::mutate(lambda = sgnorm / max(sgnorm)) %>% 
-        tidyr::pivot_longer(!starts_with("lambda"), names_to = "variable")
+        tidyr::pivot_longer(!.data$lambda, names_to = "variable") %>% 
+        dplyr::mutate(variable = factor(.data$variable, 
+                                        levels = sort(as.numeric(unique(.data$variable)))))
     
     p2 <- outputs2 %>%
-        ggplot2::ggplot(ggplot2::aes(x = lambda, y = value, col = factor(variable))) +
+        ggplot2::ggplot(ggplot2::aes(x = .data$lambda,
+                                     y = .data$value, 
+                                     col = .data$variable)) +
+        ggplot2::geom_line() +
+        ggplot2::geom_hline(yintercept = 0) +
+        ggplot2::xlab("beta norm / max(beta norm)") +
+        ggplot2::theme(legend.position = "none") + 
+        ggplot2::theme_bw()
+    
+    if (group) {
+        p2 <- p2 + 
+            ggplot2::ylab("Group norm") +
+            ggplot2::scale_color_discrete(name = "Group", 
+                                          labels = paste0("group", uni_group))
+    } else {
+        p2 <- p2 + 
+            ggplot2::ylab("Coefficients") +
+            ggplot2::scale_color_discrete(name = "Variable", 
+                                          labels = paste0("variable", as.numeric(nonzeros)))
+    }
+    
+    if (!group) {
+        return(list(p1, p2))
+    }
+    
+    outputs <- tibble::as_tibble(t(as.matrix(tmp)), .name_repair = "unique") 
+    names <- c(1:dim(tmp)[1])
+    colnames(outputs) <- names
+    outputs3 <- outputs %>% 
+        dplyr::mutate(lambda = l) %>% 
+        dplyr::mutate(group = 0) %>% 
+        tidyr::pivot_longer(!c(.data$lambda, .data$group), names_to = "variable") %>% 
+        dplyr::mutate(variable = factor(
+            .data$variable, levels = sort(as.numeric(unique(.data$variable)))))
+    outputs4 <- outputs %>%
+        dplyr::mutate(lambda = sgnorm / max(sgnorm)) %>%
+        dplyr::mutate(group = 0) %>% 
+        tidyr::pivot_longer(!c(.data$lambda, .data$group), names_to = "variable") %>% 
+        dplyr::mutate(variable = factor(
+            .data$variable, levels = sort(as.numeric(unique(.data$variable)))))
+    
+    j <- 1
+    for (i in 1:n.g) {
+        outputs3 <- outputs3 %>%
+            dplyr::mutate(group = replace(group, .data$variable %in%
+                                              names[ix[i]:iy[i]], uni_group[j]))
+        outputs4 <- outputs4 %>%
+            dplyr::mutate(group = replace(group, .data$variable %in%
+                                              names[ix[i]:iy[i]], uni_group[j]))
+        j <- j + 1
+    }
+    
+    outputs3 <- outputs3 %>% dplyr::mutate(group = factor(group))
+    outputs4 <- outputs4 %>% dplyr::mutate(group = factor(group))
+    p3 <- outputs3 %>% 
+        ggplot2::ggplot(ggplot2::aes(x = .data$lambda, 
+                                     y = .data$value, 
+                                     group = .data$variable, 
+                                     color = .data$group)) +
         ggplot2::geom_line() +
         ggplot2::geom_hline(yintercept = 0) +
         ggplot2::ylab("Coefficients") +
-        ggplot2::xlab("Standardized Lambda") +
-        ggplot2::theme(legend.position = "none")
+        ggplot2::scale_color_discrete(name = "Group", labels = paste0("group", uni_group)) +
+        ggplot2::theme_bw()
+    if (log.l) p3 <- p3 + ggplot2::xlab("Log Lambda") else p3 <- p3 + ggplot2::xlab("Lambda")
     
-    if (!group) {
-        p <- ggpubr::ggarrange(p1, p2, nrow = 2, common.legend = TRUE, legend = "right")
-        return(p)
-    }
     
-    outputs <- tibble::as_tibble(t(as.matrix(tmp))) 
-    names <- c(1:dim(tmp)[1])
-    colnames(outputs) <- names
-    outputs <- outputs %>% dplyr::mutate(lambda = l)
-    outputs3 <- outputs %>% tidyr::pivot_longer(cols = !starts_with("lambda"), names_to = "variable")
-    outputs4 <- outputs %>% dplyr::mutate(lambda = sgnorm / max(sgnorm)) %>% tidyr::pivot_longer(cols = !starts_with("lambda"), names_to = "variable")
-    if (group) {
-        outputs3 <- outputs3 %>% dplyr::mutate(group = 0)
-        outputs4 <- outputs4 %>% dplyr::mutate(group = 0)
-        for (i in 1:n.g) {
-            outputs3 <- outputs3 %>% dplyr::mutate(group = replace(group, variable %in% names[ix[i]:iy[i]], i))
-            outputs4 <- outputs4 %>% dplyr::mutate(group = replace(group, variable %in% names[ix[i]:iy[i]], i))
-        }
-        p3 <- outputs3 %>% 
-            ggplot2::ggplot(ggplot2::aes(x = lambda, y = value, group = variable, color = factor(group))) +
-            ggplot2::geom_line() +
-            ggplot2::geom_hline(yintercept = 0) +
-            ggplot2::ylab("Coefficients") +
-            ggplot2::scale_color_discrete(name = "Group", labels = paste0("group", 1:n.g)) 
-        if (log.l) p3 <- p3 + ggplot2::xlab("Log Lambda") else p3 <- p3 + ggplot2::xlab("Lambda")
+    p4 <- outputs4 %>% 
+        ggplot2::ggplot(ggplot2::aes(x = .data$lambda,
+                                     y = .data$value, 
+                                     group = .data$variable, 
+                                     col = .data$group)) +
+        ggplot2::geom_line() +
+        ggplot2::geom_hline(yintercept = 0) +
+        ggplot2::scale_color_discrete(name = "Group", labels = paste0("group", uni_group)) +
+        ggplot2::xlab("beta norm / (beta norm") +
+        ggplot2::ylab("Coefficients") +
+        ggplot2::theme_bw()
         
-        
-        p4 <- outputs4 %>% 
-            ggplot2::ggplot(ggplot2::aes(x = lambda, y = value, group = variable, col = factor(group))) +
-            ggplot2::geom_line() +
-            ggplot2::geom_hline(yintercept = 0) +
-            ggplot2::scale_color_discrete(name = "Group", labels = paste0("group", 1:n.g)) +
-            ggplot2::xlab("Standardized Lambda") +
-            ggplot2::ylab("Coefficients")
-        
-    }
     
-    
-    p_left <- ggpubr::ggarrange(p1, p2, nrow = 2, common.legend = TRUE, legend = "left") 
-    p_right <- ggpubr::ggarrange(p3, p4, nrow = 2, common.legend = TRUE, legend = "right")
-    p <- ggpubr::ggarrange(p_left, p_right, nrow = 1, ncol = 2)
-    return(p)
+    return(list(p1, p2, p3, p4))
 }
     
 

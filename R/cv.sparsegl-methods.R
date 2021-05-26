@@ -1,5 +1,3 @@
-
-
 #' Get coefficients or make coefficient predictions from a "cv.sparsegl" object.
 #'
 #' This function gets coefficients or makes coefficient predictions from a

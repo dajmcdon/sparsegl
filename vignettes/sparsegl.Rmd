@@ -117,41 +117,53 @@ This function produces nonzero-only coefficient curves for each penalty paramete
 The arguments of this function are: 
 
 * `group`: `group` is TRUE if the user designed a specific grouping of features in the
-function `sparsegl(), otherwise FALSE.
+function `sparsegl()`, otherwise FALSE. Default is FALSE.
 * `log.l`: `log.l` is TRUE if the plot is against the log-`lambda` sequence, otherwise
 FALSE if the plot is against the `lambda` sequence.
 
-If `group` is set with TRUE, 4 subplots will be generated from this function. Notice 
-that the number of curves appearing on the plots could be less than the actual 
-number of groups assigned since only the groups without nonzero coefficients 
-corresponding to at least one lambda value in the sequence `lambda` are included: 
+If `group` is set with FALSE by default, a list of 2 plots will be generated from this 
+function. 
 
-* The top left subplot $(\textbf{group level})$ is the norm of each group g, which
-is defined by:
+* The first plot is the coefficients of features against log-`lambda` or `lambda`
+depending on `log.l`. Each curve with a different color represents a feature.
+
+* The second plot is the coefficients of features against a sequence of
 $$
-\text{asparse}\ *\ \rVert \beta^{(g)}\rVert_1 + (1 - \text{asparse})\ *\ \rVert \beta^{(g)}\rVert _ 2
+\frac{\text{asparse}\ *\ \rVert \beta\rVert_1 + (1-\text{asparse})\ *\rVert \beta\rVert_1}{\max\left(\text{asparse}\ *\ \rVert \beta\rVert_1 + (1-\text{asparse})\ *\rVert \beta\rVert_1\right)}, \text{where}\ \beta\ \text{is a vector of length p}.
 $$
-against log-`lambda` or `lambda` depending on `log.l`. 
-* The top right subplot $(\textbf{feature level})$ is the coefficients of each feature against
-log-`lambda` or `lambda` depending on `log.l`. Curves are plotted in the same color
-if their features are assigned in the same group.
-* The two bottom subplots are the corresponding group norm or coefficients against the
-standardized `lambda` sequence.
-```{r, message = FALSE, warning = FALSE, fig.width = 8, fig.height = 4}
-plot(fit1, group = TRUE, log.l = TRUE)
-```
+at each `lambda` being used in this program.
 
-If `group` is set with FALSE, 2 subplots will be generated from this function. 
-
-* The top subplot is the coefficients of each feature against log-`lambda` or `lambda`
-depending on `log.l`. Each curve with a different color represents a feature among
-them.
-
-* The bottom subplot is the coefficients against the standardized `lambda` sequence.
 
 ```{r, message = FALSE, warning = FALSE, fig.width = 10, fig.height = 5}
 plot(fit1, group = FALSE, log.l = FALSE)
 ```
+
+If `group` is set with TRUE, a list of 4 plots will be generated from this function.
+Notice that the number of curves appearing on the plots could be less than the actual 
+number of groups assigned since only the groups without nonzero coefficients 
+corresponding to at least one lambda value in the sequence `lambda` are included: 
+
+* The first plot $(\textbf{group level})$ is the norm of features in group g's,
+which is defined by:
+$$
+\text{asparse}\ *\ \rVert \beta^{(g)}\rVert_1 + (1 - \text{asparse})\ *\ \rVert \beta^{(g)}\rVert _ 2,\ \text{where}\ \beta^{(g)}\ \text{is a vector
+of coefficients in group g}
+$$
+against log-`lambda` or `lambda` depending on `log.l`. 
+* The second plot $(\textbf{feature level})$ is the coefficients of features against
+log-`lambda` or `lambda` depending on `log.l`. Curves are plotted in the same color
+if their features are assigned in the same group.
+* The last two plots are the corresponding group norm or coefficients against a sequence of
+$$
+\frac{\text{asparse}\ *\ \rVert \beta\rVert_1 + (1-\text{asparse})\ *\rVert \beta\rVert_1}{\max\left(\text{asparse}\ *\ \rVert \beta\rVert_1 + (1-\text{asparse})\ *\rVert \beta\rVert_1\right)}, \text{where}\ \beta\ \text{is a vector of length p}.
+$$
+at each `lambda` being used in this program.
+
+```{r, message = FALSE, warning = FALSE, fig.width = 8, fig.height = 4}
+plot(fit1, group = TRUE, log.l = TRUE)
+```
+
+
 
 
 ## Function `coef.sparsegl()`
@@ -252,9 +264,8 @@ In the generated plot, the red points represent the `cvm` values at each `lambda
 and the attached gray vertical error bars indicate the uncertainty of `cvm`.
 
 ```{r, message = FALSE, warning = FALSE, fig.width = 8, fig.height = 4}
-p1 <- plot(fit_l1)
-p2 <- plot(fit_l2)
-ggpubr::ggarrange(p1, p2, nrow = 1)
+plot(fit_l1)
+plot(fit_l2)
 ```
 
 ## Function `coef.cv.sparseg()`
@@ -268,8 +279,8 @@ This function returns the coefficients at the requested values for penalty param
 `lambda.1se` and `lambda.min` defined above, or could be any numeric values. Default
 is `lambda.1se`.
 ```{r}
-coef_l1 <- coef(fit_l1$sparsegl.fit, s = fit_l1$lambda.1se)
-coef_l2 <- coef(fit_l2$sparsegl.fit, s = fit_l2$lambda.min)
+coef_l1 <- coef(fit_l1, s = "lambda.min")
+coef_l2 <- coef(fit_l2, s = "lambda.1se")
 ```
 
 
@@ -284,8 +295,8 @@ It takes the same arguments `object` and `s` which are defined in the function
 made.
 
 ```{r}
-pred_l1 <- predict(fit_l1$sparsegl.fit, newx = X[20:50, ], s = fit_l1$lambda.1se)
-pred_l2 <- predict(fit_l2$sparsegl.fit, newx = X[50:80, ], s = fit_l2$lambda.min)
+pred_l1 <- predict(fit_l1, newx = X[20:50, ], s = "lambda.min")
+pred_l2 <- predict(fit_l2, newx = X[50:80, ], s = "lambda.min")
 ```
 
 

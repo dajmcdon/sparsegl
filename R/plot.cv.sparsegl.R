@@ -8,8 +8,6 @@
 ##        URL http://www.jstatsoft.org/v33/i01/.
 
 
-utils::globalVariables(c("X", "y", "lower", "upper"))
-
 #' plot the cross-validation curve produced by cv.sparsegl
 #' 
 #' Plots the cross-validation curve, and upper and lower standard deviation
@@ -43,9 +41,12 @@ plot.cv.sparsegl <- function(x, sign.lambda = 1, ...) {
                       "upper" = cvobj$cvupper,
                       "lower" = cvobj$cvlo)
     dat %>% 
-        ggplot2::ggplot(ggplot2::aes(x = X, y = y)) +
+        ggplot2::ggplot(ggplot2::aes(x = .data$X, y = .data$y)) +
         ggplot2::geom_point(color = 'red') + 
-        ggplot2::geom_errorbar(ggplot2::aes(ymin = lower, ymax = upper), width = 0.1, color = 'darkgrey') + 
-        ggplot2::xlab("Log Lambda") + 
-        ggplot2::ylab(cvobj$name)
+        ggplot2::geom_errorbar(ggplot2::aes(
+            ymin = .data$lower, ymax = .data$upper), 
+            width = 0.1, color = 'darkgrey') + 
+        ggplot2::xlab("Log Lambda") +
+        ggplot2::ylab(cvobj$name) +
+        ggplot2::theme_bw()
 } 

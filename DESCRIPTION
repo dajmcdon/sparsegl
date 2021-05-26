@@ -25,16 +25,13 @@ Imports:
     dplyr,
     tibble,
     ggplot2,
-    ggpubr,
-    magrittr
+    magrittr,
+    rlang
 Depends: 
     R (>= 3.5)
 License: GPL (>= 2)
 Suggests: 
     testthat (>= 3.0.0),
-    glmnet,
-    gglasso,
-    SGL,
     knitr,
     rmarkdown,
     markdown
