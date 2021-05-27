@@ -24,14 +24,14 @@ test_that("lasso penalty as asparse = 1", {
   expect_equal(sparsegl(X, y, lambda = 2, asparse = 1)$beta[1:2],c(0,0))
   
   fit <- glmnet::glmnet(X, y, alpha = 1)
-  lambda <- fit$lambda[c(1:2, (length(fit$lambda) - 1) :length(fit$lambda))]
+  lambda <- fit$lambda[c(1:2, (length(fit$lambda) - 1):length(fit$lambda))]
   # check the first two lambdas and last two lambdas extracted from glmnet
   
   fit1 <- sparsegl(X, y, asparse = 1, lambda = lambda)
   fit2 <- glmnet::glmnet(X, y, alpha = 1, lambda = lambda)
   
   coef <- as.numeric(rbind(fit1$b0, fit1$beta))
-  coeff <- as.numeric(coef(fit2, s= lambda))
+  coeff <- as.numeric(coef(fit2, s = lambda))
   expect_equal(coef,coeff, tolerance = 1e-1)
   
   # try without intercept
@@ -50,16 +50,16 @@ test_that("lasso penalty as asparse = 1", {
   beta <- c(rep(5, 6), rep(-5, 6), rep(0, p - 12))
   y <- X %*% beta + rnorm(n, sd = .1)
   data = list(x = X, y = y)
-  group <- rep(1:8,each=6)
+  group <- rep(1:8, each = 6)
   
   fit <- glmnet::glmnet(X, y, alpha = 1)
-  lambda <- fit$lambda[c(1:2, (length(fit$lambda) - 1) :length(fit$lambda))]
+  lambda <- fit$lambda[c(1:2, (length(fit$lambda) - 1):length(fit$lambda))]
   
   
   fit1 <- sparsegl(X, y, asparse = 1, lambda = 2*lambda)
   fit2 <- glmnet::glmnet(X, y, alpha = 1)
   coef <- as.numeric(rbind(fit1$b0, fit1$beta))
-  coeff <- as.numeric(coef(fit2, s= lambda))
+  coeff <- as.numeric(coef(fit2, s = lambda))
   expect_equal(coef,coeff, tolerance = 1e-1)
   
 
@@ -82,7 +82,7 @@ test_that("group lasso penalty as asparse = 0", {
   beta <- c(rep(5, 6), rep(-5, 6), rep(0, p - 12))
   y <- X %*% beta + rnorm(n, sd = .1)
   
-  group <-  rep(1:8,each=6)
+  group <-  rep(1:8, each = 6)
   fit <- gglasso(x = X, y = y, group = group)
   lambda = fit$lambda[1:5]
   
@@ -93,7 +93,7 @@ test_that("group lasso penalty as asparse = 0", {
   fit1 <- sparsegl(X, y, asparse = 0, lambda = lambda, group = group)
   fit2 <- gglasso(X, y, group = group)
   coef <- as.numeric(rbind(fit1$b0, fit1$beta))
-  coeff <- as.numeric(coef(fit2, s= lambda))
+  coeff <- as.numeric(coef(fit2, s = lambda))
   expect_equal(coef, coeff, tolerance = 1e-2)
   
   
@@ -120,7 +120,7 @@ test_that("sgl", {
   y <- X %*% beta + rnorm(n, sd = .1)
   
   data = list(x = X, y = y)
-  group <- rep(1:8,each=6)
+  group <- rep(1:8, each = 6)
   
   fit1 <- SGL(data, index = group, type = "linear")
   lambda <- fit1$lambda[1:5]
@@ -144,7 +144,7 @@ test_that("sgl", {
   y <- X %*% beta + rnorm(n, sd = .1)
   
   data = list(x = X, y = y)
-  group <- rep(1:8,each=6)
+  group <- rep(1:8, each = 6)
   
   fit1 = SGL(data, index = group, type = "linear")
   lambda <- fit1$lambda[1:5]

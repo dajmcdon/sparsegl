@@ -182,7 +182,7 @@ plot.sparsegl <- function(x, group = FALSE, log.l = TRUE, asparse = 0.05,
         ggplot2::theme_bw()
         
     
-    return(list(p1, p2, p3, p4))
+    return(list(p1, p3, p2, p4))
 }
     
 

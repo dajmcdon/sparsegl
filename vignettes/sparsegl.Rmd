@@ -19,28 +19,45 @@ This package provides tools for fitting the regularization paths for sparse grou
 penalized learning problems. The model is fit for a sequence of the regularization
 parameters lambda.
 
+The strengths and improvements that this package achieved compared to other sparse group-lasso
+packages are as follows: 
+
+* `X` can be a sparse input matrix passed as an argument in the main function 
+`sparsegl()`, and it does not have to be a regular matrix.
+
+* plots are made with package `ggplot2` instead of function plot() from `base`, 
+which provide better appearances and experience for visualization.
+
+* An extra function `risk-estimate()` evaluates the quality of fitted models in
+terms of different information criteria and provides a means for model selection.
+
+
 ## Installing
 
 This package is not on CRAN yet, so it can be installed using the [`devtools`] 
 (https://cran.r-project.org/package=devtools) package:
 
 ```{r, eval = FALSE}
-# devtools::install_github("dajmcdon/sparsegl", ref = "main")
+devtools::install_github("dajmcdon/sparsegl", ref = "main")
 ```
 
 Building the vignettes, such as this getting started guide, takes a significant
-amount of time. They are not included int eh package by default. If you want to
+amount of time. They are not included in the package by default. If you want to
 include vignettes, then use this modified command:
 
 ```{r, eval = FALSE}
-# devtools::install_github("dajmcdon/sparsegl", ref = "main",
-#                          build_vignettes = TRUE, dependencies = TRUE)
+devtools::install_github("dajmcdon/sparsegl", ref = "main",
+                          build_vignettes = TRUE, dependencies = TRUE)
 ```
 
-For this getting-started vignette, we will randomly generate X, an input matrix of 
-predictors of dimension n-obs by p-feature. To initiate y, a vector of real-value 
-responses of length n, $\beta^*$ is specified below, and the white noise following
-standard normal distribution serves as data variation.
+For this getting-started vignette, firstly, we will randomly generate X, an input matrix of 
+predictors of dimension n-obs by p-feature. To initiate y, namely a vector of real-value 
+responses of length n, or a matrix with 1 colnmn with
+$$
+y = X\beta^* + \epsilon,
+$$
+where the coefficient vector $\beta^*$ is specified as below, and the white noise
+$\epsilon$ following standard normal distribution serves as data variation.
 
 ```{r}
 library(sparsegl)
@@ -49,21 +66,21 @@ n <- 100
 p <- 200
 X <- matrix(data = rnorm(n*p, mean = 0, sd = 1), nrow = n, ncol = p)
 eps <- rnorm(n, mean = 0, sd = 1)
-beta_star <- c(rep(5, 5), c(5, -5, 2, 0, 0), rep(-5, 5), c(2, -3, 8, 0, 0), rep(0,(p - 20)))
+beta_star <- c(rep(5, 5), c(5, -5, 2, 0, 0), rep(-5, 5), c(2, -3, 8, 0, 0), rep(0, (p - 20)))
 y <- X %*% beta_star + eps
 groups <- rep(1:(p / 5), each = 5)
 ```
 
 ## Function `sparsegl()`
 
-`sparsegl()` is the main function in the `sparsegl` package. Given input matrix 
-X and response vector y, a sparse group-lasso regularized linear model is fit for 
-a sequence of penalty parameter values in terms of penalized maximum likelihood.
-Other arguments of this function can be optionally initialized differently than the 
-default values, and the main arguments are:
+`sparsegl()` is the main function in the `sparsegl` package. Given an input matrix 
+X, and a response vector y (or a matrix with 1 column), a sparse group-lasso 
+regularized linear model is fit for a sequence of penalty parameter values in 
+terms of penalized maximum likelihood. Other arguments of this function can be 
+optionally initialized differently than the default values, and the main arguments are:
 
 * `group`: a vector with consecutive integers of length p indicating the grouping 
-of the features. By default, each group only contains one feature without initialization.
+of the features. By default, each group only contains one feature if without initialization.
 
 * `nlambda`: the number of lambdas to use in the regularization path, and default
 is 100.
@@ -121,8 +138,10 @@ function `sparsegl()`, otherwise FALSE. Default is FALSE.
 * `log.l`: `log.l` is TRUE if the plot is against the log-`lambda` sequence, otherwise
 FALSE if the plot is against the `lambda` sequence.
 
-If `group` is set with FALSE by default, a list of 2 plots will be generated from this 
-function. 
+If `group` is set with FALSE by default, a list of 2 plots at feature level will
+be generated from this function. Notice that the number of curves shown on the 
+plots could be less than the actual number of features since only the features 
+with nonzero coefficients at least one lambda in the sequence `lambda` are included.
 
 * The first plot is the coefficients of features against log-`lambda` or `lambda`
 depending on `log.l`. Each curve with a different color represents a feature.
@@ -138,10 +157,11 @@ at each `lambda` being used in this program.
 plot(fit1, group = FALSE, log.l = FALSE)
 ```
 
-If `group` is set with TRUE, a list of 4 plots will be generated from this function.
-Notice that the number of curves appearing on the plots could be less than the actual 
-number of groups assigned since only the groups without nonzero coefficients 
-corresponding to at least one lambda value in the sequence `lambda` are included: 
+If `group` is set with TRUE, a list of 4 plots at both group and feature levels
+will be generated from this function. Notice that the number of curves appearing
+on the plots could be less than the actual number of groups assigned since only
+the groups without nonzero coefficients corresponding to at least one lambda value
+in the sequence `lambda` are included: 
 
 * The first plot $(\textbf{group level})$ is the norm of features in group g's,
 which is defined by:
@@ -214,7 +234,7 @@ path in a descending order. The arguments are:
 * `x`: the fitted `sparsegl` object.
 
 * `digits` (optional): significant digits in printout.
-```{r}
+```{r, eval = FALSE}
 print(fit1)
 ```
 
@@ -268,34 +288,16 @@ plot(fit_l1)
 plot(fit_l2)
 ```
 
-## Function `coef.cv.sparseg()`
 
-This function returns the coefficients at the requested values for penalty parameter
-`lambda` from a cross-validation fitted `sparsegl.fit` object. The arguments are:
+## Functions `coef.cv.sparsegl()` and `predict.cv.sparsegl()`
 
-* `object`: the fitted `cv.sparsegl` object.
+These two functions work similarly to the functions `coef.sparsegl()` and 
+`predict.sparsegl()` introduced above. The only differences are that the argument 
+`object` passes a fitted `cv.sparsegl` object, and `s` could be `lambda.1se`, `lambda.min`
+or any numeric values.
 
-* `s`: value(s) of the `lambda` at which predictions are required. It could be 
-`lambda.1se` and `lambda.min` defined above, or could be any numeric values. Default
-is `lambda.1se`.
 ```{r}
-coef_l1 <- coef(fit_l1, s = "lambda.min")
 coef_l2 <- coef(fit_l2, s = "lambda.1se")
-```
-
-
-## Function `predict.cv.sparsegl()`
-
-This function returns the prediction $\hat{y}$ given a new matrix $\tilde{X}$ with
-p columns from a cross-validation fitted `sparsegl.fit` object at the chosen `lambda`.
-It takes the same arguments `object` and `s` which are defined in the function 
-`coef.cv.sparsegl()`. The additional argument it needs is:
-
-* `newx`: the matrix of new values for $\tilde{X}$ at which predictions are to be
-made.
-
-```{r}
-pred_l1 <- predict(fit_l1, newx = X[20:50, ], s = "lambda.min")
 pred_l2 <- predict(fit_l2, newx = X[50:80, ], s = "lambda.min")
 ```
 
@@ -304,10 +306,10 @@ pred_l2 <- predict(fit_l2, newx = X[50:80, ], s = "lambda.min")
 
 This function returns the information criterion, which is the sum of the maximum 
 log-likelihood and a penalty term determined by the chosen penalty type for
-a `sparsegl` model. It provides a means for model selection by representing the 
-trade-off between the goodnedss of fit of the model and the complexity of the model.
-It takes the same arguments `X` and `y` from the function `sparsegl()`. The additional
-arguemnts are it needs are:
+a `sparsegl` model at each `lambda`. It provides a means for model selection by 
+representing the trade-off between the goodness of fit of the model and the 
+complexity of the model. It takes the same arguments `X` and `y` from the function
+`sparsegl()`. The additional arguemnts it needs are:
 
 * `object`: a fitted `sparsegl` object.
 
@@ -325,6 +327,6 @@ where df is the degree-of-freedom, and n is the sample size.
 penalty parameter `lambda` is accessible using `object$df`. Default is FALSE and 
 the program will compute the exact degree-of-freedom.
 ```{r}
-# risk_estimate(fit1, X, y, type = "AIC", approx_df = FALSE)
+risk <- risk_estimate(fit1, X, y, type = "AIC", approx_df = FALSE)
 ```
 

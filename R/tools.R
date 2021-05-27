@@ -107,8 +107,6 @@ predict.sparsegl <- function(object, newx, s = NULL, ...) {
 }
 
 
-
-
 #' print a sparsegl object
 #' 
 #' Print the nonzero group counts at each lambda along the sparsegl path.
