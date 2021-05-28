@@ -25,8 +25,4 @@ Depends:
     R (>= 3.5)
 License: GPL (>= 2)
 Suggests: 
-    testthat (>= 3.0.0),
-    glmnet,
-    gglasso,
-    SGL
-Config/testthat/edition: 3
+    testthat (>= 3.0.0)

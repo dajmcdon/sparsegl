@@ -1,9 +1,9 @@
-#' get coefficients or make coefficient predictions from an "sparsegl" object.
+#' Extract model coefficients from a `sparsegl` object.
 #'
-#' Computes the coefficients at the requested values for \code{lambda} from a
-#' fitted \code{\link{sparsegl}} object.
+#' Computes the coefficients at the requested value(s) for `lambda` from a
+#' `sparsegl` object.
 #'
-#' \code{s} is the new vector at which predictions are requested. If \code{s}
+#' `s` is the new vector at which predictions are requested. If \code{s}
 #' is not in the lambda sequence used for fitting the model, the \code{coef}
 #' function will use linear interpolation to make predictions. The new values
 #' are interpolated using a fraction of coefficients from both left and right
@@ -13,16 +13,9 @@
 #' @param s value(s) of the penalty parameter \code{lambda} at which
 #' predictions are required. Default is the entire sequence used to create the
 #' model.
-#' @param \dots not used. Other arguments to predict.
+#' @param \dots not used.
 #' @return The coefficients at the requested values for \code{lambda}.
-#' @author Yi Yang and Hui Zou\cr Maintainer: Yi Yang <yi.yang6@@mcgill.ca>
-#' @seealso \code{\link{predict.sparsegl}} method
-#' @references Yang, Y. and Zou, H. (2015), ``A Fast Unified Algorithm for
-#' Computing Group-Lasso Penalized Learning Problems,'' \emph{Statistics and
-#' Computing}. 25(6), 1129-1141.\cr BugReport:
-#' \url{https://github.com/emeryyi/gglasso}\cr
-#' @keywords models regression
-
+#'
 #' @export
 #' @method coef sparsegl
 coef.sparsegl <- function(object, s = NULL, ...) {
@@ -74,22 +67,15 @@ coef.sparsegl <- function(object, s = NULL, ...) {
 #'
 #' @param \dots Not used. Other arguments to predict.
 #' @return The object returned depends on type.
-#' @author Yi Yang and Hui Zou\cr Maintainer: Yi Yang <yi.yang6@@mcgill.ca>
 #' @seealso \code{\link{coef}} method
-#' @references Yang, Y. and Zou, H. (2015), ``A Fast Unified Algorithm for
-#' Computing Group-Lasso Penalized Learning Problems,'' \emph{Statistics and
-#' Computing}. 25(6), 1129-1141.\cr BugReport:
-#' \url{https://github.com/emeryyi/gglasso}\cr
-#' @keywords models regression
-
 #'
 #' @method predict sparsegl
 #' @export
 predict.sparsegl <- function(object, newx, s = NULL, ...) {
   nbeta <- coef(object, s)
   if (is.null(dim(newx))) newx = matrix(newx, nrow = 1)
-  nfit <- as.matrix(as.matrix(cbind2(1, newx)) %*% nbeta)
-  return(nfit)
+  fit <- as.matrix(as.matrix(cbind2(1, newx)) %*% nbeta)
+  return(fit)
 }
 
 
