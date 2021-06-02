@@ -35,11 +35,11 @@ coef.sparsegl <- function(object, s = NULL, ...) {
         lambda <- object$lambda
         lamlist <- lambda.interp(lambda, s)
         if (length(s) == 1) {
-			nbeta = nbeta[, lamlist$left, drop = FALSE] * lamlist$frac +
-			nbeta[, lamlist$right, drop = FALSE] * (1 - lamlist$frac)
+          nbeta = nbeta[, lamlist$left, drop = FALSE] * lamlist$frac +
+            nbeta[, lamlist$right, drop = FALSE] * (1 - lamlist$frac)
 			} else {
-			nbeta = nbeta[, lamlist$left, drop = FALSE] %*% diag(lamlist$frac) +
-			nbeta[, lamlist$right, drop = FALSE] %*% diag(1 - lamlist$frac)
+			  nbeta = nbeta[, lamlist$left, drop = FALSE] %*% diag(lamlist$frac) + 
+			    nbeta[, lamlist$right, drop = FALSE] %*% diag(1 - lamlist$frac)
 		}
         dimnames(nbeta) <- list(vnames, paste(seq(along = s)))
     }
@@ -83,7 +83,7 @@ coef.sparsegl <- function(object, s = NULL, ...) {
 #' @export
 predict.sparsegl <- function(object, newx, s = NULL, ...) {
     loss <- class(object)[[2]]
-    b0 <- (as.matrix(object$b0))
+    b0 <- as.matrix(object$b0)
     rownames(b0) <- "(Intercept)"
     nbeta <- rbind2(b0, object$beta)
     if (!is.null(s)) {
@@ -92,12 +92,12 @@ predict.sparsegl <- function(object, newx, s = NULL, ...) {
         lambda <- object$lambda
         lamlist <- lambda.interp(lambda, s)
         if (length(s) == 1) {
-			nbeta = nbeta[, lamlist$left, drop = FALSE] * lamlist$frac +
-			nbeta[, lamlist$right, drop = FALSE] * (1 - lamlist$frac)
+          nbeta = nbeta[, lamlist$left, drop = FALSE] * lamlist$frac +
+            nbeta[, lamlist$right, drop = FALSE] * (1 - lamlist$frac)
 		} 
         else {
-			nbeta = nbeta[, lamlist$left, drop = FALSE] %*% diag(lamlist$frac) +
-			nbeta[, lamlist$right, drop = FALSE] %*% diag(1 - lamlist$frac)
+          nbeta = nbeta[, lamlist$left, drop = FALSE] %*% diag(lamlist$frac) +
+            nbeta[, lamlist$right, drop = FALSE] %*% diag(1 - lamlist$frac)
 		}
         dimnames(nbeta) <- list(vnames, paste(seq(along = s)))
     }
@@ -114,7 +114,7 @@ predict.sparsegl <- function(object, newx, s = NULL, ...) {
 #' Print the information about the nonzero group counts at each lambda step in
 #' the \code{\link{sparsegl}} object. The result is a two-column matrix with
 #' columns \code{Df} and \code{Lambda}. The \code{Df} column is the number of
-#' the groups that have nonzero within-group coefficients, the \code{Lambda}
+#' the features that have nonzero coefficients, the \code{Lambda}
 #' column is the the corresponding lambda.
 #' 
 #' @param x fitted \code{\link{sparsegl}} object

@@ -95,8 +95,8 @@ value. Default is 3e8. If models do not converge, consider increasing
 An object with S3 class \code{\link{sparsegl}}.  \item{call}{the call
 that produced this object} \item{b0}{intercept sequence of length
 \code{length(lambda)}} \item{beta}{a \code{p*length(lambda)} matrix of
-coefficients.} \item{df}{the number of nonzero groups for each value of
-\code{lambda}.} \item{dim}{dimension of coefficient matrix (ices)}
+coefficients.} \item{df}{the number of nonzero features with nonzero coefficients
+for each value of \code{lambda}.} \item{dim}{dimension of coefficient matrix (ices)}
 \item{lambda}{the actual sequence of \code{lambda} values used}
 \item{npasses}{total number of iterations (the most inner loop) summed over
 all lambda values} \item{jerr}{error flag, for warnings and errors, 0 if no

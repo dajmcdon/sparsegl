@@ -6,10 +6,12 @@
 #' A coefficient profile plot is produced.
 #' 
 #' @param x fitted \code{\link{sparsegl}} model
-#' @param group what is on the Y-axis. Plot the norm of each group if
-#' \code{TRUE}. Plot each coefficient if \code{FALSE}.
-#' @param log.l what is on the X-axis. Plot against the log-lambda sequence if
-#' \code{TRUE}. Plot against the lambda sequence if \code{FALSE}.
+#' @param grouped if applying the user-specified grouping of features. Default
+#' is FALSE.
+#' @param y_axis what is on the Y_axis. Plot \code{"coef"} the coefficients or 
+#' \code{"norm"} group norm. Default is \code{"coef"}.
+#' @param x_axis what is on the X-axis. Plot against the \code{"log_lambda"} log-lambda
+#' sequence or \code{"norm"} a scaled norm vector. Default is \code{"log_lambda"}.
 #' @param asparse the weight to put on the ell1 norm in sparse group lasso. Default
 #' is 0.05
 #' @param \dots other graphical parameters to plot
@@ -21,168 +23,128 @@
 #' @keywords models regression
 #' @method plot sparsegl
 #' @export
-plot.sparsegl <- function(x, group = FALSE, log.l = TRUE, asparse = 0.05,
-                          ...) {
+plot.sparsegl <- function(x, grouped = FALSE, asparse = 0.05, 
+                          y_axis = c("coef", "group_norm"),
+                          x_axis = c("log_lambda", "norm"), ...) {
+    
+    y_axis <- match.arg(y_axis)
+    x_axis <- match.arg(x_axis)
     
     xb <- x$beta  
-    
-    if (nrow(xb) == 1) {
-        if (any(abs(xb) > 0)) {
-            nonzeros <- 1                             
-        } else nonzeros <- NULL
-    } else {
-        nonzeros <- which(apply(abs(xb), 1, sum) > 0)
-    }
+    nonzeros <- sort(unique(xb@i)) + 1
+    assertthat::assert_that(length(nonzeros) > 0, 
+                            msg = "No nonzero betas / groups are available to plot")
     
     tmp <- xb[nonzeros, , drop = FALSE]  
     g <- as.numeric(x$group[nonzeros])
-    l <- x$lambda  
+    l <- log(x$lambda)  
     uni_group <- unique(g)
     n.g <- length(uni_group)
-    
-    if (group) {
-        bs <- as.integer(as.numeric(table(g)))  
-        ix <- rep(NA, n.g)
-        iy <- rep(NA, n.g)
-        j <- 1
-        for (i in 1:n.g) {
-            ix[i] <- j
-            iy[i] <- j + bs[i] - 1
-            j <- j + bs[i]
-        }
-        beta <- matrix(NA, n.g, length(l))  
-        for (i in 1:n.g) {
-            crossp <- apply(tmp[ix[i]:iy[i], ], 2, function(x) {
-                asparse * sum(abs(x)) + (1 - asparse) * sqrt(crossprod(x))})
-            beta[i,] <- crossp
-        }
-    } else beta <- tmp
-    
-    if (log.l) l <- log(l)
-    
-    outputs <- tibble::as_tibble(t(as.matrix(beta)), .name_repair = "unique")
-    if (group) colnames(outputs) <- uni_group else colnames(outputs) <- c(1:dim(outputs)[2])
-    outputs <- outputs %>% dplyr::mutate(lambda = l)
-    outputs1 <- outputs %>%
-        tidyr::pivot_longer(cols = !.data$lambda, names_to = "variable") %>% 
-        dplyr::mutate(variable = factor(
-            .data$variable, levels = sort(as.numeric(unique(.data$variable)))))
-    
-    # ggplot
-    p1 <- outputs1 %>%
-        ggplot2::ggplot(ggplot2::aes(x = .data$lambda, 
-                                     y = .data$value, 
-                                     col = .data$variable)) +
-        ggplot2::geom_line() +
-        ggplot2::geom_hline(yintercept = 0) + 
-        ggplot2::theme_bw()
-    
-    
-    if (group) {
-        p1 <- p1 + 
-            ggplot2::ylab("Group norm") +
-            ggplot2::scale_color_discrete(name = "Group", 
-                                          labels = paste0("group", uni_group))
-    } else {
-        p1 <- p1 + 
-            ggplot2::ylab("Coefficients") +
-            ggplot2::scale_color_discrete(name = "Variable", 
-                                          labels = paste0("variable", as.numeric(nonzeros)))
-    }
-    
-    if (log.l) p1 <- p1 + ggplot2::xlab("Log Lambda") else p1 <- p1 + ggplot2::xlab("Lambda")
-    
-    # standardized group norm on x-axis
     sgnorm <- apply(xb, 2, function(y) sp_group_norm(y, x$group))
-    outputs2 <- outputs
-    outputs2 <- outputs2 %>% 
-        dplyr::mutate(lambda = sgnorm / max(sgnorm)) %>% 
-        tidyr::pivot_longer(!.data$lambda, names_to = "variable") %>% 
-        dplyr::mutate(variable = factor(.data$variable, 
-                                        levels = sort(as.numeric(unique(.data$variable)))))
     
-    p2 <- outputs2 %>%
-        ggplot2::ggplot(ggplot2::aes(x = .data$lambda,
-                                     y = .data$value, 
-                                     col = .data$variable)) +
-        ggplot2::geom_line() +
-        ggplot2::geom_hline(yintercept = 0) +
-        ggplot2::xlab("beta norm / max(beta norm)") +
-        ggplot2::theme(legend.position = "none") + 
-        ggplot2::theme_bw()
-    
-    if (group) {
-        p2 <- p2 + 
-            ggplot2::ylab("Group norm") +
-            ggplot2::scale_color_discrete(name = "Group", 
-                                          labels = paste0("group", uni_group))
-    } else {
-        p2 <- p2 + 
-            ggplot2::ylab("Coefficients") +
-            ggplot2::scale_color_discrete(name = "Variable", 
-                                          labels = paste0("variable", as.numeric(nonzeros)))
+    if (grouped && y_axis == "group_norm") {
+        beta <- matrix(NA, n.g, length(l))  
+        j <- 1
+        for (i in uni_group) {
+            beta[j, ] <- apply(tmp[g == i, ], 2, function(x) {
+                asparse * sum(abs(x)) + (1 - asparse) * sqrt(sum(x^2))})
+            j <- j + 1
+            }
+        } else {
+            beta <- tmp
     }
     
-    if (!group) {
-        return(list(p1, p2))
-    }
-    
-    outputs <- tibble::as_tibble(t(as.matrix(tmp)), .name_repair = "unique") 
-    names <- c(1:dim(tmp)[1])
-    colnames(outputs) <- names
-    outputs3 <- outputs %>% 
-        dplyr::mutate(lambda = l) %>% 
-        dplyr::mutate(group = 0) %>% 
-        tidyr::pivot_longer(!c(.data$lambda, .data$group), names_to = "variable") %>% 
-        dplyr::mutate(variable = factor(
-            .data$variable, levels = sort(as.numeric(unique(.data$variable)))))
-    outputs4 <- outputs %>%
-        dplyr::mutate(lambda = sgnorm / max(sgnorm)) %>%
-        dplyr::mutate(group = 0) %>% 
-        tidyr::pivot_longer(!c(.data$lambda, .data$group), names_to = "variable") %>% 
-        dplyr::mutate(variable = factor(
-            .data$variable, levels = sort(as.numeric(unique(.data$variable)))))
-    
-    j <- 1
-    for (i in 1:n.g) {
-        outputs3 <- outputs3 %>%
-            dplyr::mutate(group = replace(group, .data$variable %in%
-                                              names[ix[i]:iy[i]], uni_group[j]))
-        outputs4 <- outputs4 %>%
-            dplyr::mutate(group = replace(group, .data$variable %in%
-                                              names[ix[i]:iy[i]], uni_group[j]))
-        j <- j + 1
-    }
-    
-    outputs3 <- outputs3 %>% dplyr::mutate(group = factor(group))
-    outputs4 <- outputs4 %>% dplyr::mutate(group = factor(group))
-    p3 <- outputs3 %>% 
-        ggplot2::ggplot(ggplot2::aes(x = .data$lambda, 
-                                     y = .data$value, 
-                                     group = .data$variable, 
-                                     color = .data$group)) +
-        ggplot2::geom_line() +
-        ggplot2::geom_hline(yintercept = 0) +
-        ggplot2::ylab("Coefficients") +
-        ggplot2::scale_color_discrete(name = "Group", labels = paste0("group", uni_group)) +
-        ggplot2::theme_bw()
-    if (log.l) p3 <- p3 + ggplot2::xlab("Log Lambda") else p3 <- p3 + ggplot2::xlab("Lambda")
-    
-    
-    p4 <- outputs4 %>% 
-        ggplot2::ggplot(ggplot2::aes(x = .data$lambda,
-                                     y = .data$value, 
-                                     group = .data$variable, 
-                                     col = .data$group)) +
-        ggplot2::geom_line() +
-        ggplot2::geom_hline(yintercept = 0) +
-        ggplot2::scale_color_discrete(name = "Group", labels = paste0("group", uni_group)) +
-        ggplot2::xlab("beta norm / (beta norm") +
-        ggplot2::ylab("Coefficients") +
-        ggplot2::theme_bw()
+    transform_outputs <- function(df) {
+        if (x_axis == "norm") {
+            df <- df %>% dplyr::mutate(lambda = sgnorm / max(sgnorm))
+        } else {
+            df <- df %>% dplyr::mutate(lambda = l) 
+            }
         
+        if (grouped && y_axis == "group_norm") {
+            df <- df %>% 
+                tidyr::pivot_longer(!.data$lambda, names_to = "variable")
+        } else {
+            df <- df %>% 
+                tidyr::pivot_longer(!c(.data$lambda, .data$group), names_to = "variable")
+        }
+        
+        df <- df %>% dplyr::mutate(variable = factor(
+            .data$variable, levels = sort(as.numeric(unique(.data$variable)))))
+        
+        return(df)
+    }
     
-    return(list(p1, p3, p2, p4))
+    
+    outputs <- tibble::as_tibble(t(as.matrix(beta)))
+    if (grouped && y_axis == "group_norm")  {
+        colnames(outputs) <- uni_group 
+        
+        outputs <- transform_outputs(outputs)
+        
+    } else {
+        colnames(outputs) <- nonzeros
+        
+        outputs <- transform_outputs(outputs %>% dplyr::mutate(group = 0))
+        
+        j <- 1
+        for (i in uni_group) {
+            outputs <- outputs %>%
+                dplyr::mutate(group = replace(.data$group, .data$variable %in%
+                                                  nonzeros[g == i], uni_group[j]))
+            j <- j + 1
+        }
+        
+        outputs <- outputs %>% dplyr::mutate(group = factor(.data$group))
+    }
+    
+    
+    if (!grouped || (grouped && y_axis == "group_norm"))  {
+        plot_layer <- ggplot2::ggplot(outputs, ggplot2::aes(x = .data$lambda, 
+                                                            y = .data$value, 
+                                                            color = .data$variable))
+    } else {
+        plot_layer <- ggplot2::ggplot(outputs, ggplot2::aes(x = .data$lambda,
+                                                  y = .data$value,
+                                                  group = .data$variable,
+                                                  color = .data$group))
+    }
+        
+    plot_layer <- plot_layer +
+        ggplot2::geom_line() +
+        ggplot2::geom_hline(yintercept = 0)
+    
+    if (x_axis == "norm") {
+        xlab_layer <- ggplot2::xlab("beta norm / max (beta norm)")
+    } else {
+        xlab_layer <- ggplot2::xlab("Log Lambda")
+    }
+    
+    if (grouped && y_axis == "group_norm") {
+        ylab_layer <- ggplot2::ylab("Group norm")
+    } else {
+        ylab_layer <- ggplot2::ylab("Coefficients")
+    }
+    
+    if (grouped) {
+        legend_layer <- ggplot2::scale_color_discrete(
+            name = "Group", 
+            labels = paste0("group", uni_group))
+    } else {
+        legend_layer <- ggplot2::scale_color_discrete(
+            name = "Variable", 
+            labels = paste0("variable", nonzeros))
+    }
+    
+    theme_layer <- ggplot2::theme_bw()
+    
+    p <- plot_layer +
+        xlab_layer +
+        ylab_layer +
+        legend_layer +
+        theme_layer
+    
+    return(p)
+    
 }
-    
 

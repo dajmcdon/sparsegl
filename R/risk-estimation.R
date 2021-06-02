@@ -12,7 +12,7 @@
 #'
 #' @return a vector of the same length as `object$lambda`
 #' @export
-risk_estimate <- function(object, x, y,
+estimate_risk <- function(object, x, y,
                           type = c("AIC", "BIC", "GCV"),
                           approx_df = FALSE) {
   type <- match.arg(type)
@@ -23,8 +23,13 @@ risk_estimate <- function(object, x, y,
   preds <- predict(object, x)
   err <- log(colMeans((y - preds)^2))
   n <- length(y)
-  if (approx_df) df <- object$df
-  else df <- exact_df(object, x)
+  
+  if (approx_df) {
+    df <- object$df
+  } else {
+    df <- exact_df(object, x)
+  }
+  
   pen <- switch(type,
                 AIC = 2 * df / n,
                 BIC = log(n) * df / n,

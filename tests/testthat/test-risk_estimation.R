@@ -10,7 +10,7 @@ test_that("test for exact_df function", {
   expect_equal(exact_df(out, X), as.vector(out$df), tolerance = 0.01)
 })
 
-test_that("type of y", {
+test_that("risk estimation works whether or not y is a matrix", {
   n <- 100
   beta <- c(5,5,5,-5,-5,-5,1,0,1,0,0,0,0,2,0)
   gr <- rep(1:5, each = 3)
@@ -20,5 +20,5 @@ test_that("type of y", {
   out1 <- sparsegl(X, y1, gr)
   out2 <- sparsegl(X, y2, gr)
   
-  expect_equal(risk_estimate(out1, X, y1, type = "AIC"), risk_estimate(out2, X, y2, type = "AIC"))
+  expect_equal(estimate_risk(out1, X, y1, type = "AIC"), estimate_risk(out2, X, y2, type = "AIC"))
 })

@@ -37,7 +37,7 @@ column is the the corresponding lambda.
 Print the information about the nonzero group counts at each lambda step in
 the \code{\link{sparsegl}} object. The result is a two-column matrix with
 columns \code{Df} and \code{Lambda}. The \code{Df} column is the number of
-the groups that have nonzero within-group coefficients, the \code{Lambda}
+the features that have nonzero coefficients, the \code{Lambda}
 column is the the corresponding lambda.
 }
 \references{

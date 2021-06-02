@@ -57,10 +57,6 @@
 cv.sparsegl <- function(x, y, group, lambda = NULL,
                         pred.loss = c("L2", "L1"),
                         nfolds = 5, foldid, ...) {
-    if  (missing(pred.loss) || !match(pred.loss, c("L2", "L1"), FALSE)) {
-        warning("Only 'L2' and 'L1'  available for least squares models; 'L2' used")
-        pred.loss <- "L2"
-    } 
     pred.loss <- match.arg(pred.loss)
     N <- nrow(x)
     ###Fit the model once to get dimensions etc of output
