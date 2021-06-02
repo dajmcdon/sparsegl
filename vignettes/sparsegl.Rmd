@@ -216,7 +216,7 @@ use for cv error. This will return a `cv.sparseg` object.
 fit_l1 <- cv.sparsegl(X, y, group = groups, pred.loss = "L1")
 ```
 
-### `plot()`, `coef()` and `predict()` for object `cv.sparsegl`
+### `plot()`, `coef()` and `predict()` for `cv.sparsegl` object
 
 * `plot()`: produces cross-validation curve with upper and lower confidence bounds
 plots for each `lambda` in the regularization path for a fitted `sparsegl` object. 
