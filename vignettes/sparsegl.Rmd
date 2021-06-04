@@ -229,8 +229,8 @@ plot(fit_l1)
 
 
 
-* `coef()` and `predict()` work similarly to the functions `coef.sparsegl()` and 
-`predict.sparsegl()` introduced above. The only differences are that the argument 
+* `coef()` and `predict()` for `cv.sparsegl` object work similarly to those 
+introduced above. The only differences are that the argument 
 `object` passes a fitted `cv.sparsegl` object, and `s` can also be set with `lambda.1se`, 
 `lambda.min` in addition.
 
@@ -262,15 +262,15 @@ complexity of the model. It takes the same arguments `X` and `y` from the functi
 where df is the degree-of-freedom, and n is the sample size.
 
 * `approx_df`: indicate if a vector of the approximation to the degree-of-freedom
-at each penalty parameter `lambda` is accessible using `object$df`. Default is FALSE and 
-the program will compute the exact degree-of-freedom.
+at each penalty parameter `lambda` is used. Default is FALSE and 
+the program will compute the unbiased estimate of the exact degree-of-freedom.
 
 FYI: Degree-of-freedom is a tool to assess the complexity of a statistical modeling
 procedure. `object$df`, the approximation to the degree-of-freedom is the number of nonzero
-coefficients of the model, which is an unbiased estimator for the exact degree-of-freedom.
-Notice that it would take some time to calculate the exact degreeo-of-freedom if 
-`X` is complicated. For more details about how to realize this calculation, our 
-method is implemented based on the paper https://arxiv.org/pdf/1212.6478.pdf. 
+coefficients of the model. Notice that it would take some time to calculate the 
+unbiased estimate of the exact degreeo-of-freedom if `X` is complicated. For more
+details about how to realize this calculation, our method is implemented based on
+the paper https://arxiv.org/pdf/1212.6478.pdf. 
 
 ```{r}
 risk <- estimate_risk(fit1, X, y, type = "AIC", approx_df = FALSE)
