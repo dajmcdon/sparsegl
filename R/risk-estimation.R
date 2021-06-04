@@ -69,8 +69,8 @@ delP <- function(beta, group) {
   mats <- lapply(betas, function(x) {
     p <- length(x)
     bn <- two_norm(x)
-    Matrix::diag(1/bn, nrow = p, ncol = p) - outer(x / bn, x)
-    #(Matrix::diag(x / bn, nrow = p, ncol = p) - outer(x, x)) / bn
+    Matrix::diag(1/bn, nrow = p, ncol = p) - outer(x, x) / bn^3
+    
   })
   return(Matrix::bdiag(mats))
 }
@@ -81,4 +81,6 @@ gr_norm <- function(x, gr) sum(as.vector(tapply(x, gr, two_norm)))
 sp_group_norm <- function(x, gr, asparse = 0.05) {
   asparse * sum(abs(x)) + (1 - asparse) * gr_norm(x, gr)
 }
+
+
 

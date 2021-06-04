@@ -23,4 +23,3 @@ test_that("penalty is super large", {
   expect_equal(coef, double(5))
 })
 
-
