@@ -49,6 +49,48 @@ exact_df <- function(object, x) {
   group <- object$group[Imax]
   beta <- object$beta[Imax,]
   nlambda <- length(object$lambda)
+  xx <- Matrix::crossprod(x[,Imax])
+  df <- double(nlambda)
+  for (i in seq(nlambda)) {
+    Idx <- Iset[, i]
+    if (any(Idx)) {
+      xx_sub <- xx[Idx, Idx]
+      del <- delP(beta[Idx, i], group[Idx])
+      df[i] <- sum(solve(xx_sub + object$lambda[i] * del) * xx_sub)
+    } else {
+      df[i] <- 0
+    }
+  }
+  return(df)
+}
+
+delP <- function(beta, group) {
+  betas <- split(beta, group)
+  mats <- lapply(betas, function(x) {
+    p <- length(x)
+    bn <- two_norm(x)
+    Matrix::diag(1/bn, nrow = p, ncol = p) - outer(x / bn, x)
+  })
+  return(Matrix::bdiag(mats))
+}
+
+
+two_norm <- function(x) sqrt(sum(x^2))
+gr_norm <- function(x, gr) sum(as.vector(tapply(x, gr, two_norm)))
+sp_group_norm <- function(x, gr, asparse = 0.05) {
+  asparse * sum(abs(x)) + (1 - asparse) * gr_norm(x, gr)
+}
+
+
+exact_df <- function(object, x) {
+  # See the correct formula in https://arxiv.org/pdf/1212.6478.pdf
+  # Theorem 2
+  Iset <- abs(object$beta) > 0
+  Imax <- which(apply(Iset, 1, any))
+  Iset <- Iset[Imax,]
+  group <- object$group[Imax]
+  beta <- object$beta[Imax,]
+  nlambda <- length(object$lambda)
   xx <- x[,Imax]
   df <- double(nlambda)
   for (i in seq(nlambda)) {
@@ -74,44 +116,3 @@ delP <- function(beta, group) {
   })
   return(Matrix::bdiag(mats))
 } 
-
-
-two_norm <- function(x) sqrt(sum(x^2))
-gr_norm <- function(x, gr) sum(as.vector(tapply(x, gr, two_norm)))
-sp_group_norm <- function(x, gr, asparse = 0.05) {
-  asparse * sum(abs(x)) + (1 - asparse) * gr_norm(x, gr)
-}
-
-exact_df <- function(object, x) {
-  # See the correct formula in https://arxiv.org/pdf/1212.6478.pdf
-  # Theorem 2
-  Iset <- abs(object$beta) > 0
-  Imax <- which(apply(Iset, 1, any))
-  Iset <- Iset[Imax,]
-  group <- object$group[Imax]
-  beta <- object$beta[Imax,]
-  nlambda <- length(object$lambda)
-  xx <- Matrix::crossprod(x[,Imax])
-  df <- double(nlambda)
-  for (i in seq(nlambda)) {
-    Idx <- Iset[, i]
-    if (any(Idx)) {
-      xx_sub <- xx[Idx, Idx]
-      del <- delP(beta[Idx, i], group[Idx])
-      df[i] <- sum(solve(xx_sub + object$lambda[i] * del) * xx_sub)
-    } else {
-      df[i] <- 0
-    }
-  }
-  return(df)
-}
-
-delP <- function(beta, group) {
-  betas <- split(beta, group)
-  mats <- lapply(betas, function(x) {
-    p <- length(x)
-    bn <- two_norm(x)
-    Matrix::diag(1/bn, nrow = p, ncol = p) - outer(x / bn, x)
-  })
-  return(Matrix::bdiag(mats))
-}
