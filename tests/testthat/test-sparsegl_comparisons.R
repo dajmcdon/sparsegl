@@ -1,6 +1,7 @@
 
 test_that("no penalty", {
   
+  set.seed(1)
   X <- matrix(c(rnorm(6)), nrow = 3)
   beta <- c(2, 1)
   y <- X %*% beta + rnorm(3, sd = .1)
@@ -22,4 +23,28 @@ test_that("penalty is super large", {
   coef <- as.numeric(c(res$beta[, 1]))
   expect_equal(coef, double(5))
 })
+
+test_that("the number of nonzero coefficient features with penalty is less than 
+          or equal to without penalty", {
+  
+  X <- matrix(c(rnorm(100)), nrow = 10)
+  beta <- seq(10)
+  y <- X %*% beta + rnorm(10, sd = .1)
+  res1 <- sparsegl(X, y)
+  res2 <- sparsegl(X, y, asparse = 0)
+  res3 <- sparsegl(X, y, asparse = 0.99)
+  res4 <- sparsegl(X, y, lambda = 0)
+  
+  num1 <- apply(res1$beta, 2, function(x) sum(x != 0))
+  num2 <- apply(res2$beta, 2, function(x) sum(x != 0))
+  num3 <- apply(res3$beta, 2, function(x) sum(x != 0))
+  num4 <- sum(res2$beta != 0)
+  
+  expect_equal(as.numeric(num1 <= num4), rep(1, 100))
+  expect_equal(as.numeric(num2 <= num4), rep(1, 100))
+  expect_equal(as.numeric(num3 <= num4), rep(1, 100))
+})
+
+
+
 
