@@ -19,7 +19,7 @@
 #' @export
 #' @method coef sparsegl
 coef.sparsegl <- function(object, s = NULL, ...) {
-  b0 <- t(as.matrix(object$b0))
+  b0 <- as.matrix(object$b0)
   rownames(b0) <- "(Intercept)"
   nbeta <- rbind2(b0, object$beta)
   if (!is.null(s)) {
