@@ -79,12 +79,9 @@ plot.sparsegl <- function(x, grouped = FALSE, asparse = 0.05,
     outputs <- tibble::as_tibble(t(as.matrix(beta)))
     if (grouped && y_axis == "group_norm")  {
         colnames(outputs) <- uni_group 
-        
         outputs <- transform_outputs(outputs)
-        
     } else {
         colnames(outputs) <- nonzeros
-        
         outputs <- transform_outputs(outputs %>% dplyr::mutate(group = 0))
         
         j <- 1
@@ -94,10 +91,8 @@ plot.sparsegl <- function(x, grouped = FALSE, asparse = 0.05,
                                                   nonzeros[g == i], uni_group[j]))
             j <- j + 1
         }
-        
         outputs <- outputs %>% dplyr::mutate(group = factor(.data$group))
     }
-    
     
     if (!grouped || (grouped && y_axis == "group_norm"))  {
         plot_layer <- ggplot2::ggplot(outputs, ggplot2::aes(x = .data$lambda, 

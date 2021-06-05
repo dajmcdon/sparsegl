@@ -130,7 +130,6 @@ under function `risk_estimate()` below.
 
 ```{r}
 fit1 <- sparsegl(X, y, group = groups)
-summary(fit1)
 ```
 
 ### Plotting function `plot()` for `sparsegl` object 
@@ -257,7 +256,7 @@ complexity of the model. It takes the same arguments `X` and `y` from the functi
     
     - BIC (Bayesian information criterion): log(n) * df / n
     
-    - GCV (Generalized cross validation): -2 * log(1 - df / n))
+    - GCV (Generalized cross validation): -2 * log(1 - df / n)
 
 where df is the degree-of-freedom, and n is the sample size.
 
