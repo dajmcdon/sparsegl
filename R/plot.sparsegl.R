@@ -37,13 +37,12 @@ plot.sparsegl <- function(x, grouped = FALSE, asparse = 0.05,
     
     tmp <- xb[nonzeros, , drop = FALSE]  
     g <- as.numeric(x$group[nonzeros])
-    l <- log(x$lambda)  
     uni_group <- unique(g)
     n.g <- length(uni_group)
     sgnorm <- apply(xb, 2, function(y) sp_group_norm(y, x$group))
     
     if (grouped && y_axis == "group_norm") {
-        beta <- matrix(NA, n.g, length(l))  
+        beta <- matrix(NA, n.g, length(x$lambda))  
         j <- 1
         for (i in uni_group) {
             beta[j, ] <- apply(tmp[g == i, ], 2, function(x) {
@@ -56,17 +55,28 @@ plot.sparsegl <- function(x, grouped = FALSE, asparse = 0.05,
     
     transform_outputs <- function(df) {
         if (x_axis == "norm") {
-            df <- df %>% dplyr::mutate(lambda = sgnorm / max(sgnorm))
+            df <- df %>% dplyr::mutate(norm = sgnorm / max(sgnorm))
         } else {
-            df <- df %>% dplyr::mutate(lambda = l) 
+            df <- df %>% dplyr::mutate(lambda = x$lambda) 
             }
         
         if (grouped && y_axis == "group_norm") {
+            if (x_axis == "norm") {
+                df <- df %>% 
+                    tidyr::pivot_longer(!.data$norm, names_to = "variable")
+            } else {
             df <- df %>% 
                 tidyr::pivot_longer(!.data$lambda, names_to = "variable")
+            }
+            
         } else {
+            if (x_axis == "norm") {
+                df <- df %>% 
+                    tidyr::pivot_longer(!c(.data$norm, .data$group), names_to = "variable")
+            } else {
             df <- df %>% 
                 tidyr::pivot_longer(!c(.data$lambda, .data$group), names_to = "variable")
+            }
         }
         
         df <- df %>% dplyr::mutate(variable = factor(
@@ -95,14 +105,27 @@ plot.sparsegl <- function(x, grouped = FALSE, asparse = 0.05,
     }
     
     if (!grouped || (grouped && y_axis == "group_norm"))  {
-        plot_layer <- ggplot2::ggplot(outputs, ggplot2::aes(x = .data$lambda, 
-                                                            y = .data$value, 
-                                                            color = .data$variable))
+        if (x_axis == "norm") {
+            plot_layer <- ggplot2::ggplot(outputs, ggplot2::aes(x = .data$norm, 
+                                                                y = .data$value, 
+                                                                color = .data$variable))
+        } else {
+            plot_layer <- ggplot2::ggplot(outputs, ggplot2::aes(x = .data$lambda, 
+                                                                y = .data$value, 
+                                                                color = .data$variable))
+        }
     } else {
-        plot_layer <- ggplot2::ggplot(outputs, ggplot2::aes(x = .data$lambda,
-                                                  y = .data$value,
-                                                  group = .data$variable,
-                                                  color = .data$group))
+        if (x_axis == "norm") {
+            plot_layer <- ggplot2::ggplot(outputs, ggplot2::aes(x = .data$norm,
+                                                                y = .data$value,
+                                                                group = .data$variable,
+                                                                color = .data$group))
+        } else {
+            plot_layer <- ggplot2::ggplot(outputs, ggplot2::aes(x = .data$lambda,
+                                                                y = .data$value,
+                                                                group = .data$variable,
+                                                                color = .data$group))
+        }
     }
         
     plot_layer <- plot_layer +
@@ -112,7 +135,7 @@ plot.sparsegl <- function(x, grouped = FALSE, asparse = 0.05,
     if (x_axis == "norm") {
         xlab_layer <- ggplot2::xlab("beta norm / max (beta norm)")
     } else {
-        xlab_layer <- ggplot2::xlab("Log Lambda")
+        xlab_layer <- ggplot2::xlab("Log Lambda") + ggplot2::scale_x_log10() 
     }
     
     if (grouped && y_axis == "group_norm") {

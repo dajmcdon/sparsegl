@@ -37,4 +37,3 @@ Suggests:
     markdown
 Config/testthat/edition: 3
 VignetteBuilder: knitr
-

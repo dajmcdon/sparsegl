@@ -13,49 +13,42 @@ knitr::opts_chunk$set(
 )
 ```
 
-# sparsegl
+# R-package `sparsegl`
 
-<!-- badges: start -->
-[![R-CMD-check](https://github.com/acohen237/sparsegl/workflows/R-CMD-check/badge.svg)](https://github.com/acohen237/sparsegl/actions)
-<!-- badges: end -->
-
-The goal of sparsegl is to ...
+The goal of sparsegl is to fit regularization paths for sparse group-lasso
+penalized learning problems. The model is fit for a sequence of the regularization
+parameter lambda.
 
 ## Installation
 
 You can install the released version of sparsegl from [CRAN](https://CRAN.R-project.org) with:
 
-``` r
+```{r, echo = TRUE, eval = FALSE}
 install.packages("sparsegl")
 ```
 
 And the development version from [GitHub](https://github.com/) with:
 
-``` r
+```{r, echo = TRUE, eval = FALSE}
 # install.packages("remotes")
 remotes::install_github("dajmcdon/sparsegl")
 ```
-## Example
 
-This is a basic example which shows you how to solve a common problem:
+## Minimal Example
 
-```{r example}
+```{r load-library, echo = FALSE}
 library(sparsegl)
-## basic example code
 ```
 
-What is special about using `README.Rmd` instead of just `README.md`? You can include R chunks like so:
-
-```{r cars}
-summary(cars)
+```{r minimal-ex, echo = TRUE, fig.align = 'center'}
+set.seed(1010)
+n <- 100
+p <- 200
+X <- matrix(data = rnorm(n*p, mean = 0, sd = 1), nrow = n, ncol = p)
+eps <- rnorm(n, mean = 0, sd = 1)
+beta_star <- c(rep(5, 5), c(5, -5, 2, 0, 0), rep(-5, 5), c(2, -3, 8, 0, 0), rep(0, (p - 20)))
+y <- X %*% beta_star + eps
+groups <- rep(1:(p / 5), each = 5)
+plot(fit1, grouped = TRUE, y_axis = "coef", x_axis = "norm")
 ```
 
-You'll still need to render `README.Rmd` regularly, to keep `README.md` up-to-date. `devtools::build_readme()` is handy for this. You could also use GitHub Actions to re-render `README.Rmd` every time you push. An example workflow can be found here: <https://github.com/r-lib/actions/tree/master/examples>.
-
-You can also embed plots, for example:
-
-```{r pressure, echo = FALSE}
-plot(pressure)
-```
-
-In that case, don't forget to commit and push the resulting figure files, so they display on GitHub and CRAN.

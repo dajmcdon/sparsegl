@@ -45,6 +45,3 @@ test_that("the number of nonzero coefficient features with penalty is less than
   expect_equal(as.numeric(num3 <= num4), rep(1, 100))
 })
 
-
-
-

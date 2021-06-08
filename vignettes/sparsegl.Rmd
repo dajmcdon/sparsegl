@@ -146,11 +146,11 @@ in the `sparsegl()`, otherwise FALSE by default.
 * "x_axis": can be set with either "log_lambda" or "norm".
 
 If `grouped` is set with FALSE by default, `y_axis` can only be set with "coef" 
-such that this function will plot at the feature level only.Each curve with a 
-distinct color represents a feature. Notice that the number of curves shown on 
-the plots could be less than the actual number of features since only the features
-having nonzero coefficients at least at one lambda in the sequence `lambda` are 
-included:
+such that this function will plot at the feature level only, and `y_axis` is not 
+necessarily explicitly specified in this case. Each curve with a distinct color 
+represents a feature. Notice that the number of curves shown on the plots could 
+be less than the actual number of features since only the features having nonzero
+coefficients at least at one lambda in the sequence `lambda` are included:
 
 * The plot with `x_axis` = "log_lambda" is the coefficients of features against 
 logarithm of `lambda` sequence (log-`lambda`). 
