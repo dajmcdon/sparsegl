@@ -8,9 +8,7 @@
 ##        URL http://www.jstatsoft.org/v33/i01/.
 
 
-
-
-#' plot the cross-validation curve produced by cv.sparsegl
+#' plot the cross-validation curve produced from a `cv.sparsegl` object
 #' 
 #' Plots the cross-validation curve, and upper and lower standard deviation
 #' curves, as a function of the \code{lambda} values used. This function is
@@ -38,20 +36,17 @@
 #' @export
 plot.cv.sparsegl <- function(x, sign.lambda = 1, ...) {
     cvobj <- x
-    xlab <- "log(Lambda)"
-    if (sign.lambda < 0) 
-        xlab <- paste("-", xlab, sep = "")
-    plot.args <- list(x = sign.lambda * log(cvobj$lambda), y = cvobj$cvm, ylim = range(cvobj$cvupper, 
-        cvobj$cvlo), xlab = xlab, ylab = cvobj$name, type = "n")
-    new.args <- list(...)
-    if (length(new.args)) 
-        plot.args[names(new.args)] <- new.args
-    do.call("plot", plot.args)
-    error.bars(sign.lambda * log(cvobj$lambda), cvobj$cvupper, cvobj$cvlo, width = 0.01, 
-        col = "darkgrey")
-    points(sign.lambda * log(cvobj$lambda), cvobj$cvm, pch = 20, col = "red")
-    axis(side = 3, at = sign.lambda * log(cvobj$lambda), tick = FALSE, line = 0)
-    abline(v = sign.lambda * log(cvobj$lambda.min), lty = 3)
-    abline(v = sign.lambda * log(cvobj$lambda.1se), lty = 3)
-    invisible()
+    dat <- data.frame("X" = sign.lambda * log(cvobj$lambda), 
+                      "y" = cvobj$cvm, 
+                      "upper" = cvobj$cvupper,
+                      "lower" = cvobj$cvlo)
+    dat %>% 
+        ggplot2::ggplot(ggplot2::aes(x = .data$X, y = .data$y)) +
+        ggplot2::geom_point(color = 'red') + 
+        ggplot2::geom_errorbar(ggplot2::aes(
+            ymin = .data$lower, ymax = .data$upper), 
+            width = 0.1, color = 'darkgrey') + 
+        ggplot2::xlab("Log Lambda") +
+        ggplot2::ylab(cvobj$name) +
+        ggplot2::theme_bw()
 } 

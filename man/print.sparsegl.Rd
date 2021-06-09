@@ -2,7 +2,7 @@
 % Please edit documentation in R/sparsegl-methods.R
 \name{print.sparsegl}
 \alias{print.sparsegl}
-\title{Print a sparsegl object}
+\title{Print a \code{sparsegl} object}
 \usage{
 \method{print}{sparsegl}(x, digits = max(3, getOption("digits") - 3), ...)
 }

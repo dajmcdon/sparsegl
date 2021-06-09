@@ -3,10 +3,7 @@
 \name{cv.sparsegl}
 \alias{cv.sparsegl}
 \alias{cv.ls}
-\alias{cv.logit}
-\alias{cv.hsvm}
-\alias{cv.sqsvm}
-\title{Cross-validation for sparsegl}
+\title{Cross-validation for a \code{sparsegl} object}
 \usage{
 cv.sparsegl(
   x,
@@ -24,8 +21,7 @@ cv.sparsegl(
 is an observation vector.}
 
 \item{y}{response variable. This argument should be quantitative for
-regression (least squares), and a two-level factor for classification
-(logistic model, huberized SVM, squared SVM).}
+regression (least squares).}
 
 \item{group}{a vector of consecutive integers describing the grouping of the
 coefficients (see example below).}
@@ -39,16 +35,15 @@ error used by least squares regression \code{loss="ls"}, it measure the
 deviation from the fitted mean to the response.  \item \code{"L2"} for
 regression, mean absolute error used by least squares regression
 \code{loss="ls"}, it measure the deviation from the fitted mean to the
-response.  } Default is \code{"loss"}.}
+response.  }. Default is \code{"L2"}.}
 
 \item{nfolds}{number of folds - default is 5. Although \code{nfolds} can be
 as large as the sample size (leave-one-out CV), it is not recommended for
 large datasets. Smallest value allowable is \code{nfolds=3}.}
 
-\item{foldid}{an optional vector of values between 1 and \code{nfold}
-identifying what fold each observation is in. If supplied, \code{nfold} can
-be missing.
-\code{pred.loss = "loss"}, \code{loss = "hsvm"}.}
+\item{foldid}{an optional vector of values between 1 and \code{nfolds}
+identifying what fold each observation is in. If supplied, \code{nfolds} can
+be missing.}
 
 \item{\dots}{other arguments that can be passed to sparsegl.}
 }

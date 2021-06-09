@@ -2,18 +2,31 @@
 % Please edit documentation in R/plot.sparsegl.R
 \name{plot.sparsegl}
 \alias{plot.sparsegl}
-\title{Plot solution paths from a "sparsegl" object}
+\title{Plot solution paths from a \code{sparsegl} object}
 \usage{
-\method{plot}{sparsegl}(x, group = FALSE, log.l = TRUE, ...)
+\method{plot}{sparsegl}(
+  x,
+  grouped = FALSE,
+  asparse = 0.05,
+  y_axis = c("coef", "group_norm"),
+  x_axis = c("log_lambda", "norm"),
+  ...
+)
 }
 \arguments{
 \item{x}{fitted \code{\link{sparsegl}} model}
 
-\item{group}{what is on the Y-axis. Plot the norm of each group if
-\code{TRUE}. Plot each coefficient if \code{FALSE}.}
+\item{grouped}{if applying the user-specified grouping of features. Default
+is FALSE.}
 
-\item{log.l}{what is on the X-axis. Plot against the log-lambda sequence if
-\code{TRUE}. Plot against the lambda sequence if \code{FALSE}.}
+\item{asparse}{the weight to put on the ell1 norm in sparse group lasso. Default
+is 0.05}
+
+\item{y_axis}{what is on the Y_axis. Plot \code{"coef"} the coefficients or
+\code{"norm"} group norm. Default is \code{"coef"}.}
+
+\item{x_axis}{what is on the X-axis. Plot against the \code{"log_lambda"} log-lambda
+sequence or \code{"norm"} a scaled norm vector. Default is \code{"log_lambda"}.}
 
 \item{\dots}{other graphical parameters to plot}
 }

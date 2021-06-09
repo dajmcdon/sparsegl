@@ -20,7 +20,7 @@ The coefficients at the requested values for \code{lambda}.
 }
 \description{
 Computes the coefficients at the requested value(s) for \code{lambda} from a
-fitted \code{\link[=sparsegl]{sparsegl()}} object.
+\code{sparsegl} object.
 }
 \details{
 \code{s} is the new vector at which predictions are requested. If \code{s}

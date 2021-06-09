@@ -2,7 +2,7 @@
 % Please edit documentation in R/sparsegl.R
 \name{sparsegl}
 \alias{sparsegl}
-\title{Fits the regularization paths for group-lasso penalized learning problems}
+\title{Fits the regularization paths for sparse group-lasso penalized learning problems}
 \usage{
 sparsegl(
   x,
@@ -65,6 +65,17 @@ the corresponding size of each group.}
 \item{asparse}{the weight to put on the ell1 norm in sparse group lasso. Default
 is 0.05}
 
+\item{standardize}{Logical flag for variable standardization (scaling) prior
+to fitting the model. Default is TRUE.}
+
+\item{lower_bnd}{lower bound for coefficient values, a vector in length of 1
+or the number of groups including non-positive numbers only. Default is
+\code{-Inf}.}
+
+\item{upper_bnd}{upper bound for coefficient values, a vector in length of 1
+or the number of groups including non-negative numbers only. Default is
+\code{Inf}.}
+
 \item{dfmax}{limit the maximum number of groups in the model. Useful for
 very large \code{bs} (group size), if a partial path is desired. Default is
 \code{bs+1}.}
@@ -84,8 +95,8 @@ value. Default is 3e8. If models do not converge, consider increasing
 An object with S3 class \code{\link{sparsegl}}.  \item{call}{the call
 that produced this object} \item{b0}{intercept sequence of length
 \code{length(lambda)}} \item{beta}{a \code{p*length(lambda)} matrix of
-coefficients.} \item{df}{the number of nonzero groups for each value of
-\code{lambda}.} \item{dim}{dimension of coefficient matrix (ices)}
+coefficients.} \item{df}{the number of nonzero features with nonzero coefficients
+for each value of \code{lambda}.} \item{dim}{dimension of coefficient matrix (ices)}
 \item{lambda}{the actual sequence of \code{lambda} values used}
 \item{npasses}{total number of iterations (the most inner loop) summed over
 all lambda values} \item{jerr}{error flag, for warnings and errors, 0 if no
@@ -93,14 +104,12 @@ error.} \item{group}{a vector of consecutive integers describing the
 grouping of the coefficients.}
 }
 \description{
-Fits regularization paths for group-lasso penalized learning problems at a
+Fits regularization paths for sparse group-lasso penalized learning problems at a
 sequence of regularization parameters lambda.
 }
 \details{
 Note that the objective function for \code{"ls"} least squares is
-\deqn{RSS/(2*n) + lambda * penalty;} for \code{"hsvm"} Huberized squared
-hinge loss, \code{"sqsvm"} Squared hinge loss and \code{"logit"} logistic
-regression, the objective function is \deqn{-loglik/n + lambda * penalty.}
+\deqn{RSS/(2*n) + lambda * penalty;}
 Users can also tweak the penalty by choosing different penalty factor.
 
 For computing speed reason, if models are not converging or running slow,

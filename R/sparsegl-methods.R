@@ -19,7 +19,8 @@
 #' @export
 #' @method coef sparsegl
 coef.sparsegl <- function(object, s = NULL, ...) {
-  b0 <- t(as.matrix(object$b0))
+  b0 <- as.matrix(object$b0)  
+  # if conflicts happens and throw an error here, remove t() outside as.matrix()
   rownames(b0) <- "(Intercept)"
   nbeta <- rbind2(b0, object$beta)
   if (!is.null(s)) {
@@ -42,7 +43,7 @@ coef.sparsegl <- function(object, s = NULL, ...) {
 
 
 
-#' Make predictions from a "sparsegl" object.
+#' Make predictions from a `sparsegl` object.
 #'
 #' Similar to other predict methods, this functions predicts fitted values and
 #' class labels from a fitted [`sparsegl()`] object.
@@ -59,11 +60,6 @@ coef.sparsegl <- function(object, s = NULL, ...) {
 #' @param s value(s) of the penalty parameter \code{lambda} at which
 #' predictions are required. Default is the entire sequence used to create the
 #' model.
-#' @param type type of prediction required: \itemize{ \item Type \code{"link"},
-#' for regression it returns the fitted response; for classification it gives
-#' the linear predictors.  \item Type \code{"class"}, only valid for
-#' classification, it produces the predicted class label corresponding to the
-#' maximum probability.}
 #'
 #' @param \dots Not used. Other arguments to predict.
 #' @return The object returned depends on type.
@@ -81,7 +77,7 @@ predict.sparsegl <- function(object, newx, s = NULL, ...) {
 
 
 
-#' Print a sparsegl object
+#' Print a `sparsegl` object
 #'
 #' Print the nonzero group counts at each lambda along the sparsegl path.
 #'

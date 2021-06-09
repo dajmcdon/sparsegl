@@ -2,7 +2,7 @@
 % Please edit documentation in R/plot.cv.sparsegl.R
 \name{plot.cv.sparsegl}
 \alias{plot.cv.sparsegl}
-\title{plot the cross-validation curve produced by cv.sparsegl}
+\title{plot the cross-validation curve produced from a \code{cv.sparsegl} object}
 \usage{
 \method{plot}{cv.sparsegl}(x, sign.lambda = 1, ...)
 }

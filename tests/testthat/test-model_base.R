@@ -13,7 +13,7 @@ test_that("largest squared singular value", {
   res1[2] <- maxeig2(x2[, c(3,4)])
   expect_equal(res, res1/3)
   
-  A <- matrix(sample(1:50, 48, replace = TRUE), nrow = 6, ncol= 8)  # random 6-by-8 matrix
+  A <- matrix(sample(1:50, 48, replace = TRUE), nrow = 6, ncol = 8)  # random 6-by-8 matrix
   expect_equal(calc_gamma(A, ix = 1, iy = 8, bn = 1), RSpectra::svds(A, 1, 0, 0)$d^2/6)
   
   res <- calc_gamma(A, ix = c(1,3,6), iy = c(2, 5, 8), bn = 3) # 6-by-8 matrix divided into 3 matrices

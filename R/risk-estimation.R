@@ -12,15 +12,24 @@
 #'
 #' @return a vector of the same length as `object$lambda`
 #' @export
-risk_estimate <- function(object, x, y,
+estimate_risk <- function(object, x, y,
                           type = c("AIC", "BIC", "GCV"),
                           approx_df = FALSE) {
   type <- match.arg(type)
+  if (is.matrix(y)) {
+    stopifnot(dim(y)[2] == 1)
+    y <- drop(y)
+  }
   preds <- predict(object, x)
   err <- log(colMeans((y - preds)^2))
   n <- length(y)
-  if (approx_df) df <- object$df
-  else df <- exact_df(object, x)
+  
+  if (approx_df) {
+    df <- object$df
+  } else {
+    df <- exact_df(object, x)
+  }
+  
   pen <- switch(type,
                 AIC = 2 * df / n,
                 BIC = log(n) * df / n,
@@ -60,13 +69,18 @@ delP <- function(beta, group) {
   mats <- lapply(betas, function(x) {
     p <- length(x)
     bn <- two_norm(x)
-    Matrix::diag(1/bn, nrow = p, ncol = p) - outer(x / bn, x)
+    Matrix::diag(1/bn, nrow = p, ncol = p) - outer(x, x) / bn^3
+    
   })
   return(Matrix::bdiag(mats))
 }
 
+
 two_norm <- function(x) sqrt(sum(x^2))
 gr_norm <- function(x, gr) sum(as.vector(tapply(x, gr, two_norm)))
-sp_group_norm <- function(x, gr, alpha = 0.05) {
-  alpha * sum(abs(x)) + (1 - alpha) * gr_norm(x, gr)
+sp_group_norm <- function(x, gr, asparse = 0.05) {
+  asparse * sum(abs(x)) + (1 - asparse) * gr_norm(x, gr)
 }
+
+
+
