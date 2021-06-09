@@ -2,7 +2,7 @@
 % Please edit documentation in R/cv.sparsegl-methods.R
 \name{coef.cv.sparsegl}
 \alias{coef.cv.sparsegl}
-\title{Get coefficients or make coefficient predictions from a "cv.sparsegl" object.}
+\title{Get coefficients or make coefficient predictions from a \code{cv.sparsegl} object.}
 \usage{
 \method{coef}{cv.sparsegl}(object, s = c("lambda.1se", "lambda.min"), ...)
 }

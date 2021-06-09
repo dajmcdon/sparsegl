@@ -3,7 +3,7 @@
 \name{cv.sparsegl}
 \alias{cv.sparsegl}
 \alias{cv.ls}
-\title{Cross-validation for sparsegl}
+\title{Cross-validation for a \code{sparsegl} object}
 \usage{
 cv.sparsegl(
   x,

@@ -2,7 +2,7 @@
 % Please edit documentation in R/cv.sparsegl-methods.R
 \name{predict.cv.sparsegl}
 \alias{predict.cv.sparsegl}
-\title{make predictions from a "cv.sparsegl" object.}
+\title{make predictions from a \code{cv.sparsegl} object.}
 \usage{
 \method{predict}{cv.sparsegl}(object, newx, s = c("lambda.1se", "lambda.min"), ...)
 }

@@ -43,7 +43,7 @@ coef.sparsegl <- function(object, s = NULL, ...) {
 
 
 
-#' Make predictions from a "sparsegl" object.
+#' Make predictions from a `sparsegl` object.
 #'
 #' Similar to other predict methods, this functions predicts fitted values and
 #' class labels from a fitted [`sparsegl()`] object.
@@ -77,7 +77,7 @@ predict.sparsegl <- function(object, newx, s = NULL, ...) {
 
 
 
-#' Print a sparsegl object
+#' Print a `sparsegl` object
 #'
 #' Print the nonzero group counts at each lambda along the sparsegl path.
 #'

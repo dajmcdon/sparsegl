@@ -8,7 +8,7 @@
 ##        URL http://www.jstatsoft.org/v33/i01/.
 
 
-#' plot the cross-validation curve produced by cv.sparsegl
+#' plot the cross-validation curve produced from a `cv.sparsegl` object
 #' 
 #' Plots the cross-validation curve, and upper and lower standard deviation
 #' curves, as a function of the \code{lambda} values used. This function is

@@ -1,4 +1,4 @@
-#' Get coefficients or make coefficient predictions from a "cv.sparsegl" object.
+#' Get coefficients or make coefficient predictions from a `cv.sparsegl` object.
 #'
 #' This function gets coefficients or makes coefficient predictions from a
 #' cross-validated \code{sparsegl} model, using the stored \code{"sparsegl.fit"}
@@ -44,7 +44,7 @@ coef.cv.sparsegl <- function(object, s = c("lambda.1se", "lambda.min"),
 
 
 
-#' make predictions from a "cv.sparsegl" object.
+#' make predictions from a `cv.sparsegl` object.
 #'
 #' This function makes predictions from a cross-validated \code{sparsegl} model,
 #' using the stored \code{"sparsegl.fit"} object, and the optimal value chosen

@@ -1,4 +1,4 @@
-#' Plot solution paths from a "sparsegl" object
+#' Plot solution paths from a `sparsegl` object
 #' 
 #' Produces a coefficient profile plot of the coefficient paths for a fitted
 #' \code{\link{sparsegl}} object.

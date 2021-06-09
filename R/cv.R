@@ -1,4 +1,4 @@
-#' Cross-validation for sparsegl
+#' Cross-validation for a `sparsegl` object
 #'
 #' Does k-fold cross-validation for sparsegl, produces a plot, and returns a
 #' value for \code{lambda}. This function is modified based on the \code{cv}

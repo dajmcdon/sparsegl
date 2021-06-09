@@ -2,7 +2,7 @@
 % Please edit documentation in R/sparsegl-methods.R
 \name{predict.sparsegl}
 \alias{predict.sparsegl}
-\title{Make predictions from a "sparsegl" object.}
+\title{Make predictions from a \code{sparsegl} object.}
 \usage{
 \method{predict}{sparsegl}(object, newx, s = NULL, ...)
 }

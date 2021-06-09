@@ -2,7 +2,7 @@
 % Please edit documentation in R/plot.sparsegl.R
 \name{plot.sparsegl}
 \alias{plot.sparsegl}
-\title{Plot solution paths from a "sparsegl" object}
+\title{Plot solution paths from a \code{sparsegl} object}
 \usage{
 \method{plot}{sparsegl}(
   x,
