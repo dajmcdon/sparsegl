@@ -52,7 +52,8 @@ options(prompt = 'R> ', continue = '+ ')
 # `sparsegl.bib`
 # 
 # Note: tags are R-<pkg>
-knitr::write_bib(c("devtools", "knitr", "testthat", "usethis", "rticles"),
+knitr::write_bib(c("devtools", "knitr", "testthat", "usethis", "rticles",
+                   "sgl","gglasso"),
                  file = "pkgs.bib")
 ```
 

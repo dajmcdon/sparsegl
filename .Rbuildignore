@@ -3,5 +3,5 @@
 ^\.github$
 ^README\.Rmd$
 ^LICENSE\.md$
-jss-sparsegl
-deprecated
+^jss-sparsegl$
+^deprecated$
