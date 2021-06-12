@@ -1,8 +1,8 @@
 #' Cross-validation for a `sparsegl` object
 #'
-#' Does k-fold cross-validation for sparsegl, produces a plot, and returns a
-#' value for \code{lambda}. This function is modified based on the \code{cv}
-#' function from the \code{glmnet} package.
+#' Does k-fold cross-validation for `sparsegl`.
+#' This function is modified based on the \code{cv}
+#' function from the [`glmnet-package`] package.
 #'
 #' The function runs \code{\link{sparsegl}} \code{nfolds}+1 times; the first to
 #' get the \code{lambda} sequence, and then the remainder to compute the fit
@@ -47,13 +47,17 @@
 #' @author Yi Yang and Hui Zou\cr Maintainer: Yi Yang <yi.yang6@@mcgill.ca>
 #' @seealso \code{\link{sparsegl}}, \code{\link{plot.cv.sparsegl}},
 #' \code{\link{predict.cv.sparsegl}}, and \code{\link{coef.cv.sparsegl}} methods.
-#' @references Yang, Y. and Zou, H. (2015), ``A Fast Unified Algorithm for
-#' Computing Group-Lasso Penalized Learning Problems,'' \emph{Statistics and
-#' Computing}. 25(6), 1129-1141.\cr BugReport:
-#' \url{https://github.com/emeryyi/gglasso}\cr
-#' @keywords models regression
-
 #' @export
+#' @examples
+#' n <- 100
+#' p <- 20
+#' X <- matrix(rnorm(n * p), nrow = n)
+#' eps <- rnorm(n)
+#' beta_star <- c(rep(5, 5), c(5, -5, 2, 0, 0), rep(-5, 5), rep(0, (p - 15)))
+#' y <- X %*% beta_star + eps
+#' groups <- rep(1:(p / 5), each = 5)
+#' fit1 <- sparsegl(X, y, group = groups)
+#' cv_fit <- cv.sparsegl(X, y, groups)
 cv.sparsegl <- function(x, y, group, lambda = NULL,
                         pred.loss = c("L2", "L1"),
                         nfolds = 5, foldid, ...) {
@@ -71,10 +75,10 @@ cv.sparsegl <- function(x, y, group, lambda = NULL,
     outlist <- as.list(seq(nfolds))
     ###Now fit the nfold models and store them
     for (i in seq(nfolds)) {
-        which <- foldid == i
-        y_sub <- y[!which]
-        outlist[[i]] <- sparsegl(x = x[!which, , drop = FALSE], y = y_sub,
-                                 group = group, lambda = lambda,  ...)
+        test_fold <- foldid == i
+        outlist[[i]] <- sparsegl(
+            x = x[!test_fold, , drop = FALSE],
+            y = y[!test_fold], group = group, lambda = lambda,  ...)
     }
     ###What to do depends on the pred.loss and the model fit
     fun <- paste("cv", class(sparsegl.object)[[2]], sep = ".")
@@ -99,11 +103,11 @@ cv.ls <- function(outlist, lambda, x, y, foldid, pred.loss = c("L2","L1")) {
     nfolds <- max(foldid)
     nlams <- double(nfolds)
     for (i in seq(nfolds)) {
-        which <- foldid == i
+        test_fold <- foldid == i
         fitobj <- outlist[[i]]
-        preds <- predict(fitobj, x[which, , drop = FALSE])
+        preds <- predict(fitobj, x[test_fold, , drop = FALSE])
         nlami <- length(outlist[[i]]$lambda)
-        predmat[which, seq(nlami)] <- preds
+        predmat[test_fold, seq(nlami)] <- preds
         nlams[i] <- nlami
     }
     cvraw <- switch(pred.loss, L2 = (y - predmat)^2, L1 = abs(y - predmat))

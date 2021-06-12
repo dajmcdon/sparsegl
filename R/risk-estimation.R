@@ -1,7 +1,10 @@
-#' Information criteria
+#' Calculate information criteria
+#'
+#' This functions uses the degrees of freedom to calculate various information
+#' criteria. This function uses the "known variance" verison of the likelihood.
 #'
 #' @param object fitted object from a call to [`sparsegl()`]
-#' @param x matrix of predictors, of dimension \eqn{n \times p}{n*p}; each row
+#' @param x matrix of predictors, of dimension \eqn{n \times p}{n * p}; each row
 #'   is a vector of measurement and each column is a feature
 #' @param y real-valued response variable.
 #' @param type one of AIC, BIC, or GCV
@@ -23,13 +26,10 @@ estimate_risk <- function(object, x, y,
   preds <- predict(object, x)
   err <- log(colMeans((y - preds)^2))
   n <- length(y)
-  
-  if (approx_df) {
-    df <- object$df
-  } else {
-    df <- exact_df(object, x)
-  }
-  
+
+  if (approx_df) df <- object$df
+  else df <- exact_df(object, x)
+
   pen <- switch(type,
                 AIC = 2 * df / n,
                 BIC = log(n) * df / n,
@@ -70,17 +70,7 @@ delP <- function(beta, group) {
     p <- length(x)
     bn <- two_norm(x)
     Matrix::diag(1/bn, nrow = p, ncol = p) - outer(x, x) / bn^3
-    
+
   })
   return(Matrix::bdiag(mats))
 }
-
-
-two_norm <- function(x) sqrt(sum(x^2))
-gr_norm <- function(x, gr) sum(as.vector(tapply(x, gr, two_norm)))
-sp_group_norm <- function(x, gr, asparse = 0.05) {
-  asparse * sum(abs(x)) + (1 - asparse) * gr_norm(x, gr)
-}
-
-
-

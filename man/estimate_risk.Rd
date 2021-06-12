@@ -2,14 +2,14 @@
 % Please edit documentation in R/risk-estimation.R
 \name{estimate_risk}
 \alias{estimate_risk}
-\title{Information criteria}
+\title{Calculate information criteria}
 \usage{
 estimate_risk(object, x, y, type = c("AIC", "BIC", "GCV"), approx_df = FALSE)
 }
 \arguments{
 \item{object}{fitted object from a call to \code{\link[=sparsegl]{sparsegl()}}}
 
-\item{x}{matrix of predictors, of dimension \eqn{n \times p}{n*p}; each row
+\item{x}{matrix of predictors, of dimension \eqn{n \times p}{n * p}; each row
 is a vector of measurement and each column is a feature}
 
 \item{y}{real-valued response variable.}
@@ -25,5 +25,6 @@ some time.}
 a vector of the same length as \code{object$lambda}
 }
 \description{
-Information criteria
+This functions uses the degrees of freedom to calculate various information
+criteria. This function uses the "known variance" verison of the likelihood.
 }

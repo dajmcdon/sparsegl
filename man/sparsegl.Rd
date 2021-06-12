@@ -116,12 +116,16 @@ For computing speed reason, if models are not converging or running slow,
 consider increasing \code{eps}, decreasing \code{nlambda}, or increasing
 \code{lambda.factor} before increasing \code{maxit}.
 }
+\examples{
+n <- 100
+p <- 20
+X <- matrix(rnorm(n * p), nrow = n)
+eps <- rnorm(n)
+beta_star <- c(rep(5, 5), c(5, -5, 2, 0, 0), rep(-5, 5), rep(0, (p - 15)))
+y <- X \%*\% beta_star + eps
+groups <- rep(1:(p / 5), each = 5)
+fit1 <- sparsegl(X, y, group = groups)
+}
 \seealso{
 \code{plot.sparsegl}
 }
-\author{
-Aaron Cohen and Dan Mcdonald\cr Maintainer: Aaron Cohen \href{mailto:cohenaa@indiana.edu}{cohenaa@indiana.edu}
-}
-\keyword{models}
-\keyword{regression}
-\keyword{sparse}

@@ -19,7 +19,7 @@
 #' @export
 #' @method coef sparsegl
 coef.sparsegl <- function(object, s = NULL, ...) {
-  b0 <- as.matrix(object$b0)  
+  b0 <- as.matrix(object$b0)
   # if conflicts happens and throw an error here, remove t() outside as.matrix()
   rownames(b0) <- "(Intercept)"
   nbeta <- rbind2(b0, object$beta)
@@ -79,31 +79,23 @@ predict.sparsegl <- function(object, newx, s = NULL, ...) {
 
 #' Print a `sparsegl` object
 #'
-#' Print the nonzero group counts at each lambda along the sparsegl path.
+#' Prints a few summaries of the fitted model.
 #'
-#' Print the information about the nonzero group counts at each lambda step in
-#' the \code{\link{sparsegl}} object. The result is a two-column matrix with
-#' columns \code{Df} and \code{Lambda}. The \code{Df} column is the number of
-#' the groups that have nonzero within-group coefficients, the \code{Lambda}
-#' column is the the corresponding lambda.
 #'
 #' @param x fitted \code{\link{sparsegl}} object
 #' @param digits significant digits in printout
 #' @param \dots additional print arguments
-#' @return a two-column matrix, the first columns is the number of nonzero
-#' group counts and the second column is \code{Lambda}.
-#' @author Yi Yang and Hui Zou\cr Maintainer: Yi Yang <yi.yang6@@mcgill.ca>
-#' @references Yang, Y. and Zou, H. (2015), ``A Fast Unified Algorithm for
-#' Computing Group-Lasso Penalized Learning Problems,'' \emph{Statistics and
-#' Computing}. 25(6), 1129-1141.\cr BugReport:
-#' \url{https://github.com/emeryyi/gglasso}\cr
-#' @keywords models regression
-
 #' @method print sparsegl
 #' @export
-print.sparsegl <- function(x, digits = max(3, getOption("digits") - 3), ...) {
+print.sparsegl <- function(x, digits = min(3, getOption("digits") - 3), ...) {
   cat("\nCall: ", deparse(x$call), "\n\n")
-  print(cbind(Df = x$df, Lambda = signif(x$lambda, digits)))
+  cat("Approx. degrees of freedom: ", round(min(x$df), digits),
+      " - ", round(max(x$df), digits), "\n")
+  cat("Range of lambda: ", round(max(x$lambda), digits),
+      " - ", round(min(x$lambda), digits), "\n")
+  nlams <- length(x$lambda)
+  cat("Saturated penalty: ",
+      round(sp_group_norm(x$beta[,nlams], x$group, x$asparse), digits))
 }
 
 

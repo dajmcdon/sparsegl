@@ -6,45 +6,29 @@
 \usage{
 \method{plot}{sparsegl}(
   x,
-  grouped = FALSE,
-  asparse = 0.05,
-  y_axis = c("coef", "group_norm"),
-  x_axis = c("log_lambda", "norm"),
+  y_axis = c("coef", "group"),
+  x_axis = c("lambda", "penalty"),
+  add_legend = TRUE,
   ...
 )
 }
 \arguments{
 \item{x}{fitted \code{\link{sparsegl}} model}
 
-\item{grouped}{if applying the user-specified grouping of features. Default
-is FALSE.}
+\item{y_axis}{variable is on the y_axis. Either the coefficients (default)
+or the group norm.}
 
-\item{asparse}{the weight to put on the ell1 norm in sparse group lasso. Default
-is 0.05}
+\item{x_axis}{variable on the x-axis. Either the (log)-lambda
+sequence (default) or value of the penalty. The penalty is scaled by its
+maximum along the path.}
 
-\item{y_axis}{what is on the Y_axis. Plot \code{"coef"} the coefficients or
-\code{"norm"} group norm. Default is \code{"coef"}.}
-
-\item{x_axis}{what is on the X-axis. Plot against the \code{"log_lambda"} log-lambda
-sequence or \code{"norm"} a scaled norm vector. Default is \code{"log_lambda"}.}
+\item{add_legend}{show the legend. Often, with many groups/predictors, this
+can become overwhelming.}
 
 \item{\dots}{other graphical parameters to plot}
 }
 \description{
 Produces a coefficient profile plot of the coefficient paths for a fitted
-\code{\link{sparsegl}} object.
+\code{\link{sparsegl}} object. The result is a \code{ggplot}. Additional user
+modifications can be added as desired.
 }
-\details{
-A coefficient profile plot is produced.
-}
-\references{
-Yang, Y. and Zou, H. (2015), ``A Fast Unified Algorithm for
-Computing Group-Lasso Penalized Learning Problems,'' \emph{Statistics and
-Computing}. 25(6), 1129-1141.\cr BugReport:
-\url{https://github.com/emeryyi/gglasso}\cr
-}
-\author{
-Yi Yang and Hui Zou\cr Maintainer: Yi Yang \href{mailto:yi.yang6@mcgill.ca}{yi.yang6@mcgill.ca}
-}
-\keyword{models}
-\keyword{regression}

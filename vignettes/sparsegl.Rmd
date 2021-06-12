@@ -163,15 +163,14 @@ $$
 
 
 ```{r, message = FALSE, warning = FALSE, fig.width = 10, fig.height = 5}
-plot(fit1, grouped = FALSE, x_axis = "log_lambda")
+plot(fit1, x_axis = "lambda")
 ```
 
-If `group` is set with TRUE, this function can plot at both feature and group levels.
 Again, only the features having nonzero coefficients at least at one lambda value 
 in the sequence `lambda`, and their corresponding groups are considered: 
 
-* The plot with `y_axis` = "group_norm" is the group norms against the log-`lambda` 
-or scaling norm vector. Each group norm is defined by:
+* The plot with `y_axis` = "group" is the group norms against the log-`lambda` 
+or the scaled group norm vector. Each group norm is defined by:
 $$
 \text{asparse}\times\rVert\beta^{(g)}\rVert_1 + (1 - \text{asparse})\times\sum_g\rVert\beta^{(g)}\rVert_2
 $$
@@ -181,8 +180,8 @@ the log-`lambda` or scaling norm vector. Curves are plotted in the same color if
 features are in the same group. 
 
 ```{r, message = FALSE, warning = FALSE, fig.width = 8, fig.height = 4}
-plot(fit1, grouped = TRUE, y_axis = "group_norm", x_axis = "log_lambda")
-plot(fit1, grouped = TRUE, y_axis = "coef", x_axis = "norm")
+plot(fit1, y_axis = "group", x_axis = "lambda")
+plot(fit1, y_axis = "coef", x_axis = "penalty")
 ```
 
 ### `coef()`, `predict()` and `print()` for `sparsegl` object

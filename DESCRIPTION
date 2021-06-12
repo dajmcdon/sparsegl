@@ -26,7 +26,8 @@ Imports:
     tibble,
     ggplot2,
     magrittr,
-    rlang
+    rlang,
+    scales
 Depends: 
     R (>= 3.5)
 License: GPL (>= 2)

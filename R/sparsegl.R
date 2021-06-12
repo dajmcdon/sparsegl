@@ -54,12 +54,12 @@
 #' @param intercept Whether to include intercept in the model. Default is TRUE.
 #' @param asparse the weight to put on the ell1 norm in sparse group lasso. Default
 #' is 0.05
-#' @param standardize Logical flag for variable standardization (scaling) prior 
+#' @param standardize Logical flag for variable standardization (scaling) prior
 #' to fitting the model. Default is TRUE.
-#' @param lower_bnd lower bound for coefficient values, a vector in length of 1 
-#' or the number of groups including non-positive numbers only. Default is 
+#' @param lower_bnd lower bound for coefficient values, a vector in length of 1
+#' or the number of groups including non-positive numbers only. Default is
 #' \code{-Inf}.
-#' @param upper_bnd upper bound for coefficient values, a vector in length of 1 
+#' @param upper_bnd upper bound for coefficient values, a vector in length of 1
 #' or the number of groups including non-negative numbers only. Default is
 #' \code{Inf}.
 #' @return An object with S3 class \code{\link{sparsegl}}.  \item{call}{the call
@@ -72,10 +72,17 @@
 #' all lambda values} \item{jerr}{error flag, for warnings and errors, 0 if no
 #' error.} \item{group}{a vector of consecutive integers describing the
 #' grouping of the coefficients.}
-#' @author Aaron Cohen and Dan Mcdonald\cr Maintainer: Aaron Cohen <cohenaa@indiana.edu>
 #' @seealso \code{plot.sparsegl}
-#' @keywords models regression sparse
 #' @export
+#' @examples
+#' n <- 100
+#' p <- 20
+#' X <- matrix(rnorm(n * p), nrow = n)
+#' eps <- rnorm(n)
+#' beta_star <- c(rep(5, 5), c(5, -5, 2, 0, 0), rep(-5, 5), rep(0, (p - 15)))
+#' y <- X %*% beta_star + eps
+#' groups <- rep(1:(p / 5), each = 5)
+#' fit1 <- sparsegl(X, y, group = groups)
 sparsegl <- function(
   x, y, group = NULL,
   nlambda = 100, lambda.factor = ifelse(nobs < nvars, 0.01, 1e-04),
@@ -206,6 +213,7 @@ sparsegl <- function(
   # output
   if (is.null(lambda)) fit$lambda <- lamfix(fit$lambda)
   fit$call <- this.call
+  fit$asparse <- asparse
   class(fit) <- c("sparsegl", class(fit))
   fit
 }

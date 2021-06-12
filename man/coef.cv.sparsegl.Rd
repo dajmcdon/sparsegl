@@ -31,22 +31,7 @@ object, and the optimal value chosen for \code{lambda}.
 This function makes it easier to use the results of cross-validation to get
 coefficients or make coefficient predictions.
 }
-\references{
-Yang, Y. and Zou, H. (2015), ``A Fast Unified Algorithm for
-Computing Group-Lasso Penalized Learning Problems,'' \emph{Statistics and
-Computing}. 25(6), 1129-1141.\cr BugReport:
-\url{https://github.com/emeryyi/gglasso}\cr
-
-Friedman, J., Hastie, T., and Tibshirani, R. (2010), "Regularization paths
-for generalized linear models via coordinate descent," \emph{Journal of
-Statistical Software, 33, 1.}\cr \url{http://www.jstatsoft.org/v33/i01/}
-}
 \seealso{
 \code{\link{cv.sparsegl}}, and \code{\link{predict.cv.sparsegl}}
 methods.
 }
-\author{
-Yi Yang and Hui Zou\cr Maintainer: Yi Yang \href{mailto:yi.yang6@mcgill.ca}{yi.yang6@mcgill.ca}
-}
-\keyword{models}
-\keyword{regression}
