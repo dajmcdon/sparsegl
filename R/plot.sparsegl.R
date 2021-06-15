@@ -33,18 +33,22 @@ plot.sparsegl <- function(x,
     xb <- xb[nonzeros, , drop = FALSE]
     g <- x$group[nonzeros]
     uni_group <- unique(g)
-    n_groups <- length(uni_group)
     sgnorm <- apply(xb, 2, sp_group_norm, gr = g, asparse = x$asparse)
 
     if (y_axis == "group") {
         xb <- apply(xb, 2, grouped_sp_norm, gr = g, asparse = x$asparse)
-        rownames(xb) <- paste0("group", uni_group)
+        rownames(xb) <- uni_group
+    } else {
+        rownames(xb) <- nonzeros
     }
+    
     df <- as.data.frame(t(as.matrix(xb)))
     df$lambda <- x$lambda
     df$penalty <- sgnorm / max(sgnorm)
     df <- df %>%
-        tidyr::pivot_longer(!c(.data$lambda, .data$penalty), names_to = y_axis)
+        tidyr::pivot_longer(!c(.data$lambda, .data$penalty), names_to = y_axis) %>% 
+        dplyr::mutate(!!y_axis := factor(!!rlang::sym(y_axis), 
+                      levels = sort(as.numeric(unique(!!rlang::sym(y_axis))))))
 
     plot_layer <- df %>%
         ggplot2::ggplot(
@@ -68,8 +72,13 @@ plot.sparsegl <- function(x,
             ggplot2::geom_line() +
             ggplot2::ylab("coefficients")
     }
-
-    legend_layer <- ggplot2::scale_color_viridis_d()
+    
+    if (y_axis == "group") {
+        legend_layer <- ggplot2::scale_color_viridis_d(labels = paste0("group", uni_group))
+    } else {
+        legend_layer <- ggplot2::scale_color_viridis_d(labels = paste0("V", nonzeros))
+    }
+    
     theme_layer <- ggplot2::theme_bw()
     if (!add_legend)
         theme_layer <- theme_layer + ggplot2::theme(legend.position = "none")
