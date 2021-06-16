@@ -1,4 +1,4 @@
-#' Cross-validation for a `sparsegl` object
+#' Cross-validation for a `sparsegl` object.
 #'
 #' Does k-fold cross-validation for `sparsegl`.
 #' This function is modified based on the \code{cv}
@@ -10,41 +10,40 @@
 #' over the folds are computed.
 #'
 #' @aliases cv.sparsegl cv.ls
-#' @param x matrix of predictors, of dimension \eqn{n \times p}{n*p}; each row
+#' @param x Matrix of predictors, of dimension \eqn{n \times p}{n * p}; each row
 #' is an observation vector.
-#' @param y response variable. This argument should be quantitative for
+#' @param y Response variable. This argument should be quantitative for
 #' regression (least squares).
-#' @param group a vector of consecutive integers describing the grouping of the
+#' @param group A vector of consecutive integers describing the grouping of the
 #' coefficients (see example below).
-#' @param lambda optional user-supplied lambda sequence; default is
+#' @param lambda An optional user-supplied lambda sequence; default is
 #' \code{NULL}, and \code{\link{sparsegl}} chooses its own sequence.
-#' @param pred.loss loss to use for cross-validation error. Valid options are:
+#' @param pred.loss Loss to use for cross-validation error. Valid options are:
 #' \itemize{ \item \code{"L1"} for regression, mean square
 #' error used by least squares regression \code{loss="ls"}, it measure the
 #' deviation from the fitted mean to the response.  \item \code{"L2"} for
 #' regression, mean absolute error used by least squares regression
 #' \code{loss="ls"}, it measure the deviation from the fitted mean to the
-#' response.  }. Default is \code{"L2"}.
-#' @param nfolds number of folds - default is 5. Although \code{nfolds} can be
+#' response.  }Default is \code{"L2"}.
+#' @param nfolds Number of folds - default is 5. Although \code{nfolds} can be
 #' as large as the sample size (leave-one-out CV), it is not recommended for
 #' large datasets. Smallest value allowable is \code{nfolds=3}.
-#' @param foldid an optional vector of values between 1 and \code{nfolds}
-#' identifying what fold each observation is in. If supplied, \code{nfolds} can
+#' @param foldid An optional vector of values between 1 and \code{nfolds}
+#' identifying which fold each observation is in. If supplied, \code{nfolds} can
 #' be missing.
-#' @param \dots other arguments that can be passed to sparsegl.
-#' @return an object of class \code{\link{cv.sparsegl}} is returned, which is a
-#' list with the ingredients of the cross-validation fit.  \item{lambda}{the
-#' values of \code{lambda} used in the fits.} \item{cvm}{the mean
+#' @param \dots Other arguments that can be passed to sparsegl.
+#' @return An object of class \code{\link{cv.sparsegl}} is returned, which is a
+#' list with the ingredients of the cross-validation fit.  \item{lambda}{The
+#' values of \code{lambda} used in the fits.} \item{cvm}{The mean
 #' cross-validated error - a vector of length \code{length(lambda)}.}
-#' \item{cvsd}{estimate of standard error of \code{cvm}.} \item{cvupper}{upper
-#' curve = \code{cvm+cvsd}.} \item{cvlower}{lower curve = \code{cvm-cvsd}.}
-#' \item{name}{a text string indicating type of measure (for plotting
-#' purposes).} \item{sparsegl.fit}{a fitted \code{\link{sparsegl}} object for the
+#' \item{cvsd}{Estimate of standard error of \code{cvm}.} \item{cvupper}{Upper
+#' curve = \code{cvm+cvsd}.} \item{cvlower}{Lower curve = \code{cvm-cvsd}.}
+#' \item{name}{A text string indicating type of measure (for plotting
+#' purposes).} \item{sparsegl.fit}{A fitted \code{\link{sparsegl}} object for the
 #' full data.} \item{lambda.min}{The optimal value of \code{lambda} that gives
 #' minimum cross validation error \code{cvm}.} \item{lambda.1se}{The largest
 #' value of \code{lambda} such that error is within 1 standard error of the
 #' minimum.}
-#' @author Yi Yang and Hui Zou\cr Maintainer: Yi Yang <yi.yang6@@mcgill.ca>
 #' @seealso \code{\link{sparsegl}}, \code{\link{plot.cv.sparsegl}},
 #' \code{\link{predict.cv.sparsegl}}, and \code{\link{coef.cv.sparsegl}} methods.
 #' @export

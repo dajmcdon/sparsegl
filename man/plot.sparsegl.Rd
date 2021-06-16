@@ -13,22 +13,36 @@
 )
 }
 \arguments{
-\item{x}{fitted \code{\link{sparsegl}} model}
+\item{x}{Fitted \code{\link{sparsegl}} model.}
 
-\item{y_axis}{variable is on the y_axis. Either the coefficients (default)
+\item{y_axis}{Variable on the y_axis. Either the coefficients (default)
 or the group norm.}
 
-\item{x_axis}{variable on the x-axis. Either the (log)-lambda
+\item{x_axis}{Variable on the x-axis. Either the (log)-lambda
 sequence (default) or value of the penalty. The penalty is scaled by its
 maximum along the path.}
 
-\item{add_legend}{show the legend. Often, with many groups/predictors, this
+\item{add_legend}{Show the legend. Often, with many groups/predictors, this
 can become overwhelming.}
 
-\item{\dots}{other graphical parameters to plot}
+\item{\dots}{Other graphical parameters to plot.}
 }
 \description{
 Produces a coefficient profile plot of the coefficient paths for a fitted
 \code{\link{sparsegl}} object. The result is a \code{ggplot}. Additional user
 modifications can be added as desired.
+}
+\examples{
+n <- 100
+p <- 20
+X <- matrix(rnorm(n * p), nrow = n)
+eps <- rnorm(n)
+beta_star <- c(rep(5, 5), c(5, -5, 2, 0, 0), rep(-5, 5), rep(0, (p - 15)))
+y <- X \%*\% beta_star + eps
+groups <- rep(1:(p / 5), each = 5)
+fit1 <- sparsegl(X, y, group = groups)
+plot(fit1, y_axis = "coef", x_axis = "penalty")
+}
+\seealso{
+\code{\link{sparsegl}}.
 }

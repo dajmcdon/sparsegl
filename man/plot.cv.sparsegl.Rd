@@ -2,17 +2,17 @@
 % Please edit documentation in R/plot.cv.sparsegl.R
 \name{plot.cv.sparsegl}
 \alias{plot.cv.sparsegl}
-\title{Plot cross-validation curves produced from a \code{cv.sparsegl} object}
+\title{Plot cross-validation curves produced from a \code{cv.sparsegl} object.}
 \usage{
 \method{plot}{cv.sparsegl}(x, sign.lambda = 1, ...)
 }
 \arguments{
-\item{x}{fitted \code{\link{cv.sparsegl}} object}
+\item{x}{Fitted \code{\link{cv.sparsegl}} object}
 
-\item{sign.lambda}{either plot against \code{log(lambda)} (default) or its
+\item{sign.lambda}{Either plot against \code{log(lambda)} (default) or its
 negative if \code{sign.lambda=-1}.}
 
-\item{\dots}{other graphical parameters to plot}
+\item{\dots}{Other graphical parameters to plot}
 }
 \description{
 Plots the cross-validation curve, and upper and lower standard deviation
@@ -32,7 +32,7 @@ beta_star <- c(rep(5, 5), c(5, -5, 2, 0, 0), rep(-5, 5), rep(0, (p - 15)))
 y <- X \%*\% beta_star + eps
 groups <- rep(1:(p / 5), each = 5)
 cv_fit <- cv.sparsegl(X, y, groups)
-plot(cv_fit) + ggplot2::scale_y_log10()
+plot(cv_fit)
 }
 \seealso{
 \code{\link{cv.sparsegl}}.

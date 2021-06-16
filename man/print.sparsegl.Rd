@@ -7,12 +7,27 @@
 \method{print}{sparsegl}(x, digits = min(3, getOption("digits") - 3), ...)
 }
 \arguments{
-\item{x}{fitted \code{\link{sparsegl}} object}
+\item{x}{Fitted \code{\link{sparsegl}} object.}
 
-\item{digits}{significant digits in printout}
+\item{digits}{Significant digits in printout.}
 
-\item{\dots}{additional print arguments}
+\item{\dots}{Additional print arguments.}
 }
 \description{
 Prints a few summaries of the fitted model.
+}
+\examples{
+n <- 100
+p <- 20
+X <- matrix(rnorm(n * p), nrow = n)
+eps <- rnorm(n)
+beta_star <- c(rep(5, 5), c(5, -5, 2, 0, 0), rep(-5, 5), rep(0, (p - 15)))
+y <- X \%*\% beta_star + eps
+groups <- rep(1:(p / 5), each = 5)
+fit1 <- sparsegl(X, y, group = groups)
+print(fit1)
+}
+\seealso{
+\code{\link{sparsegl}}, \code{\link{coef.sparsegl}} and
+\code{\link{predict.sparsegl}} methods.
 }

@@ -4,17 +4,28 @@
 #' \code{\link{sparsegl}} object. The result is a `ggplot`. Additional user
 #' modifications can be added as desired.
 #'
-#' @param x fitted \code{\link{sparsegl}} model
-#' @param y_axis variable is on the y_axis. Either the coefficients (default)
+#' @param x Fitted \code{\link{sparsegl}} model.
+#' @param y_axis Variable on the y_axis. Either the coefficients (default)
 #'   or the group norm.
-#' @param x_axis variable on the x-axis. Either the (log)-lambda
+#' @param x_axis Variable on the x-axis. Either the (log)-lambda
 #'   sequence (default) or value of the penalty. The penalty is scaled by its
 #'   maximum along the path.
-#' @param add_legend show the legend. Often, with many groups/predictors, this
+#' @param add_legend Show the legend. Often, with many groups/predictors, this
 #'   can become overwhelming.
-#' @param \dots other graphical parameters to plot
+#' @param \dots Other graphical parameters to plot.
+#' @seealso \code{\link{sparsegl}}.
 #' @method plot sparsegl
 #' @export
+#' @examples
+#' n <- 100
+#' p <- 20
+#' X <- matrix(rnorm(n * p), nrow = n)
+#' eps <- rnorm(n)
+#' beta_star <- c(rep(5, 5), c(5, -5, 2, 0, 0), rep(-5, 5), rep(0, (p - 15)))
+#' y <- X %*% beta_star + eps
+#' groups <- rep(1:(p / 5), each = 5)
+#' fit1 <- sparsegl(X, y, group = groups)
+#' plot(fit1, y_axis = "coef", x_axis = "penalty")
 plot.sparsegl <- function(x,
                           y_axis = c("coef", "group"),
                           x_axis = c("lambda", "penalty"),

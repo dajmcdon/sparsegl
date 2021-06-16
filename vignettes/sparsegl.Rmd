@@ -31,7 +31,7 @@ zero-coefficient variables which might not be detected by some conservative crit
 * `X` can be a sparse input matrix passed as an argument in the main function 
 `sparsegl()`, and it does not have to be a regular matrix.
 
-* plots are made with functions package `ggplot2` instead of function plot() from `base`, 
+* Plots are made with functions package `ggplot2` instead of function plot() from `base`, 
 which provide better appearances and experience for visualization.
 
 * An extra function `risk-estimate()` evaluates the quality of fitted models in
@@ -77,7 +77,7 @@ where
 to the features in group $g$.
 
 * $\beta^{(g)}$ is the corresponding coefficients of
-the features.
+the features in group $g$.
 
 * `bs` is the length of $\beta^{(g)}$.
 
@@ -109,18 +109,21 @@ are:
 of the features. By default, each group only contains one feature if without
 initialization.
 
-* `pf`: a penalty vector of the length of the total number of groups bn, whose default 
-value is $\sqrt{\text{bs}}$ in $(*)$ above.
+* `pf`: a penalty vector of the length of the number of groups in total. Default value
+for each entry is the square-root of the corresponding size of each group, which is
+$\sqrt{\text{bs}}$ in $(*)$ above.
 
-* `asparse`: changes the weight of lasso penalty, referring to $\alpha$ in $(*)$ above: `asparse` = $1$
-gives the lasso penalty only. `asparse` = $0$ gives the group lasso penalty only. 
-The default value of `asparse` is $0.05$.
+* `asparse`: changes the weight of lasso penalty, referring to $\alpha$ in $(*)$ 
+above: `asparse` = $1$ gives the lasso penalty only. `asparse` = $0$ gives the 
+group lasso penalty only. The default value of `asparse` is $0.05$.
 
 * `lower_bnd`: lower bound for coefficient values, a vector in length of 1 
-or the number of groups including non-positive numbers only. Default is -$\infty$.
+or the number of groups including non-positive numbers only. Default value for each
+entry is -$\infty$.
 
 * `upper_bnd`: upper bound for coefficient values, a vector in length of 1 
-or the number of groups including non-negative numbers only. Default is $\infty$.
+or the number of groups including non-negative numbers only. Default value for each
+entry is $\infty$.
 
 It returns a `sparsegl` object, and the main attribute of this object is:
 

@@ -9,15 +9,27 @@
 #' are interpolated using a fraction of coefficients from both left and right
 #' \code{lambda} indices.
 #'
-#' @param object fitted \code{\link{sparsegl}} model object.
-#' @param s value(s) of the penalty parameter \code{lambda} at which
+#' @param object Fitted \code{\link{sparsegl}} model object.
+#' @param s Value(s) of the penalty parameter \code{lambda} at which
 #' predictions are required. Default is the entire sequence used to create the
 #' model.
-#' @param \dots not used.
+#' @param \dots Not used.
+#' @seealso \code{\link{sparsegl}}, \code{\link{predict.sparsegl}} and 
+#' \code{\link{print.sparsegl}} methods.
 #' @return The coefficients at the requested values for \code{lambda}.
-#'
-#' @export
+#' 
 #' @method coef sparsegl
+#' @export
+#' @examples
+#' n <- 100
+#' p <- 20
+#' X <- matrix(rnorm(n * p), nrow = n)
+#' eps <- rnorm(n)
+#' beta_star <- c(rep(5, 5), c(5, -5, 2, 0, 0), rep(-5, 5), rep(0, (p - 15)))
+#' y <- X %*% beta_star + eps
+#' groups <- rep(1:(p / 5), each = 5)
+#' fit1 <- sparsegl(X, y, group = groups)
+#' coef(fit1, s = c(0.02, 0.03))
 coef.sparsegl <- function(object, s = NULL, ...) {
   b0 <- as.matrix(object$b0)
   # if conflicts happens and throw an error here, remove t() outside as.matrix()
@@ -54,19 +66,30 @@ coef.sparsegl <- function(object, s = NULL, ...) {
 #' are interpolated using a fraction of predicted values from both left and
 #' right \code{lambda} indices.
 #'
-#' @param object fitted \code{\link{sparsegl}} model object.
-#' @param newx matrix of new values for \code{x} at which predictions are to be
+#' @param object Fitted \code{\link{sparsegl}} model object.
+#' @param newx Matrix of new values for \code{x} at which predictions are to be
 #' made. Must be a matrix.
-#' @param s value(s) of the penalty parameter \code{lambda} at which
+#' @param s Value(s) of the penalty parameter \code{lambda} at which
 #' predictions are required. Default is the entire sequence used to create the
 #' model.
 #'
 #' @param \dots Not used. Other arguments to predict.
 #' @return The object returned depends on type.
-#' @seealso \code{\link{coef}} method
+#' @seealso \code{\link{sparsegl}}, \code{\link{coef.sparsegl}} and 
+#' \code{\link{print.sparsegl}} methods.
 #'
 #' @method predict sparsegl
 #' @export
+#' @examples
+#' n <- 100
+#' p <- 20
+#' X <- matrix(rnorm(n * p), nrow = n)
+#' eps <- rnorm(n)
+#' beta_star <- c(rep(5, 5), c(5, -5, 2, 0, 0), rep(-5, 5), rep(0, (p - 15)))
+#' y <- X %*% beta_star + eps
+#' groups <- rep(1:(p / 5), each = 5)
+#' fit1 <- sparsegl(X, y, group = groups)
+#' predict(fit1, newx = X[10, ], s = fit1$lambda[3:5])
 predict.sparsegl <- function(object, newx, s = NULL, ...) {
   nbeta <- coef(object, s)
   if (is.null(dim(newx))) newx = matrix(newx, nrow = 1)
@@ -82,11 +105,23 @@ predict.sparsegl <- function(object, newx, s = NULL, ...) {
 #' Prints a few summaries of the fitted model.
 #'
 #'
-#' @param x fitted \code{\link{sparsegl}} object
-#' @param digits significant digits in printout
-#' @param \dots additional print arguments
+#' @param x Fitted \code{\link{sparsegl}} object.
+#' @param digits Significant digits in printout.
+#' @param \dots Additional print arguments.
+#' @seealso \code{\link{sparsegl}}, \code{\link{coef.sparsegl}} and 
+#' \code{\link{predict.sparsegl}} methods.
 #' @method print sparsegl
 #' @export
+#' @examples
+#' n <- 100
+#' p <- 20
+#' X <- matrix(rnorm(n * p), nrow = n)
+#' eps <- rnorm(n)
+#' beta_star <- c(rep(5, 5), c(5, -5, 2, 0, 0), rep(-5, 5), rep(0, (p - 15)))
+#' y <- X %*% beta_star + eps
+#' groups <- rep(1:(p / 5), each = 5)
+#' fit1 <- sparsegl(X, y, group = groups)
+#' print(fit1)
 print.sparsegl <- function(x, digits = min(3, getOption("digits") - 3), ...) {
   cat("\nCall: ", deparse(x$call), "\n\n")
   cat("Approx. degrees of freedom: ", round(min(x$df), digits),

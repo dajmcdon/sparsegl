@@ -42,5 +42,5 @@ plot(fit1, y_axis = "group", x_axis = "penalty")
 
 ## Documentation
 
-The package documentation and more examples are available online (a
-hyperlink later).
+The package documentation and more examples are [available
+online](a%20hyperlink%20later).

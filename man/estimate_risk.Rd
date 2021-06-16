@@ -10,11 +10,11 @@ estimate_risk(object, x, y, type = c("AIC", "BIC", "GCV"), approx_df = FALSE)
 \item{object}{fitted object from a call to \code{\link[=sparsegl]{sparsegl()}}}
 
 \item{x}{matrix of predictors, of dimension \eqn{n \times p}{n * p}; each row
-is a vector of measurement and each column is a feature}
+is a vector of measurement and each column is a feature.}
 
 \item{y}{real-valued response variable.}
 
-\item{type}{one of AIC, BIC, or GCV}
+\item{type}{one of AIC, BIC, or GCV.}
 
 \item{approx_df}{the \code{df} component of a \code{sparsegl} object is an approximation
 (albeit a fairly accurate one) to the actual degrees-of-freedom. However,
@@ -22,9 +22,28 @@ the exact value requires inverting a portion of \verb{X'X}. So this may take
 some time.}
 }
 \value{
-a vector of the same length as \code{object$lambda}
+a vector of the same length as \code{object$lambda}.
 }
 \description{
 This functions uses the degrees of freedom to calculate various information
 criteria. This function uses the "known variance" verison of the likelihood.
+}
+\examples{
+#' n <- 100
+p <- 20
+X <- matrix(rnorm(n * p), nrow = n)
+eps <- rnorm(n)
+beta_star <- c(rep(5, 5), c(5, -5, 2, 0, 0), rep(-5, 5), rep(0, (p - 15)))
+y <- X \%*\% beta_star + eps
+groups <- rep(1:(p / 5), each = 5)
+fit1 <- sparsegl(X, y, group = groups)
+estimate_risk(fit1, X, y, type = "AIC")
+}
+\references{
+Vaiter S, Deledalle C, Peyré G, Fadili J, Dossal C. (2012). \emph{The
+Degrees of Freedom of the Group Lasso for a General Design}.
+\url{https://arxiv.org/pdf/1212.6478.pdf}.
+}
+\seealso{
+\code{\link{sparsegl}} method.
 }

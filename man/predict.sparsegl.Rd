@@ -7,12 +7,12 @@
 \method{predict}{sparsegl}(object, newx, s = NULL, ...)
 }
 \arguments{
-\item{object}{fitted \code{\link{sparsegl}} model object.}
+\item{object}{Fitted \code{\link{sparsegl}} model object.}
 
-\item{newx}{matrix of new values for \code{x} at which predictions are to be
+\item{newx}{Matrix of new values for \code{x} at which predictions are to be
 made. Must be a matrix.}
 
-\item{s}{value(s) of the penalty parameter \code{lambda} at which
+\item{s}{Value(s) of the penalty parameter \code{lambda} at which
 predictions are required. Default is the entire sequence used to create the
 model.}
 
@@ -32,6 +32,18 @@ function will use linear interpolation to make predictions. The new values
 are interpolated using a fraction of predicted values from both left and
 right \code{lambda} indices.
 }
+\examples{
+n <- 100
+p <- 20
+X <- matrix(rnorm(n * p), nrow = n)
+eps <- rnorm(n)
+beta_star <- c(rep(5, 5), c(5, -5, 2, 0, 0), rep(-5, 5), rep(0, (p - 15)))
+y <- X \%*\% beta_star + eps
+groups <- rep(1:(p / 5), each = 5)
+fit1 <- sparsegl(X, y, group = groups)
+predict(fit1, newx = X[10, ], s = fit1$lambda[3:5])
+}
 \seealso{
-\code{\link{coef}} method
+\code{\link{sparsegl}}, \code{\link{coef.sparsegl}} and
+\code{\link{print.sparsegl}} methods.
 }
