@@ -24,7 +24,7 @@ sparsegl(
 )
 }
 \arguments{
-\item{x}{Matrix of predictors, of dimension \eqn{n \times p}{n*p}; each row
+\item{x}{Matrix of predictors, of dimension \eqn{n \times p}{n * p}; each row
 is a vector of measurements and each column is a feature}
 
 \item{y}{Real-valued response variable.}
@@ -40,7 +40,7 @@ coefficients (see example below).}
 \code{lambda} for which all coefficients are zero. The default depends on
 the relationship between \eqn{n} (the number of rows in the matrix of
 predictors) and \eqn{p} (the number of predictors). If \eqn{n \geq p}, the
-default is \code{0.001}, close to zero.  If \eqn{n<p}, the default is
+default is \code{0.001}, close to zero.  If \eqn{n < p}, the default is
 \code{0.05}.  A very small value of \code{lambda.factor} will lead to a
 saturated fit. It takes no effect if there is user-defined \code{lambda}
 sequence.}
@@ -83,7 +83,7 @@ very large \code{bs} (group size), if a partial path is desired. Default is
 \item{pmax}{Limit the maximum number of groups ever to be nonzero. For
 example once a group enters the model, no matter how many times it exits or
 re-enters model through the path, it will be counted only once. Default is
-\code{min(dfmax*1.2,bs)}.}
+\code{min(dfmax * 1.2,bs)}.}
 
 \item{eps}{Convergence termination tolerance. Defaults value is \code{1e-8}.}
 
@@ -94,7 +94,7 @@ value. Default is 3e8. If models do not converge, consider increasing
 \value{
 An object with S3 class \code{\link{sparsegl}}.  \item{call}{The call
 that produced this object.} \item{b0}{Intercept sequence of length
-\code{length(lambda)}.} \item{beta}{A \eqn{p\times \text{length}(\lambda)} matrix of
+\code{length(lambda)}.} \item{beta}{A \eqn{p\times \text{length}(lambda)} matrix of
 coefficients.} \item{df}{The number of nonzero features with nonzero coefficients
 for each value of \code{lambda}.} \item{dim}{Dimension of coefficient matrix (ices).}
 \item{lambda}{The actual sequence of \code{lambda} values used.}
@@ -105,7 +105,7 @@ grouping of the coefficients.}
 }
 \description{
 Fits regularization paths for sparse group-lasso penalized learning problems at a
-sequence of regularization parameters lambda.
+sequence of regularization parameters \code{lambda}.
 }
 \details{
 Note that the objective function for \code{"ls"} least squares is

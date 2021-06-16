@@ -14,7 +14,7 @@
 \item{\dots}{Additional print arguments.}
 }
 \description{
-Prints a few summaries of the fitted model.
+Prints a few summaries of the fitted \code{\link{sparsegl}} model object.
 }
 \examples{
 n <- 100

@@ -31,15 +31,15 @@ coefficients (see example below).}
 
 \item{pred.loss}{Loss to use for cross-validation error. Valid options are:
 \itemize{ \item \code{"L1"} for regression, mean square
-error used by least squares regression \code{loss="ls"}, it measure the
+error used by least squares regression \code{loss = "ls"}, it measure the
 deviation from the fitted mean to the response.  \item \code{"L2"} for
 regression, mean absolute error used by least squares regression
-\code{loss="ls"}, it measure the deviation from the fitted mean to the
+\code{loss = "ls"}, it measure the deviation from the fitted mean to the
 response.  }Default is \code{"L2"}.}
 
 \item{nfolds}{Number of folds - default is 5. Although \code{nfolds} can be
 as large as the sample size (leave-one-out CV), it is not recommended for
-large datasets. Smallest value allowable is \code{nfolds=3}.}
+large datasets. Smallest value allowable is \code{nfolds = 3}.}
 
 \item{foldid}{An optional vector of values between 1 and \code{nfolds}
 identifying which fold each observation is in. If supplied, \code{nfolds} can
@@ -53,7 +53,7 @@ list with the ingredients of the cross-validation fit.  \item{lambda}{The
 values of \code{lambda} used in the fits.} \item{cvm}{The mean
 cross-validated error - a vector of length \code{length(lambda)}.}
 \item{cvsd}{Estimate of standard error of \code{cvm}.} \item{cvupper}{Upper
-curve = \code{cvm+cvsd}.} \item{cvlower}{Lower curve = \code{cvm-cvsd}.}
+curve = \code{cvm + cvsd}.} \item{cvlower}{Lower curve = \code{cvm - cvsd}.}
 \item{name}{A text string indicating type of measure (for plotting
 purposes).} \item{sparsegl.fit}{A fitted \code{\link{sparsegl}} object for the
 full data.} \item{lambda.min}{The optimal value of \code{lambda} that gives
@@ -62,7 +62,7 @@ value of \code{lambda} such that error is within 1 standard error of the
 minimum.}
 }
 \description{
-Does k-fold cross-validation for \code{sparsegl}.
+Does k-fold cross-validation for a fitted \code{\link{sparsegl}} object.
 This function is modified based on the \code{cv}
 function from the \code{\link{glmnet-package}} package.
 }

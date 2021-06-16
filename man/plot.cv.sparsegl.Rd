@@ -10,14 +10,14 @@
 \item{x}{Fitted \code{\link{cv.sparsegl}} object}
 
 \item{sign.lambda}{Either plot against \code{log(lambda)} (default) or its
-negative if \code{sign.lambda=-1}.}
+negative if \code{sign.lambda = -1}.}
 
 \item{\dots}{Other graphical parameters to plot}
 }
 \description{
 Plots the cross-validation curve, and upper and lower standard deviation
 curves, as a function of the \code{lambda} values used. This function is
-modified based on the \code{plot.cv} function from the \code{glmnet}
+modified based on the \code{plot.cv} function from the \code{\link{glmnet-package}}
 package.
 }
 \details{

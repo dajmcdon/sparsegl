@@ -10,10 +10,10 @@
 \item{object}{Fitted \code{\link{cv.sparsegl}} object.}
 
 \item{s}{Value(s) of the penalty parameter \code{lambda} at which
-predictions are required. Default is the value \code{s="lambda.1se"} stored
+predictions are required. Default is the value \code{s = "lambda.1se"} stored
 on the CV \code{object}, it is the largest value of \code{lambda} such that
 error is within 1 standard error of the minimum. Alternatively
-\code{s="lambda.min"} can be used, it is the optimal value of \code{lambda}
+\code{s = "lambda.min"} can be used, it is the optimal value of \code{lambda}
 that gives minimum cross validation error \code{cvm}. If \code{s} is
 numeric, it is taken as the value(s) of \code{lambda} to be used.}
 
@@ -24,7 +24,7 @@ The coefficients at the requested values for \code{lambda}.
 }
 \description{
 This function gets coefficients or makes coefficient predictions from a
-cross-validated \code{sparsegl} model, using the stored \code{"sparsegl.fit"}
+cross-validated \code{\link{sparsegl}} model, using the stored \code{"sparsegl.fit"}
 object, and the optimal value chosen for \code{lambda}.
 }
 \details{

@@ -23,7 +23,7 @@ The object returned depends on type.
 }
 \description{
 Similar to other predict methods, this functions predicts fitted values and
-class labels from a fitted \code{\link[=sparsegl]{sparsegl()}} object.
+class labels from a fitted \code{\link{sparsegl}} object.
 }
 \details{
 \code{s} is the new vector at which predictions are requested. If \code{s}

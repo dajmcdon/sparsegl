@@ -10,11 +10,11 @@
 \item{object}{Fitted \code{\link{cv.sparsegl}} object.}
 
 \item{newx}{Matrix of new values for \code{x} at which predictions are to be
-made. Must be a matrix. See documentation for \code{predict.sparsegl}.}
+made. Must be a matrix. See documentation for \code{\link{predict.sparsegl}}.}
 
 \item{s}{Value(s) of the penalty parameter \code{lambda} at which
-predictions are required. Default is the value \code{s="lambda.1se"} stored
-on the CV object. Alternatively \code{s="lambda.min"} can be used. If
+predictions are required. Default is the value \code{s = "lambda.1se"} stored
+on the CV object. Alternatively \code{s = "lambda.min"} can be used. If
 \code{s} is numeric, it is taken as the value(s) of \code{lambda} to be
 used.}
 
@@ -25,7 +25,7 @@ The returned object depends on the \dots{} argument which is passed
 on to the \code{\link{predict}} method for \code{\link{sparsegl}} objects.
 }
 \description{
-This function makes predictions from a cross-validated \code{sparsegl} model,
+This function makes predictions from a cross-validated \code{\link{sparsegl}} model,
 using the stored \code{"sparsegl.fit"} object, and the value chosen
 for \code{lambda}.
 }

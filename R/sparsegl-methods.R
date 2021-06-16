@@ -1,7 +1,7 @@
 #' Extract model coefficients from a `sparsegl` object.
 #'
 #' Computes the coefficients at the requested value(s) for `lambda` from a
-#' `sparsegl` object.
+#' \code{\link{sparsegl}} object.
 #'
 #' `s` is the new vector at which predictions are requested. If \code{s}
 #' is not in the lambda sequence used for fitting the model, the \code{coef}
@@ -58,7 +58,7 @@ coef.sparsegl <- function(object, s = NULL, ...) {
 #' Make predictions from a `sparsegl` object.
 #'
 #' Similar to other predict methods, this functions predicts fitted values and
-#' class labels from a fitted [`sparsegl()`] object.
+#' class labels from a fitted [`sparsegl`] object.
 #'
 #' `s` is the new vector at which predictions are requested. If \code{s}
 #' is not in the lambda sequence used for fitting the model, the \code{predict}
@@ -102,7 +102,7 @@ predict.sparsegl <- function(object, newx, s = NULL, ...) {
 
 #' Print a `sparsegl` object
 #'
-#' Prints a few summaries of the fitted model.
+#' Prints a few summaries of the fitted \code{\link{sparsegl}} model object.
 #'
 #'
 #' @param x Fitted \code{\link{sparsegl}} object.

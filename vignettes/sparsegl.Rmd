@@ -28,13 +28,13 @@ packages are as follows:
 zero-coefficient variables which might not be detected by some conservative criteria
 ("Safe rule").
 
-* `X` can be a sparse input matrix passed as an argument in the main function 
-`sparsegl()`, and it does not have to be a regular matrix.
+* `X` can be a sparse input matrix passed as an argument in `sparsegl()`, and it
+does not have to be a regular matrix.
 
-* Plots are made with functions package `ggplot2` instead of function plot() from `base`, 
+* Plots are made with functions package `ggplot2` instead of function `plot` from `base`, 
 which provide better appearances and experience for visualization.
 
-* An extra function `risk-estimate()` evaluates the quality of fitted models in
+* An extra function `estimate_risk()` evaluates the quality of fitted models in
 terms of different information criteria and provides a means for model selection.
 It is also an alternative for model selection if cross-validation is too costly.
 
@@ -129,7 +129,7 @@ It returns a `sparsegl` object, and the main attribute of this object is:
 
 * `df`: the number of nonzero coefficients for each lambda value. This only represents
 an approximation to the exact degree-of-freedom. Detailed explanation can be checked 
-under function `risk_estimate()` below.
+under function `estimate_risk()` below.
 
 ```{r}
 fit1 <- sparsegl(X, y, group = groups)
@@ -176,9 +176,9 @@ plot(fit1, y_axis = "coef", x_axis = "penalty", add_legend = FALSE)
 ```
 
 
-### `coef()`, `predict()` and `print()` for `sparsegl` object
+### `coef()`, `predict()` and `print()` `sparsegl` object
 
-All three functions consume a  fitted`sparsegl` object as an arguments and
+All three functions consume a  fitted `sparsegl` object as an arguments and
 
 * `coef()` and `predict()` return a matrix of coefficients and predictions $\hat{y}$
 given a matrix `X` at each lambda respectively, unless an optional argument `s` is assigned
@@ -216,8 +216,6 @@ and the attached gray vertical error bars indicate the uncertainty of `cvm`.
 ```{r, message = FALSE, warning = FALSE, fig.width = 8, fig.height = 4}
 plot(fit_l1)
 ```
-
-
 
 * `coef()` and `predict()` for `cv.sparsegl` object work similarly to those 
 introduced above. The only differences are that the argument 

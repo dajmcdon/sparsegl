@@ -3,15 +3,15 @@
 #' This functions uses the degrees of freedom to calculate various information
 #' criteria. This function uses the "known variance" verison of the likelihood.
 #'
-#' @param object fitted object from a call to [`sparsegl()`]
+#' @param object fitted object from a call to [`sparsegl`].
 #' @param x matrix of predictors, of dimension \eqn{n \times p}{n * p}; each row
 #'   is a vector of measurement and each column is a feature.
 #' @param y real-valued response variable.
 #' @param type one of AIC, BIC, or GCV.
-#' @param approx_df the `df` component of a `sparsegl` object is an approximation
-#'   (albeit a fairly accurate one) to the actual degrees-of-freedom. However,
-#'   the exact value requires inverting a portion of `X'X`. So this may take
-#'   some time.
+#' @param approx_df the `df` component of a \code{\link{sparsegl}} object is an 
+#' approximation (albeit a fairly accurate one) to the actual degrees-of-freedom.
+#' However, the exact value requires inverting a portion of `X'X`. So this may take
+#' some time.
 #' @seealso \code{\link{sparsegl}} method.
 #' @references Vaiter S, Deledalle C, Peyré G, Fadili J, Dossal C. (2012). \emph{The
 #' Degrees of Freedom of the Group Lasso for a General Design}. 
@@ -19,7 +19,7 @@
 #' @return a vector of the same length as `object$lambda`.
 #' @export
 #' @examples 
-#' #' n <- 100
+#' n <- 100
 #' p <- 20
 #' X <- matrix(rnorm(n * p), nrow = n)
 #' eps <- rnorm(n)

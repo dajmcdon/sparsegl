@@ -7,7 +7,7 @@
 estimate_risk(object, x, y, type = c("AIC", "BIC", "GCV"), approx_df = FALSE)
 }
 \arguments{
-\item{object}{fitted object from a call to \code{\link[=sparsegl]{sparsegl()}}}
+\item{object}{fitted object from a call to \code{\link{sparsegl}}.}
 
 \item{x}{matrix of predictors, of dimension \eqn{n \times p}{n * p}; each row
 is a vector of measurement and each column is a feature.}
@@ -16,9 +16,9 @@ is a vector of measurement and each column is a feature.}
 
 \item{type}{one of AIC, BIC, or GCV.}
 
-\item{approx_df}{the \code{df} component of a \code{sparsegl} object is an approximation
-(albeit a fairly accurate one) to the actual degrees-of-freedom. However,
-the exact value requires inverting a portion of \verb{X'X}. So this may take
+\item{approx_df}{the \code{df} component of a \code{\link{sparsegl}} object is an
+approximation (albeit a fairly accurate one) to the actual degrees-of-freedom.
+However, the exact value requires inverting a portion of \verb{X'X}. So this may take
 some time.}
 }
 \value{
@@ -29,7 +29,7 @@ This functions uses the degrees of freedom to calculate various information
 criteria. This function uses the "known variance" verison of the likelihood.
 }
 \examples{
-#' n <- 100
+n <- 100
 p <- 20
 X <- matrix(rnorm(n * p), nrow = n)
 eps <- rnorm(n)
