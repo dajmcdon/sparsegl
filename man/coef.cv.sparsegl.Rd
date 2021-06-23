@@ -7,7 +7,7 @@
 \method{coef}{cv.sparsegl}(object, s = c("lambda.1se", "lambda.min"), ...)
 }
 \arguments{
-\item{object}{Fitted \code{\link{cv.sparsegl}} object.}
+\item{object}{Fitted \code{\link[=cv.sparsegl]{cv.sparsegl()}} object.}
 
 \item{s}{Value(s) of the penalty parameter \code{lambda} at which
 predictions are required. Default is the value \code{s = "lambda.1se"} stored
@@ -24,7 +24,7 @@ The coefficients at the requested values for \code{lambda}.
 }
 \description{
 This function gets coefficients or makes coefficient predictions from a
-cross-validated \code{\link{sparsegl}} model, using the stored \code{"sparsegl.fit"}
+cross-validated \code{\link[=sparsegl]{sparsegl()}} model, using the stored \code{"sparsegl.fit"}
 object, and the optimal value chosen for \code{lambda}.
 }
 \details{
@@ -44,6 +44,6 @@ cv_fit <- cv.sparsegl(X, y, groups)
 coef(cv_fit, s = c(0.02, 0.03))
 }
 \seealso{
-\code{\link{cv.sparsegl}}, and \code{\link{predict.cv.sparsegl}}
+\code{\link[=cv.sparsegl]{cv.sparsegl()}}, and \code{\link[=predict.cv.sparsegl]{predict.cv.sparsegl()}}
 methods.
 }

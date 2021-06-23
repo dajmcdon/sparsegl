@@ -9,13 +9,10 @@ reference:
   desc: >
     Plot and predict for sparsegl or cv.sparsegl objects.
 - contents:
-    - plot.sparsegl
-    - coef.sparsegl
-    - predict.sparsegl
-    - print.sparsegl
-    - plot.cv.sparsegl
-    - coef.cv.sparsegl
-    - predict.cv.sparsegl
+    - starts_with("plot")
+    - starts_with("coef")
+    - starts_with("predict")
+    - starts_with("print")
 - title: "Risk estimation"
   desc: >
     Calculate information criteria for model evaluation and model selection.

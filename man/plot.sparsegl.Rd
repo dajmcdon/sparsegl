@@ -2,7 +2,7 @@
 % Please edit documentation in R/plot.sparsegl.R
 \name{plot.sparsegl}
 \alias{plot.sparsegl}
-\title{Plot solution paths from a \code{sparsegl} object}
+\title{Plot solution paths from a \code{sparsegl} object.}
 \usage{
 \method{plot}{sparsegl}(
   x,
@@ -13,7 +13,7 @@
 )
 }
 \arguments{
-\item{x}{Fitted \code{\link{sparsegl}} model.}
+\item{x}{Fitted \code{\link[=sparsegl]{sparsegl()}} model.}
 
 \item{y_axis}{Variable on the y_axis. Either the coefficients (default)
 or the group norm.}
@@ -25,11 +25,11 @@ maximum along the path.}
 \item{add_legend}{Show the legend. Often, with many groups/predictors, this
 can become overwhelming.}
 
-\item{\dots}{Other graphical parameters to plot.}
+\item{\dots}{Not used.}
 }
 \description{
 Produces a coefficient profile plot of the coefficient paths for a fitted
-\code{\link{sparsegl}} object. The result is a \code{ggplot}. Additional user
+\code{\link[=sparsegl]{sparsegl()}} object. The result is a \code{ggplot}. Additional user
 modifications can be added as desired.
 }
 \examples{
@@ -44,5 +44,5 @@ fit1 <- sparsegl(X, y, group = groups)
 plot(fit1, y_axis = "coef", x_axis = "penalty")
 }
 \seealso{
-\code{\link{sparsegl}}.
+\code{\link[=sparsegl]{sparsegl()}}.
 }

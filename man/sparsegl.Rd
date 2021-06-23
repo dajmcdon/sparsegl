@@ -92,7 +92,7 @@ value. Default is 3e8. If models do not converge, consider increasing
 \code{maxit}.}
 }
 \value{
-An object with S3 class \code{\link{sparsegl}}.  \item{call}{The call
+An object with S3 class \code{\link[=sparsegl]{sparsegl()}}.  \item{call}{The call
 that produced this object.} \item{b0}{Intercept sequence of length
 \code{length(lambda)}.} \item{beta}{A \eqn{p\times \text{length}(lambda)} matrix of
 coefficients.} \item{df}{The number of nonzero features with nonzero coefficients

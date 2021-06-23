@@ -1,10 +1,10 @@
-#' Plot solution paths from a `sparsegl` object
+#' Plot solution paths from a `sparsegl` object.
 #'
 #' Produces a coefficient profile plot of the coefficient paths for a fitted
-#' \code{\link{sparsegl}} object. The result is a `ggplot`. Additional user
+#' [sparsegl()] object. The result is a `ggplot`. Additional user
 #' modifications can be added as desired.
 #'
-#' @param x Fitted \code{\link{sparsegl}} model.
+#' @param x Fitted [sparsegl()] model.
 #' @param y_axis Variable on the y_axis. Either the coefficients (default)
 #'   or the group norm.
 #' @param x_axis Variable on the x-axis. Either the (log)-lambda
@@ -12,8 +12,8 @@
 #'   maximum along the path.
 #' @param add_legend Show the legend. Often, with many groups/predictors, this
 #'   can become overwhelming.
-#' @param \dots Other graphical parameters to plot.
-#' @seealso \code{\link{sparsegl}}.
+#' @param \dots Not used.
+#' @seealso [sparsegl()].
 #' @method plot sparsegl
 #' @export
 #' @examples

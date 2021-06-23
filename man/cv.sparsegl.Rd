@@ -27,7 +27,7 @@ regression (least squares).}
 coefficients (see example below).}
 
 \item{lambda}{An optional user-supplied lambda sequence; default is
-\code{NULL}, and \code{\link{sparsegl}} chooses its own sequence.}
+\code{NULL}, and \code{\link[=sparsegl]{sparsegl()}} chooses its own sequence.}
 
 \item{pred.loss}{Loss to use for cross-validation error. Valid options are:
 \itemize{ \item \code{"L1"} for regression, mean square
@@ -48,26 +48,26 @@ be missing.}
 \item{\dots}{Other arguments that can be passed to sparsegl.}
 }
 \value{
-An object of class \code{\link{cv.sparsegl}} is returned, which is a
+An object of class \code{\link[=cv.sparsegl]{cv.sparsegl()}} is returned, which is a
 list with the ingredients of the cross-validation fit.  \item{lambda}{The
 values of \code{lambda} used in the fits.} \item{cvm}{The mean
 cross-validated error - a vector of length \code{length(lambda)}.}
 \item{cvsd}{Estimate of standard error of \code{cvm}.} \item{cvupper}{Upper
 curve = \code{cvm + cvsd}.} \item{cvlower}{Lower curve = \code{cvm - cvsd}.}
 \item{name}{A text string indicating type of measure (for plotting
-purposes).} \item{sparsegl.fit}{A fitted \code{\link{sparsegl}} object for the
+purposes).} \item{sparsegl.fit}{A fitted \code{\link[=sparsegl]{sparsegl()}} object for the
 full data.} \item{lambda.min}{The optimal value of \code{lambda} that gives
 minimum cross validation error \code{cvm}.} \item{lambda.1se}{The largest
 value of \code{lambda} such that error is within 1 standard error of the
 minimum.}
 }
 \description{
-Does k-fold cross-validation for a fitted \code{\link{sparsegl}} object.
+Does k-fold cross-validation for a fitted \code{\link[=sparsegl]{sparsegl()}} object.
 This function is modified based on the \code{cv}
-function from the \code{\link{glmnet-package}} package.
+function from the \code{\link[glmnet:cv.glmnet]{glmnet::cv.glmnet()}} package.
 }
 \details{
-The function runs \code{\link{sparsegl}} \code{nfolds}+1 times; the first to
+The function runs \code{\link[=sparsegl]{sparsegl()}} \code{nfolds}+1 times; the first to
 get the \code{lambda} sequence, and then the remainder to compute the fit
 with each of the folds omitted. The average error and standard deviation
 over the folds are computed.
@@ -84,6 +84,6 @@ fit1 <- sparsegl(X, y, group = groups)
 cv_fit <- cv.sparsegl(X, y, groups)
 }
 \seealso{
-\code{\link{sparsegl}}, \code{\link{plot.cv.sparsegl}},
-\code{\link{predict.cv.sparsegl}}, and \code{\link{coef.cv.sparsegl}} methods.
+\code{\link[=sparsegl]{sparsegl()}}, \code{\link[=plot.cv.sparsegl]{plot.cv.sparsegl()}},
+\code{\link[=predict.cv.sparsegl]{predict.cv.sparsegl()}}, and \code{\link[=coef.cv.sparsegl]{coef.cv.sparsegl()}} methods.
 }

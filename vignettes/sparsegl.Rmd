@@ -25,8 +25,7 @@ packages are as follows:
 * Fortran significantly speeds up the sparse group-lasso model building process.
 
 * "Strong rule" is implemented during coordinate descent step, screening out
-zero-coefficient variables which might not be detected by some conservative criteria
-("Safe rule").
+zero-coefficient variables which might not be detected by some conservative criteria.
 
 * `X` can be a sparse input matrix passed as an argument in `sparsegl()`, and it
 does not have to be a regular matrix.

@@ -2,12 +2,12 @@
 % Please edit documentation in R/risk-estimation.R
 \name{estimate_risk}
 \alias{estimate_risk}
-\title{Calculate information criteria}
+\title{Calculate information criteria.}
 \usage{
 estimate_risk(object, x, y, type = c("AIC", "BIC", "GCV"), approx_df = FALSE)
 }
 \arguments{
-\item{object}{fitted object from a call to \code{\link{sparsegl}}.}
+\item{object}{fitted object from a call to \code{\link[=sparsegl]{sparsegl()}}.}
 
 \item{x}{matrix of predictors, of dimension \eqn{n \times p}{n * p}; each row
 is a vector of measurement and each column is a feature.}
@@ -16,7 +16,7 @@ is a vector of measurement and each column is a feature.}
 
 \item{type}{one of AIC, BIC, or GCV.}
 
-\item{approx_df}{the \code{df} component of a \code{\link{sparsegl}} object is an
+\item{approx_df}{the \code{df} component of a \code{\link[=sparsegl]{sparsegl()}} object is an
 approximation (albeit a fairly accurate one) to the actual degrees-of-freedom.
 However, the exact value requires inverting a portion of \verb{X'X}. So this may take
 some time.}
@@ -45,5 +45,5 @@ Degrees of Freedom of the Group Lasso for a General Design}.
 \url{https://arxiv.org/pdf/1212.6478.pdf}.
 }
 \seealso{
-\code{\link{sparsegl}} method.
+\code{\link[=sparsegl]{sparsegl()}} method.
 }

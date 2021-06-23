@@ -7,7 +7,7 @@
 \method{coef}{sparsegl}(object, s = NULL, ...)
 }
 \arguments{
-\item{object}{Fitted \code{\link{sparsegl}} model object.}
+\item{object}{Fitted \code{\link[=sparsegl]{sparsegl()}} model object.}
 
 \item{s}{Value(s) of the penalty parameter \code{lambda} at which
 predictions are required. Default is the entire sequence used to create the
@@ -20,7 +20,7 @@ The coefficients at the requested values for \code{lambda}.
 }
 \description{
 Computes the coefficients at the requested value(s) for \code{lambda} from a
-\code{\link{sparsegl}} object.
+\code{\link[=sparsegl]{sparsegl()}} object.
 }
 \details{
 \code{s} is the new vector at which predictions are requested. If \code{s}
@@ -41,6 +41,6 @@ fit1 <- sparsegl(X, y, group = groups)
 coef(fit1, s = c(0.02, 0.03))
 }
 \seealso{
-\code{\link{sparsegl}}, \code{\link{predict.sparsegl}} and
-\code{\link{print.sparsegl}} methods.
+\code{\link[=sparsegl]{sparsegl()}}, \code{\link[=predict.sparsegl]{predict.sparsegl()}} and
+\code{\link[=print.sparsegl]{print.sparsegl()}} methods.
 }

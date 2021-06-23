@@ -7,7 +7,7 @@
 \method{predict}{sparsegl}(object, newx, s = NULL, ...)
 }
 \arguments{
-\item{object}{Fitted \code{\link{sparsegl}} model object.}
+\item{object}{Fitted \code{\link[=sparsegl]{sparsegl()}} model object.}
 
 \item{newx}{Matrix of new values for \code{x} at which predictions are to be
 made. Must be a matrix.}
@@ -44,6 +44,6 @@ fit1 <- sparsegl(X, y, group = groups)
 predict(fit1, newx = X[10, ], s = fit1$lambda[3:5])
 }
 \seealso{
-\code{\link{sparsegl}}, \code{\link{coef.sparsegl}} and
-\code{\link{print.sparsegl}} methods.
+\code{\link[=sparsegl]{sparsegl()}}, \code{\link[=coef.sparsegl]{coef.sparsegl()}} and
+\code{\link[=print.sparsegl]{print.sparsegl()}} methods.
 }

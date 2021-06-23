@@ -62,7 +62,7 @@
 #' @param upper_bnd Upper bound for coefficient values, a vector in length of 1
 #' or the number of groups including non-negative numbers only. Default value for
 #' each entry is \code{Inf}.
-#' @return An object with S3 class \code{\link{sparsegl}}.  \item{call}{The call
+#' @return An object with S3 class [sparsegl()].  \item{call}{The call
 #' that produced this object.} \item{b0}{Intercept sequence of length
 #' \code{length(lambda)}.} \item{beta}{A \eqn{p\times \text{length}(lambda)} matrix of
 #' coefficients.} \item{df}{The number of nonzero features with nonzero coefficients

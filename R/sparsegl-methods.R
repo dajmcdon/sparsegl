@@ -1,7 +1,7 @@
 #' Extract model coefficients from a `sparsegl` object.
 #'
 #' Computes the coefficients at the requested value(s) for `lambda` from a
-#' \code{\link{sparsegl}} object.
+#'[sparsegl()] object.
 #'
 #' `s` is the new vector at which predictions are requested. If \code{s}
 #' is not in the lambda sequence used for fitting the model, the \code{coef}
@@ -9,13 +9,13 @@
 #' are interpolated using a fraction of coefficients from both left and right
 #' \code{lambda} indices.
 #'
-#' @param object Fitted \code{\link{sparsegl}} model object.
+#' @param object Fitted [sparsegl()] model object.
 #' @param s Value(s) of the penalty parameter \code{lambda} at which
 #' predictions are required. Default is the entire sequence used to create the
 #' model.
 #' @param \dots Not used.
-#' @seealso \code{\link{sparsegl}}, \code{\link{predict.sparsegl}} and 
-#' \code{\link{print.sparsegl}} methods.
+#' @seealso [sparsegl()], [predict.sparsegl()] and 
+#' [print.sparsegl()] methods.
 #' @return The coefficients at the requested values for \code{lambda}.
 #' 
 #' @method coef sparsegl
@@ -66,7 +66,7 @@ coef.sparsegl <- function(object, s = NULL, ...) {
 #' are interpolated using a fraction of predicted values from both left and
 #' right \code{lambda} indices.
 #'
-#' @param object Fitted \code{\link{sparsegl}} model object.
+#' @param object Fitted [sparsegl()] model object.
 #' @param newx Matrix of new values for \code{x} at which predictions are to be
 #' made. Must be a matrix.
 #' @param s Value(s) of the penalty parameter \code{lambda} at which
@@ -75,8 +75,8 @@ coef.sparsegl <- function(object, s = NULL, ...) {
 #'
 #' @param \dots Not used. Other arguments to predict.
 #' @return The object returned depends on type.
-#' @seealso \code{\link{sparsegl}}, \code{\link{coef.sparsegl}} and 
-#' \code{\link{print.sparsegl}} methods.
+#' @seealso [sparsegl()], [coef.sparsegl()] and 
+#' [print.sparsegl()] methods.
 #'
 #' @method predict sparsegl
 #' @export
@@ -100,16 +100,16 @@ predict.sparsegl <- function(object, newx, s = NULL, ...) {
 
 
 
-#' Print a `sparsegl` object
+#' Print a `sparsegl` object.
 #'
-#' Prints a few summaries of the fitted \code{\link{sparsegl}} model object.
+#' Prints a few summaries of the fitted [sparsegl()] model object.
 #'
 #'
-#' @param x Fitted \code{\link{sparsegl}} object.
+#' @param x Fitted [sparsegl()] object.
 #' @param digits Significant digits in printout.
 #' @param \dots Additional print arguments.
-#' @seealso \code{\link{sparsegl}}, \code{\link{coef.sparsegl}} and 
-#' \code{\link{predict.sparsegl}} methods.
+#' @seealso [sparsegl()], [coef.sparsegl()] and 
+#' [predict.sparsegl()] methods.
 #' @method print sparsegl
 #' @export
 #' @examples

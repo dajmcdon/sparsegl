@@ -1,10 +1,10 @@
 #' Cross-validation for a `sparsegl` object.
 #'
-#' Does k-fold cross-validation for a fitted \code{\link{sparsegl}} object.
+#' Does k-fold cross-validation for a fitted [sparsegl()] object.
 #' This function is modified based on the \code{cv}
-#' function from the [`glmnet-package`] package.
+#' function from the [glmnet::cv.glmnet()] package.
 #'
-#' The function runs \code{\link{sparsegl}} \code{nfolds}+1 times; the first to
+#' The function runs [sparsegl()] \code{nfolds}+1 times; the first to
 #' get the \code{lambda} sequence, and then the remainder to compute the fit
 #' with each of the folds omitted. The average error and standard deviation
 #' over the folds are computed.
@@ -17,7 +17,7 @@
 #' @param group A vector of consecutive integers describing the grouping of the
 #' coefficients (see example below).
 #' @param lambda An optional user-supplied lambda sequence; default is
-#' \code{NULL}, and \code{\link{sparsegl}} chooses its own sequence.
+#' \code{NULL}, and [sparsegl()] chooses its own sequence.
 #' @param pred.loss Loss to use for cross-validation error. Valid options are:
 #' \itemize{ \item \code{"L1"} for regression, mean square
 #' error used by least squares regression \code{loss = "ls"}, it measure the
@@ -32,20 +32,20 @@
 #' identifying which fold each observation is in. If supplied, \code{nfolds} can
 #' be missing.
 #' @param \dots Other arguments that can be passed to sparsegl.
-#' @return An object of class \code{\link{cv.sparsegl}} is returned, which is a
+#' @return An object of class [cv.sparsegl()] is returned, which is a
 #' list with the ingredients of the cross-validation fit.  \item{lambda}{The
 #' values of \code{lambda} used in the fits.} \item{cvm}{The mean
 #' cross-validated error - a vector of length \code{length(lambda)}.}
 #' \item{cvsd}{Estimate of standard error of \code{cvm}.} \item{cvupper}{Upper
 #' curve = \code{cvm + cvsd}.} \item{cvlower}{Lower curve = \code{cvm - cvsd}.}
 #' \item{name}{A text string indicating type of measure (for plotting
-#' purposes).} \item{sparsegl.fit}{A fitted \code{\link{sparsegl}} object for the
+#' purposes).} \item{sparsegl.fit}{A fitted [sparsegl()] object for the
 #' full data.} \item{lambda.min}{The optimal value of \code{lambda} that gives
 #' minimum cross validation error \code{cvm}.} \item{lambda.1se}{The largest
 #' value of \code{lambda} such that error is within 1 standard error of the
 #' minimum.}
-#' @seealso \code{\link{sparsegl}}, \code{\link{plot.cv.sparsegl}},
-#' \code{\link{predict.cv.sparsegl}}, and \code{\link{coef.cv.sparsegl}} methods.
+#' @seealso [sparsegl()], [plot.cv.sparsegl()],
+#' [predict.cv.sparsegl()], and [coef.cv.sparsegl()] methods.
 #' @export
 #' @examples
 #' n <- 100
