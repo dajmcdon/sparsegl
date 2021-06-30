@@ -9,7 +9,7 @@
 \alias{gr_one_norm}
 \alias{gr_two_norm}
 \alias{sp_group_norm}
-\title{Norm}
+\title{Calculate some common group norms}
 \usage{
 one_norm(x)
 

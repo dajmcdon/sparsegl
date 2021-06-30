@@ -1,18 +1,23 @@
 #' @describeIn grouped_sp_norm l1-norm (Absolute-value norm).
+#' @export
 one_norm <- function(x) sum(abs(x))
 
 #' @describeIn grouped_sp_norm l2-norm (Euclidean norm).
+#' @export
 two_norm <- function(x) sqrt(sum(x^2))
 
 
 #' @describeIn grouped_sp_norm A vector of group l1-norms.
+#' @export
 grouped_one_norm <- function(x, gr) as.vector(tapply(x, gr, one_norm))
+
 #' @describeIn grouped_sp_norm A vector of group l1-norms.
+#' @export
 grouped_two_norm <- function(x, gr) as.vector(tapply(x, gr, two_norm))
 
 
 
-#' Norm
+#' Calculate some common group norms
 #' 
 #' Norm calculation
 #'
@@ -36,8 +41,13 @@ grouped_sp_norm <- function(x, gr, asparse) {
 }
 
 #' @describeIn grouped_sp_norm The sum of group l1-norms vector.
+#' @export
 gr_one_norm <- function(x, gr) one_norm(x)
+
 #' @describeIn grouped_sp_norm The sum of group l2-norm vector.
+#' @export
 gr_two_norm <- function(x, gr) sum(grouped_two_norm(x, gr))
+
 #' @describeIn grouped_sp_norm The sum of combinations of group l1 and l2-norms vectors.
+#' @export
 sp_group_norm <- function(x, gr, asparse = 0.05) sum(grouped_sp_norm(x, gr, asparse))

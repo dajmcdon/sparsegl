@@ -18,3 +18,6 @@ reference:
     Calculate information criteria for model evaluation and model selection.
 - contents:
     - estimate_risk
+- title: "Norm calculation"
+- contents: 
+    - ends_with("norm")
