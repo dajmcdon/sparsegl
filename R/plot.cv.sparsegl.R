@@ -1,17 +1,17 @@
-#' Plot cross-validation curves produced from a `cv.sparsegl` object
+#' Plot cross-validation curves produced from a `cv.sparsegl` object.
 #'
 #' Plots the cross-validation curve, and upper and lower standard deviation
 #' curves, as a function of the \code{lambda} values used. This function is
-#' modified based on the \code{plot.cv} function from the \code{glmnet}
+#' modified based on the \code{plot.cv} function from the [glmnet::plot.cv.glmnet()] 
 #' package.
 #'
 #' A plot is produced.
 #'
-#' @param x fitted \code{\link{cv.sparsegl}} object
-#' @param sign.lambda either plot against \code{log(lambda)} (default) or its
-#' negative if \code{sign.lambda=-1}.
-#' @param \dots other graphical parameters to plot
-#' @seealso \code{\link{cv.sparsegl}}.
+#' @param x Fitted [cv.sparsegl()] object
+#' @param sign.lambda Either plot against \code{log(lambda)} (default) or its
+#' negative if \code{sign.lambda = -1}.
+#' @param \dots Not used.
+#' @seealso [cv.sparsegl()].
 #' @method plot cv.sparsegl
 #' @export
 #' @examples
@@ -23,7 +23,7 @@
 #' y <- X %*% beta_star + eps
 #' groups <- rep(1:(p / 5), each = 5)
 #' cv_fit <- cv.sparsegl(X, y, groups)
-#' plot(cv_fit) + ggplot2::scale_y_log10()
+#' plot(cv_fit)
 plot.cv.sparsegl <- function(x, sign.lambda = 1, ...) {
     cvobj <- x
     dat <- data.frame("X" = sign.lambda * cvobj$lambda,

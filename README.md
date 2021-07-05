@@ -35,7 +35,12 @@ beta_star <- c(rep(5, 5), c(5, -5, 2, 0, 0), rep(-5, 5), c(2, -3, 8, 0, 0), rep(
 y <- X %*% beta_star + eps
 groups <- rep(1:(p / 5), each = 5)
 fit1 <- sparsegl(X, y, group = groups)
-plot(fit1, grouped = TRUE, y_axis = "coef", x_axis = "norm")
+plot(fit1, y_axis = "group", x_axis = "penalty")
 ```
 
 <img src="man/figures/README-minimal-ex-1.png" width="100%" style="display: block; margin: auto;" />
+
+## Documentation
+
+The package documentation and more examples are [available
+online](a%20hyperlink%20later).

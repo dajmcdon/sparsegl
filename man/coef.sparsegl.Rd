@@ -7,20 +7,20 @@
 \method{coef}{sparsegl}(object, s = NULL, ...)
 }
 \arguments{
-\item{object}{fitted \code{\link{sparsegl}} model object.}
+\item{object}{Fitted \code{\link[=sparsegl]{sparsegl()}} model object.}
 
-\item{s}{value(s) of the penalty parameter \code{lambda} at which
+\item{s}{Value(s) of the penalty parameter \code{lambda} at which
 predictions are required. Default is the entire sequence used to create the
 model.}
 
-\item{\dots}{not used.}
+\item{\dots}{Not used.}
 }
 \value{
 The coefficients at the requested values for \code{lambda}.
 }
 \description{
 Computes the coefficients at the requested value(s) for \code{lambda} from a
-\code{sparsegl} object.
+\code{\link[=sparsegl]{sparsegl()}} object.
 }
 \details{
 \code{s} is the new vector at which predictions are requested. If \code{s}
@@ -28,4 +28,19 @@ is not in the lambda sequence used for fitting the model, the \code{coef}
 function will use linear interpolation to make predictions. The new values
 are interpolated using a fraction of coefficients from both left and right
 \code{lambda} indices.
+}
+\examples{
+n <- 100
+p <- 20
+X <- matrix(rnorm(n * p), nrow = n)
+eps <- rnorm(n)
+beta_star <- c(rep(5, 5), c(5, -5, 2, 0, 0), rep(-5, 5), rep(0, (p - 15)))
+y <- X \%*\% beta_star + eps
+groups <- rep(1:(p / 5), each = 5)
+fit1 <- sparsegl(X, y, group = groups)
+coef(fit1, s = c(0.02, 0.03))
+}
+\seealso{
+\code{\link[=sparsegl]{sparsegl()}}, \code{\link[=predict.sparsegl]{predict.sparsegl()}} and
+\code{\link[=print.sparsegl]{print.sparsegl()}} methods.
 }

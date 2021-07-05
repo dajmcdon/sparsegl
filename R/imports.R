@@ -5,5 +5,6 @@
 #' @importFrom methods cbind2 rbind2
 #' @importFrom stats approx coef predict
 #' @importFrom rlang .data
+#' @importFrom rlang :=
 #' @docType package
 NULL

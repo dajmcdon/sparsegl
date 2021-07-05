@@ -7,31 +7,43 @@
 \method{coef}{cv.sparsegl}(object, s = c("lambda.1se", "lambda.min"), ...)
 }
 \arguments{
-\item{object}{fitted \code{\link{cv.sparsegl}} object.}
+\item{object}{Fitted \code{\link[=cv.sparsegl]{cv.sparsegl()}} object.}
 
-\item{s}{value(s) of the penalty parameter \code{lambda} at which
-predictions are required. Default is the value \code{s="lambda.1se"} stored
+\item{s}{Value(s) of the penalty parameter \code{lambda} at which
+predictions are required. Default is the value \code{s = "lambda.1se"} stored
 on the CV \code{object}, it is the largest value of \code{lambda} such that
 error is within 1 standard error of the minimum. Alternatively
-\code{s="lambda.min"} can be used, it is the optimal value of \code{lambda}
+\code{s = "lambda.min"} can be used, it is the optimal value of \code{lambda}
 that gives minimum cross validation error \code{cvm}. If \code{s} is
 numeric, it is taken as the value(s) of \code{lambda} to be used.}
 
-\item{\dots}{not used. Other arguments to predict.}
+\item{\dots}{Not used. Other arguments to predict.}
 }
 \value{
 The coefficients at the requested values for \code{lambda}.
 }
 \description{
 This function gets coefficients or makes coefficient predictions from a
-cross-validated \code{sparsegl} model, using the stored \code{"sparsegl.fit"}
+cross-validated \code{\link[=sparsegl]{sparsegl()}} model, using the stored \code{"sparsegl.fit"}
 object, and the optimal value chosen for \code{lambda}.
 }
 \details{
 This function makes it easier to use the results of cross-validation to get
 coefficients or make coefficient predictions.
 }
+\examples{
+n <- 100
+p <- 20
+X <- matrix(rnorm(n * p), nrow = n)
+eps <- rnorm(n)
+beta_star <- c(rep(5, 5), c(5, -5, 2, 0, 0), rep(-5, 5), rep(0, (p - 15)))
+y <- X \%*\% beta_star + eps
+groups <- rep(1:(p / 5), each = 5)
+fit1 <- sparsegl(X, y, group = groups)
+cv_fit <- cv.sparsegl(X, y, groups)
+coef(cv_fit, s = c(0.02, 0.03))
+}
 \seealso{
-\code{\link{cv.sparsegl}}, and \code{\link{predict.cv.sparsegl}}
+\code{\link[=cv.sparsegl]{cv.sparsegl()}}, and \code{\link[=predict.cv.sparsegl]{predict.cv.sparsegl()}}
 methods.
 }

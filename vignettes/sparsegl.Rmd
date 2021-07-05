@@ -25,16 +25,15 @@ packages are as follows:
 * Fortran significantly speeds up the sparse group-lasso model building process.
 
 * "Strong rule" is implemented during coordinate descent step, screening out
-zero-coefficient variables which might not be detected by some conservative criteria
-("Safe rule").
+zero-coefficient variables which might not be detected by some conservative criteria.
 
-* `X` can be a sparse input matrix passed as an argument in the main function 
-`sparsegl()`, and it does not have to be a regular matrix.
+* `X` can be a sparse input matrix passed as an argument in `sparsegl()`, and it
+does not have to be a regular matrix.
 
-* plots are made with functions package `ggplot2` instead of function plot() from `base`, 
+* Plots are made with functions package `ggplot2` instead of function `plot` from `base`, 
 which provide better appearances and experience for visualization.
 
-* An extra function `risk-estimate()` evaluates the quality of fitted models in
+* An extra function `estimate_risk()` evaluates the quality of fitted models in
 terms of different information criteria and provides a means for model selection.
 It is also an alternative for model selection if cross-validation is too costly.
 
@@ -77,7 +76,7 @@ where
 to the features in group $g$.
 
 * $\beta^{(g)}$ is the corresponding coefficients of
-the features.
+the features in group $g$.
 
 * `bs` is the length of $\beta^{(g)}$.
 
@@ -99,34 +98,37 @@ groups <- rep(1:(p / 5), each = 5)
 
 ## `sparsegl()`
 
-Given an input matrix X, and a response vector y (or a matrix with 1 column), 
+Given an input matrix `X`, and a response vector `y` (or a matrix with 1 column), 
 a sparse group-lasso regularized linear model is fitted for a sequence of penalty
 parameter values in terms of penalized maximum likelihood. The penalty is composed
 of lasso penalty and group lasso penalty. The other main arguments the users might give
 are:
 
-* group: a vector with consecutive integers of length `p` indicating the grouping 
+* `group`: a vector with consecutive integers of length `p` indicating the grouping 
 of the features. By default, each group only contains one feature if without
 initialization.
 
-* pf: a penalty vector of the length of the total number of groups bn, whose default 
-value is $\sqrt{\text{bs}}$ in $(*)$ above.
+* `pf`: a penalty vector of the length of the number of groups in total. Default value
+for each entry is the square-root of the corresponding size of each group, which is
+$\sqrt{\text{bs}}$ in $(*)$ above.
 
-* asparse: changes the weight of lasso penalty, referring to $\alpha$ in $(*)$ above: `asparse` = $1$
-gives the lasso penalty only. `asparse` = $0$ gives the group lasso penalty only. 
-The default value of `asparse` is $0.05$.
+* `asparse`: changes the weight of lasso penalty, referring to $\alpha$ in $(*)$ 
+above: `asparse` = $1$ gives the lasso penalty only. `asparse` = $0$ gives the 
+group lasso penalty only. The default value of `asparse` is $0.05$.
 
-* lower_bnd: lower bound for coefficient values, a vector in length of 1 
-or the number of groups including non-positive numbers only. Default is -$\infty$.
+* `lower_bnd`: lower bound for coefficient values, a vector in length of 1 
+or the number of groups including non-positive numbers only. Default value for each
+entry is -$\infty$.
 
-* upper_bnd: upper bound for coefficient values, a vector in length of 1 
-or the number of groups including non-negative numbers only. Default is $\infty$.
+* `upper_bnd`: upper bound for coefficient values, a vector in length of 1 
+or the number of groups including non-negative numbers only. Default value for each
+entry is $\infty$.
 
 It returns a `sparsegl` object, and the main attribute of this object is:
 
-* df: the number of nonzero coefficients for each lambda value. This only represents
+* `df`: the number of nonzero coefficients for each lambda value. This only represents
 an approximation to the exact degree-of-freedom. Detailed explanation can be checked 
-under function `risk_estimate()` below.
+under function `estimate_risk()` below.
 
 ```{r}
 fit1 <- sparsegl(X, y, group = groups)
@@ -138,55 +140,44 @@ This function produces nonzero-only coefficient curves for each penalty paramete
 `lambda` values in the regularization path for a fitted `sparsegl` object. 
 The arguments of this function are: 
 
-* `grouped`: `grouped` is TRUE if the user designed a specific grouping of features 
-in the `sparsegl()`, otherwise FALSE by default.
+* `y_axis`: can be set with either "coef" or "group". Default is "coef".
 
-* "y_axis": can be set with either "coef" or "group_norm".
+* `x_axis`: can be set with either "lambda" or "penalty". Default is "lambda".
 
-* "x_axis": can be set with either "log_lambda" or "norm".
-
-If `grouped` is set with FALSE by default, `y_axis` can only be set with "coef" 
-such that this function will plot at the feature level only, and `y_axis` is not 
-necessarily explicitly specified in this case. Each curve with a distinct color 
-represents a feature. Notice that the number of curves shown on the plots could 
-be less than the actual number of features since only the features having nonzero
-coefficients at least at one lambda in the sequence `lambda` are included:
-
-* The plot with `x_axis` = "log_lambda" is the coefficients of features against 
-logarithm of `lambda` sequence (log-`lambda`). 
-
-* The plot with `x_axis` = "norm" is the coefficients of features against a vector 
-of scaling norm at each `lambda`. Each element in this vector is defined by:
-$$
-\frac{\text{asparse}\times\rVert \beta\rVert_1 + (1-\text{asparse})\times\sum_g\rVert \beta^{(g)}\rVert_2}{\max_\beta\left(\text{asparse}\times\ \rVert \beta\rVert_1 + (1-\text{asparse})\times\sum_g\rVert \beta^{(g)}\rVert_2\right)}
-$$
-
-
-```{r, message = FALSE, warning = FALSE, fig.width = 10, fig.height = 5}
-plot(fit1, x_axis = "lambda")
-```
-
-Again, only the features having nonzero coefficients at least at one lambda value 
-in the sequence `lambda`, and their corresponding groups are considered: 
+To elaborate on `y_axis` and `x_axis`:
 
 * The plot with `y_axis` = "group" is the group norms against the log-`lambda` 
 or the scaled group norm vector. Each group norm is defined by:
 $$
 \text{asparse}\times\rVert\beta^{(g)}\rVert_1 + (1 - \text{asparse})\times\sum_g\rVert\beta^{(g)}\rVert_2
 $$
+Curves are plotted in the same color if the corresponding features are in the same 
+group. Notice that the number of curves shown on the plots could be less than the 
+actual number of groups since only the groups containing nonzero features at least
+at one lambda in the sequence `lambda` are included.
 
 * The plot with `y_axis` = "coef" is the coefficients of features against
-the log-`lambda` or scaling norm vector. Curves are plotted in the same color if the corresponding
-features are in the same group. 
+the log-`lambda` or the scaled group norm vector. Each curve with a distinct color 
+represents a feature. Again, only the features having nonzero coefficients at least
+at one lambda value in the sequence `lambda` are considered.
+
+* The plot with `x_axis` = "lambda" indicates the `x_axis` presenting with log-`lambda`.
+
+* The plot with `x_axis` = "penalty" indicates the `x_axis` presenting with the 
+scaled group norm vector. Each element in this vector is defined by:
+$$
+\frac{\text{asparse}\times\rVert \beta\rVert_1 + (1-\text{asparse})\times\sum_g\rVert \beta^{(g)}\rVert_2}{\max_\beta\left(\text{asparse}\times\ \rVert \beta\rVert_1 + (1-\text{asparse})\times\sum_g\rVert \beta^{(g)}\rVert_2\right)}
+$$
 
 ```{r, message = FALSE, warning = FALSE, fig.width = 8, fig.height = 4}
 plot(fit1, y_axis = "group", x_axis = "lambda")
-plot(fit1, y_axis = "coef", x_axis = "penalty")
+plot(fit1, y_axis = "coef", x_axis = "penalty", add_legend = FALSE)
 ```
 
-### `coef()`, `predict()` and `print()` for `sparsegl` object
 
-All three functions consume a  fitted`sparsegl` object as an arguments and
+### `coef()`, `predict()` and `print()` `sparsegl` object
+
+All three functions consume a  fitted `sparsegl` object as an arguments and
 
 * `coef()` and `predict()` return a matrix of coefficients and predictions $\hat{y}$
 given a matrix `X` at each lambda respectively, unless an optional argument `s` is assigned
@@ -206,7 +197,7 @@ print(fit1)
 ## `cv.sparsegl()`
 
 This function does a k-fold cross-validation (cv) on a `sparsegl` object. It takes the same
-arguments `X`, `y`, `group`, which are specified in `sparsegl()`, and also an additional
+arguments `X`, `y`, `group`, which are specified above, with additional
 argument `pred.loss`. It can be set with either "L2" or "L1", indicating the loss to
 use for cv error. This will return a `cv.sparseg` object.
 
@@ -224,8 +215,6 @@ and the attached gray vertical error bars indicate the uncertainty of `cvm`.
 ```{r, message = FALSE, warning = FALSE, fig.width = 8, fig.height = 4}
 plot(fit_l1)
 ```
-
-
 
 * `coef()` and `predict()` for `cv.sparsegl` object work similarly to those 
 introduced above. The only differences are that the argument 

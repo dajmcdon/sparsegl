@@ -1,0 +1,23 @@
+reference:
+- title: "Fit data"
+  desc: >
+    Creating sparsegl objects or cv.sparsegl objects from Cross-validation.
+- contents:
+    - sparsegl
+    - cv.sparsegl
+- title: "Plot and predict functions"
+  desc: >
+    Plot and predict for sparsegl or cv.sparsegl objects.
+- contents:
+    - starts_with("plot")
+    - starts_with("coef")
+    - starts_with("predict")
+    - starts_with("print")
+- title: "Risk estimation"
+  desc: >
+    Calculate information criteria for model evaluation and model selection.
+- contents:
+    - estimate_risk
+- title: "Norm calculation"
+- contents: 
+    - ends_with("norm")
