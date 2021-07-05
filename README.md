@@ -1,4 +1,8 @@
 
+<!-- badges: start -->
+[![R-CMD-check](https://github.com/dajmcdon/sparsegl/workflows/R-CMD-check/badge.svg)](https://github.com/dajmcdon/sparsegl/actions)
+<!-- badges: end -->
+
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
 # R-package `sparsegl`
@@ -9,14 +13,18 @@ of the regularization parameter lambda.
 
 ## Installation
 
-You can install the released version of sparsegl from
-[CRAN](https://CRAN.R-project.org) with:
+<!--
+You can install the released version of sparsegl from [CRAN](https://CRAN.R-project.org) with:
 
-``` r
+
+```r
 install.packages("sparsegl")
 ```
 
-And the development version from [GitHub](https://github.com/) with:
+-->
+
+You can install the development version from
+[Github](https://github.com/) with:
 
 ``` r
 # install.packages("remotes")
@@ -35,7 +43,8 @@ beta_star <- c(rep(5, 5), c(5, -5, 2, 0, 0), rep(-5, 5), c(2, -3, 8, 0, 0), rep(
 y <- X %*% beta_star + eps
 groups <- rep(1:(p / 5), each = 5)
 fit1 <- sparsegl(X, y, group = groups)
-plot(fit1, y_axis = "group", x_axis = "penalty")
+plot(fit1, y_axis = "coef", x_axis = "penalty") + 
+  ggplot2::theme(legend.position = "none")
 ```
 
 <img src="man/figures/README-minimal-ex-1.png" width="100%" style="display: block; margin: auto;" />
@@ -43,4 +52,4 @@ plot(fit1, y_axis = "group", x_axis = "penalty")
 ## Documentation
 
 The package documentation and more examples are [available
-online](a%20hyperlink%20later).
+online](https://dajmcdon.github.io/sparsegl).
