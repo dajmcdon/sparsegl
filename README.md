@@ -1,63 +1,55 @@
 
-<!-- README.md is generated from README.Rmd. Please edit that file -->
-
-# sparsegl
-
 <!-- badges: start -->
-
-[![R-CMD-check](https://github.com/acohen237/sparsegl/workflows/R-CMD-check/badge.svg)](https://github.com/acohen237/sparsegl/actions)
+[![R-CMD-check](https://github.com/dajmcdon/sparsegl/workflows/R-CMD-check/badge.svg)](https://github.com/dajmcdon/sparsegl/actions)
 <!-- badges: end -->
 
-The goal of sparsegl is to …
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
+# R-package `sparsegl`
+
+The goal of sparsegl is to fit regularization paths for sparse
+group-lasso penalized learning problems. The model is fit for a sequence
+of the regularization parameter lambda.
 
 ## Installation
 
-You can install the released version of sparsegl from
-[CRAN](https://CRAN.R-project.org) with:
+<!--
+You can install the released version of sparsegl from [CRAN](https://CRAN.R-project.org) with:
 
-``` r
+
+```r
 install.packages("sparsegl")
 ```
 
-And the development version from [GitHub](https://github.com/) with:
+-->
+
+You can install the development version from
+[Github](https://github.com/) with:
 
 ``` r
 # install.packages("remotes")
 remotes::install_github("dajmcdon/sparsegl")
 ```
 
-## Example
-
-This is a basic example which shows you how to solve a common problem:
+## Minimal Example
 
 ``` r
-library(sparsegl)
-## basic example code
+set.seed(1010)
+n <- 100
+p <- 200
+X <- matrix(data = rnorm(n*p, mean = 0, sd = 1), nrow = n, ncol = p)
+eps <- rnorm(n, mean = 0, sd = 1)
+beta_star <- c(rep(5, 5), c(5, -5, 2, 0, 0), rep(-5, 5), c(2, -3, 8, 0, 0), rep(0, (p - 20)))
+y <- X %*% beta_star + eps
+groups <- rep(1:(p / 5), each = 5)
+fit1 <- sparsegl(X, y, group = groups)
+plot(fit1, y_axis = "coef", x_axis = "penalty") + 
+  ggplot2::theme(legend.position = "none")
 ```
 
-What is special about using `README.Rmd` instead of just `README.md`?
-You can include R chunks like so:
+<img src="man/figures/README-minimal-ex-1.png" width="100%" style="display: block; margin: auto;" />
 
-``` r
-summary(cars)
-#>      speed           dist       
-#>  Min.   : 4.0   Min.   :  2.00  
-#>  1st Qu.:12.0   1st Qu.: 26.00  
-#>  Median :15.0   Median : 36.00  
-#>  Mean   :15.4   Mean   : 42.98  
-#>  3rd Qu.:19.0   3rd Qu.: 56.00  
-#>  Max.   :25.0   Max.   :120.00
-```
+## Documentation
 
-You’ll still need to render `README.Rmd` regularly, to keep `README.md`
-up-to-date. `devtools::build_readme()` is handy for this. You could also
-use GitHub Actions to re-render `README.Rmd` every time you push. An
-example workflow can be found here:
-<https://github.com/r-lib/actions/tree/master/examples>.
-
-You can also embed plots, for example:
-
-<img src="man/figures/README-pressure-1.png" width="100%" />
-
-In that case, don’t forget to commit and push the resulting figure
-files, so they display on GitHub and CRAN.
+The package documentation and more examples are [available
+online](https://dajmcdon.github.io/sparsegl).

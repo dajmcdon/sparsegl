@@ -2,36 +2,47 @@
 % Please edit documentation in R/plot.sparsegl.R
 \name{plot.sparsegl}
 \alias{plot.sparsegl}
-\title{Plot solution paths from a "sparsegl" object}
+\title{Plot solution paths from a \code{sparsegl} object.}
 \usage{
-\method{plot}{sparsegl}(x, group = FALSE, log.l = TRUE, ...)
+\method{plot}{sparsegl}(
+  x,
+  y_axis = c("coef", "group"),
+  x_axis = c("lambda", "penalty"),
+  add_legend = TRUE,
+  ...
+)
 }
 \arguments{
-\item{x}{fitted \code{\link{sparsegl}} model}
+\item{x}{Fitted \code{\link[=sparsegl]{sparsegl()}} model.}
 
-\item{group}{what is on the Y-axis. Plot the norm of each group if
-\code{TRUE}. Plot each coefficient if \code{FALSE}.}
+\item{y_axis}{Variable on the y_axis. Either the coefficients (default)
+or the group norm.}
 
-\item{log.l}{what is on the X-axis. Plot against the log-lambda sequence if
-\code{TRUE}. Plot against the lambda sequence if \code{FALSE}.}
+\item{x_axis}{Variable on the x-axis. Either the (log)-lambda
+sequence (default) or value of the penalty. The penalty is scaled by its
+maximum along the path.}
 
-\item{\dots}{other graphical parameters to plot}
+\item{add_legend}{Show the legend. Often, with many groups/predictors, this
+can become overwhelming.}
+
+\item{\dots}{Not used.}
 }
 \description{
 Produces a coefficient profile plot of the coefficient paths for a fitted
-\code{\link{sparsegl}} object.
+\code{\link[=sparsegl]{sparsegl()}} object. The result is a \code{ggplot}. Additional user
+modifications can be added as desired.
 }
-\details{
-A coefficient profile plot is produced.
+\examples{
+n <- 100
+p <- 20
+X <- matrix(rnorm(n * p), nrow = n)
+eps <- rnorm(n)
+beta_star <- c(rep(5, 5), c(5, -5, 2, 0, 0), rep(-5, 5), rep(0, (p - 15)))
+y <- X \%*\% beta_star + eps
+groups <- rep(1:(p / 5), each = 5)
+fit1 <- sparsegl(X, y, group = groups)
+plot(fit1, y_axis = "coef", x_axis = "penalty")
 }
-\references{
-Yang, Y. and Zou, H. (2015), ``A Fast Unified Algorithm for
-Computing Group-Lasso Penalized Learning Problems,'' \emph{Statistics and
-Computing}. 25(6), 1129-1141.\cr BugReport:
-\url{https://github.com/emeryyi/gglasso}\cr
+\seealso{
+\code{\link[=sparsegl]{sparsegl()}}.
 }
-\author{
-Yi Yang and Hui Zou\cr Maintainer: Yi Yang \href{mailto:yi.yang6@mcgill.ca}{yi.yang6@mcgill.ca}
-}
-\keyword{models}
-\keyword{regression}

@@ -2,39 +2,32 @@
 % Please edit documentation in R/sparsegl-methods.R
 \name{print.sparsegl}
 \alias{print.sparsegl}
-\title{Print a sparsegl object}
+\title{Print a \code{sparsegl} object.}
 \usage{
-\method{print}{sparsegl}(x, digits = max(3, getOption("digits") - 3), ...)
+\method{print}{sparsegl}(x, digits = min(3, getOption("digits") - 3), ...)
 }
 \arguments{
-\item{x}{fitted \code{\link{sparsegl}} object}
+\item{x}{Fitted \code{\link[=sparsegl]{sparsegl()}} object.}
 
-\item{digits}{significant digits in printout}
+\item{digits}{Significant digits in printout.}
 
-\item{\dots}{additional print arguments}
-}
-\value{
-a two-column matrix, the first columns is the number of nonzero
-group counts and the second column is \code{Lambda}.
+\item{\dots}{Additional print arguments.}
 }
 \description{
-Print the nonzero group counts at each lambda along the sparsegl path.
+Prints a few summaries of the fitted \code{\link[=sparsegl]{sparsegl()}} model object.
 }
-\details{
-Print the information about the nonzero group counts at each lambda step in
-the \code{\link{sparsegl}} object. The result is a two-column matrix with
-columns \code{Df} and \code{Lambda}. The \code{Df} column is the number of
-the groups that have nonzero within-group coefficients, the \code{Lambda}
-column is the the corresponding lambda.
+\examples{
+n <- 100
+p <- 20
+X <- matrix(rnorm(n * p), nrow = n)
+eps <- rnorm(n)
+beta_star <- c(rep(5, 5), c(5, -5, 2, 0, 0), rep(-5, 5), rep(0, (p - 15)))
+y <- X \%*\% beta_star + eps
+groups <- rep(1:(p / 5), each = 5)
+fit1 <- sparsegl(X, y, group = groups)
+print(fit1)
 }
-\references{
-Yang, Y. and Zou, H. (2015), ``A Fast Unified Algorithm for
-Computing Group-Lasso Penalized Learning Problems,'' \emph{Statistics and
-Computing}. 25(6), 1129-1141.\cr BugReport:
-\url{https://github.com/emeryyi/gglasso}\cr
+\seealso{
+\code{\link[=sparsegl]{sparsegl()}}, \code{\link[=coef.sparsegl]{coef.sparsegl()}} and
+\code{\link[=predict.sparsegl]{predict.sparsegl()}} methods.
 }
-\author{
-Yi Yang and Hui Zou\cr Maintainer: Yi Yang \href{mailto:yi.yang6@mcgill.ca}{yi.yang6@mcgill.ca}
-}
-\keyword{models}
-\keyword{regression}

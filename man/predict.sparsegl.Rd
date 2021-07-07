@@ -2,34 +2,28 @@
 % Please edit documentation in R/sparsegl-methods.R
 \name{predict.sparsegl}
 \alias{predict.sparsegl}
-\title{Make predictions from a "sparsegl" object.}
+\title{Make predictions from a \code{sparsegl} object.}
 \usage{
 \method{predict}{sparsegl}(object, newx, s = NULL, ...)
 }
 \arguments{
-\item{object}{fitted \code{\link{sparsegl}} model object.}
+\item{object}{Fitted \code{\link[=sparsegl]{sparsegl()}} model object.}
 
-\item{newx}{matrix of new values for \code{x} at which predictions are to be
+\item{newx}{Matrix of new values for \code{x} at which predictions are to be
 made. Must be a matrix.}
 
-\item{s}{value(s) of the penalty parameter \code{lambda} at which
+\item{s}{Value(s) of the penalty parameter \code{lambda} at which
 predictions are required. Default is the entire sequence used to create the
 model.}
 
 \item{\dots}{Not used. Other arguments to predict.}
-
-\item{type}{type of prediction required: \itemize{ \item Type \code{"link"},
-for regression it returns the fitted response; for classification it gives
-the linear predictors.  \item Type \code{"class"}, only valid for
-classification, it produces the predicted class label corresponding to the
-maximum probability.}}
 }
 \value{
 The object returned depends on type.
 }
 \description{
 Similar to other predict methods, this functions predicts fitted values and
-class labels from a fitted \code{\link[=sparsegl]{sparsegl()}} object.
+class labels from a fitted \code{\link{sparsegl}} object.
 }
 \details{
 \code{s} is the new vector at which predictions are requested. If \code{s}
@@ -38,6 +32,18 @@ function will use linear interpolation to make predictions. The new values
 are interpolated using a fraction of predicted values from both left and
 right \code{lambda} indices.
 }
+\examples{
+n <- 100
+p <- 20
+X <- matrix(rnorm(n * p), nrow = n)
+eps <- rnorm(n)
+beta_star <- c(rep(5, 5), c(5, -5, 2, 0, 0), rep(-5, 5), rep(0, (p - 15)))
+y <- X \%*\% beta_star + eps
+groups <- rep(1:(p / 5), each = 5)
+fit1 <- sparsegl(X, y, group = groups)
+predict(fit1, newx = X[10, ], s = fit1$lambda[3:5])
+}
 \seealso{
-\code{\link{coef}} method
+\code{\link[=sparsegl]{sparsegl()}}, \code{\link[=coef.sparsegl]{coef.sparsegl()}} and
+\code{\link[=print.sparsegl]{print.sparsegl()}} methods.
 }

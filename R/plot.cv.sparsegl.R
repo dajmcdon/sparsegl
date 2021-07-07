@@ -1,57 +1,45 @@
-######################################################################
-## This function is adapted/modified based on the plot.cv function from
-## the glmnet package:
-##        Jerome Friedman, Trevor Hastie, Robert Tibshirani (2010).
-## Regularization Paths for Generalized Linear Models via Coordinate
-#   Descent.
-##        Journal of Statistical Software, 33(1), 1-22.
-##        URL http://www.jstatsoft.org/v33/i01/.
-
-
-
-
-#' plot the cross-validation curve produced by cv.sparsegl
-#' 
+#' Plot cross-validation curves produced from a `cv.sparsegl` object.
+#'
 #' Plots the cross-validation curve, and upper and lower standard deviation
 #' curves, as a function of the \code{lambda} values used. This function is
-#' modified based on the \code{plot.cv} function from the \code{glmnet}
+#' modified based on the \code{plot.cv} function from the [glmnet::plot.cv.glmnet()] 
 #' package.
-#' 
+#'
 #' A plot is produced.
-#' 
-#' @param x fitted \code{\link{cv.sparsegl}} object
-#' @param sign.lambda either plot against \code{log(lambda)} (default) or its
-#' negative if \code{sign.lambda=-1}.
-#' @param \dots other graphical parameters to plot
-#' @author Yi Yang and Hui Zou\cr Maintainer: Yi Yang <yi.yang6@@mcgill.ca>
-#' @seealso \code{\link{cv.sparsegl}}.
-#' @references Yang, Y. and Zou, H. (2015), ``A Fast Unified Algorithm for
-#' Computing Group-Lasso Penalized Learning Problems,'' \emph{Statistics and
-#' Computing}. 25(6), 1129-1141.\cr BugReport:
-#' \url{https://github.com/emeryyi/gglasso}\cr
-#' 
-#' Friedman, J., Hastie, T., and Tibshirani, R. (2010), ``Regularization paths
-#' for generalized linear models via coordinate descent,'' \emph{Journal of
-#' Statistical Software}, 33, 1.\cr \url{http://www.jstatsoft.org/v33/i01/}
-#' @keywords models regression
+#'
+#' @param x Fitted [cv.sparsegl()] object
+#' @param sign.lambda Either plot against \code{log(lambda)} (default) or its
+#' negative if \code{sign.lambda = -1}.
+#' @param \dots Not used.
+#' @seealso [cv.sparsegl()].
 #' @method plot cv.sparsegl
 #' @export
+#' @examples
+#' n <- 100
+#' p <- 20
+#' X <- matrix(rnorm(n * p), nrow = n)
+#' eps <- rnorm(n)
+#' beta_star <- c(rep(5, 5), c(5, -5, 2, 0, 0), rep(-5, 5), rep(0, (p - 15)))
+#' y <- X %*% beta_star + eps
+#' groups <- rep(1:(p / 5), each = 5)
+#' cv_fit <- cv.sparsegl(X, y, groups)
+#' plot(cv_fit)
 plot.cv.sparsegl <- function(x, sign.lambda = 1, ...) {
     cvobj <- x
-    xlab <- "log(Lambda)"
-    if (sign.lambda < 0) 
-        xlab <- paste("-", xlab, sep = "")
-    plot.args <- list(x = sign.lambda * log(cvobj$lambda), y = cvobj$cvm, ylim = range(cvobj$cvupper, 
-        cvobj$cvlo), xlab = xlab, ylab = cvobj$name, type = "n")
-    new.args <- list(...)
-    if (length(new.args)) 
-        plot.args[names(new.args)] <- new.args
-    do.call("plot", plot.args)
-    error.bars(sign.lambda * log(cvobj$lambda), cvobj$cvupper, cvobj$cvlo, width = 0.01, 
-        col = "darkgrey")
-    points(sign.lambda * log(cvobj$lambda), cvobj$cvm, pch = 20, col = "red")
-    axis(side = 3, at = sign.lambda * log(cvobj$lambda), tick = FALSE, line = 0)
-    abline(v = sign.lambda * log(cvobj$lambda.min), lty = 3)
-    abline(v = sign.lambda * log(cvobj$lambda.1se), lty = 3)
-    invisible()
-} 
+    dat <- data.frame("X" = sign.lambda * cvobj$lambda,
+                      "y" = cvobj$cvm,
+                      "upper" = cvobj$cvupper,
+                      "lower" = cvobj$cvlo)
+    dat %>%
+        ggplot2::ggplot(ggplot2::aes(x = .data$X, y = .data$y)) +
+        ggplot2::geom_point(color = 'red') +
+        ggplot2::geom_errorbar(
+            ggplot2::aes(ymin = .data$lower, ymax = .data$upper),
+            width = 0.1,
+            color = 'darkgrey') +
+        ggplot2::xlab("Lambda") +
+        ggplot2::ylab(cvobj$name) +
+        ggplot2::scale_x_log10(
+            labels = scales::trans_format("log10", scales::math_format())) +
+        ggplot2::theme_bw()
+}

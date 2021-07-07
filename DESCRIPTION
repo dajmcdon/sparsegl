@@ -20,9 +20,21 @@ Imports:
     Matrix,
     RSpectra,
     assertthat,
-    methods
+    methods,
+    tidyr,
+    dplyr,
+    tibble,
+    ggplot2,
+    magrittr,
+    rlang,
+    scales
 Depends: 
     R (>= 3.5)
 License: GPL (>= 2)
 Suggests: 
-    testthat (>= 3.0.0)
+    testthat (>= 3.0.0),
+    knitr,
+    rmarkdown,
+    markdown
+Config/testthat/edition: 3
+VignetteBuilder: knitr

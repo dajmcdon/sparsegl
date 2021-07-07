@@ -90,10 +90,6 @@ getoutput <- function(x, group, fit, maxit, pmax, nvars, vnames, eps) {
     list(b0 = b0, beta = beta, df = df, dim = dd, lambda = lam)
 }
 
-
-
-
-
 lambda.interp <- function(lambda, s) {
     ### lambda is the index sequence that is produced by the model
     ### s is the new vector at which evaluations are required.
