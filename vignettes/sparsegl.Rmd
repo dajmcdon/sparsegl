@@ -208,7 +208,7 @@ fit_l1 <- cv.sparsegl(X, y, group = groups, pred.loss = "L1")
 ### `plot()`, `coef()` and `predict()` for `cv.sparsegl` object
 
 * `plot()`: produces cross-validation curve with upper and lower confidence bounds
-plots for each `lambda` in the regularization path for a fitted `sparsegl` object. 
+plots for each `lambda` in the regularization path for a fitted `cv.sparsegl` object. 
 In the generated plot, the red points represent the `cvm` values at each `lambda`,
 and the attached gray vertical error bars indicate the uncertainty of `cvm`.
 
