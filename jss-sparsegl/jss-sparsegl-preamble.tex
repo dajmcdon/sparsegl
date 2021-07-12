@@ -1,4 +1,14 @@
 \newcommand{\norm}[1]{\left\lVert #1 \right\rVert}
-\usepackage{algorithm,algorithmic}
+\usepackage{amsmath, amsfonts, amsthm, amssymb}
+\usepackage{algorithm, algorithmic, graphicx, float, subfig, caption}
 \renewcommand{\algorithmiccomment}[1]{\hfill $\rhd$ #1}
 \def\algorithmautorefname{Algorithm}
+
+\newlength\myindent % define a new length \myindent
+\setlength\myindent{1em} % assign the length 1em to \myindet
+\newcommand\bindent{%
+  \begingroup % starts a group (to keep changes local)
+  \setlength{\itemindent}{\myindent} % set itemindent (algorithmic internally uses a list) to the value of \mylength
+  \addtolength{\algorithmicindent}{\myindent} % adds \mylength to the default indentation used by algorithmic
+}
+\newcommand\eindent{\endgroup} % closes a group
