@@ -55,7 +55,6 @@
 #' beta_star <- c(rep(5, 5), c(5, -5, 2, 0, 0), rep(-5, 5), rep(0, (p - 15)))
 #' y <- X %*% beta_star + eps
 #' groups <- rep(1:(p / 5), each = 5)
-#' fit1 <- sparsegl(X, y, group = groups)
 #' cv_fit <- cv.sparsegl(X, y, groups)
 cv.sparsegl <- function(x, y, group, lambda = NULL,
                         pred.loss = c("L2", "L1"),

@@ -68,7 +68,7 @@ plot.sparsegl <- function(x,
                          color = !!rlang::sym(y_axis))) +
         ggplot2::geom_hline(yintercept = 0)
 
-    if (x_axis == "norm") {
+    if (x_axis == "penalty") {
         xlab_layer <- ggplot2::xlab("penalty / max (penalty)")
     } else {
         xlab_layer <- ggplot2::xlab("lambda") + ggplot2::scale_x_log10()

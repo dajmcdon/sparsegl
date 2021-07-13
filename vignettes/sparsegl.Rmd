@@ -196,7 +196,7 @@ print(fit1)
 
 ## `cv.sparsegl()`
 
-This function does a k-fold cross-validation (cv) on a `sparsegl` object. It takes the same
+This function does a k-fold cross-validation (cv) on `sparsegl`. It takes the same
 arguments `X`, `y`, `group`, which are specified above, with additional
 argument `pred.loss`. It can be set with either "L2" or "L1", indicating the loss to
 use for cv error. This will return a `cv.sparseg` object.
@@ -208,7 +208,7 @@ fit_l1 <- cv.sparsegl(X, y, group = groups, pred.loss = "L1")
 ### `plot()`, `coef()` and `predict()` for `cv.sparsegl` object
 
 * `plot()`: produces cross-validation curve with upper and lower confidence bounds
-plots for each `lambda` in the regularization path for a fitted `sparsegl` object. 
+plots for each `lambda` in the regularization path for a fitted `cv.sparsegl` object. 
 In the generated plot, the red points represent the `cvm` values at each `lambda`,
 and the attached gray vertical error bars indicate the uncertainty of `cvm`.
 
