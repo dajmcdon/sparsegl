@@ -180,7 +180,7 @@ y = X\beta^* + \epsilon,
 <h2 class="hasAnchor">
 <a href="#cv-sparsegl" class="anchor"></a><code>cv.sparsegl()</code>
 </h2>
-<p>This function does a k-fold cross-validation (cv) on a <code>sparsegl</code> object. It takes the same arguments <code>X</code>, <code>y</code>, <code>group</code>, which are specified above, with additional argument <code>pred.loss</code>. It can be set with either “L2” or “L1”, indicating the loss to use for cv error. This will return a <code>cv.sparseg</code> object.</p>
+<p>This function does a k-fold cross-validation (cv) on <code>sparsegl</code>. It takes the same arguments <code>X</code>, <code>y</code>, <code>group</code>, which are specified above, with additional argument <code>pred.loss</code>. It can be set with either “L2” or “L1”, indicating the loss to use for cv error. This will return a <code>cv.sparseg</code> object.</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">fit_l1</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/cv.sparsegl.html">cv.sparsegl</a></span><span class="op">(</span><span class="va">X</span>, <span class="va">y</span>, group <span class="op">=</span> <span class="va">groups</span>, pred.loss <span class="op">=</span> <span class="st">"L1"</span><span class="op">)</span></code></pre></div>
 <div id="plot-coef-and-predict-for-cv-sparsegl-object" class="section level3">
@@ -188,7 +188,7 @@ y = X\beta^* + \epsilon,
 <a href="#plot-coef-and-predict-for-cv-sparsegl-object" class="anchor"></a><code>plot()</code>, <code>coef()</code> and <code>predict()</code> for <code>cv.sparsegl</code> object</h3>
 <ul>
 <li>
-<code><a href="https://rdrr.io/r/graphics/plot.default.html">plot()</a></code>: produces cross-validation curve with upper and lower confidence bounds plots for each <code>lambda</code> in the regularization path for a fitted <code>sparsegl</code> object. In the generated plot, the red points represent the <code>cvm</code> values at each <code>lambda</code>, and the attached gray vertical error bars indicate the uncertainty of <code>cvm</code>.</li>
+<code><a href="https://rdrr.io/r/graphics/plot.default.html">plot()</a></code>: produces cross-validation curve with upper and lower confidence bounds plots for each <code>lambda</code> in the regularization path for a fitted <code>cv.sparsegl</code> object. In the generated plot, the red points represent the <code>cvm</code> values at each <code>lambda</code>, and the attached gray vertical error bars indicate the uncertainty of <code>cvm</code>.</li>
 </ul>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span><span class="va">fit_l1</span><span class="op">)</span></code></pre></div>
