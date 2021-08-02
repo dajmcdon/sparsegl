@@ -24,7 +24,9 @@
 #' deviation from the fitted mean to the response.  \item \code{"L2"} for
 #' regression, mean absolute error used by least squares regression
 #' \code{loss = "ls"}, it measure the deviation from the fitted mean to the
-#' response.  }Default is \code{"L2"}.
+#' response. \item\code{"loss"} for classification, margin based loss function. 
+#' \item\code{"misclass"} for classification giving misclassification error. }
+#' Default is \code{"L2"}.
 #' @param nfolds Number of folds - default is 5. Although \code{nfolds} can be
 #' as large as the sample size (leave-one-out CV), it is not recommended for
 #' large datasets. Smallest value allowable is \code{nfolds = 3}.
@@ -57,7 +59,7 @@
 #' groups <- rep(1:(p / 5), each = 5)
 #' cv_fit <- cv.sparsegl(X, y, groups)
 cv.sparsegl <- function(x, y, group, lambda = NULL,
-                        pred.loss = c("L2", "L1"),
+                        pred.loss = c("L2", "L1", "loss", "misclass"),
                         nfolds = 5, foldid, ...) {
     pred.loss <- match.arg(pred.loss)
     N <- nrow(x)
@@ -116,4 +118,30 @@ cv.ls <- function(outlist, lambda, x, y, foldid, pred.loss = c("L2","L1")) {
     list(cvm = cvm, cvsd = cvsd, name = typenames[pred.loss])
 }
 
-
+cv.logit <- function(outlist, lambda, x, y, foldid, pred.loss = c("loss", "misclass")) {
+    typenames <- c(loss = "Margin Based Loss", misclass = "Misclassification Error")
+    pred.loss <- match.arg(pred.loss)
+    prob_min <- 1e-05
+    fmax <- log(1/prob_min - 1)
+    fmin <- -fmax
+    y <- as.factor(y)
+    y <- c(-1, 1)[as.numeric(y)]
+    nfolds <- max(foldid)
+    predmat <- matrix(NA, length(y), length(lambda))
+    nlams <- double(nfolds)
+    for (i in seq(nfolds)) {
+        test_fold <- foldid == i
+        fitobj <- outlist[[i]]
+        preds <- predict(fitobj, x[test_fold, , drop = FALSE], type = "link")
+        nlami <- length(outlist[[i]]$lambda)
+        predmat[test_fold, seq(nlami)] <- preds
+        nlams[i] <- nlami
+    }
+    predmat <- pmin(pmax(predmat, fmin), fmax)
+    cvraw <- switch(pred.loss, loss = 2 * log(1 + exp(-y + predmat)),
+                    mixclass = (y != ifelse(predmat > 0, 1, -1)))
+    N <- length(y) - apply(is.na(predmat), 2, sum)
+    cvm <- apply(cvraw, 2, mean, na.rm = TRUE)
+    cvsd <- sqrt(apply(scale(cvraw, cvm, FALSE)^2, 2, mean, NA.RM = TRUE)/(N - 1))
+    list(cvm = cvm, cvsd = cvsd, name = typenames[pred.loss])
+}

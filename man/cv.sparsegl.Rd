@@ -10,7 +10,7 @@ cv.sparsegl(
   y,
   group,
   lambda = NULL,
-  pred.loss = c("L2", "L1"),
+  pred.loss = c("L2", "L1", "loss", "misclass"),
   nfolds = 5,
   foldid,
   ...
@@ -35,7 +35,9 @@ error used by least squares regression \code{loss = "ls"}, it measure the
 deviation from the fitted mean to the response.  \item \code{"L2"} for
 regression, mean absolute error used by least squares regression
 \code{loss = "ls"}, it measure the deviation from the fitted mean to the
-response.  }Default is \code{"L2"}.}
+response. \item\code{"loss"} for classification, margin based loss function.
+\item\code{"misclass"} for classification giving misclassification error. }
+Default is \code{"L2"}.}
 
 \item{nfolds}{Number of folds - default is 5. Although \code{nfolds} can be
 as large as the sample size (leave-one-out CV), it is not recommended for

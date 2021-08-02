@@ -123,6 +123,7 @@ sequence of regularization parameters <code>lambda</code>.</p>
   <span class='va'>x</span>,
   <span class='va'>y</span>,
   group <span class='op'>=</span> <span class='cn'>NULL</span>,
+  loss <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"ls"</span>, <span class='st'>"logit"</span><span class='op'>)</span>,
   nlambda <span class='op'>=</span> <span class='fl'>100</span>,
   lambda.factor <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/ifelse.html'>ifelse</a></span><span class='op'>(</span><span class='va'>nobs</span> <span class='op'>&lt;</span> <span class='va'>nvars</span>, <span class='fl'>0.01</span>, <span class='fl'>1e-04</span><span class='op'>)</span>,
   lambda <span class='op'>=</span> <span class='cn'>NULL</span>,
@@ -154,6 +155,13 @@ is a vector of measurements and each column is a feature</p></td>
       <th>group</th>
       <td><p>A vector of consecutive integers describing the grouping of the
 coefficients (see example below).</p></td>
+    </tr>
+    <tr>
+      <th>loss</th>
+      <td><p>A character string specifying the loss function to use, valid
+options are:</p><ul>
+<li><p><code>"logit"</code> logistic loss (classification),</p></li>
+</ul><p>Default is <code>"ls"</code>.</p></td>
     </tr>
     <tr>
       <th>nlambda</th>

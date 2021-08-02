@@ -8,6 +8,7 @@ sparsegl(
   x,
   y,
   group = NULL,
+  loss = c("ls", "logit"),
   nlambda = 100,
   lambda.factor = ifelse(nobs < nvars, 0.01, 1e-04),
   lambda = NULL,
@@ -31,6 +32,10 @@ is a vector of measurements and each column is a feature}
 
 \item{group}{A vector of consecutive integers describing the grouping of the
 coefficients (see example below).}
+
+\item{loss}{A character string specifying the loss function to use, valid
+options are: \itemize{\item\code{"ls"} least squares loss (regression), \item
+\code{"logit"} logistic loss (classification), }Default is \code{"ls"}.}
 
 \item{nlambda}{The number of \code{lambda} values - default is 100.}
 

@@ -1,7 +1,7 @@
 sgl <- function(
     bn, bs, ix, iy, nobs, nvars, x, y, pf, dfmax, pmax, nlam, flmin, ulam, eps,
     maxit, vnames, group, intr, asparse, standardize,
-    lower_bnd, upper_bnd) {
+    lower_bnd, upper_bnd, loss) {
     # call Fortran core
     is.sparse <- FALSE
     algorithm <- "sgl"
@@ -32,26 +32,47 @@ sgl <- function(
         nnz <- as.integer(tail(x@p, 1))
     }
 
-    gamma <- calc_gamma(x, ix, iy, bn)
-
-    fit <- switch(algorithm,
-        sgl = .Fortran(
-            "sparse_four", bn, bs, ix, iy, gamma, nobs, nvars, as.double(x),
-            as.double(y), pf, dfmax, pmax, nlam, flmin, ulam, eps, maxit, nalam = 0L,
-            beta = double(nvars * nlam), activeGroup = integer(pmax),
-            nbeta = integer(nlam), alam = double(nlam), npass = 0L, jerr = 0L,
-            alsparse = as.double(asparse), lb = lower_bnd, ub = upper_bnd),
-        sp_sgl = .Fortran(
-            "spmat_four", bn,bs,ix,iy,gamma,nobs,nvars,xval,xidx,xcptr,nnz,
-            as.double(y), pf, dfmax, pmax, nlam, flmin, ulam, eps, maxit,
-            as.integer(intr), nalam = 0L, b0 = double(nlam),
-            beta = double(nvars * nlam),
-            activeGroup = integer(pmax), nbeta = integer(nlam),
-            alam = double(nlam),
-            npass = 0L, jerr = 0L, alsparse = as.double(asparse),
-            lb = lower_bnd, ub = upper_bnd),
+    gamma <- calc_gamma(x, ix, iy, bn, loss)
+    
+    if (loss == "ls") {
+        fit <- switch(algorithm,
+            sgl = .Fortran(
+                "sparse_four", bn, bs, ix, iy, gamma, nobs, nvars, as.double(x),
+                as.double(y), pf, dfmax, pmax, nlam, flmin, ulam, eps, maxit, nalam = 0L,
+                beta = double(nvars * nlam), activeGroup = integer(pmax),
+                nbeta = integer(nlam), alam = double(nlam), npass = 0L, jerr = 0L,
+                alsparse = as.double(asparse), lb = lower_bnd, ub = upper_bnd),
+            sp_sgl = .Fortran(
+                "spmat_four", bn, bs, ix, iy, gamma, nobs, nvars, xval, xidx, xcptr, nnz,
+                as.double(y), pf, dfmax, pmax, nlam, flmin, ulam, eps, maxit,
+                as.integer(intr), nalam = 0L, b0 = double(nlam),
+                beta = double(nvars * nlam),
+                activeGroup = integer(pmax), nbeta = integer(nlam),
+                alam = double(nlam),
+                npass = 0L, jerr = 0L, alsparse = as.double(asparse),
+                lb = lower_bnd, ub = upper_bnd),
+            stop("Requested algorithm is not implemented.")
+        )
+    } else {
+        fit <- switch(algorithm, 
+            sgl = .Fortran(
+                "log_sparse_four", bn, bs, ix, iy, gamma, nobs, nvars, as.double(x),
+                as.double(y), pf, dfmax, pmax, nlam, flmin, ulam, eps, maxit, nalam = 0L,
+                beta = double(nvars * nlam), activeGroup = integer(pmax),
+                nbeta = integer(nlam), alam = double(nlam), npass = 0L, jerr = 0L,
+                alsparse = as.double(asparse), lb = lower_bnd, ub = upper_bnd),
+            sp_sgl = .Fortran(
+                "log_spmat_four", bn, bs, ix, iy, gamma, nobs, nvars, xval, xidx, xcptr, nnz,
+                as.double(y), pf, dfmax, pmax, nlam, flmin, ulam, eps, maxit,
+                as.integer(intr), nalam = 0L, b0 = double(nlam),
+                beta = double(nvars * nlam),
+                activeGroup = integer(pmax), nbeta = integer(nlam),
+                alam = double(nlam),
+                npass = 0L, jerr = 0L, alsparse = as.double(asparse),
+                lb = lower_bnd, ub = upper_bnd),
         stop("Requested algorithm is not implemented.")
         )
+    }
     # output
     outlist <- getoutput(x, group, fit, maxit, pmax, nvars, vnames, eps)
     if (standardize) {
@@ -70,7 +91,7 @@ sgl <- function(
 }
 
 
-calc_gamma <- function(x, ix, iy, bn) {
+calc_gamma <- function(x, ix, iy, bn, loss) {
     gamma <- rep(NA, bn)
     for (g in seq_len(bn)) {
         grabcols <- ix[g]:iy[g]
@@ -82,7 +103,11 @@ calc_gamma <- function(x, ix, iy, bn) {
             else gamma[g] <- sum(x[,grabcols]^2)
         }
     }
-    return(as.double(gamma / nrow(x)))
+    if (loss == "ls") {
+        return(as.double(gamma / nrow(x)))
+    } else {
+        return(0.25 * as.double(gamma / nrow(x)))
+    }
 }
 
 maxeig2 <- function(x) {
