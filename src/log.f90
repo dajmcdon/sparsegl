@@ -1,4 +1,4 @@
-MODULE spmatmul
+MODULE log_spmatmul
 
    IMPLICIT NONE
 
@@ -66,13 +66,13 @@ MODULE spmatmul
       RETURN
    END SUBROUTINE log_softthresh
 
-END MODULE spmatmul
+END MODULE log_spmatmul
 
 !---------------------------------------------
 
-MODULE sgl_subfuns
+MODULE log_sgl_subfuns
 
-   USE spmatmul
+   USE log_spmatmul
    IMPLICIT NONE
 
    CONTAINS
@@ -164,9 +164,9 @@ MODULE sgl_subfuns
       ENDIF
       ALLOCATE(dd(bsg))
       dd = b(startix:endix) - oldb
-      IF (ANY(dd .ne. 0.0D0)) THEN
+      IF (ANY(ABS(dd) > 0.0D0)) THEN
          maxDif = MAX(maxDif, gamg**2 * DOT_PRODUCT(dd,dd))
-         r = r + MATMUL(x(:,startix:endix), dd)
+         r = r + y * MATMUL(x(:,startix:endix), dd)
          isDifZero = 1
       ENDIF
       DEALLOCATE(s, oldb, dd)
@@ -316,7 +316,7 @@ MODULE sgl_subfuns
       RETURN
    END SUBROUTINE log_sp_strong_kkt_check
 
-END MODULE sgl_subfuns
+END MODULE log_sgl_subfuns
 
 
    
@@ -324,7 +324,7 @@ END MODULE sgl_subfuns
 SUBROUTINE log_sparse_four (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,flmin,ulam,&
    eps,maxit,nalam,beta,activeGroup,nbeta,alam,npass,jerr,alsparse,lb,ub)
 
-   USE sgl_subfuns
+   USE log_sgl_subfuns
    IMPLICIT NONE
    ! - - - arg types - - -
    DOUBLE PRECISION, PARAMETER :: mfl = 1.0E-6
@@ -381,7 +381,7 @@ SUBROUTINE log_sparse_four (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,fl
    is_in_E_set = 0
    al = 0.0D0
    mnl = MIN(mnlam, nlam)
-   r = y
+   r = 0.0D0
    b = 0.0D0
    oldbeta = 0.0D0
    activeGroup = 0
@@ -543,8 +543,8 @@ SUBROUTINE log_spmat_four (bn,bs,ix,iy,gam,nobs,nvars,x,xidx,xcptr,nnz,y,pf,&
    dfmax,pmax,nlam,flmin,ulam,eps,maxit,intr,nalam,b0,beta,&
    activeGroup,nbeta,alam,npass,jerr,alsparse,lb,ub)
    ! --------------------------------------------------
-   USE sgl_subfuns
-   USE spmatmul
+   USE log_sgl_subfuns
+   USE log_spmatmul
    IMPLICIT NONE
    ! - - - arg types - - -
    DOUBLE PRECISION, PARAMETER :: mfl = 1.0E-6
@@ -601,7 +601,7 @@ SUBROUTINE log_spmat_four (bn,bs,ix,iy,gam,nobs,nvars,x,xidx,xcptr,nnz,y,pf,&
    is_in_E_set = 0
    al = 0.0D0
    mnl = MIN(mnlam, nlam)
-   r = y
+   r = 0.0D0
    b = 0.0D0
    oldbeta = 0.0D0
    activeGroup = 0
@@ -685,10 +685,11 @@ SUBROUTINE log_spmat_four (bn,bs,ix,iy,gam,nobs,nvars,x,xidx,xcptr,nnz,y,pf,&
                ENDIF
             ENDDO 
             IF(intr .ne. 0) THEN
-               d = sum(r) / nobs
+               d = sum(y/(1.0D0+exp(r)))
+               d = 4.0D0*d/nobs
                IF(d .ne. 0.0D0) THEN
                   b(0) = b(0) + d
-                  r = r - d
+                  r = r+y*d
                   maxDif = max(maxDif, d**2)
                ENDIF
             ENDIF
