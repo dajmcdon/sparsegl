@@ -18,6 +18,9 @@
 #' coefficients (see example below).
 #' @param lambda An optional user-supplied lambda sequence; default is
 #' \code{NULL}, and [sparsegl()] chooses its own sequence.
+#' @param loss A character string specifying the loss function to use, valid 
+#' options are: \itemize{\item\code{"ls"} least squares loss (regression), \item
+#' \code{"logit"} logistic loss (classification), }Default is \code{"ls"}.
 #' @param pred.loss Loss to use for cross-validation error. Valid options are:
 #' \itemize{ \item \code{"L1"} for regression, mean square
 #' error used by least squares regression \code{loss = "ls"}, it measure the
@@ -59,13 +62,15 @@
 #' groups <- rep(1:(p / 5), each = 5)
 #' cv_fit <- cv.sparsegl(X, y, groups)
 cv.sparsegl <- function(x, y, group, lambda = NULL,
+                        loss = c("ls", "logit"),
                         pred.loss = c("L2", "L1", "loss", "misclass"),
                         nfolds = 5, foldid, ...) {
+    loss <- match.arg(loss)
     pred.loss <- match.arg(pred.loss)
     N <- nrow(x)
     ###Fit the model once to get dimensions etc of output
     y <- drop(y)
-    sparsegl.object <- sparsegl(x, y, group, lambda = lambda, ...)
+    sparsegl.object <- sparsegl(x, y, group, lambda = lambda, loss = loss, ...)
     lambda <- sparsegl.object$lambda
     # predict -> coef
     if (missing(foldid)) foldid <- sample(rep(seq(nfolds), length = N))
@@ -124,8 +129,6 @@ cv.logit <- function(outlist, lambda, x, y, foldid, pred.loss = c("loss", "miscl
     prob_min <- 1e-05
     fmax <- log(1/prob_min - 1)
     fmin <- -fmax
-    y <- as.factor(y)
-    y <- c(-1, 1)[as.numeric(y)]
     nfolds <- max(foldid)
     predmat <- matrix(NA, length(y), length(lambda))
     nlams <- double(nfolds)
@@ -139,7 +142,7 @@ cv.logit <- function(outlist, lambda, x, y, foldid, pred.loss = c("loss", "miscl
     }
     predmat <- pmin(pmax(predmat, fmin), fmax)
     cvraw <- switch(pred.loss, loss = 2 * log(1 + exp(-y + predmat)),
-                    mixclass = (y != ifelse(predmat > 0, 1, -1)))
+                    misclass = (y != ifelse(predmat > 0, 1, -1)))
     N <- length(y) - apply(is.na(predmat), 2, sum)
     cvm <- apply(cvraw, 2, mean, na.rm = TRUE)
     cvsd <- sqrt(apply(scale(cvraw, cvm, FALSE)^2, 2, mean, NA.RM = TRUE)/(N - 1))

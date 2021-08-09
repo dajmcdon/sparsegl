@@ -91,7 +91,11 @@ sgl <- function(
         } 
     }
     outlist <- c(outlist, list(npasses = fit$npass, jerr = fit$jerr, group = group))
-    class(outlist) <- c("ls")
+    if (loss == "ls") {
+        class(outlist) <- c("ls")
+    } else {
+        class(outlist) <- c("logit")
+    }
     outlist
 }
 
