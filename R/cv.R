@@ -129,6 +129,8 @@ cv.logit <- function(outlist, lambda, x, y, foldid, pred.loss = c("loss", "miscl
     prob_min <- 1e-05
     fmax <- log(1/prob_min - 1)
     fmin <- -fmax
+    y <- as.factor(y)
+    y <- c(-1, 1)[as.numeric(y)]
     nfolds <- max(foldid)
     predmat <- matrix(NA, length(y), length(lambda))
     nlams <- double(nfolds)

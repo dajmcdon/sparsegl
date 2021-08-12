@@ -220,7 +220,7 @@ model, "loss" or "misclass"  for logistic regression model indicating the loss t
 use for cv error. This will return a `cv.sparseg` object.
 
 ```{r}
-fit_l1 <- cv.sparsegl(X, y, group = groups, pred.loss = "L1")
+fit_l1 <- cv.sparsegl(X, y, group = groups, loss = "ls", pred.loss = "L1")
 ```
 
 ### `plot()`, `coef()` and `predict()` for `cv.sparsegl` object

@@ -11,29 +11,28 @@ sgl <- function(
         x <- methods::as(x,"dgCMatrix")
         algorithm <- "sp_sgl"
     }
-     if (loss == "ls") {
-         if (intr) {
-             ym <- mean(y)
-             y <- y - ym
-             if (!is.sparse) {
-                 xm <- colMeans(x)
-                 x <- sweep(x,2,xm)
-             }
-         }
-     }
     
-         if (standardize) {
-            sx <- sqrt(Matrix::colSums(x^2))
-            sx[sx < sqrt(.Machine$double.eps)] <- 1 # Don't divide by zero!]
-            xs <- 1 / sx
-            x <- x %*% Matrix::Diagonal(x = xs)
+    if (intr) {
+        ym <- mean(y)
+        y <- y - ym
+    }
+    
+     if (standardize) {
+        if (!is.sparse) {
+            xm <- colMeans(x)
+            x <- sweep(x,2,xm)
         }
-        if (is.sparse) {
-            xidx <- as.integer(x@i + 1)
-            xcptr <- as.integer(x@p + 1)
-            xval <- as.double(x@x)
-            nnz <- as.integer(tail(x@p, 1))
-        }
+        sx <- sqrt(Matrix::colMeans(x^2))
+        sx[sx < sqrt(.Machine$double.eps)] <- 1 # Don't divide by zero!]
+        xs <- 1 / sx
+        x <- x %*% Matrix::Diagonal(x = xs)
+    }
+    if (is.sparse) {
+        xidx <- as.integer(x@i + 1)
+        xcptr <- as.integer(x@p + 1)
+        xval <- as.double(x@x)
+        nnz <- as.integer(tail(x@p, 1))
+    }
 
     gamma <- calc_gamma(x, ix, iy, bn, loss)
     
@@ -79,16 +78,18 @@ sgl <- function(
     # output
     outlist <- getoutput(x, group, fit, maxit, pmax, nvars, vnames, eps)
     if (standardize) {
-        outlist$beta = outlist$beta * xs
+        outlist$beta <- outlist$beta / matrix(xs, nrow = nvars, ncol = nlam)
     }
     if (intr) {
-        if (loss == "ls") {
-            if (is.sparse) {
-                outlist$b0 <- outlist$b0 + ym
-            } else {
+        if (is.sparse) {
+            outlist$b0 <- outlist$b0 + ym
+        } else {
+            if (loss == "ls") {
                 outlist$b0 <- ym - xm %*% outlist$beta
+            } else {
+                outlist$b0 <- -xm %*% outlist$beta
             }
-        } 
+        }
     }
     outlist <- c(outlist, list(npasses = fit$npass, jerr = fit$jerr, group = group))
     if (loss == "ls") {
