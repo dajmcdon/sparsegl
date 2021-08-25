@@ -12,10 +12,10 @@ MODULE log_spmatmul
    ! to slice into columns cj:ck, you need a[cptr[cj]:(cptrr[ck+1]-1)] and
    ! ridx[cptr[cj]:(cptr[ck+1]-1)] and cptr[cj:ck])
    ! We don't actually need Ax->y ever, we need y <- y-A[,cj:ck] x
-   SUBROUTINE log_ymspax (a, ridx, cptr, n, p, nnz, x, y, cj, ck, lx)
+   SUBROUTINE log_ymspax (a,b,ridx, cptr, n, p, nnz, x, y, cj, ck, lx)
       IMPLICIT NONE
       INTEGER n, p, nnz, cj, ck, lx
-      DOUBLE PRECISION, INTENT(in) :: a(nnz)
+      DOUBLE PRECISION, INTENT(in) :: a(nnz), b(nnz)
       INTEGER, INTENT(in) :: ridx(nnz)
       INTEGER, INTENT(in) :: cptr(p+1)
       DOUBLE PRECISION, INTENT(in) :: x(lx)
@@ -26,16 +26,16 @@ MODULE log_spmatmul
       DO i = cj, ck
          k = cptr(i + 1) - 1
          DO j = cptr(i), k
-            y(ridx(j)) = y(ridx(j)) - x(i - cj + 1) * a(j)
+            y(ridx(j)) = y(ridx(j)) + b(ridx(j)) * x(i - cj + 1) * a(j)
          ENDDO
       ENDDO
       RETURN
    END SUBROUTINE log_ymspax
 
-   SUBROUTINE log_spatx (a, ridx, cptr, n, p, nnz, x, y, cj, ck)
+   SUBROUTINE log_spatx (a,b,ridx, cptr, n, p, nnz, x, y, cj, ck)
       IMPLICIT NONE
       INTEGER n, p, nnz, cj, ck
-      DOUBLE PRECISION, INTENT(in) :: a(nnz)
+      DOUBLE PRECISION, INTENT(in) :: a(nnz), b(nnz)
       INTEGER, INTENT(in) :: ridx(nnz)
       INTEGER, INTENT(in) :: cptr(p+1)
       DOUBLE PRECISION, INTENT(in) :: x(n)
@@ -47,7 +47,7 @@ MODULE log_spmatmul
       DO i = cj, ck
          k = i - cj + 1
          DO j = cptr(i), (cptr(i + 1) - 1)
-            y(k) = y(k) + x(ridx(j)) * a(j)
+            y(k) = y(k) + 1 / (1 + exp(x(ridx(j)))) * a(j) * b(j)
          ENDDO
       ENDDO
       RETURN
@@ -218,7 +218,7 @@ MODULE log_sgl_subfuns
       RETURN
    END SUBROUTINE log_strong_kkt_check
 
-   SUBROUTINE log_sp_update_step(bsg, startix, endix, b, lama, t_for_sg, pfg, lam1ma, x,&
+   SUBROUTINE log_sp_update_step(bsg, startix, endix, b, lama, t_for_sg, pfg, lam1ma, x, y,&
          xidx, xcptr, nnz, isDifZero, nobs, r, gamg, maxDif, nvars, lb, ub)
 
       IMPLICIT NONE
@@ -231,7 +231,7 @@ MODULE log_sgl_subfuns
       DOUBLE PRECISION, DIMENSION (:), INTENT(inout) :: r
       DOUBLE PRECISION :: snorm, tea
       DOUBLE PRECISION, INTENT(in) :: lama, t_for_sg, pfg, lam1ma, lb, ub
-      DOUBLE PRECISION, INTENT(in) :: x(nnz)
+      DOUBLE PRECISION, INTENT(in) :: x(nnz), y(nnz)
       INTEGER, INTENT(in) :: xidx(nnz)
       INTEGER, INTENT(in) :: xcptr(nvars + 1)
       INTEGER, INTENT(inout) :: isDifZero
@@ -244,7 +244,7 @@ MODULE log_sgl_subfuns
       oldb = b(startix:endix)
       ! print *, oldb
 
-      CALL log_spatx(x, xidx, xcptr, nobs, nvars, nnz, r, s, startix, endix)
+      CALL log_spatx(x,y,xidx, xcptr, nobs, nvars, nnz, r, s, startix, endix)
       s = s * t_for_sg / nobs + b(startix:endix)
       CALL log_softthresh(s, lama * t_for_sg, bsg)
       snorm = SQRT(DOT_PRODUCT(s,s))
@@ -259,9 +259,9 @@ MODULE log_sgl_subfuns
       ENDIF
       ALLOCATE(dd(bsg))
       dd = b(startix:endix) - oldb
-      IF(ANY(dd .ne. 0.0D0)) THEN
+      IF(ANY(ABS(dd) > 0.0D0)) THEN
          maxDif = MAX(maxDif, gamg**2 * DOT_PRODUCT(dd,dd))
-         CALL log_ymspax(x, xidx, xcptr, nobs, nvars, nnz, dd, r, startix, endix, bsg)
+         CALL log_ymspax(x, y, xidx, xcptr, nobs, nvars, nnz, dd, r, startix, endix, bsg)
          isDifZero = 1
       ENDIF
       DEALLOCATE(s, oldb, dd)
@@ -270,11 +270,11 @@ MODULE log_sgl_subfuns
 
 
    SUBROUTINE log_sp_strong_kkt_check(is_in_E_set,violation,bn,ix,iy,pf,lam1ma,bs,&
-         lama,ga,is_in_S_set,x,xidx,xcptr,nnz,r,nobs,nvars,vl)
+         lama,ga,is_in_S_set,x,y,xidx,xcptr,nnz,r,nobs,nvars,vl)
 
       IMPLICIT NONE
       INTEGER, INTENT(in) :: nobs, nvars, nnz
-      DOUBLE PRECISION, INTENT(in) :: x(nnz)
+      DOUBLE PRECISION, INTENT(in) :: x(nnz),y(nnz)
       INTEGER, INTENT(in) :: xidx(nnz)
       INTEGER, INTENT(in) :: xcptr(nvars + 1)
       DOUBLE PRECISION, INTENT(in):: r(nobs)
@@ -299,7 +299,7 @@ MODULE log_sgl_subfuns
             endix = iy(g)
             ALLOCATE(s(bs(g)))
             s = 0.0D0
-            CALL log_spatx(x, xidx, xcptr, nobs, nvars, nnz, r, s, startix, endix)
+            CALL log_spatx(x,y,xidx, xcptr, nobs, nvars, nnz, r, s, startix, endix)
             vl(startix:endix) = s / nobs
             CALL log_softthresh(s, lama, bs(g))
             snorm = SQRT(dot_PRODUCT(s,s))
@@ -322,7 +322,7 @@ END MODULE log_sgl_subfuns
    
 ! --------------------------------------------------
 SUBROUTINE log_sparse_four (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,flmin,ulam,&
-   eps,maxit,nalam,beta,activeGroup,nbeta,alam,npass,jerr,alsparse,lb,ub)
+   eps,maxit,intr,nalam,b0,beta,activeGroup,nbeta,alam,npass,jerr,alsparse,lb,ub)
 
    USE log_sgl_subfuns
    IMPLICIT NONE
@@ -335,16 +335,17 @@ SUBROUTINE log_sparse_four (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,fl
    INTEGER:: bs(bn)
    INTEGER:: ix(bn)
    INTEGER:: iy(bn)
-   INTEGER:: nobs, nvars, dfmax, pmax, nlam, nalam, npass, jerr, maxit
+   INTEGER:: nobs, nvars, dfmax, pmax, nlam, nalam, npass, jerr, maxit,intr
    INTEGER:: activeGroup(pmax)
    INTEGER:: nbeta(nlam)
-   DOUBLE PRECISION :: flmin, eps, alsparse, max_gam, maxDif, al, alf, snorm
+   DOUBLE PRECISION :: flmin, eps, alsparse, max_gam, d, maxDif, al, alf, snorm
    DOUBLE PRECISION :: x(nobs,nvars)
    DOUBLE PRECISION :: y(nobs)
    DOUBLE PRECISION :: pf(bn)
    DOUBLE PRECISION :: ulam(nlam)
    DOUBLE PRECISION :: gam(bn)
    DOUBLE PRECISION :: lb(bn), ub(bn)
+   DOUBLE PRECISION :: b0(nlam)
    DOUBLE PRECISION :: beta(nvars,nlam)
    DOUBLE PRECISION :: alam(nlam)
 
@@ -366,8 +367,8 @@ SUBROUTINE log_sparse_four (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,fl
    DOUBLE PRECISION:: ga(bn) 
    DOUBLE PRECISION:: vl(nvars) 
    ! - - - allocate variables - - -
-   ALLOCATE(b(1:nvars))
-   ALLOCATE(oldbeta(1:nvars))
+   ALLOCATE(b(0:nvars))
+   ALLOCATE(oldbeta(0:nvars))
    ALLOCATE(r(1:nobs))
    ALLOCATE(activeGroupIndex(1:bn))
    !    ALLOCATE(al_sparse)
@@ -438,7 +439,7 @@ SUBROUTINE log_sparse_four (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,fl
       CALL log_strong_rule (is_in_S_set, ga, pf, tlam, alsparse) !uses s_set instead of e_set...
       ! --------- outer loop ---------------------------- !
       DO
-         ! print *, is_in_E_set
+         oldbeta(0) = b(0)
          IF (ni > 0) THEN
             ! print *, "ni > 0"
             DO j = 1, ni
@@ -465,6 +466,15 @@ SUBROUTINE log_sparse_four (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,fl
                   activeGroup(ni) = g
                ENDIF
             ENDDO
+            IF (intr /= 0) THEN
+               d = sum(y/(1.0D0+exp(r)))
+               d = 4.0D0*d/nobs
+               IF (d /= 0.0D0) THEN
+                  b(0) = b(0) + d
+                  r = r + y * d
+                  maxDif = max(maxDif, d**2)
+               ENDIF
+            ENDIF
             IF (ni > pmax) EXIT
             IF (maxDif < eps) EXIT
             IF (npass > maxit) THEN 
@@ -477,8 +487,10 @@ SUBROUTINE log_sparse_four (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,fl
          ! PRINT *, "Here is where the final check starts"
          ! print *, i ! Just to check how many final checks...
          ! i = i+1
-         violation = 0
+         violation = 0 
+         PRINT *, (max_gam * (b - oldbeta) / (1 + ABS(b)))**2
          IF (ANY((max_gam * (b - oldbeta) / (1 + ABS(b)))**2 >= eps)) violation = 1 !has beta moved globally
+         PRINT *, violation
          IF (violation == 1) CYCLE
          CALL log_strong_kkt_check(is_in_E_set, violation, bn, ix, iy, pf, lam1ma,&
                bs, lama, ga, is_in_S_set, x, y, r, nobs, nvars, vl) ! Step 3
@@ -522,6 +534,7 @@ SUBROUTINE log_sparse_four (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,fl
          ENDDO
       ENDIF
       nbeta(l) = ni
+      b0(l) = b(0)
       alam(l) = al
       nalam = l
       IF (l < mnl) CYCLE
@@ -536,6 +549,7 @@ SUBROUTINE log_sparse_four (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,fl
    DEALLOCATE(b, oldbeta, r, activeGroupIndex)
    RETURN
 END SUBROUTINE log_sparse_four
+
 
 
    ! --------------------------------------------------
@@ -617,7 +631,7 @@ SUBROUTINE log_spmat_four (bn,bs,ix,iy,gam,nobs,nvars,x,xidx,xcptr,nnz,y,pf,&
       alf = flmin**(1.0D0 / (nlam - 1.0D0))
    ENDIF
    vl = 0.0D0
-   CALL log_spatx(x, xidx, xcptr, nobs, nvars, nnz, r, vl, 1, nvars)
+   CALL log_spatx(x,y, xidx, xcptr, nobs, nvars, nnz, r, vl, 1, nvars)
    vl = vl / nobs
    al0 = 0.0D0
    DO g = 1, bn ! For each group...
@@ -675,7 +689,7 @@ SUBROUTINE log_spmat_four (bn,bs,ix,iy,gam,nobs,nvars,x,xidx,xcptr,nnz,y,pf,&
                startix = ix(g)
                endix = iy(g)
                CALL log_sp_update_step(bs(g), startix, endix, b, lama, t_for_s(g),&
-                           pf(g), lam1ma, x, xidx, xcptr, nnz, isDifZero, nobs,&
+                           pf(g), lam1ma, x,y, xidx, xcptr, nnz, isDifZero, nobs,&
                            r, gam(g), maxDif, nvars, lb(g), ub(g))
                IF (activeGroupIndex(g) == 0 .AND. isDifZero == 1) THEN
                   ni = ni+1
@@ -707,7 +721,7 @@ SUBROUTINE log_spmat_four (bn,bs,ix,iy,gam,nobs,nvars,x,xidx,xcptr,nnz,y,pf,&
          IF (ANY((max_gam * (b - oldbeta) / (1 + ABS(b)))**2 >= eps)) violation = 1 !has beta moved globally
          IF (violation == 1) CYCLE
          CALL log_sp_strong_kkt_check(is_in_E_set, violation, bn, ix, iy, pf,&
-                  lam1ma, bs, lama, ga, is_in_S_set, x, xidx, xcptr, nnz,&
+                  lam1ma, bs, lama, ga, is_in_S_set, x,y, xidx, xcptr, nnz,&
                   r,nobs,nvars, vl)
          IF (violation == 1) CYCLE
          ! Need to compute vl/ga for the ones that aren't already updated, before log_kkt_check
@@ -717,7 +731,7 @@ SUBROUTINE log_spmat_four (bn,bs,ix,iy,gam,nobs,nvars,x,xidx,xcptr,nnz,y,pf,&
                endix = iy(g)
                ALLOCATE(s(bs(g)))
                s = 0.0D0
-               CALL log_spatx(x, xidx, xcptr, nobs, nvars, nnz, r, s, startix, endix)
+               CALL log_spatx(x,y, xidx, xcptr, nobs, nvars, nnz, r, s, startix, endix)
                vl(startix:endix) = s / nobs
                CALL log_softthresh(s, lama, bs(g))
                snorm = SQRT(DOT_PRODUCT(s,s))
