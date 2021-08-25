@@ -133,9 +133,9 @@ sparsegl <- function(
   if (!identical(as.integer(sort(unique(group))), as.integer(1:bn)))
     stop("Groups must be consecutively numbered 1, 2, 3, ...")
 
-  # assertthat::assert_that(
-  #   asparse < 1,
-  #   msg = "asparse must be less than 1, you may want glmnet::glmnet()")
+  assertthat::assert_that(
+    asparse <= 1,
+    msg = "asparse must be less than or equal to 1, you may want glmnet::glmnet()")
 
   if (asparse < 0) {
     asparse <- 0
