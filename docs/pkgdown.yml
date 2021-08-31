@@ -1,7 +1,7 @@
 pandoc: 2.7.3
-pkgdown: 1.6.1.9001
-pkgdown_sha: 900ef5471576f8f29508a7e7d94fae51390f2d96
+pkgdown: 1.6.1
+pkgdown_sha: ~
 articles:
   sparsegl: sparsegl.html
-last_built: 2021-07-29T20:26Z
+last_built: 2021-08-31T05:41Z
 

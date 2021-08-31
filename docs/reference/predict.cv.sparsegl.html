@@ -47,8 +47,6 @@ for lambda." />
 
 
 
-
-
 <!-- mathjax -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js" integrity="sha256-nvJJv9wWKEm88qvoQl9ekL2J+k/RWIsaSScxxlsrv8k=" crossorigin="anonymous"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/config/TeX-AMS-MML_HTMLorMML.js" integrity="sha256-84DKXVJXs0/F8OTMzX4UR909+jtl4G7SPypPavF+GfA=" crossorigin="anonymous"></script>
@@ -60,15 +58,9 @@ for lambda." />
 
 
 
-  
-
-  
-
   </head>
 
   <body data-spy="scroll" data-target="#toc">
-    
-
     <div class="container template-reference-topic">
       <header>
       <div class="navbar navbar-default navbar-fixed-top" role="navigation">
@@ -89,6 +81,12 @@ for lambda." />
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
         <li>
+  <a href="../index.html">
+    <span class="fas fa-home fa-lg"></span>
+     
+  </a>
+</li>
+<li>
   <a href="../articles/sparsegl.html">Get started</a>
 </li>
 <li>
@@ -121,8 +119,8 @@ using the stored <code>"sparsegl.fit"</code> object, and the value chosen
 for <code>lambda</code>.</p>
     </div>
 
-    <div class="ref-usage sourceCode"><pre class='sourceCode r'><code><span class='co'># S3 method for cv.sparsegl</span>
-<span class='fu'><a href='https://rdrr.io/r/stats/predict.html'>predict</a></span><span class='op'>(</span><span class='va'>object</span>, <span class='va'>newx</span>, s <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"lambda.1se"</span>, <span class='st'>"lambda.min"</span><span class='op'>)</span>, <span class='va'>...</span><span class='op'>)</span></code></pre></div>
+    <pre class="usage"><span class='co'># S3 method for cv.sparsegl</span>
+<span class='fu'><a href='https://rdrr.io/r/stats/predict.html'>predict</a></span><span class='op'>(</span><span class='va'>object</span>, <span class='va'>newx</span>, s <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"lambda.1se"</span>, <span class='st'>"lambda.min"</span><span class='op'>)</span>, <span class='va'>...</span><span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -164,29 +162,28 @@ a prediction.</p>
 methods.</p></div>
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
-    <div class="ref-examples sourceCode"><pre class='sourceCode r'><code><span class='r-in'><span class='va'>n</span> <span class='op'>&lt;-</span> <span class='fl'>100</span></span>
-<span class='r-in'><span class='va'>p</span> <span class='op'>&lt;-</span> <span class='fl'>20</span></span>
-<span class='r-in'><span class='va'>X</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/matrix.html'>matrix</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/stats/Normal.html'>rnorm</a></span><span class='op'>(</span><span class='va'>n</span> <span class='op'>*</span> <span class='va'>p</span><span class='op'>)</span>, nrow <span class='op'>=</span> <span class='va'>n</span><span class='op'>)</span></span>
-<span class='r-in'><span class='va'>eps</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/stats/Normal.html'>rnorm</a></span><span class='op'>(</span><span class='va'>n</span><span class='op'>)</span></span>
-<span class='r-in'><span class='va'>beta_star</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/rep.html'>rep</a></span><span class='op'>(</span><span class='fl'>5</span>, <span class='fl'>5</span><span class='op'>)</span>, <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='fl'>5</span>, <span class='op'>-</span><span class='fl'>5</span>, <span class='fl'>2</span>, <span class='fl'>0</span>, <span class='fl'>0</span><span class='op'>)</span>, <span class='fu'><a href='https://rdrr.io/r/base/rep.html'>rep</a></span><span class='op'>(</span><span class='op'>-</span><span class='fl'>5</span>, <span class='fl'>5</span><span class='op'>)</span>, <span class='fu'><a href='https://rdrr.io/r/base/rep.html'>rep</a></span><span class='op'>(</span><span class='fl'>0</span>, <span class='op'>(</span><span class='va'>p</span> <span class='op'>-</span> <span class='fl'>15</span><span class='op'>)</span><span class='op'>)</span><span class='op'>)</span></span>
-<span class='r-in'><span class='va'>y</span> <span class='op'>&lt;-</span> <span class='va'>X</span> <span class='op'><a href='https://rdrr.io/r/base/matmult.html'>%*%</a></span> <span class='va'>beta_star</span> <span class='op'>+</span> <span class='va'>eps</span></span>
-<span class='r-in'><span class='va'>groups</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/rep.html'>rep</a></span><span class='op'>(</span><span class='fl'>1</span><span class='op'>:</span><span class='op'>(</span><span class='va'>p</span> <span class='op'>/</span> <span class='fl'>5</span><span class='op'>)</span>, each <span class='op'>=</span> <span class='fl'>5</span><span class='op'>)</span></span>
-<span class='r-in'><span class='va'>fit1</span> <span class='op'>&lt;-</span> <span class='fu'><a href='sparsegl.html'>sparsegl</a></span><span class='op'>(</span><span class='va'>X</span>, <span class='va'>y</span>, group <span class='op'>=</span> <span class='va'>groups</span><span class='op'>)</span></span>
-<span class='r-in'><span class='va'>cv_fit</span> <span class='op'>&lt;-</span> <span class='fu'><a href='cv.sparsegl.html'>cv.sparsegl</a></span><span class='op'>(</span><span class='va'>X</span>, <span class='va'>y</span>, <span class='va'>groups</span><span class='op'>)</span></span>
-<span class='r-in'><span class='fu'><a href='https://rdrr.io/r/stats/predict.html'>predict</a></span><span class='op'>(</span><span class='va'>cv_fit</span>, newx <span class='op'>=</span> <span class='va'>X</span><span class='op'>[</span><span class='fl'>50</span><span class='op'>:</span><span class='fl'>60</span>, <span class='op'>]</span>, s <span class='op'>=</span> <span class='st'>"lambda.min"</span><span class='op'>)</span></span>
-<span class='r-out co'><span class='r-pr'>#&gt;</span>                 1</span>
-<span class='r-out co'><span class='r-pr'>#&gt;</span>  [1,]  -0.7036891</span>
-<span class='r-out co'><span class='r-pr'>#&gt;</span>  [2,] -17.5407524</span>
-<span class='r-out co'><span class='r-pr'>#&gt;</span>  [3,] -10.0894352</span>
-<span class='r-out co'><span class='r-pr'>#&gt;</span>  [4,]  -6.2247191</span>
-<span class='r-out co'><span class='r-pr'>#&gt;</span>  [5,]   7.0455576</span>
-<span class='r-out co'><span class='r-pr'>#&gt;</span>  [6,] -30.5785284</span>
-<span class='r-out co'><span class='r-pr'>#&gt;</span>  [7,]   1.6571146</span>
-<span class='r-out co'><span class='r-pr'>#&gt;</span>  [8,]   5.7984280</span>
-<span class='r-out co'><span class='r-pr'>#&gt;</span>  [9,]  -5.6496012</span>
-<span class='r-out co'><span class='r-pr'>#&gt;</span> [10,]  22.8536051</span>
-<span class='r-out co'><span class='r-pr'>#&gt;</span> [11,] -31.5503128</span>
-</code></pre></div>
+    <pre class="examples"><div class='input'><span class='va'>n</span> <span class='op'>&lt;-</span> <span class='fl'>100</span>
+<span class='va'>p</span> <span class='op'>&lt;-</span> <span class='fl'>20</span>
+<span class='va'>X</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/matrix.html'>matrix</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/stats/Normal.html'>rnorm</a></span><span class='op'>(</span><span class='va'>n</span> <span class='op'>*</span> <span class='va'>p</span><span class='op'>)</span>, nrow <span class='op'>=</span> <span class='va'>n</span><span class='op'>)</span>
+<span class='va'>eps</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/stats/Normal.html'>rnorm</a></span><span class='op'>(</span><span class='va'>n</span><span class='op'>)</span>
+<span class='va'>beta_star</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/rep.html'>rep</a></span><span class='op'>(</span><span class='fl'>5</span>, <span class='fl'>5</span><span class='op'>)</span>, <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='fl'>5</span>, <span class='op'>-</span><span class='fl'>5</span>, <span class='fl'>2</span>, <span class='fl'>0</span>, <span class='fl'>0</span><span class='op'>)</span>, <span class='fu'><a href='https://rdrr.io/r/base/rep.html'>rep</a></span><span class='op'>(</span><span class='op'>-</span><span class='fl'>5</span>, <span class='fl'>5</span><span class='op'>)</span>, <span class='fu'><a href='https://rdrr.io/r/base/rep.html'>rep</a></span><span class='op'>(</span><span class='fl'>0</span>, <span class='op'>(</span><span class='va'>p</span> <span class='op'>-</span> <span class='fl'>15</span><span class='op'>)</span><span class='op'>)</span><span class='op'>)</span>
+<span class='va'>y</span> <span class='op'>&lt;-</span> <span class='va'>X</span> <span class='op'>%*%</span> <span class='va'>beta_star</span> <span class='op'>+</span> <span class='va'>eps</span>
+<span class='va'>groups</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/rep.html'>rep</a></span><span class='op'>(</span><span class='fl'>1</span><span class='op'>:</span><span class='op'>(</span><span class='va'>p</span> <span class='op'>/</span> <span class='fl'>5</span><span class='op'>)</span>, each <span class='op'>=</span> <span class='fl'>5</span><span class='op'>)</span>
+<span class='va'>fit1</span> <span class='op'>&lt;-</span> <span class='fu'><a href='sparsegl.html'>sparsegl</a></span><span class='op'>(</span><span class='va'>X</span>, <span class='va'>y</span>, group <span class='op'>=</span> <span class='va'>groups</span><span class='op'>)</span>
+<span class='va'>cv_fit</span> <span class='op'>&lt;-</span> <span class='fu'><a href='cv.sparsegl.html'>cv.sparsegl</a></span><span class='op'>(</span><span class='va'>X</span>, <span class='va'>y</span>, <span class='va'>groups</span><span class='op'>)</span>
+<span class='fu'><a href='https://rdrr.io/r/stats/predict.html'>predict</a></span><span class='op'>(</span><span class='va'>cv_fit</span>, newx <span class='op'>=</span> <span class='va'>X</span><span class='op'>[</span><span class='fl'>50</span><span class='op'>:</span><span class='fl'>60</span>, <span class='op'>]</span>, s <span class='op'>=</span> <span class='st'>"lambda.min"</span><span class='op'>)</span>
+</div><div class='output co'>#&gt;                 1
+#&gt;  [1,]  -1.5845589
+#&gt;  [2,] -15.1089415
+#&gt;  [3,] -10.6859649
+#&gt;  [4,]  -6.4280263
+#&gt;  [5,]   7.4160018
+#&gt;  [6,] -28.3812886
+#&gt;  [7,]  -0.1123748
+#&gt;  [8,]   2.4539413
+#&gt;  [9,]  -4.3143722
+#&gt; [10,]  22.8537219
+#&gt; [11,] -34.0227342</div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top">
@@ -198,11 +195,11 @@ methods.</p></div>
 
       <footer>
       <div class="copyright">
-  <p><p>Developed by Daniel J. McDonald.</p></p>
+  <p>Developed by Daniel J. McDonald.</p>
 </div>
 
 <div class="pkgdown">
-  <p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 1.6.1.9001.</p></p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.6.1.</p>
 </div>
 
       </footer>
@@ -210,8 +207,6 @@ methods.</p></div>
 
   
 
-
-  
 
   </body>
 </html>

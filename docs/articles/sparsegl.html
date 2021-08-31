@@ -19,8 +19,6 @@
 <![endif]-->
 </head>
 <body data-spy="scroll" data-target="#toc">
-    
-
     <div class="container template-article">
       <header><div class="navbar navbar-default navbar-fixed-top" role="navigation">
   <div class="container">
@@ -39,6 +37,12 @@
 
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
+<li>
+  <a href="../index.html">
+    <span class="fas fa-home fa-lg"></span>
+     
+  </a>
+</li>
 <li>
   <a href="../articles/sparsegl.html">Get started</a>
 </li>
@@ -81,13 +85,13 @@
 </ul>
 <div id="installing" class="section level2">
 <h2 class="hasAnchor">
-<a href="#installing" class="anchor" aria-hidden="true"></a>Installing</h2>
-<p>This package is not on CRAN yet, so it can be installed using the [<code>devtools</code>] (<a href="https://cran.r-project.org/package=devtools" class="external-link uri">https://cran.r-project.org/package=devtools</a>) package:</p>
+<a href="#installing" class="anchor"></a>Installing</h2>
+<p>This package is not on CRAN yet, so it can be installed using the [<code>devtools</code>] (<a href="https://cran.r-project.org/package=devtools" class="uri">https://cran.r-project.org/package=devtools</a>) package:</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu">devtools</span><span class="fu">::</span><span class="fu"><a href="https://devtools.r-lib.org//reference/remote-reexports.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">"dajmcdon/sparsegl"</span>, ref <span class="op">=</span> <span class="st">"main"</span><span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span class="fu">devtools</span><span class="fu">::</span><span class="fu"><a href="https://devtools.r-lib.org//reference/remote-reexports.html">install_github</a></span><span class="op">(</span><span class="st">"dajmcdon/sparsegl"</span>, ref <span class="op">=</span> <span class="st">"main"</span><span class="op">)</span></code></pre></div>
 <p>Building the vignettes, such as this getting started guide, takes a significant amount of time. They are not included in the package by default. If you want to include vignettes, then use this modified command:</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu">devtools</span><span class="fu">::</span><span class="fu"><a href="https://devtools.r-lib.org//reference/remote-reexports.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">"dajmcdon/sparsegl"</span>, ref <span class="op">=</span> <span class="st">"main"</span>,
+<code class="sourceCode R"><span class="fu">devtools</span><span class="fu">::</span><span class="fu"><a href="https://devtools.r-lib.org//reference/remote-reexports.html">install_github</a></span><span class="op">(</span><span class="st">"dajmcdon/sparsegl"</span>, ref <span class="op">=</span> <span class="st">"main"</span>,
                           build_vignettes <span class="op">=</span> <span class="cn">TRUE</span>, dependencies <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></code></pre></div>
 <p>For this getting-started vignette, firstly, we will randomly generate <code>X</code>, an input matrix of predictors of dimension <code>n</code>-obs by <code>p</code>-feature. To initiate <code>y</code>, a real-valued vector (make it a vector rather a matrix),</p>
 <ul>
@@ -115,25 +119,25 @@
 <li><p><span class="math inline">\(\lambda\)</span> fine-tunes the size of penalty imposed on the model to control the number of nonzero coefficients of features, and furthermore, to avoid overfitting.</p></li>
 </ul>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">sparsegl</span><span class="op">)</span>
-<span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">1010</span><span class="op">)</span>
+<code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va">sparsegl</span><span class="op">)</span>
+<span class="fu"><a href="https://rdrr.io/r/base/Random.html">set.seed</a></span><span class="op">(</span><span class="fl">1010</span><span class="op">)</span>
 <span class="va">n</span> <span class="op">&lt;-</span> <span class="fl">100</span>
 <span class="va">p</span> <span class="op">&lt;-</span> <span class="fl">200</span>
-<span class="va">X</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span>data <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="va">n</span><span class="op">*</span><span class="va">p</span>, mean <span class="op">=</span> <span class="fl">0</span>, sd <span class="op">=</span> <span class="fl">1</span><span class="op">)</span>, nrow <span class="op">=</span> <span class="va">n</span>, ncol <span class="op">=</span> <span class="va">p</span><span class="op">)</span>
-<span class="va">beta_star</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">5</span>, <span class="fl">5</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">5</span>, <span class="op">-</span><span class="fl">5</span>, <span class="fl">2</span>, <span class="fl">0</span>, <span class="fl">0</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="op">-</span><span class="fl">5</span>, <span class="fl">5</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">2</span>, <span class="op">-</span><span class="fl">3</span>, <span class="fl">8</span>, <span class="fl">0</span>, <span class="fl">0</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">0</span>, <span class="op">(</span><span class="va">p</span> <span class="op">-</span> <span class="fl">20</span><span class="op">)</span><span class="op">)</span><span class="op">)</span>
-<span class="va">groups</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="op">(</span><span class="va">p</span> <span class="op">/</span> <span class="fl">5</span><span class="op">)</span>, each <span class="op">=</span> <span class="fl">5</span><span class="op">)</span>
+<span class="va">X</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html">matrix</a></span><span class="op">(</span>data <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html">rnorm</a></span><span class="op">(</span><span class="va">n</span><span class="op">*</span><span class="va">p</span>, mean <span class="op">=</span> <span class="fl">0</span>, sd <span class="op">=</span> <span class="fl">1</span><span class="op">)</span>, nrow <span class="op">=</span> <span class="va">n</span>, ncol <span class="op">=</span> <span class="va">p</span><span class="op">)</span>
+<span class="va">beta_star</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/rep.html">rep</a></span><span class="op">(</span><span class="fl">5</span>, <span class="fl">5</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">5</span>, <span class="op">-</span><span class="fl">5</span>, <span class="fl">2</span>, <span class="fl">0</span>, <span class="fl">0</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/rep.html">rep</a></span><span class="op">(</span><span class="op">-</span><span class="fl">5</span>, <span class="fl">5</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">2</span>, <span class="op">-</span><span class="fl">3</span>, <span class="fl">8</span>, <span class="fl">0</span>, <span class="fl">0</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/rep.html">rep</a></span><span class="op">(</span><span class="fl">0</span>, <span class="op">(</span><span class="va">p</span> <span class="op">-</span> <span class="fl">20</span><span class="op">)</span><span class="op">)</span><span class="op">)</span>
+<span class="va">groups</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html">rep</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="op">(</span><span class="va">p</span> <span class="op">/</span> <span class="fl">5</span><span class="op">)</span>, each <span class="op">=</span> <span class="fl">5</span><span class="op">)</span>
 
 <span class="co"># Linear regression model</span>
-<span class="va">eps</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="va">n</span>, mean <span class="op">=</span> <span class="fl">0</span>, sd <span class="op">=</span> <span class="fl">1</span><span class="op">)</span>
-<span class="va">y</span> <span class="op">&lt;-</span> <span class="va">X</span> <span class="op"><a href="https://rdrr.io/r/base/matmult.html" class="external-link">%*%</a></span> <span class="va">beta_star</span> <span class="op">+</span> <span class="va">eps</span>
+<span class="va">eps</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html">rnorm</a></span><span class="op">(</span><span class="va">n</span>, mean <span class="op">=</span> <span class="fl">0</span>, sd <span class="op">=</span> <span class="fl">1</span><span class="op">)</span>
+<span class="va">y</span> <span class="op">&lt;-</span> <span class="va">X</span> <span class="op">%*%</span> <span class="va">beta_star</span> <span class="op">+</span> <span class="va">eps</span>
 
 <span class="co"># Logistic regression model</span>
-<span class="va">pr</span> <span class="op">&lt;-</span> <span class="fl">1</span> <span class="op">/</span> <span class="op">(</span><span class="fl">1</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">exp</a></span><span class="op">(</span><span class="op">-</span><span class="va">X</span> <span class="op"><a href="https://rdrr.io/r/base/matmult.html" class="external-link">%*%</a></span> <span class="va">beta_star</span><span class="op">)</span><span class="op">)</span>
-<span class="va">y_binary</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/Binomial.html" class="external-link">rbinom</a></span><span class="op">(</span><span class="va">n</span>, <span class="fl">1</span>, <span class="va">pr</span><span class="op">)</span></code></pre></div>
+<span class="va">pr</span> <span class="op">&lt;-</span> <span class="fl">1</span> <span class="op">/</span> <span class="op">(</span><span class="fl">1</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html">exp</a></span><span class="op">(</span><span class="op">-</span><span class="va">X</span> <span class="op">%*%</span> <span class="va">beta_star</span><span class="op">)</span><span class="op">)</span>
+<span class="va">y_binary</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/Binomial.html">rbinom</a></span><span class="op">(</span><span class="va">n</span>, <span class="fl">1</span>, <span class="va">pr</span><span class="op">)</span></code></pre></div>
 </div>
 <div id="sparsegl" class="section level2">
 <h2 class="hasAnchor">
-<a href="#sparsegl" class="anchor" aria-hidden="true"></a><code>sparsegl()</code>
+<a href="#sparsegl" class="anchor"></a><code>sparsegl()</code>
 </h2>
 <p>Given an input matrix <code>X</code>, and a response vector <code>y</code> (or a matrix with 1 column), a sparse group-lasso regularized linear model is fitted for a sequence of penalty parameter values in terms of penalized maximum likelihood. The penalty is composed of lasso penalty and group lasso penalty. The other main arguments the users might give are:</p>
 <ul>
@@ -150,10 +154,10 @@
 <code>df</code>: the number of nonzero coefficients for each lambda value. This only represents an approximation to the exact degree-of-freedom. Detailed explanation can be checked under function <code><a href="../reference/estimate_risk.html">estimate_risk()</a></code> below.</li>
 </ul>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">fit1</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/sparsegl.html">sparsegl</a></span><span class="op">(</span><span class="va">X</span>, <span class="va">y</span>, group <span class="op">=</span> <span class="va">groups</span><span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span class="va">fit1</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/sparsegl.html">sparsegl</a></span><span class="op">(</span><span class="va">X</span>, <span class="va">y</span>, group <span class="op">=</span> <span class="va">groups</span>, loss <span class="op">=</span> <span class="st">"ls"</span><span class="op">)</span></code></pre></div>
 <div id="plotting-function-plot-for-sparsegl-object" class="section level3">
 <h3 class="hasAnchor">
-<a href="#plotting-function-plot-for-sparsegl-object" class="anchor" aria-hidden="true"></a>Plotting function <code>plot()</code> for <code>sparsegl</code> object</h3>
+<a href="#plotting-function-plot-for-sparsegl-object" class="anchor"></a>Plotting function <code>plot()</code> for <code>sparsegl</code> object</h3>
 <p>This function produces nonzero-only coefficient curves for each penalty parameter <code>lambda</code> values in the regularization path for a fitted <code>sparsegl</code> object. The arguments of this function are:</p>
 <ul>
 <li><p><code>y_axis</code>: can be set with either “coef” or “group”. Default is “coef”.</p></li>
@@ -171,55 +175,55 @@
 \]</span></p></li>
 </ul>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">fit1</span>, y_axis <span class="op">=</span> <span class="st">"group"</span>, x_axis <span class="op">=</span> <span class="st">"lambda"</span><span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span><span class="va">fit1</span>, y_axis <span class="op">=</span> <span class="st">"group"</span>, x_axis <span class="op">=</span> <span class="st">"lambda"</span><span class="op">)</span></code></pre></div>
 <p><img src="sparsegl_files/figure-html/unnamed-chunk-6-1.png" width="768"></p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">fit1</span>, y_axis <span class="op">=</span> <span class="st">"coef"</span>, x_axis <span class="op">=</span> <span class="st">"penalty"</span>, add_legend <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span><span class="va">fit1</span>, y_axis <span class="op">=</span> <span class="st">"coef"</span>, x_axis <span class="op">=</span> <span class="st">"penalty"</span>, add_legend <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></code></pre></div>
 <p><img src="sparsegl_files/figure-html/unnamed-chunk-6-2.png" width="768"></p>
 </div>
 <div id="coef-predict-and-print-sparsegl-object" class="section level3">
 <h3 class="hasAnchor">
-<a href="#coef-predict-and-print-sparsegl-object" class="anchor" aria-hidden="true"></a><code>coef()</code>, <code>predict()</code> and <code>print()</code> <code>sparsegl</code> object</h3>
+<a href="#coef-predict-and-print-sparsegl-object" class="anchor"></a><code>coef()</code>, <code>predict()</code> and <code>print()</code> <code>sparsegl</code> object</h3>
 <p>All three functions consume a fitted <code>sparsegl</code> object as an arguments and</p>
 <ul>
-<li><p><code><a href="https://rdrr.io/r/stats/coef.html" class="external-link">coef()</a></code> and <code><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict()</a></code> return a matrix of coefficients and predictions <span class="math inline">\(\hat{y}\)</span> given a matrix <code>X</code> at each lambda respectively, unless an optional argument <code>s</code> is assigned with a specified vector or numeric value from (but not necessarily) the original <code>lambda</code> sequence.</p></li>
-<li><p><code><a href="https://rdrr.io/r/base/print.html" class="external-link">print()</a></code> returns the number of nonzero features with nonzero coefficients at each <code>lambda</code>.</p></li>
+<li><p><code><a href="https://rdrr.io/r/stats/coef.html">coef()</a></code> and <code><a href="https://rdrr.io/r/stats/predict.html">predict()</a></code> return a matrix of coefficients and predictions <span class="math inline">\(\hat{y}\)</span> given a matrix <code>X</code> at each lambda respectively, unless an optional argument <code>s</code> is assigned with a specified vector or numeric value from (but not necessarily) the original <code>lambda</code> sequence.</p></li>
+<li><p><code><a href="https://rdrr.io/r/base/print.html">print()</a></code> returns the number of nonzero features with nonzero coefficients at each <code>lambda</code>.</p></li>
 </ul>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">coef</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/coef.html" class="external-link">coef</a></span><span class="op">(</span><span class="va">fit1</span>, s <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.02</span>, <span class="fl">0.03</span><span class="op">)</span><span class="op">)</span>
-<span class="va">pred</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict</a></span><span class="op">(</span><span class="va">fit1</span>, newx <span class="op">=</span> <span class="va">X</span><span class="op">[</span><span class="fl">100</span>,<span class="op">]</span>, s <span class="op">=</span> <span class="va">fit1</span><span class="op">$</span><span class="va">lambda</span><span class="op">[</span><span class="fl">2</span><span class="op">:</span><span class="fl">3</span><span class="op">]</span><span class="op">)</span>
-<span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">fit1</span><span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span class="va">coef</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/coef.html">coef</a></span><span class="op">(</span><span class="va">fit1</span>, s <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">0.02</span>, <span class="fl">0.03</span><span class="op">)</span><span class="op">)</span>
+<span class="va">pred</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/predict.html">predict</a></span><span class="op">(</span><span class="va">fit1</span>, newx <span class="op">=</span> <span class="va">X</span><span class="op">[</span><span class="fl">100</span>,<span class="op">]</span>, s <span class="op">=</span> <span class="va">fit1</span><span class="op">$</span><span class="va">lambda</span><span class="op">[</span><span class="fl">2</span><span class="op">:</span><span class="fl">3</span><span class="op">]</span><span class="op">)</span>
+<span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span><span class="op">(</span><span class="va">fit1</span><span class="op">)</span></code></pre></div>
 </div>
 </div>
 <div id="cv-sparsegl" class="section level2">
 <h2 class="hasAnchor">
-<a href="#cv-sparsegl" class="anchor" aria-hidden="true"></a><code>cv.sparsegl()</code>
+<a href="#cv-sparsegl" class="anchor"></a><code>cv.sparsegl()</code>
 </h2>
-<p>This function does a k-fold cross-validation (cv) on a <code>sparsegl</code> object. It takes the same arguments <code>X</code>, <code>y</code>, <code>group</code>, which are specified above, with additional argument <code>pred.loss</code>. It can be set with either “L2” or “L1”, indicating the loss to use for cv error. This will return a <code>cv.sparseg</code> object.</p>
+<p>This function does a k-fold cross-validation (cv) on a <code>sparsegl</code> object. It takes the same arguments <code>X</code>, <code>y</code>, <code>group</code>, which are specified above, with additional argument <code>pred.loss</code>. It can be set with either “L2” or “L1” for linear regression model, “loss” or “misclass” for logistic regression model indicating the loss to use for cv error. This will return a <code>cv.sparseg</code> object.</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">fit_l1</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/cv.sparsegl.html">cv.sparsegl</a></span><span class="op">(</span><span class="va">X</span>, <span class="va">y</span>, group <span class="op">=</span> <span class="va">groups</span>, pred.loss <span class="op">=</span> <span class="st">"L1"</span><span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span class="va">fit_l1</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/cv.sparsegl.html">cv.sparsegl</a></span><span class="op">(</span><span class="va">X</span>, <span class="va">y</span>, group <span class="op">=</span> <span class="va">groups</span>, loss <span class="op">=</span> <span class="st">"ls"</span>, pred.loss <span class="op">=</span> <span class="st">"L1"</span><span class="op">)</span></code></pre></div>
 <div id="plot-coef-and-predict-for-cv-sparsegl-object" class="section level3">
 <h3 class="hasAnchor">
-<a href="#plot-coef-and-predict-for-cv-sparsegl-object" class="anchor" aria-hidden="true"></a><code>plot()</code>, <code>coef()</code> and <code>predict()</code> for <code>cv.sparsegl</code> object</h3>
+<a href="#plot-coef-and-predict-for-cv-sparsegl-object" class="anchor"></a><code>plot()</code>, <code>coef()</code> and <code>predict()</code> for <code>cv.sparsegl</code> object</h3>
 <ul>
 <li>
-<code><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot()</a></code>: produces cross-validation curve with upper and lower confidence bounds plots for each <code>lambda</code> in the regularization path for a fitted <code>cv.sparsegl</code> object. In the generated plot, the red points represent the <code>cvm</code> values at each <code>lambda</code>, and the attached gray vertical error bars indicate the uncertainty of <code>cvm</code>.</li>
+<code><a href="https://rdrr.io/r/graphics/plot.default.html">plot()</a></code>: produces cross-validation curve with upper and lower confidence bounds plots for each <code>lambda</code> in the regularization path for a fitted <code>cv.sparsegl</code> object. In the generated plot, the red points represent the <code>cvm</code> values at each <code>lambda</code>, and the attached gray vertical error bars indicate the uncertainty of <code>cvm</code>.</li>
 </ul>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">fit_l1</span><span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span><span class="va">fit_l1</span><span class="op">)</span></code></pre></div>
 <p><img src="sparsegl_files/figure-html/unnamed-chunk-9-1.png" width="768"></p>
 <ul>
 <li>
-<code><a href="https://rdrr.io/r/stats/coef.html" class="external-link">coef()</a></code> and <code><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict()</a></code> for <code>cv.sparsegl</code> object work similarly to those introduced above. The only differences are that the argument <code>object</code> passes a fitted <code>cv.sparsegl</code> object, and <code>s</code> can also be set with <code>lambda.1se</code>, <code>lambda.min</code> in addition.</li>
+<code><a href="https://rdrr.io/r/stats/coef.html">coef()</a></code> and <code><a href="https://rdrr.io/r/stats/predict.html">predict()</a></code> for <code>cv.sparsegl</code> object work similarly to those introduced above. The only differences are that the argument <code>object</code> passes a fitted <code>cv.sparsegl</code> object, and <code>s</code> can also be set with <code>lambda.1se</code>, <code>lambda.min</code> in addition.</li>
 </ul>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">coef</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/coef.html" class="external-link">coef</a></span><span class="op">(</span><span class="va">fit_l1</span>, s <span class="op">=</span> <span class="st">"lambda.1se"</span><span class="op">)</span>
-<span class="va">pred</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict</a></span><span class="op">(</span><span class="va">fit_l1</span>, newx <span class="op">=</span> <span class="va">X</span><span class="op">[</span><span class="fl">50</span><span class="op">:</span><span class="fl">80</span>, <span class="op">]</span>, s <span class="op">=</span> <span class="st">"lambda.min"</span><span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span class="va">coef</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/coef.html">coef</a></span><span class="op">(</span><span class="va">fit_l1</span>, s <span class="op">=</span> <span class="st">"lambda.1se"</span><span class="op">)</span>
+<span class="va">pred</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/predict.html">predict</a></span><span class="op">(</span><span class="va">fit_l1</span>, newx <span class="op">=</span> <span class="va">X</span><span class="op">[</span><span class="fl">50</span><span class="op">:</span><span class="fl">80</span>, <span class="op">]</span>, s <span class="op">=</span> <span class="st">"lambda.min"</span><span class="op">)</span></code></pre></div>
 </div>
 </div>
 <div id="estimate_risk" class="section level2">
 <h2 class="hasAnchor">
-<a href="#estimate_risk" class="anchor" aria-hidden="true"></a><code>estimate_risk()</code>
+<a href="#estimate_risk" class="anchor"></a><code>estimate_risk()</code>
 </h2>
 <p>This function returns the information criterion, which is the sum of the maximum log-likelihood and a penalty term determined by the chosen penalty type for a <code>sparsegl</code> model at each <code>lambda</code>. It provides a means for model selection by representing the trade-off between the goodness of fit of the model and the complexity of the model. It takes the same arguments <code>X</code> and <code>y</code> from the function <code><a href="../reference/sparsegl.html">sparsegl()</a></code>. The additional arguments it needs are:</p>
 <ul>
@@ -238,7 +242,7 @@
 <li>
 <code>approx_df</code>: indicate if a vector of the approximation to the degree-of-freedom at each penalty parameter <code>lambda</code> is used. Default is FALSE and the program will compute the unbiased estimate of the exact degree-of-freedom.</li>
 </ul>
-<p>FYI: Degree-of-freedom is a tool to assess the complexity of a statistical modeling procedure. <code>object$df</code>, the approximation to the degree-of-freedom is the number of nonzero coefficients of the model. Notice that it would take some time to calculate the unbiased estimate of the exact degreeo-of-freedom if <code>X</code> is complicated. For more details about how to realize this calculation, our method is implemented based on the paper <a href="https://arxiv.org/pdf/1212.6478.pdf" class="external-link uri">https://arxiv.org/pdf/1212.6478.pdf</a>.</p>
+<p>FYI: Degree-of-freedom is a tool to assess the complexity of a statistical modeling procedure. <code>object$df</code>, the approximation to the degree-of-freedom is the number of nonzero coefficients of the model. Notice that it would take some time to calculate the unbiased estimate of the exact degreeo-of-freedom if <code>X</code> is complicated. For more details about how to realize this calculation, our method is implemented based on the paper <a href="https://arxiv.org/pdf/1212.6478.pdf" class="uri">https://arxiv.org/pdf/1212.6478.pdf</a>.</p>
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">risk</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/estimate_risk.html">estimate_risk</a></span><span class="op">(</span><span class="va">fit1</span>, <span class="va">X</span>, <span class="va">y</span>, type <span class="op">=</span> <span class="st">"AIC"</span>, approx_df <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></code></pre></div>
 </div>
@@ -255,13 +259,11 @@
 
 
       <footer><div class="copyright">
-  <p></p>
-<p>Developed by Daniel J. McDonald.</p>
+  <p>Developed by Daniel J. McDonald.</p>
 </div>
 
 <div class="pkgdown">
-  <p></p>
-<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link external-link">pkgdown</a> 1.6.1.9001.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.6.1.</p>
 </div>
 
       </footer>
@@ -269,8 +271,6 @@
 
   
 
-
-  
 
   </body>
 </html>

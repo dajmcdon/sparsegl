@@ -46,8 +46,6 @@ criteria. This function uses the &quot;known variance&quot; verison of the likel
 
 
 
-
-
 <!-- mathjax -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js" integrity="sha256-nvJJv9wWKEm88qvoQl9ekL2J+k/RWIsaSScxxlsrv8k=" crossorigin="anonymous"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/config/TeX-AMS-MML_HTMLorMML.js" integrity="sha256-84DKXVJXs0/F8OTMzX4UR909+jtl4G7SPypPavF+GfA=" crossorigin="anonymous"></script>
@@ -59,15 +57,9 @@ criteria. This function uses the &quot;known variance&quot; verison of the likel
 
 
 
-  
-
-  
-
   </head>
 
   <body data-spy="scroll" data-target="#toc">
-    
-
     <div class="container template-reference-topic">
       <header>
       <div class="navbar navbar-default navbar-fixed-top" role="navigation">
@@ -88,6 +80,12 @@ criteria. This function uses the &quot;known variance&quot; verison of the likel
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
         <li>
+  <a href="../index.html">
+    <span class="fas fa-home fa-lg"></span>
+     
+  </a>
+</li>
+<li>
   <a href="../articles/sparsegl.html">Get started</a>
 </li>
 <li>
@@ -119,7 +117,7 @@ criteria. This function uses the &quot;known variance&quot; verison of the likel
 criteria. This function uses the "known variance" verison of the likelihood.</p>
     </div>
 
-    <div class="ref-usage sourceCode"><pre class='sourceCode r'><code><span class='fu'>estimate_risk</span><span class='op'>(</span><span class='va'>object</span>, <span class='va'>x</span>, <span class='va'>y</span>, type <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"AIC"</span>, <span class='st'>"BIC"</span>, <span class='st'>"GCV"</span><span class='op'>)</span>, approx_df <span class='op'>=</span> <span class='cn'>FALSE</span><span class='op'>)</span></code></pre></div>
+    <pre class="usage"><span class='fu'>estimate_risk</span><span class='op'>(</span><span class='va'>object</span>, <span class='va'>x</span>, <span class='va'>y</span>, type <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"AIC"</span>, <span class='st'>"BIC"</span>, <span class='st'>"GCV"</span><span class='op'>)</span>, approx_df <span class='op'>=</span> <span class='cn'>FALSE</span><span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -163,50 +161,41 @@ Degrees of Freedom of the Group Lasso for a General Design</em>.
     <div class='dont-index'><p><code><a href='sparsegl.html'>sparsegl()</a></code> method.</p></div>
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
-    <div class="ref-examples sourceCode"><pre class='sourceCode r'><code><span class='r-in'><span class='va'>n</span> <span class='op'>&lt;-</span> <span class='fl'>100</span></span>
-<span class='r-in'><span class='va'>p</span> <span class='op'>&lt;-</span> <span class='fl'>20</span></span>
-<span class='r-in'><span class='va'>X</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/matrix.html'>matrix</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/stats/Normal.html'>rnorm</a></span><span class='op'>(</span><span class='va'>n</span> <span class='op'>*</span> <span class='va'>p</span><span class='op'>)</span>, nrow <span class='op'>=</span> <span class='va'>n</span><span class='op'>)</span></span>
-<span class='r-in'><span class='va'>eps</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/stats/Normal.html'>rnorm</a></span><span class='op'>(</span><span class='va'>n</span><span class='op'>)</span></span>
-<span class='r-in'><span class='va'>beta_star</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/rep.html'>rep</a></span><span class='op'>(</span><span class='fl'>5</span>, <span class='fl'>5</span><span class='op'>)</span>, <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='fl'>5</span>, <span class='op'>-</span><span class='fl'>5</span>, <span class='fl'>2</span>, <span class='fl'>0</span>, <span class='fl'>0</span><span class='op'>)</span>, <span class='fu'><a href='https://rdrr.io/r/base/rep.html'>rep</a></span><span class='op'>(</span><span class='op'>-</span><span class='fl'>5</span>, <span class='fl'>5</span><span class='op'>)</span>, <span class='fu'><a href='https://rdrr.io/r/base/rep.html'>rep</a></span><span class='op'>(</span><span class='fl'>0</span>, <span class='op'>(</span><span class='va'>p</span> <span class='op'>-</span> <span class='fl'>15</span><span class='op'>)</span><span class='op'>)</span><span class='op'>)</span></span>
-<span class='r-in'><span class='va'>y</span> <span class='op'>&lt;-</span> <span class='va'>X</span> <span class='op'><a href='https://rdrr.io/r/base/matmult.html'>%*%</a></span> <span class='va'>beta_star</span> <span class='op'>+</span> <span class='va'>eps</span></span>
-<span class='r-in'><span class='va'>groups</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/rep.html'>rep</a></span><span class='op'>(</span><span class='fl'>1</span><span class='op'>:</span><span class='op'>(</span><span class='va'>p</span> <span class='op'>/</span> <span class='fl'>5</span><span class='op'>)</span>, each <span class='op'>=</span> <span class='fl'>5</span><span class='op'>)</span></span>
-<span class='r-in'><span class='va'>fit1</span> <span class='op'>&lt;-</span> <span class='fu'><a href='sparsegl.html'>sparsegl</a></span><span class='op'>(</span><span class='va'>X</span>, <span class='va'>y</span>, group <span class='op'>=</span> <span class='va'>groups</span><span class='op'>)</span></span>
-<span class='r-in'><span class='fu'>estimate_risk</span><span class='op'>(</span><span class='va'>fit1</span>, <span class='va'>X</span>, <span class='va'>y</span>, type <span class='op'>=</span> <span class='st'>"AIC"</span><span class='op'>)</span></span>
-<span class='r-out co'><span class='r-pr'>#&gt;</span>          s0          s1          s2          s3          s4          s5 </span>
-<span class='r-out co'><span class='r-pr'>#&gt;</span>  5.62511380  5.69277300  5.64429739  5.57290282  5.55155855  5.40769969 </span>
-<span class='r-out co'><span class='r-pr'>#&gt;</span>          s6          s7          s8          s9         s10         s11 </span>
-<span class='r-out co'><span class='r-pr'>#&gt;</span>  5.26882784  5.13580896  5.03957765  4.86048589  4.68116976  4.50178565 </span>
-<span class='r-out co'><span class='r-pr'>#&gt;</span>         s12         s13         s14         s15         s16         s17 </span>
-<span class='r-out co'><span class='r-pr'>#&gt;</span>  4.32240076  4.14307754  3.96388579  3.78490728  3.60623894  3.42799574 </span>
-<span class='r-out co'><span class='r-pr'>#&gt;</span>         s18         s19         s20         s21         s22         s23 </span>
-<span class='r-out co'><span class='r-pr'>#&gt;</span>  3.25031373  3.07335330  2.89730276  2.72238207  2.54884688  2.37699248 </span>
-<span class='r-out co'><span class='r-pr'>#&gt;</span>         s24         s25         s26         s27         s28         s29 </span>
-<span class='r-out co'><span class='r-pr'>#&gt;</span>  2.20715751  2.05970906  1.89507928  1.73376077  1.57628179  1.42321158 </span>
-<span class='r-out co'><span class='r-pr'>#&gt;</span>         s30         s31         s32         s33         s34         s35 </span>
-<span class='r-out co'><span class='r-pr'>#&gt;</span>  1.27515121  1.13271951  0.99653431  0.86728535  0.74532164  0.63120501 </span>
-<span class='r-out co'><span class='r-pr'>#&gt;</span>         s36         s37         s38         s39         s40         s41 </span>
-<span class='r-out co'><span class='r-pr'>#&gt;</span>  0.52529797  0.42783591  0.33891327  0.25847757  0.18645642  0.12226803 </span>
-<span class='r-out co'><span class='r-pr'>#&gt;</span>         s42         s43         s44         s45         s46         s47 </span>
-<span class='r-out co'><span class='r-pr'>#&gt;</span>  0.06560920  0.01596476 -0.02723906 -0.06460538 -0.09674281 -0.12424567 </span>
-<span class='r-out co'><span class='r-pr'>#&gt;</span>         s48         s49         s50         s51         s52         s53 </span>
-<span class='r-out co'><span class='r-pr'>#&gt;</span> -0.14759076 -0.16749029 -0.18432686 -0.19852873 -0.11428232 -0.12814588 </span>
-<span class='r-out co'><span class='r-pr'>#&gt;</span>         s54         s55         s56         s57         s58         s59 </span>
-<span class='r-out co'><span class='r-pr'>#&gt;</span> -0.14010971 -0.15022277 -0.15873472 -0.16588158 -0.17187136 -0.17688402 </span>
-<span class='r-out co'><span class='r-pr'>#&gt;</span>         s60         s61         s62         s63         s64         s65 </span>
-<span class='r-out co'><span class='r-pr'>#&gt;</span> -0.18107386 -0.18453434 -0.18745581 -0.18989424 -0.19192630 -0.19361861 </span>
-<span class='r-out co'><span class='r-pr'>#&gt;</span>         s66         s67         s68         s69         s70         s71 </span>
-<span class='r-out co'><span class='r-pr'>#&gt;</span> -0.19502732 -0.21619765 -0.21717091 -0.21797933 -0.21865125 -0.19919815 </span>
-<span class='r-out co'><span class='r-pr'>#&gt;</span>         s72         s73         s74         s75         s76         s77 </span>
-<span class='r-out co'><span class='r-pr'>#&gt;</span> -0.19963407 -0.20002273 -0.20035052 -0.20062421 -0.20085202 -0.20104139 </span>
-<span class='r-out co'><span class='r-pr'>#&gt;</span>         s78         s79         s80         s81         s82         s83 </span>
-<span class='r-out co'><span class='r-pr'>#&gt;</span> -0.20119875 -0.20132946 -0.20141351 -0.20152465 -0.20158439 -0.20164459 </span>
-<span class='r-out co'><span class='r-pr'>#&gt;</span>         s84         s85         s86         s87         s88         s89 </span>
-<span class='r-out co'><span class='r-pr'>#&gt;</span> -0.20169759 -0.20174269 -0.20178062 -0.20181236 -0.20183883 -0.20186087 </span>
-<span class='r-out co'><span class='r-pr'>#&gt;</span>         s90         s91         s92         s93         s94         s95 </span>
-<span class='r-out co'><span class='r-pr'>#&gt;</span> -0.20187920 -0.20189443 -0.20190709 -0.20191759 -0.20192632 -0.20193356 </span>
-<span class='r-out co'><span class='r-pr'>#&gt;</span>         s96         s97         s98         s99 </span>
-<span class='r-out co'><span class='r-pr'>#&gt;</span> -0.20193957 -0.20194455 -0.20194869 -0.20195212 </span>
-</code></pre></div>
+    <pre class="examples"><div class='input'><span class='va'>n</span> <span class='op'>&lt;-</span> <span class='fl'>100</span>
+<span class='va'>p</span> <span class='op'>&lt;-</span> <span class='fl'>20</span>
+<span class='va'>X</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/matrix.html'>matrix</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/stats/Normal.html'>rnorm</a></span><span class='op'>(</span><span class='va'>n</span> <span class='op'>*</span> <span class='va'>p</span><span class='op'>)</span>, nrow <span class='op'>=</span> <span class='va'>n</span><span class='op'>)</span>
+<span class='va'>eps</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/stats/Normal.html'>rnorm</a></span><span class='op'>(</span><span class='va'>n</span><span class='op'>)</span>
+<span class='va'>beta_star</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/rep.html'>rep</a></span><span class='op'>(</span><span class='fl'>5</span>, <span class='fl'>5</span><span class='op'>)</span>, <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='fl'>5</span>, <span class='op'>-</span><span class='fl'>5</span>, <span class='fl'>2</span>, <span class='fl'>0</span>, <span class='fl'>0</span><span class='op'>)</span>, <span class='fu'><a href='https://rdrr.io/r/base/rep.html'>rep</a></span><span class='op'>(</span><span class='op'>-</span><span class='fl'>5</span>, <span class='fl'>5</span><span class='op'>)</span>, <span class='fu'><a href='https://rdrr.io/r/base/rep.html'>rep</a></span><span class='op'>(</span><span class='fl'>0</span>, <span class='op'>(</span><span class='va'>p</span> <span class='op'>-</span> <span class='fl'>15</span><span class='op'>)</span><span class='op'>)</span><span class='op'>)</span>
+<span class='va'>y</span> <span class='op'>&lt;-</span> <span class='va'>X</span> <span class='op'>%*%</span> <span class='va'>beta_star</span> <span class='op'>+</span> <span class='va'>eps</span>
+<span class='va'>groups</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/rep.html'>rep</a></span><span class='op'>(</span><span class='fl'>1</span><span class='op'>:</span><span class='op'>(</span><span class='va'>p</span> <span class='op'>/</span> <span class='fl'>5</span><span class='op'>)</span>, each <span class='op'>=</span> <span class='fl'>5</span><span class='op'>)</span>
+<span class='va'>fit1</span> <span class='op'>&lt;-</span> <span class='fu'><a href='sparsegl.html'>sparsegl</a></span><span class='op'>(</span><span class='va'>X</span>, <span class='va'>y</span>, group <span class='op'>=</span> <span class='va'>groups</span><span class='op'>)</span>
+<span class='fu'>estimate_risk</span><span class='op'>(</span><span class='va'>fit1</span>, <span class='va'>X</span>, <span class='va'>y</span>, type <span class='op'>=</span> <span class='st'>"AIC"</span><span class='op'>)</span>
+</div><div class='output co'>#&gt;       s0       s1       s2       s3       s4       s5       s6       s7 
+#&gt; 5.625114 5.654816 5.643243 5.576603 5.554539 5.419801 5.287710 5.161114 
+#&gt;       s8       s9      s10      s11      s12      s13      s14      s15 
+#&gt; 5.078441 4.921825 4.765916 4.612141 4.461026 4.312965 4.168320 4.027453 
+#&gt;      s16      s17      s18      s19      s20      s21      s22      s23 
+#&gt; 3.890729 3.758508 3.631146 3.508979 3.392315 3.281429 3.176544 3.077825 
+#&gt;      s24      s25      s26      s27      s28      s29      s30      s31 
+#&gt; 2.985374 2.919194 2.839323 2.765610 2.697887 2.635933 2.579481 2.528221 
+#&gt;      s32      s33      s34      s35      s36      s37      s38      s39 
+#&gt; 2.481826 2.439953 2.402251 2.368374 2.337983 2.310755 2.286384 2.264585 
+#&gt;      s40      s41      s42      s43      s44      s45      s46      s47 
+#&gt; 2.245097 2.227673 2.212096 2.198168 2.185708 2.174558 2.164573 2.155629 
+#&gt;      s48      s49      s50      s51      s52      s53      s54      s55 
+#&gt; 2.147606 2.140407 2.133943 2.128133 2.217425 2.215448 2.211692 2.207942 
+#&gt;      s56      s57      s58      s59      s60      s61      s62      s63 
+#&gt; 2.204434 2.201213 2.198276 2.195608 2.193185 2.190988 2.188996 2.187191 
+#&gt;      s64      s65      s66      s67      s68      s69      s70      s71 
+#&gt; 2.185553 2.184069 2.182723 2.161524 2.160415 2.159409 2.178482 2.177652 
+#&gt;      s72      s73      s74      s75      s76      s77      s78      s79 
+#&gt; 2.176897 2.176213 2.175591 2.175024 2.174510 2.174042 2.173616 2.173229 
+#&gt;      s80      s81      s82      s83      s84      s85      s86      s87 
+#&gt; 2.172878 2.172558 2.172266 2.172001 2.171759 2.171539 2.171339 2.171159 
+#&gt;      s88      s89      s90      s91      s92      s93      s94      s95 
+#&gt; 2.170993 2.170842 2.170704 2.170578 2.170464 2.170360 2.170265 2.170179 
+#&gt;      s96      s97      s98      s99 
+#&gt; 2.170103 2.170031 2.169966 2.169906 </div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top">
@@ -218,11 +207,11 @@ Degrees of Freedom of the Group Lasso for a General Design</em>.
 
       <footer>
       <div class="copyright">
-  <p><p>Developed by Daniel J. McDonald.</p></p>
+  <p>Developed by Daniel J. McDonald.</p>
 </div>
 
 <div class="pkgdown">
-  <p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 1.6.1.9001.</p></p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.6.1.</p>
 </div>
 
       </footer>
@@ -230,8 +219,6 @@ Degrees of Freedom of the Group Lasso for a General Design</em>.
 
   
 
-
-  
 
   </body>
 </html>
