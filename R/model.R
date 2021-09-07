@@ -25,7 +25,7 @@ sgl <- function(
     }
     
     if (standardize) {
-        sx <- sqrt(Matrix::colMeans(x^2))
+        sx <- sqrt(Matrix::colSums(x^2))
         sx[sx < sqrt(.Machine$double.eps)] <- 1 # Don't divide by zero!]
         xs <- 1 / sx
         x <- x %*% Matrix::Diagonal(x = xs)
@@ -80,7 +80,7 @@ sgl <- function(
     # output
     outlist <- getoutput(x, group, fit, maxit, pmax, nvars, vnames, eps)
     if (standardize) {
-        outlist$beta <- outlist$beta / xs
+        outlist$beta <- outlist$beta * xs
     }
     if (intr && loss == "ls") {
         if (is.sparse) {
@@ -115,7 +115,7 @@ calc_gamma <- function(x, ix, iy, bn, loss) {
     if (loss == "ls") {
         return(as.double(gamma / nrow(x)))
     } else {
-        return(0.25 * as.double(gamma / nrow(x)))
+        return(as.double(0.25 * gamma / nrow(x)))
     }
 }
 

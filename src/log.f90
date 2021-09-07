@@ -335,18 +335,18 @@ SUBROUTINE log_sparse_four (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,fl
    INTEGER:: bs(bn)
    INTEGER:: ix(bn)
    INTEGER:: iy(bn)
-   INTEGER:: nobs, nvars, dfmax, pmax, nlam, nalam, npass, jerr, maxit,intr
+   INTEGER:: nobs, nvars, dfmax, pmax, nlam, nalam, npass, jerr, maxit, intr
    INTEGER:: activeGroup(pmax)
    INTEGER:: nbeta(nlam)
-   DOUBLE PRECISION :: flmin, eps, alsparse, max_gam, d, maxDif, al, alf, snorm
+   DOUBLE PRECISION :: flmin, eps, alsparse, max_gam, maxDif, al, alf, snorm, d
    DOUBLE PRECISION :: x(nobs,nvars)
    DOUBLE PRECISION :: y(nobs)
    DOUBLE PRECISION :: pf(bn)
    DOUBLE PRECISION :: ulam(nlam)
    DOUBLE PRECISION :: gam(bn)
    DOUBLE PRECISION :: lb(bn), ub(bn)
-   DOUBLE PRECISION :: b0(nlam)
    DOUBLE PRECISION :: beta(nvars,nlam)
+   DOUBLE PRECISION :: b0(nlam)
    DOUBLE PRECISION :: alam(nlam)
 
    DOUBLE PRECISION, DIMENSION (:), ALLOCATABLE :: s !need for log_sparse_four
@@ -466,13 +466,13 @@ SUBROUTINE log_sparse_four (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,fl
                   activeGroup(ni) = g
                ENDIF
             ENDDO
-            IF (intr /= 0) THEN
+            IF(intr /= 0) THEN
                d = sum(y/(1.0D0+exp(r)))
                d = 4.0D0*d/nobs
-               IF (d /= 0.0D0) THEN
-                  b(0) = b(0) + d
-                  r = r + y * d
-                  maxDif = max(maxDif, d**2)
+               IF(d /= 0.0D0) THEN
+                  b(0)=b(0)+d
+                  r=r+y*d
+                  maxDif=MAX(maxDif,d**2)
                ENDIF
             ENDIF
             IF (ni > pmax) EXIT
@@ -488,9 +488,9 @@ SUBROUTINE log_sparse_four (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,fl
          ! print *, i ! Just to check how many final checks...
          ! i = i+1
          violation = 0 
-         PRINT *, (max_gam * (b - oldbeta) / (1 + ABS(b)))**2
+         ! PRINT *, (max_gam * (b - oldbeta) / (1 + ABS(b)))**2
+         PRINT *, b
          IF (ANY((max_gam * (b - oldbeta) / (1 + ABS(b)))**2 >= eps)) violation = 1 !has beta moved globally
-         PRINT *, violation
          IF (violation == 1) CYCLE
          CALL log_strong_kkt_check(is_in_E_set, violation, bn, ix, iy, pf, lam1ma,&
                bs, lama, ga, is_in_S_set, x, y, r, nobs, nvars, vl) ! Step 3
@@ -533,8 +533,8 @@ SUBROUTINE log_sparse_four (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,fl
             beta(ix(g):iy(g),l) = b(ix(g):iy(g))
          ENDDO
       ENDIF
-      nbeta(l) = ni
       b0(l) = b(0)
+      nbeta(l) = ni
       alam(l) = al
       nalam = l
       IF (l < mnl) CYCLE
