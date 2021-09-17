@@ -26,7 +26,8 @@ MODULE log_spmatmul
       DO i = cj, ck
          k = cptr(i + 1) - 1
          DO j = cptr(i), k
-            y(ridx(j)) = y(ridx(j)) + b(ridx(j)) * x(i - cj + 1) * a(j)
+            y(ridx(j)) = y(ridx(j)) + x(i - cj + 1) * a(j) * b(j)
+            ! r = r + y * MATMUL(x(:,startix:endix), dd)
          ENDDO
       ENDDO
       RETURN
@@ -47,7 +48,8 @@ MODULE log_spmatmul
       DO i = cj, ck
          k = i - cj + 1
          DO j = cptr(i), (cptr(i + 1) - 1)
-            y(k) = y(k) + 1 / (1 + exp(x(ridx(j)))) * a(j) * b(j)
+            y(k) = y(k) + b(j) / (1 + exp(x(ridx(j)))) * a(j)
+            ! s = MATMUL(y/(1.0D0+exp(r)), x(:, startix:endix))
          ENDDO
       ENDDO
       RETURN
@@ -245,6 +247,7 @@ MODULE log_sgl_subfuns
       ! print *, oldb
 
       CALL log_spatx(x,y,xidx, xcptr, nobs, nvars, nnz, r, s, startix, endix)
+      PRINT*, s
       s = s * t_for_sg / nobs + b(startix:endix)
       CALL log_softthresh(s, lama * t_for_sg, bsg)
       snorm = SQRT(DOT_PRODUCT(s,s))
@@ -262,6 +265,7 @@ MODULE log_sgl_subfuns
       IF(ANY(ABS(dd) > 0.0D0)) THEN
          maxDif = MAX(maxDif, gamg**2 * DOT_PRODUCT(dd,dd))
          CALL log_ymspax(x, y, xidx, xcptr, nobs, nvars, nnz, dd, r, startix, endix, bsg)
+         PRINT*, r
          isDifZero = 1
       ENDIF
       DEALLOCATE(s, oldb, dd)
@@ -338,7 +342,8 @@ SUBROUTINE log_sparse_four (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,fl
    INTEGER:: nobs, nvars, dfmax, pmax, nlam, nalam, npass, jerr, maxit, intr
    INTEGER:: activeGroup(pmax)
    INTEGER:: nbeta(nlam)
-   DOUBLE PRECISION :: flmin, eps, alsparse, max_gam, maxDif, al, alf, snorm, d
+   INTEGER:: i
+   DOUBLE PRECISION :: flmin, eps, alsparse, max_gam, maxDif, al, alf, snorm, d, acc
    DOUBLE PRECISION :: x(nobs,nvars)
    DOUBLE PRECISION :: y(nobs)
    DOUBLE PRECISION :: pf(bn)
@@ -367,8 +372,8 @@ SUBROUTINE log_sparse_four (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,fl
    DOUBLE PRECISION:: ga(bn) 
    DOUBLE PRECISION:: vl(nvars) 
    ! - - - allocate variables - - -
-   ALLOCATE(b(0:nvars))
-   ALLOCATE(oldbeta(0:nvars))
+   ALLOCATE(b(1:nvars))
+   ALLOCATE(oldbeta(1:nvars))
    ALLOCATE(r(1:nobs))
    ALLOCATE(activeGroupIndex(1:bn))
    !    ALLOCATE(al_sparse)
@@ -392,6 +397,8 @@ SUBROUTINE log_sparse_four (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,fl
    alf = 0.0D0
    max_gam = MAXVAL(gam)
    t_for_s = 1 / gam 
+   acc = 0.0D0
+   i = 1
    ! --------- lambda loop ----------------------------
    IF (flmin < 1.0D0) THEN ! THIS is the default...
       flmin = MAX(mfl, flmin) ! just sets a threshold above zero
@@ -466,11 +473,11 @@ SUBROUTINE log_sparse_four (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,fl
                   activeGroup(ni) = g
                ENDIF
             ENDDO
-            IF(intr /= 0) THEN
+            IF (intr /= 0) THEN
                d = sum(y/(1.0D0+exp(r)))
                d = 4.0D0*d/nobs
-               IF(d /= 0.0D0) THEN
-                  b(0)=b(0)+d
+               IF (d /= 0.0D0) THEN
+                  acc = acc + d
                   r=r+y*d
                   maxDif=MAX(maxDif,d**2)
                ENDIF
@@ -489,7 +496,7 @@ SUBROUTINE log_sparse_four (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,fl
          ! i = i+1
          violation = 0 
          ! PRINT *, (max_gam * (b - oldbeta) / (1 + ABS(b)))**2
-         PRINT *, b
+         ! PRINT *, b
          IF (ANY((max_gam * (b - oldbeta) / (1 + ABS(b)))**2 >= eps)) violation = 1 !has beta moved globally
          IF (violation == 1) CYCLE
          CALL log_strong_kkt_check(is_in_E_set, violation, bn, ix, iy, pf, lam1ma,&
@@ -522,6 +529,9 @@ SUBROUTINE log_sparse_four (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,fl
             alam(1) = al / MAX(alf, .99) ! store previous, larger value
          ENDIF
       ENDIF
+      !PRINT *, acc
+      !PRINT*, i
+      i = i + 1
       ! PRINT *, "Here is where the final update starts"
       IF(ni > pmax) THEN
          jerr = -10000 - l
@@ -533,7 +543,8 @@ SUBROUTINE log_sparse_four (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,fl
             beta(ix(g):iy(g),l) = b(ix(g):iy(g))
          ENDDO
       ENDIF
-      b0(l) = b(0)
+      ! PRINT *, acc
+      b0(l) = acc
       nbeta(l) = ni
       alam(l) = al
       nalam = l
@@ -570,7 +581,7 @@ SUBROUTINE log_spmat_four (bn,bs,ix,iy,gam,nobs,nvars,x,xidx,xcptr,nnz,y,pf,&
    INTEGER :: iy(bn)
    INTEGER :: activeGroup(pmax)
    INTEGER :: nbeta(nlam)
-   DOUBLE PRECISION :: flmin, eps, max_gam, d, maxDif, al, alf, alsparse, snorm
+   DOUBLE PRECISION :: flmin, eps, max_gam, d, maxDif, al, alf, alsparse, snorm, acc
    DOUBLE PRECISION, INTENT(in) :: x(nnz)
    INTEGER, INTENT(in) :: xidx(nnz)
    INTEGER, INTENT(in) :: xcptr(nvars+1)
@@ -625,6 +636,7 @@ SUBROUTINE log_spmat_four (bn,bs,ix,iy,gam,nobs,nvars,x,xidx,xcptr,nnz,y,pf,&
    alf = 0.0D0
    max_gam = MAXVAL(gam) 
    t_for_s = 1/gam 
+   acc = 0.0D0
    ! --------- lambda loop ----------------------------
    IF (flmin < 1.0D0) THEN ! THIS is the default...
       flmin = MAX(mfl, flmin) ! just sets a threshold above zero
@@ -698,13 +710,13 @@ SUBROUTINE log_spmat_four (bn,bs,ix,iy,gam,nobs,nvars,x,xidx,xcptr,nnz,y,pf,&
                   activeGroup(ni) = g
                ENDIF
             ENDDO 
-            IF(intr .ne. 0) THEN
+            IF (intr /= 0) THEN
                d = sum(y/(1.0D0+exp(r)))
                d = 4.0D0*d/nobs
-               IF(d .ne. 0.0D0) THEN
-                  b(0) = b(0) + d
-                  r = r+y*d
-                  maxDif = max(maxDif, d**2)
+               IF (d /= 0.0D0) THEN
+                  acc = acc + d
+                  r=r+y*d
+                  maxDif=max(maxDif,d**2)
                ENDIF
             ENDIF
             IF (ni > pmax) EXIT
@@ -764,7 +776,8 @@ SUBROUTINE log_spmat_four (bn,bs,ix,iy,gam,nobs,nvars,x,xidx,xcptr,nnz,y,pf,&
          ENDDO
       ENDIF
       nbeta(l) = ni
-      b0(l) = b(0)
+      b0(l) = acc
+      PRINT *, acc
       alam(l) = al
       nalam = l
       IF (l < mnl) CYCLE

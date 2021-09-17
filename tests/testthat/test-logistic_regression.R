@@ -1,5 +1,4 @@
 test_that("compare for logistic regression", {
-  skip("test later")
   set.seed(123)
   n <- 100
   p <- 20
@@ -30,7 +29,7 @@ test_that("compare for logistic regression", {
   fit_gglasso <- gglasso::gglasso(X, y1, group = groups, loss = "logit", intercept = TRUE, lambda = fit_sparsegl$lambda)
   coef1 <- as.numeric(fit_sparsegl$beta)
   coef2 <- as.numeric(fit_gglasso$beta)
-  expect_equal(coef1, coef2, tolerance = 1e-2)
+  expect_equal(coef1, coef2, tolerance = 1e-3)
 
   # true standardization, false intercept
   fit_sparsegl <- sparsegl(X, y1, group = groups, loss = "logit", standardize = TRUE, asparse = 0, intercept = FALSE)
@@ -42,7 +41,35 @@ test_that("compare for logistic regression", {
   fit_gglasso$beta <- fit_gglasso$beta * xs
   coef1 <- as.numeric(fit_sparsegl$beta)
   coef2 <- as.numeric(fit_gglasso$beta)
-  expect_equal(coef1, coef2, tolerance = 1e-2)
+  expect_equal(coef1, coef2, tolerance = 1e-3)
   
   # true standardization, true intercept
+  sx <- sqrt(Matrix::colSums(X^2))
+  sx[sx < sqrt(.Machine$double.eps)] <- 1 # Don't divide by zero!]
+  xs <- 1 / sx
+  xt <- matrix(X %*% Matrix::Diagonal(x = xs), nrow = 100, byrow = FALSE)
+  fit_sparsegl <- sparsegl(X, y1, group = groups, loss = "logit", standardize = TRUE, asparse = 0, intercept = TRUE)
+  fit_gglasso <- gglasso::gglasso(xt, y1, group = groups, loss = "logit", intercept = TRUE, lambda = fit_sparsegl$lambda)
+  fit_gglasso$beta <- fit_gglasso$beta * xs
+  coef1 <- as.numeric(fit_sparsegl$beta)
+  coef2 <- as.numeric(fit_gglasso$beta)
+  expect_equal(coef1, coef2, tolerance = 1e-3)
+  
+  # sparse matrix
+  set.seed(1010)
+  Xs <- Matrix::rsparsematrix(nrow = 100, ncol = 20, density = 0.4)
+  prs <- 1 / (1 + exp(-Xs %*% beta_star))
+  prs <- as.vector(prs)
+  ys <- rbinom(100, 1, prs)
+  ys[which(ys == 0)] <- -1
+  
+  fit_gglasso <- gglasso::gglasso(as.matrix(Xs), ys, group = groups, loss = "logit", intercept = TRUE)
+  fit_nonsparse <- sparsegl(as.matrix(Xs), ys, group = groups, loss = "logit", standardize = FALSE, lambda = fit_gglasso$lambda)
+  coef1 <- as.numeric(fit_gglasso$beta)
+  coef2 <- as.numeric(fit_nonsparse$beta)
+  intr1 <- as.numeric(fit_gglasso$b0)
+  intr2 <- as.numeric(fit_nonsparse$b0)
+  expect_equal(coef1, coef2, tolerance = 1e-2)
+  expect_equal(intr1, intr2, tolerance = 1e-2)
+  
 })
