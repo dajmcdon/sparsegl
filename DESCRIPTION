@@ -27,7 +27,9 @@ Imports:
     ggplot2,
     magrittr,
     rlang,
-    scales
+    scales,
+    SGL,
+    gglasso
 Depends: 
     R (>= 3.5)
 License: GPL (>= 2)
