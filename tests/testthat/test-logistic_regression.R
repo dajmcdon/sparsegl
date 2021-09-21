@@ -80,7 +80,7 @@ test_that("compare for logistic regression", {
   fit_nonsparse <- sparsegl(as.matrix(Xs), ys, group = groups, loss = "logit", 
                             standardize = FALSE, asparse = 0, intercept = TRUE)
   fit_gglasso <- gglasso::gglasso(as.matrix(Xs), ys, group = groups, loss = "logit",
-                                  intercept = TRUE, lambda = fit_nonsparse$lambda )
+                                 intercept = TRUE, lambda = fit_nonsparse$lambda )
   coef1 <- as.numeric(fit_gglasso$beta)
   coef2 <- as.numeric(fit_nonsparse$beta)
   intr1 <- as.numeric(fit_gglasso$b0)
