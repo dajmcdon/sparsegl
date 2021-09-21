@@ -331,6 +331,7 @@ SUBROUTINE log_sparse_four (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,fl
    USE log_sgl_subfuns
    IMPLICIT NONE
    ! - - - arg types - - -
+   DOUBLE PRECISION, PARAMETER :: big=9.9E30
    DOUBLE PRECISION, PARAMETER :: mfl = 1.0E-6
    INTEGER, PARAMETER :: mnlam = 6
    INTEGER:: isDifZero
@@ -418,28 +419,27 @@ SUBROUTINE log_sparse_four (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,fl
    ENDDO
    ! PRINT *, alsparse
    al = al0 ! this value ensures all betas are 0 
-   l = 0
    tlam = 0.0D0
-   DO WHILE (l < nlam) !! This is the start of the loop over all lambda values...
-      ! print *, "l = ", l
-      ! print *, "al = ", al
-      al0 = al ! store old al value on subsequent loops, first set to al
-      IF (flmin >= 1.0D0) THEN ! user supplied lambda value, break out of everything
-         l = l+1
-         al = ulam(l)
-         ! print *, "This is at the flmin step of the while loop"
-      ELSE
-         IF (l > 1) THEN ! have some active groups
-            al = al * alf
-            tlam = MAX((2.0 * al - al0), 0.0) ! Here is the strong rule...
-            l = l+1
-            ! print *, "This is the l>1 step of while loop"
-         ELSE IF (l == 0) THEN
-            al = al * 0.99
-            tlam = al
-            ! Trying to find an active group
-         ENDIF
-      ENDIF
+   DO l=1, nlam
+        al0 = al
+        IF(flmin>=1.0D0) THEN
+            al=ulam(l)
+        ELSE
+            IF(l > 2) THEN
+                al=al*alf
+            ELSE IF(l==1) THEN
+                al=big
+            ELSE IF(l==2) THEN
+                al0 = 0.0D0
+                DO g = 1,bn
+                    IF(pf(g)>0.0D0) THEN
+                        al0 = max(al0, ga(g) / pf(g))
+                    ENDIF
+                END DO
+                al = al0 * alf
+            ENDIF
+        ENDIF
+        tlam = (2.0*al-al0)
       lama = al * alsparse
       lam1ma = al * (1 - alsparse)
       ! This is the start of the algorithm, for a given lambda...
@@ -524,9 +524,9 @@ SUBROUTINE log_sparse_four (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,fl
       IF (l == 0) THEN
          IF (MAXVAL(is_in_E_set) == 0) THEN
             CYCLE ! don't save anything, we're still decrementing lambda
-         ELSE
-            l = 2
-            alam(1) = al / MAX(alf, .99) ! store previous, larger value
+         ! ELSE
+            ! l = 2
+            ! alam(1) = al / MAX(alf, .99) ! store previous, larger value
          ENDIF
       ENDIF
       !PRINT *, acc
@@ -543,7 +543,7 @@ SUBROUTINE log_sparse_four (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,fl
             beta(ix(g):iy(g),l) = b(ix(g):iy(g))
          ENDDO
       ENDIF
-      ! PRINT *, acc
+      PRINT *, acc
       b0(l) = acc
       nbeta(l) = ni
       alam(l) = al
