@@ -1,7 +1,7 @@
-sgl <- function(
+sgl_ls <- function(
     bn, bs, ix, iy, nobs, nvars, x, y, pf, dfmax, pmax, nlam, flmin, ulam, eps,
     maxit, vnames, group, intr, asparse, standardize,
-    lower_bnd, upper_bnd, loss) {
+    lower_bnd, upper_bnd) {
     # call Fortran core
     is.sparse <- FALSE
     algorithm <- "sgl"
@@ -12,7 +12,7 @@ sgl <- function(
         algorithm <- "sp_sgl"
     }
     
-    if (intr && loss == "ls") {
+    if (intr) {
         ym <- mean(y)
         y <- y - ym
     
@@ -36,52 +36,34 @@ sgl <- function(
         nnz <- as.integer(tail(x@p, 1))
     }
 
-    gamma <- calc_gamma(x, ix, iy, bn, loss)
+    gamma <- calc_gamma(x, ix, iy, bn, "ls")
     
-    if (loss == "ls") {
-        fit <- switch(algorithm,
-                      sgl = .Fortran(
-                          "sparse_four", bn, bs, ix, iy, gamma, nobs, nvars, as.double(x),
-                          as.double(y), pf, dfmax, pmax, nlam, flmin, ulam, eps, maxit, nalam = 0L,
-                          beta = double(nvars * nlam), activeGroup = integer(pmax),
-                          nbeta = integer(nlam), alam = double(nlam), npass = 0L, jerr = 0L,
-                          alsparse = as.double(asparse), lb = lower_bnd, ub = upper_bnd),
-                      sp_sgl = .Fortran(
-                          "spmat_four", bn, bs, ix, iy, gamma, nobs, nvars, xval, xidx, xcptr, nnz,
-                          as.double(y), pf, dfmax, pmax, nlam, flmin, ulam, eps, maxit,
-                          as.integer(intr), nalam = 0L, b0 = double(nlam),
-                          beta = double(nvars * nlam),
-                          activeGroup = integer(pmax), nbeta = integer(nlam),
-                          alam = double(nlam),
-                          npass = 0L, jerr = 0L, alsparse = as.double(asparse),
-                          lb = lower_bnd, ub = upper_bnd),
-                      stop("Requested algorithm is not implemented.")
-        )
-    } else {
-        fit <- switch(algorithm,
-                      sgl = .Fortran(
-                          "log_sparse_four", bn, bs, ix, iy, gamma, nobs, nvars, as.double(x),
-                          as.double(y), pf, dfmax, pmax, nlam, flmin, ulam, eps, maxit,
-                          as.integer(intr), nalam = 0L, b0 = double(nlam),
-                          beta = double(nvars * nlam), activeGroup = integer(pmax),
-                          nbeta = integer(nlam), alam = double(nlam), npass = 0L, jerr = 0L,
-                          alsparse = as.double(asparse), lb = lower_bnd, ub = upper_bnd),
-                      sp_sgl = .Fortran(
-                          "log_spmat_four", bn, bs, ix, iy, gamma, nobs, nvars, xval, xidx, xcptr, nnz,
-                          as.double(y), pf, dfmax, pmax, nlam, flmin, ulam, eps, maxit,
-                          as.integer(intr), nalam = 0L, b0 = double(nlam),
-                          beta = double(nvars * nlam),activeGroup = integer(pmax),
-                          nbeta = integer(nlam),alam = double(nlam),npass = 0L, jerr = 0L,
-                          alsparse = as.double(asparse),lb = lower_bnd, ub = upper_bnd),
-                      stop("Requested algorithm is not implemented.")
-        )
-    }
+    
+    fit <- switch(algorithm,
+                  sgl = .Fortran(
+                      "sparse_four", bn, bs, ix, iy, gamma, nobs, nvars, as.double(x),
+                      as.double(y), pf, dfmax, pmax, nlam, flmin, ulam, eps, maxit, nalam = 0L,
+                      beta = double(nvars * nlam), activeGroup = integer(pmax),
+                      nbeta = integer(nlam), alam = double(nlam), npass = 0L, jerr = 0L,
+                      alsparse = as.double(asparse), lb = lower_bnd, ub = upper_bnd),
+                  sp_sgl = .Fortran(
+                      "spmat_four", bn, bs, ix, iy, gamma, nobs, nvars, xval, xidx, xcptr, nnz,
+                      as.double(y), pf, dfmax, pmax, nlam, flmin, ulam, eps, maxit,
+                      as.integer(intr), nalam = 0L, b0 = double(nlam),
+                      beta = double(nvars * nlam),
+                      activeGroup = integer(pmax), nbeta = integer(nlam),
+                      alam = double(nlam),
+                      npass = 0L, jerr = 0L, alsparse = as.double(asparse),
+                      lb = lower_bnd, ub = upper_bnd),
+                  stop("Requested algorithm is not implemented.")
+    )
+   
     # output
     outlist <- getoutput(x, group, fit, maxit, pmax, nvars, vnames, eps)
     if (standardize) {
         outlist$beta <- outlist$beta * xs
     }
-    if (intr && loss == "ls") {
+    if (intr) {
         if (is.sparse) {
             outlist$b0 <- outlist$b0 + ym
         } else {
@@ -90,13 +72,67 @@ sgl <- function(
     }
     
     outlist <- c(outlist, list(npasses = fit$npass, jerr = fit$jerr, group = group))
-    if (loss == "ls") {
-        class(outlist) <- c("ls")
-    } else {
-        class(outlist) <- c("logit")
-    }
+    class(outlist) <- c("ls")
     outlist
 }
+
+sgl_logit <- function(
+    bn, bs, ix, iy, nobs, nvars, x, y, pf, dfmax, pmax, nlam, flmin, ulam, eps,
+    maxit, vnames, group, intr, asparse, standardize,
+    lower_bnd, upper_bnd) {
+    # call Fortran core
+    is.sparse <- FALSE
+    algorithm <- "sgl"
+    if (inherits(x,"sparseMatrix")) {
+        is.sparse <- TRUE
+        x <- methods::as(x,"CsparseMatrix")
+        x <- methods::as(x,"dgCMatrix")
+        algorithm <- "sp_sgl"
+    }
+    
+    if (standardize) {
+        sx <- sqrt(Matrix::colSums(x^2))
+        sx[sx < sqrt(.Machine$double.eps)] <- 1 # Don't divide by zero!]
+        xs <- 1 / sx
+        x <- x %*% Matrix::Diagonal(x = xs)
+    }
+    if (is.sparse) {
+        xidx <- as.integer(x@i + 1)
+        xcptr <- as.integer(x@p + 1)
+        xval <- as.double(x@x)
+        nnz <- as.integer(tail(x@p, 1))
+    }
+    
+    gamma <- calc_gamma(x, ix, iy, bn, "logit")
+    
+    fit <- switch(algorithm,
+                  sgl = .Fortran(
+                      "log_sparse_four", bn, bs, ix, iy, gamma, nobs, nvars, as.double(x),
+                      as.double(y), pf, dfmax, pmax, nlam, flmin, ulam, eps, maxit,
+                      as.integer(intr), nalam = 0L, b0 = double(nlam),
+                      beta = double(nvars * nlam), activeGroup = integer(pmax),
+                      nbeta = integer(nlam), alam = double(nlam), npass = 0L, jerr = 0L,
+                      alsparse = as.double(asparse), lb = lower_bnd, ub = upper_bnd),
+                  sp_sgl = .Fortran(
+                      "log_spmat_four", bn, bs, ix, iy, gamma, nobs, nvars, xval, xidx, xcptr, nnz,
+                      as.double(y), pf, dfmax, pmax, nlam, flmin, ulam, eps, maxit,
+                      as.integer(intr), nalam = 0L, b0 = double(nlam),
+                      beta = double(nvars * nlam),activeGroup = integer(pmax),
+                      nbeta = integer(nlam),alam = double(nlam),npass = 0L, jerr = 0L,
+                      alsparse = as.double(asparse),lb = lower_bnd, ub = upper_bnd),
+                  stop("Requested algorithm is not implemented.")
+    )
+    # output
+    outlist <- getoutput(x, group, fit, maxit, pmax, nvars, vnames, eps)
+    if (standardize) {
+        outlist$beta <- outlist$beta * xs
+    }
+    
+    outlist <- c(outlist, list(npasses = fit$npass, jerr = fit$jerr, group = group))
+    class(outlist) <- c("logit")
+    outlist
+}
+
 
 
 calc_gamma <- function(x, ix, iy, bn, loss) {

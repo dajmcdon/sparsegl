@@ -209,10 +209,14 @@ sparsegl <- function(
 
   #################################################################################
   # call R sub-function
-  fit <- sgl(
-    bn, bs, ix, iy, nobs, nvars, x, y, pf, dfmax, pmax, nlam, flmin, ulam,
-    eps, maxit, vnames, group, intr, as.double(asparse),
-    standardize, lower_bnd, upper_bnd, loss)
+  fit <- switch(loss,
+      ls = sgl_ls(bn, bs, ix, iy, nobs, nvars, x, y, pf, dfmax, pmax, nlam, flmin, ulam,
+                  eps, maxit, vnames, group, intr, as.double(asparse),
+                  standardize, lower_bnd, upper_bnd),
+      logit = sgl_logit(bn, bs, ix, iy, nobs, nvars, x, y, pf, dfmax, pmax, nlam, flmin, ulam,
+                        eps, maxit, vnames, group, intr, as.double(asparse),
+                        standardize, lower_bnd, upper_bnd)
+                )
   #################################################################################
   # output
   if (is.null(lambda)) fit$lambda <- lamfix(fit$lambda)

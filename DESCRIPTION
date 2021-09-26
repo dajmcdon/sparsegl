@@ -28,8 +28,6 @@ Imports:
     magrittr,
     rlang,
     scales,
-    SGL,
-    gglasso
 Depends: 
     R (>= 3.5)
 License: GPL (>= 2)

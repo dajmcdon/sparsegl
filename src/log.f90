@@ -247,7 +247,6 @@ MODULE log_sgl_subfuns
       ! print *, oldb
 
       CALL log_spatx(x,y,xidx, xcptr, nobs, nvars, nnz, r, s, startix, endix)
-      PRINT*, s
       s = s * t_for_sg / nobs + b(startix:endix)
       CALL log_softthresh(s, lama * t_for_sg, bsg)
       snorm = SQRT(DOT_PRODUCT(s,s))
@@ -265,7 +264,6 @@ MODULE log_sgl_subfuns
       IF(ANY(ABS(dd) > 0.0D0)) THEN
          maxDif = MAX(maxDif, gamg**2 * DOT_PRODUCT(dd,dd))
          CALL log_ymspax(x, y, xidx, xcptr, nobs, nvars, nnz, dd, r, startix, endix, bsg)
-         PRINT*, r
          isDifZero = 1
       ENDIF
       DEALLOCATE(s, oldb, dd)
@@ -524,9 +522,6 @@ SUBROUTINE log_sparse_four (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,fl
       IF (l == 0) THEN
          IF (MAXVAL(is_in_E_set) == 0) THEN
             CYCLE ! don't save anything, we're still decrementing lambda
-         ! ELSE
-            ! l = 2
-            ! alam(1) = al / MAX(alf, .99) ! store previous, larger value
          ENDIF
       ENDIF
       !PRINT *, acc
@@ -543,7 +538,6 @@ SUBROUTINE log_sparse_four (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,fl
             beta(ix(g):iy(g),l) = b(ix(g):iy(g))
          ENDDO
       ENDIF
-      PRINT *, acc
       b0(l) = acc
       nbeta(l) = ni
       alam(l) = al
@@ -572,6 +566,7 @@ SUBROUTINE log_spmat_four (bn,bs,ix,iy,gam,nobs,nvars,x,xidx,xcptr,nnz,y,pf,&
    USE log_spmatmul
    IMPLICIT NONE
    ! - - - arg types - - -
+   DOUBLE PRECISION, PARAMETER :: big=9.9E30
    DOUBLE PRECISION, PARAMETER :: mfl = 1.0E-6
    INTEGER, PARAMETER :: mnlam = 6
    INTEGER :: isDifZero, mnl, bn, nobs, nvars, nnz, dfmax, pmax, nlam, nalam
@@ -659,25 +654,26 @@ SUBROUTINE log_spmat_four (bn,bs,ix,iy,gam,nobs,nvars,x,xidx,xcptr,nnz,y,pf,&
    al = al0 !  this value ensures all betas are 0 
    l = 0
    tlam = 0.0D0
-   DO WHILE (l < nlam) !! This is the start of the loop over all lambda values...
-      al0 = al ! store old al value on subsequent loops, first set to al
-      IF (flmin >= 1.0D0) THEN ! user supplied lambda value, break out of everything
-         l = l + 1
-         al = ulam(l)
-         ! print *, "This is at the flmin step of the while loop"
-      ELSE
-         IF (l > 1) THEN ! have some active groups
-            ! print *, "l = ", l
-            al = al * alf
-            tlam = MAX((2.0 * al - al0), 0.0) ! Here is the strong rule...
-            l = l + 1
-            ! print *, "This is the l>1 step of while loop"
-         ELSE IF (l == 0) THEN
-            al = al * .99
-            tlam = al
-            ! Trying to find an active group
-         ENDIF
-      ENDIF
+   DO l=1, nlam
+        al0 = al
+        IF(flmin>=1.0D0) THEN
+            al=ulam(l)
+        ELSE
+            IF(l > 2) THEN
+                al=al*alf
+            ELSE IF(l==1) THEN
+                al=big
+            ELSE IF(l==2) THEN
+                al0 = 0.0D0
+                DO g = 1,bn
+                    IF(pf(g)>0.0D0) THEN
+                        al0 = max(al0, ga(g) / pf(g))
+                    ENDIF
+                END DO
+                al = al0 * alf
+            ENDIF
+        ENDIF
+      tlam = (2.0*al-al0)
       lama = al * alsparse
       lam1ma = al * (1-alsparse)
       ! This is the start of the algorithm, for a given lambda...
@@ -759,9 +755,6 @@ SUBROUTINE log_spmat_four (bn,bs,ix,iy,gam,nobs,nvars,x,xidx,xcptr,nnz,y,pf,&
       IF (l == 0) THEN
          IF (MAXVAL(is_in_E_set) == 0) THEN
             CYCLE ! don't save anything, we're still decrementing lambda
-         ELSE
-            l=2
-            alam(1) = al / MAX(alf, .99) ! store previous, larger value
          ENDIF
       ENDIF
       ! PRINT *, "Here is where the final update starts"
@@ -777,7 +770,6 @@ SUBROUTINE log_spmat_four (bn,bs,ix,iy,gam,nobs,nvars,x,xidx,xcptr,nnz,y,pf,&
       ENDIF
       nbeta(l) = ni
       b0(l) = acc
-      PRINT *, acc
       alam(l) = al
       nalam = l
       IF (l < mnl) CYCLE
