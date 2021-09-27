@@ -341,7 +341,6 @@ SUBROUTINE log_sparse_four (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,fl
    INTEGER:: nobs, nvars, dfmax, pmax, nlam, nalam, npass, jerr, maxit, intr
    INTEGER:: activeGroup(pmax)
    INTEGER:: nbeta(nlam)
-   INTEGER:: i
    DOUBLE PRECISION :: flmin, eps, alsparse, max_gam, maxDif, al, alf, snorm, d, acc
    DOUBLE PRECISION :: x(nobs,nvars)
    DOUBLE PRECISION :: y(nobs)
@@ -397,7 +396,6 @@ SUBROUTINE log_sparse_four (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,fl
    max_gam = MAXVAL(gam)
    t_for_s = 1 / gam 
    acc = 0.0D0
-   i = 1
    ! --------- lambda loop ----------------------------
    IF (flmin < 1.0D0) THEN ! THIS is the default...
       flmin = MAX(mfl, flmin) ! just sets a threshold above zero
@@ -425,8 +423,10 @@ SUBROUTINE log_sparse_four (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,fl
         ELSE
             IF(l > 2) THEN
                 al=al*alf
+                tlam = MAX(2.0*al-al0, 0.0)
             ELSE IF(l==1) THEN
-                al=big
+                al= al * 0.99
+                tlam = al
             ELSE IF(l==2) THEN
                 al0 = 0.0D0
                 DO g = 1,bn
@@ -435,9 +435,9 @@ SUBROUTINE log_sparse_four (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,fl
                     ENDIF
                 END DO
                 al = al0 * alf
+                tlam = MAX(2.0*al-al0, 0.0)
             ENDIF
         ENDIF
-        tlam = (2.0*al-al0)
       lama = al * alsparse
       lam1ma = al * (1 - alsparse)
       ! This is the start of the algorithm, for a given lambda...
@@ -519,15 +519,14 @@ SUBROUTINE log_sparse_four (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,fl
          EXIT
       ENDDO ! Ends outer loop
       !---------- final update variable and save results------------
-      IF (l == 0) THEN
-         IF (MAXVAL(is_in_E_set) == 0) THEN
-            CYCLE ! don't save anything, we're still decrementing lambda
-         ENDIF
-      ENDIF
-      !PRINT *, acc
-      !PRINT*, i
-      i = i + 1
       ! PRINT *, "Here is where the final update starts"
+      IF (l == 1) THEN
+          IF (MAXVAL(is_in_E_set) == 0) THEN
+              CYCLE ! don't save anything, we're still decrementing lambda
+          ELSE
+             alam(1) = al / MAX(alf, .99) ! store previous, larger value
+          ENDIF
+      ENDIF
       IF(ni > pmax) THEN
          jerr = -10000 - l
          EXIT
@@ -540,7 +539,10 @@ SUBROUTINE log_sparse_four (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,fl
       ENDIF
       b0(l) = acc
       nbeta(l) = ni
-      alam(l) = al
+      IF (l /= 1) Then
+         alam(l) = al
+      ENDIF
+      PRINT *, al
       nalam = l
       IF (l < mnl) CYCLE
       me = 0

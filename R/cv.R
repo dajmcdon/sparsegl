@@ -83,7 +83,7 @@ cv.sparsegl <- function(x, y, group, lambda = NULL,
         test_fold <- foldid == i
         outlist[[i]] <- sparsegl(
             x = x[!test_fold, , drop = FALSE],
-            y = y[!test_fold], group = group, lambda = lambda,  ...)
+            y = y[!test_fold], group = group, lambda = lambda, loss = loss, ...)
     }
     ###What to do depends on the pred.loss and the model fit
     fun <- paste("cv", class(sparsegl.object)[[2]], sep = ".")
@@ -137,7 +137,7 @@ cv.logit <- function(outlist, lambda, x, y, foldid, pred.loss = c("loss", "miscl
     for (i in seq(nfolds)) {
         test_fold <- foldid == i
         fitobj <- outlist[[i]]
-        preds <- predict(fitobj, x[test_fold, , drop = FALSE], type = "link")
+        preds <- predict(fitobj, x[test_fold, , drop = FALSE])
         nlami <- length(outlist[[i]]$lambda)
         predmat[test_fold, seq(nlami)] <- preds
         nlams[i] <- nlami

@@ -127,7 +127,10 @@ sgl_logit <- function(
     if (standardize) {
         outlist$beta <- outlist$beta * xs
     }
-    
+    if (intr) {
+        outlist$b0[1] <- log(sum(y == 1) / sum(y == -1))
+    }
+    outlist$b0 <- matrix(outlist$b0, nrow = 1)
     outlist <- c(outlist, list(npasses = fit$npass, jerr = fit$jerr, group = group))
     class(outlist) <- c("logit")
     outlist
