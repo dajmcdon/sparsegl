@@ -133,7 +133,8 @@
 
 <span class="co"># Logistic regression model</span>
 <span class="va">pr</span> <span class="op">&lt;-</span> <span class="fl">1</span> <span class="op">/</span> <span class="op">(</span><span class="fl">1</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html">exp</a></span><span class="op">(</span><span class="op">-</span><span class="va">X</span> <span class="op">%*%</span> <span class="va">beta_star</span><span class="op">)</span><span class="op">)</span>
-<span class="va">y_binary</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/Binomial.html">rbinom</a></span><span class="op">(</span><span class="va">n</span>, <span class="fl">1</span>, <span class="va">pr</span><span class="op">)</span></code></pre></div>
+<span class="va">y_binary</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/Binomial.html">rbinom</a></span><span class="op">(</span><span class="va">n</span>, <span class="fl">1</span>, <span class="va">pr</span><span class="op">)</span>
+<span class="va">y_binary</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/which.html">which</a></span><span class="op">(</span><span class="va">y_binary</span> <span class="op">==</span> <span class="fl">0</span><span class="op">)</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fl">0</span></code></pre></div>
 </div>
 <div id="sparsegl" class="section level2">
 <h2 class="hasAnchor">
