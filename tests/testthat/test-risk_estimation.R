@@ -1,18 +1,4 @@
 
-test_that("risk estimation works whether or not y is a matrix", {
-  n <- 100
-  beta <- c(5,5,5,-5,-5,-5,1,0,1,0,0,0,0,2,0)
-  gr <- rep(1:5, each = 3)
-  X <- matrix(rnorm(n * length(beta)), n)
-  y1 <- X %*% beta + rnorm(n)
-  y2 <- drop(y1)
-  out1 <- sparsegl(X, y1, gr)
-  out2 <- sparsegl(X, y2, gr)
-  
-  expect_equal(estimate_risk(out1, X, y1, type = "AIC"), 
-               estimate_risk(out2, X, y2, type = "AIC"))
-})
-
 test_that("check if function delP() works as expected", {
   
   # beta is a vector of zeros

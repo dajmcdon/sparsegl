@@ -3,7 +3,8 @@
 ^\.github$
 ^README\.Rmd$
 ^LICENSE\.md$
-
+^jss-sparsegl$
+^deprecated$
 ^_pkgdown\.yml$
 ^docs$
 ^pkgdown$

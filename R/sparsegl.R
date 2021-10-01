@@ -16,6 +16,9 @@
 #' @param y Real-valued response variable.
 #' @param group A vector of consecutive integers describing the grouping of the
 #' coefficients (see example below).
+#' @param loss A character string specifying the loss function to use, valid 
+#' options are: \itemize{\item\code{"ls"} least squares loss (regression), \item
+#' \code{"logit"} logistic loss (classification), }Default is \code{"ls"}.
 #' @param nlambda The number of \code{lambda} values - default is 100.
 #' @param lambda.factor The factor for getting the minimal lambda in
 #' \code{lambda} sequence, where \code{min(lambda)} = \code{lambda.factor} *
@@ -85,7 +88,7 @@
 #' groups <- rep(1:(p / 5), each = 5)
 #' fit1 <- sparsegl(X, y, group = groups)
 sparsegl <- function(
-  x, y, group = NULL,
+  x, y, group = NULL, loss = c("ls", "logit"),
   nlambda = 100, lambda.factor = ifelse(nobs < nvars, 0.01, 1e-04),
   lambda = NULL, pf = sqrt(bs),
   intercept = TRUE, asparse = 0.05, standardize = TRUE,
@@ -96,7 +99,7 @@ sparsegl <- function(
   #################################################################################
   #\tDesign matrix setup, error checking
   this.call <- match.call()
-
+  loss <- match.arg(loss)
   if (!is.matrix(x) && !inherits(x, "sparseMatrix"))
     stop("x has to be a matrix")
 
@@ -131,8 +134,8 @@ sparsegl <- function(
     stop("Groups must be consecutively numbered 1, 2, 3, ...")
 
   assertthat::assert_that(
-    asparse < 1,
-    msg = "asparse must be less than 1, you may want glmnet::glmnet()")
+    asparse <= 1,
+    msg = "asparse must be less than or equal to 1, you may want glmnet::glmnet()")
 
   if (asparse < 0) {
     asparse <- 0
@@ -206,10 +209,14 @@ sparsegl <- function(
 
   #################################################################################
   # call R sub-function
-  fit <- sgl(
-    bn, bs, ix, iy, nobs, nvars, x, y, pf, dfmax, pmax, nlam, flmin, ulam,
-    eps, maxit, vnames, group, intr, as.double(asparse),
-    standardize, lower_bnd, upper_bnd)
+  fit <- switch(loss,
+      ls = sgl_ls(bn, bs, ix, iy, nobs, nvars, x, y, pf, dfmax, pmax, nlam, flmin, ulam,
+                  eps, maxit, vnames, group, intr, as.double(asparse),
+                  standardize, lower_bnd, upper_bnd),
+      logit = sgl_logit(bn, bs, ix, iy, nobs, nvars, x, y, pf, dfmax, pmax, nlam, flmin, ulam,
+                        eps, maxit, vnames, group, intr, as.double(asparse),
+                        standardize, lower_bnd, upper_bnd)
+                )
   #################################################################################
   # output
   if (is.null(lambda)) fit$lambda <- lamfix(fit$lambda)

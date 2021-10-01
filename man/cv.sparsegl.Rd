@@ -10,7 +10,8 @@ cv.sparsegl(
   y,
   group,
   lambda = NULL,
-  pred.loss = c("L2", "L1"),
+  loss = c("ls", "logit"),
+  pred.loss = c("L2", "L1", "loss", "misclass"),
   nfolds = 5,
   foldid,
   ...
@@ -29,13 +30,19 @@ coefficients (see example below).}
 \item{lambda}{An optional user-supplied lambda sequence; default is
 \code{NULL}, and \code{\link[=sparsegl]{sparsegl()}} chooses its own sequence.}
 
+\item{loss}{A character string specifying the loss function to use, valid
+options are: \itemize{\item\code{"ls"} least squares loss (regression), \item
+\code{"logit"} logistic loss (classification), }Default is \code{"ls"}.}
+
 \item{pred.loss}{Loss to use for cross-validation error. Valid options are:
 \itemize{ \item \code{"L1"} for regression, mean square
 error used by least squares regression \code{loss = "ls"}, it measure the
 deviation from the fitted mean to the response.  \item \code{"L2"} for
 regression, mean absolute error used by least squares regression
 \code{loss = "ls"}, it measure the deviation from the fitted mean to the
-response.  }Default is \code{"L2"}.}
+response. \item\code{"loss"} for classification, margin based loss function.
+\item\code{"misclass"} for classification giving misclassification error. }
+Default is \code{"L2"}.}
 
 \item{nfolds}{Number of folds - default is 5. Although \code{nfolds} can be
 as large as the sample size (leave-one-out CV), it is not recommended for
@@ -62,7 +69,7 @@ value of \code{lambda} such that error is within 1 standard error of the
 minimum.}
 }
 \description{
-Does k-fold cross-validation for a fitted \code{\link[=sparsegl]{sparsegl()}} object.
+Does k-fold cross-validation for \code{\link[=sparsegl]{sparsegl()}}.
 This function is modified based on the \code{cv}
 function from the \code{\link[glmnet:cv.glmnet]{glmnet::cv.glmnet()}} package.
 }
