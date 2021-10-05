@@ -26,8 +26,8 @@ MODULE log_spmatmul
       DO i = cj, ck
          k = cptr(i + 1) - 1
          DO j = cptr(i), k
-            y(ridx(j)) = y(ridx(j)) + x(i - cj + 1) * a(j) * b(j)
-            ! r = r + y * MATMUL(x(:,startix:endix), dd)
+            y(ridx(j)) = y(ridx(j)) + x(i - cj + 1) * a(j) * b(ridx(j))
+            ! r = r + y * MATMUL(x(:,startix:endix), dd)  (a->x, b->y, x->dd, y->r)
          ENDDO
       ENDDO
       RETURN
@@ -48,8 +48,8 @@ MODULE log_spmatmul
       DO i = cj, ck
          k = i - cj + 1
          DO j = cptr(i), (cptr(i + 1) - 1)
-            y(k) = y(k) + b(j) / (1 + exp(x(ridx(j)))) * a(j)
-            ! s = MATMUL(y/(1.0D0+exp(r)), x(:, startix:endix))
+            y(k) = y(k) + b(ridx(j)) / (1 + exp(x(ridx(j)))) * a(j)
+            ! s = MATMUL(y/(1.0D0+exp(r)), x(:, startix:endix))  (a->x,b->y x->r, y->s)
          ENDDO
       ENDDO
       RETURN
@@ -542,7 +542,7 @@ SUBROUTINE log_sparse_four (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,fl
       IF (l /= 1) Then
          alam(l) = al
       ENDIF
-      PRINT *, al
+      ! PRINT *, alam(l)
       nalam = l
       IF (l < mnl) CYCLE
       me = 0
@@ -654,7 +654,6 @@ SUBROUTINE log_spmat_four (bn,bs,ix,iy,gam,nobs,nvars,x,xidx,xcptr,nnz,y,pf,&
    ENDDO
    ! PRINT *, alsparse
    al = al0 !  this value ensures all betas are 0 
-   l = 0
    tlam = 0.0D0
    DO l=1, nlam
         al0 = al
@@ -663,8 +662,10 @@ SUBROUTINE log_spmat_four (bn,bs,ix,iy,gam,nobs,nvars,x,xidx,xcptr,nnz,y,pf,&
         ELSE
             IF(l > 2) THEN
                 al=al*alf
+                tlam = MAX(2.0*al-al0, 0.0)
             ELSE IF(l==1) THEN
-                al=big
+                al= al * 0.99
+                tlam = al
             ELSE IF(l==2) THEN
                 al0 = 0.0D0
                 DO g = 1,bn
@@ -673,9 +674,9 @@ SUBROUTINE log_spmat_four (bn,bs,ix,iy,gam,nobs,nvars,x,xidx,xcptr,nnz,y,pf,&
                     ENDIF
                 END DO
                 al = al0 * alf
+                tlam = MAX(2.0*al-al0, 0.0)
             ENDIF
-        ENDIF
-      tlam = (2.0*al-al0)
+      ENDIF
       lama = al * alsparse
       lam1ma = al * (1-alsparse)
       ! This is the start of the algorithm, for a given lambda...
@@ -754,10 +755,12 @@ SUBROUTINE log_spmat_four (bn,bs,ix,iy,gam,nobs,nvars,x,xidx,xcptr,nnz,y,pf,&
          EXIT
       ENDDO ! Ends outer loop
       !---------- final update variable and save results------------
-      IF (l == 0) THEN
-         IF (MAXVAL(is_in_E_set) == 0) THEN
-            CYCLE ! don't save anything, we're still decrementing lambda
-         ENDIF
+      IF (l == 1) THEN
+          IF (MAXVAL(is_in_E_set) == 0) THEN
+              CYCLE ! don't save anything, we're still decrementing lambda
+          ELSE
+             alam(1) = al / MAX(alf, .99) ! store previous, larger value
+          ENDIF
       ENDIF
       ! PRINT *, "Here is where the final update starts"
       IF (ni > pmax) THEN
@@ -772,7 +775,9 @@ SUBROUTINE log_spmat_four (bn,bs,ix,iy,gam,nobs,nvars,x,xidx,xcptr,nnz,y,pf,&
       ENDIF
       nbeta(l) = ni
       b0(l) = acc
-      alam(l) = al
+      IF (l /= 1) Then
+         alam(l) = al
+      ENDIF
       nalam = l
       IF (l < mnl) CYCLE
       me = 0
