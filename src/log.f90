@@ -48,6 +48,7 @@ MODULE log_spmatmul
       DO i = cj, ck
          k = i - cj + 1
          DO j = cptr(i), (cptr(i + 1) - 1)
+            !y(k) = y(k) + x(ridx(j)) * a(j)
             y(k) = y(k) + b(ridx(j)) / (1 + exp(x(ridx(j)))) * a(j)
             ! s = MATMUL(y/(1.0D0+exp(r)), x(:, startix:endix))  (a->x,b->y x->r, y->s)
          ENDDO
@@ -427,15 +428,15 @@ SUBROUTINE log_sparse_four (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,fl
             ELSE IF(l==1) THEN
                 al= al * 0.99
                 tlam = al
-            ELSE IF(l==2) THEN
-                al0 = 0.0D0
-                DO g = 1,bn
-                    IF(pf(g)>0.0D0) THEN
-                        al0 = max(al0, ga(g) / pf(g))
-                    ENDIF
-                END DO
-                al = al0 * alf
-                tlam = MAX(2.0*al-al0, 0.0)
+            !ELSE IF(l==2) THEN
+               ! al0 = 0.0D0
+               ! DO g = 1,bn
+                   !IF(pf(g)>0.0D0) THEN
+                        !al0 = max(al0, ga(g) / pf(g))
+                   ! ENDIF
+                !END DO
+               ! al = al0 * alf
+               ! tlam = MAX(2.0*al-al0, 0.0)
             ENDIF
         ENDIF
       lama = al * alsparse
@@ -542,7 +543,6 @@ SUBROUTINE log_sparse_four (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,fl
       IF (l /= 1) Then
          alam(l) = al
       ENDIF
-      ! PRINT *, alam(l)
       nalam = l
       IF (l < mnl) CYCLE
       me = 0
@@ -631,9 +631,9 @@ SUBROUTINE log_spmat_four (bn,bs,ix,iy,gam,nobs,nvars,x,xidx,xcptr,nnz,y,pf,&
    npass = 0 
    ni = 0
    alf = 0.0D0
+   acc = 0.0D0
    max_gam = MAXVAL(gam) 
    t_for_s = 1/gam 
-   acc = 0.0D0
    ! --------- lambda loop ----------------------------
    IF (flmin < 1.0D0) THEN ! THIS is the default...
       flmin = MAX(mfl, flmin) ! just sets a threshold above zero
@@ -660,21 +660,21 @@ SUBROUTINE log_spmat_four (bn,bs,ix,iy,gam,nobs,nvars,x,xidx,xcptr,nnz,y,pf,&
         IF(flmin>=1.0D0) THEN
             al=ulam(l)
         ELSE
-            IF(l > 2) THEN
+            IF(l > 1) THEN
                 al=al*alf
                 tlam = MAX(2.0*al-al0, 0.0)
             ELSE IF(l==1) THEN
                 al= al * 0.99
                 tlam = al
-            ELSE IF(l==2) THEN
-                al0 = 0.0D0
-                DO g = 1,bn
-                    IF(pf(g)>0.0D0) THEN
-                        al0 = max(al0, ga(g) / pf(g))
-                    ENDIF
-                END DO
-                al = al0 * alf
-                tlam = MAX(2.0*al-al0, 0.0)
+            !ELSE IF(l==2) THEN
+                !al0 = 0.0D0
+                !DO g = 1,bn
+                   ! IF(pf(g)>0.0D0) THEN
+                       ! al0 = max(al0, ga(g) / pf(g))
+                   ! ENDIF
+                !END DO
+                !al = al0 * alf
+               ! tlam = MAX(2.0*al-al0, 0.0)
             ENDIF
       ENDIF
       lama = al * alsparse
@@ -683,7 +683,6 @@ SUBROUTINE log_spmat_four (bn,bs,ix,iy,gam,nobs,nvars,x,xidx,xcptr,nnz,y,pf,&
       CALL log_strong_rule (is_in_S_set, ga, pf, tlam, alsparse) !uses s_set instead of e_set...
       ! --------- outer loop ---------------------------- !
       DO
-         oldbeta(0) = b(0)
          IF (ni > 0) THEN
             DO j = 1, ni
                g = activeGroup(j)
@@ -692,6 +691,7 @@ SUBROUTINE log_spmat_four (bn,bs,ix,iy,gam,nobs,nvars,x,xidx,xcptr,nnz,y,pf,&
          ENDIF
          ! --inner loop-------------------------------------
          DO
+            oldbeta(0) = b(0)
             npass = npass + 1
             maxDif = 0.0D0
             isDifZero = 0 !Boolean to check if b-oldb nonzero. Unnec, in fn.
@@ -714,7 +714,7 @@ SUBROUTINE log_spmat_four (bn,bs,ix,iy,gam,nobs,nvars,x,xidx,xcptr,nnz,y,pf,&
                d = 4.0D0*d/nobs
                IF (d /= 0.0D0) THEN
                   acc = acc + d
-                  r=r+y*d
+                  r = r + y * d
                   maxDif=max(maxDif,d**2)
                ENDIF
             ENDIF
