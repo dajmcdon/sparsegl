@@ -10,6 +10,7 @@ cv.sparsegl(
   y,
   group,
   lambda = NULL,
+  loss = c("ls", "logit"),
   pred.loss = c("L2", "L1", "loss", "misclass"),
   nfolds = 5,
   foldid,
@@ -28,6 +29,10 @@ coefficients (see example below).}
 
 \item{lambda}{An optional user-supplied lambda sequence; default is
 \code{NULL}, and \code{\link[=sparsegl]{sparsegl()}} chooses its own sequence.}
+
+\item{loss}{A character string specifying the loss function to use, valid
+options are: \itemize{\item\code{"ls"} least squares loss (regression), \item
+\code{"logit"} logistic loss (classification), }Default is \code{"ls"}.}
 
 \item{pred.loss}{Loss to use for cross-validation error. Valid options are:
 \itemize{ \item \code{"L1"} for regression, mean square

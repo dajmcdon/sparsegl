@@ -108,6 +108,7 @@ y <- X %*% beta_star + eps
 # Logistic regression model
 pr <- 1 / (1 + exp(-X %*% beta_star))
 y_binary <- rbinom(n, 1, pr)
+y_binary[which(y_binary == 0)] <- -1
 ```
 
 ## `sparsegl()`
@@ -213,14 +214,14 @@ print(fit1)
 
 ## `cv.sparsegl()`
 
-This function does a k-fold cross-validation (cv) on a `sparsegl` object. It takes the same
+This function does a k-fold cross-validation (cv) on `sparsegl`. It takes the same
 arguments `X`, `y`, `group`, which are specified above, with additional
 argument `pred.loss`. It can be set with either "L2" or "L1" for linear regression
 model, "loss" or "misclass"  for logistic regression model indicating the loss to
 use for cv error. This will return a `cv.sparseg` object.
 
 ```{r}
-fit_l1 <- cv.sparsegl(X, y, group = groups, pred.loss = "L1")
+fit_l1 <- cv.sparsegl(X, y, group = groups, loss = "ls", pred.loss = "L1")
 ```
 
 ### `plot()`, `coef()` and `predict()` for `cv.sparsegl` object
