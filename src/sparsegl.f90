@@ -27,6 +27,7 @@ MODULE spmatmul
          k = cptr(i + 1) - 1
          DO j = cptr(i), k
             y(ridx(j)) = y(ridx(j)) - x(i - cj + 1) * a(j)
+            ! r = r - MATMUL(x(:,startix:endix), dd) (a->x, x->dd, y->r)
          ENDDO
       ENDDO
       RETURN
@@ -48,6 +49,7 @@ MODULE spmatmul
          k = i - cj + 1
          DO j = cptr(i), (cptr(i + 1) - 1)
             y(k) = y(k) + x(ridx(j)) * a(j)
+            ! s = MATMUL(r, x(:,startix:endix)) (a->x, x->r, y->s)
          ENDDO
       ENDDO
       RETURN
