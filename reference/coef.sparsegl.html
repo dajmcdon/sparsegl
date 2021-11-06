@@ -155,38 +155,39 @@ are interpolated using a fraction of coefficients from both left and right
 <code><a href='print.sparsegl.html'>print.sparsegl()</a></code> methods.</p></div>
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
-    <pre class="examples"><div class='input'><span class='va'>n</span> <span class='op'>&lt;-</span> <span class='fl'>100</span>
-<span class='va'>p</span> <span class='op'>&lt;-</span> <span class='fl'>20</span>
-<span class='va'>X</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/matrix.html'>matrix</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/stats/Normal.html'>rnorm</a></span><span class='op'>(</span><span class='va'>n</span> <span class='op'>*</span> <span class='va'>p</span><span class='op'>)</span>, nrow <span class='op'>=</span> <span class='va'>n</span><span class='op'>)</span>
-<span class='va'>eps</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/stats/Normal.html'>rnorm</a></span><span class='op'>(</span><span class='va'>n</span><span class='op'>)</span>
-<span class='va'>beta_star</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/rep.html'>rep</a></span><span class='op'>(</span><span class='fl'>5</span>, <span class='fl'>5</span><span class='op'>)</span>, <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='fl'>5</span>, <span class='op'>-</span><span class='fl'>5</span>, <span class='fl'>2</span>, <span class='fl'>0</span>, <span class='fl'>0</span><span class='op'>)</span>, <span class='fu'><a href='https://rdrr.io/r/base/rep.html'>rep</a></span><span class='op'>(</span><span class='op'>-</span><span class='fl'>5</span>, <span class='fl'>5</span><span class='op'>)</span>, <span class='fu'><a href='https://rdrr.io/r/base/rep.html'>rep</a></span><span class='op'>(</span><span class='fl'>0</span>, <span class='op'>(</span><span class='va'>p</span> <span class='op'>-</span> <span class='fl'>15</span><span class='op'>)</span><span class='op'>)</span><span class='op'>)</span>
-<span class='va'>y</span> <span class='op'>&lt;-</span> <span class='va'>X</span> <span class='op'>%*%</span> <span class='va'>beta_star</span> <span class='op'>+</span> <span class='va'>eps</span>
-<span class='va'>groups</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/rep.html'>rep</a></span><span class='op'>(</span><span class='fl'>1</span><span class='op'>:</span><span class='op'>(</span><span class='va'>p</span> <span class='op'>/</span> <span class='fl'>5</span><span class='op'>)</span>, each <span class='op'>=</span> <span class='fl'>5</span><span class='op'>)</span>
-<span class='va'>fit1</span> <span class='op'>&lt;-</span> <span class='fu'><a href='sparsegl.html'>sparsegl</a></span><span class='op'>(</span><span class='va'>X</span>, <span class='va'>y</span>, group <span class='op'>=</span> <span class='va'>groups</span><span class='op'>)</span>
-<span class='fu'><a href='https://rdrr.io/r/stats/coef.html'>coef</a></span><span class='op'>(</span><span class='va'>fit1</span>, s <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='fl'>0.02</span>, <span class='fl'>0.03</span><span class='op'>)</span><span class='op'>)</span>
-</div><div class='output co'>#&gt; 21 x 2 Matrix of class "dgeMatrix"
-#&gt;                       1            2
-#&gt; (Intercept)  0.01325875  0.007969261
-#&gt; V1           4.91429743  4.813050130
-#&gt; V2           4.70204909  4.640590765
-#&gt; V3           4.73782886  4.573649585
-#&gt; V4           4.85844774  4.739868478
-#&gt; V5           4.76412928  4.690364943
-#&gt; V6           4.67438465  4.510475681
-#&gt; V7          -4.82520005 -4.675113664
-#&gt; V8           1.98326141  1.949337108
-#&gt; V9           0.06941265  0.106865197
-#&gt; V10         -0.13856289 -0.147835132
-#&gt; V11         -4.84415261 -4.749909177
-#&gt; V12         -4.71528594 -4.604980713
-#&gt; V13         -4.84323817 -4.741746023
-#&gt; V14         -4.81287328 -4.688356691
-#&gt; V15         -4.93403374 -4.863002747
-#&gt; V16          0.00000000  0.000000000
-#&gt; V17          0.00000000  0.000000000
-#&gt; V18          0.00000000  0.000000000
-#&gt; V19          0.00000000  0.000000000
-#&gt; V20          0.00000000  0.000000000</div></pre>
+    <pre class="examples"><span class='r-in'><span class='va'>n</span> <span class='op'>&lt;-</span> <span class='fl'>100</span></span>
+<span class='r-in'><span class='va'>p</span> <span class='op'>&lt;-</span> <span class='fl'>20</span></span>
+<span class='r-in'><span class='va'>X</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/matrix.html'>matrix</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/stats/Normal.html'>rnorm</a></span><span class='op'>(</span><span class='va'>n</span> <span class='op'>*</span> <span class='va'>p</span><span class='op'>)</span>, nrow <span class='op'>=</span> <span class='va'>n</span><span class='op'>)</span></span>
+<span class='r-in'><span class='va'>eps</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/stats/Normal.html'>rnorm</a></span><span class='op'>(</span><span class='va'>n</span><span class='op'>)</span></span>
+<span class='r-in'><span class='va'>beta_star</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/rep.html'>rep</a></span><span class='op'>(</span><span class='fl'>5</span>, <span class='fl'>5</span><span class='op'>)</span>, <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='fl'>5</span>, <span class='op'>-</span><span class='fl'>5</span>, <span class='fl'>2</span>, <span class='fl'>0</span>, <span class='fl'>0</span><span class='op'>)</span>, <span class='fu'><a href='https://rdrr.io/r/base/rep.html'>rep</a></span><span class='op'>(</span><span class='op'>-</span><span class='fl'>5</span>, <span class='fl'>5</span><span class='op'>)</span>, <span class='fu'><a href='https://rdrr.io/r/base/rep.html'>rep</a></span><span class='op'>(</span><span class='fl'>0</span>, <span class='op'>(</span><span class='va'>p</span> <span class='op'>-</span> <span class='fl'>15</span><span class='op'>)</span><span class='op'>)</span><span class='op'>)</span></span>
+<span class='r-in'><span class='va'>y</span> <span class='op'>&lt;-</span> <span class='va'>X</span> <span class='op'><a href='https://rdrr.io/r/base/matmult.html'>%*%</a></span> <span class='va'>beta_star</span> <span class='op'>+</span> <span class='va'>eps</span></span>
+<span class='r-in'><span class='va'>groups</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/rep.html'>rep</a></span><span class='op'>(</span><span class='fl'>1</span><span class='op'>:</span><span class='op'>(</span><span class='va'>p</span> <span class='op'>/</span> <span class='fl'>5</span><span class='op'>)</span>, each <span class='op'>=</span> <span class='fl'>5</span><span class='op'>)</span></span>
+<span class='r-in'><span class='va'>fit1</span> <span class='op'>&lt;-</span> <span class='fu'><a href='sparsegl.html'>sparsegl</a></span><span class='op'>(</span><span class='va'>X</span>, <span class='va'>y</span>, group <span class='op'>=</span> <span class='va'>groups</span><span class='op'>)</span></span>
+<span class='r-in'><span class='fu'><a href='https://rdrr.io/r/stats/coef.html'>coef</a></span><span class='op'>(</span><span class='va'>fit1</span>, s <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='fl'>0.02</span>, <span class='fl'>0.03</span><span class='op'>)</span><span class='op'>)</span></span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> 21 x 2 Matrix of class "dgeMatrix"</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span>                       1            2</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> (Intercept)  0.01325875  0.007969261</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> V1           4.91429743  4.813050130</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> V2           4.70204909  4.640590765</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> V3           4.73782886  4.573649585</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> V4           4.85844774  4.739868478</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> V5           4.76412928  4.690364943</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> V6           4.67438465  4.510475681</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> V7          -4.82520005 -4.675113664</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> V8           1.98326141  1.949337108</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> V9           0.06941265  0.106865197</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> V10         -0.13856289 -0.147835132</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> V11         -4.84415261 -4.749909177</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> V12         -4.71528594 -4.604980713</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> V13         -4.84323817 -4.741746023</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> V14         -4.81287328 -4.688356691</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> V15         -4.93403374 -4.863002747</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> V16          0.00000000  0.000000000</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> V17          0.00000000  0.000000000</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> V18          0.00000000  0.000000000</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> V19          0.00000000  0.000000000</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> V20          0.00000000  0.000000000</span>
+</pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top">
