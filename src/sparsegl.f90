@@ -11,7 +11,8 @@ MODULE spmatmul
    ! cptr is of length ncol(A)+1 where cptr[j] is the first entry of a in column j, last entry == nnz
    ! to slice into columns cj:ck, you need a[cptr[cj]:(cptrr[ck+1]-1)] and
    ! ridx[cptr[cj]:(cptr[ck+1]-1)] and cptr[cj:ck])
-   ! We don't actually need Ax->y ever, we need y <- y-A[,cj:ck] x
+     ! We don't actually need Ax->y ever, we need y <- y-A[,cj:ck] x (ymspax)
+     ! and we need y <- y + b*A[,cj:ck]x (ypbspax)
    SUBROUTINE ymspax (a, ridx, cptr, n, p, nnz, x, y, cj, ck, lx)
       IMPLICIT NONE
       INTEGER n, p, nnz, cj, ck, lx
@@ -31,7 +32,28 @@ MODULE spmatmul
          ENDDO
       ENDDO
       RETURN
-   END SUBROUTINE ymspax
+    END SUBROUTINE ymspax
+
+    SUBROUTINE ypbspax (a, b, ridx, cptr, n, p, nnz, x, y, cj, ck, lx)
+      IMPLICIT NONE
+      INTEGER n, p, nnz, cj, ck, lx
+      DOUBLE PRECISION, INTENT(in) :: a(nnz), b(nnz)
+      INTEGER, INTENT(in) :: ridx(nnz)
+      INTEGER, INTENT(in) :: cptr(p+1)
+      DOUBLE PRECISION, INTENT(in) :: x(lx)
+      DOUBLE PRECISION, INTENT(inout) :: y(n)
+
+      INTEGER i, j, k
+
+      DO i = cj, ck
+         k = cptr(i + 1) - 1
+         DO j = cptr(i), k
+            y(ridx(j)) = y(ridx(j)) + x(i - cj + 1) * a(j) * b(ridx(j))
+            ! r = r + y * MATMUL(x(:,startix:endix), dd)  (a->x, b->y, x->dd, y->r)
+         ENDDO
+      ENDDO
+      RETURN
+    END SUBROUTINE ypbspax
 
    SUBROUTINE spatx (a, ridx, cptr, n, p, nnz, x, y, cj, ck)
       IMPLICIT NONE
@@ -89,7 +111,7 @@ MODULE sgl_subfuns
       DOUBLE PRECISION :: z
       k = SIZE(is_in_E_set)
       z = tlam * (1 - alsparse)
-      
+
       DO g = 1, k
          IF (is_in_E_set(g) == 1) CYCLE
          IF (ga(g) > pf(g) * z) is_in_E_set(g) = 1
@@ -319,7 +341,7 @@ MODULE sgl_subfuns
 END MODULE sgl_subfuns
 
 
-   
+
 ! --------------------------------------------------
 SUBROUTINE sparse_four (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,flmin,ulam,&
    eps,maxit,nalam,beta,activeGroup,nbeta,alam,npass,jerr,alsparse,lb,ub)
@@ -351,20 +373,20 @@ SUBROUTINE sparse_four (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,flmin,
    DOUBLE PRECISION, DIMENSION (:), ALLOCATABLE :: s !need for sparse_four
    DOUBLE PRECISION, DIMENSION (:), ALLOCATABLE :: b
    DOUBLE PRECISION, DIMENSION (:), ALLOCATABLE :: oldbeta
-   DOUBLE PRECISION, DIMENSION (:), ALLOCATABLE :: r ! Residual 
+   DOUBLE PRECISION, DIMENSION (:), ALLOCATABLE :: r ! Residual
    DOUBLE PRECISION, DIMENSION (:), ALLOCATABLE :: u ! No longer using this for update step, but still need for other parts
-   
+
    INTEGER, DIMENSION (:), ALLOCATABLE :: activeGroupIndex
    INTEGER:: g, j, l, ni, me, startix, endix, vl_iter
    DOUBLE PRECISION::t_for_s(bn) ! this is for now just 1/gamma
-   
+
    ! - - - begin local declarations - - -
    DOUBLE PRECISION:: tlam, lama, lam1ma, al0
    INTEGER:: violation
    INTEGER:: is_in_E_set(bn)
    INTEGER:: is_in_S_set(bn) ! this is for 4-step alg
-   DOUBLE PRECISION:: ga(bn) 
-   DOUBLE PRECISION:: vl(nvars) 
+   DOUBLE PRECISION:: ga(bn)
+   DOUBLE PRECISION:: vl(nvars)
    ! - - - allocate variables - - -
    ALLOCATE(b(1:nvars))
    ALLOCATE(oldbeta(1:nvars))
@@ -386,18 +408,18 @@ SUBROUTINE sparse_four (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,flmin,
    oldbeta = 0.0D0
    activeGroup = 0
    activeGroupIndex = 0
-   npass = 0 
-   ni = 0 
+   npass = 0
+   ni = 0
    alf = 0.0D0
    max_gam = MAXVAL(gam)
-   t_for_s = 1 / gam 
+   t_for_s = 1 / gam
    ! --------- lambda loop ----------------------------
    IF (flmin < 1.0D0) THEN ! THIS is the default...
       flmin = MAX(mfl, flmin) ! just sets a threshold above zero
       alf = flmin ** (1.0D0 / (nlam - 1.0D0))
    ENDIF
    ! PRINT *, alf
-   vl = MATMUL(r, x)/nobs 
+   vl = MATMUL(r, x)/nobs
    al0 = 0.0D0
    DO g = 1, bn ! For each group...
       ALLOCATE(u(bs(g)))
@@ -409,7 +431,7 @@ SUBROUTINE sparse_four (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,flmin,
       al0 = MAX(al0, ABS(vl(vl_iter))) ! Infty norm of X'y, big overkill for lam_max
    ENDDO
    ! PRINT *, alsparse
-   al = al0 ! this value ensures all betas are 0 
+   al = al0 ! this value ensures all betas are 0
    l = 0
    tlam = 0.0D0
    DO WHILE (l < nlam) !! This is the start of the loop over all lambda values...
@@ -456,7 +478,7 @@ SUBROUTINE sparse_four (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,flmin,
                IF (is_in_E_set(g) == 0) CYCLE
                startix = ix(g)
                endix = iy(g)
-               CALL update_step(bs(g), startix, endix, b, lama, t_for_s(g), pf(g), lam1ma, x,& 
+               CALL update_step(bs(g), startix, endix, b, lama, t_for_s(g), pf(g), lam1ma, x,&
                   isDifZero, nobs, r, gam(g), maxDif, nvars, lb(g), ub(g))
                IF (activeGroupIndex(g) == 0 .AND. isDifZero == 1) THEN
                   ni = ni + 1
@@ -467,7 +489,7 @@ SUBROUTINE sparse_four (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,flmin,
             ENDDO
             IF (ni > pmax) EXIT
             IF (maxDif < eps) EXIT
-            IF (npass > maxit) THEN 
+            IF (npass > maxit) THEN
                jerr = -l
                RETURN
             ENDIF
@@ -573,7 +595,7 @@ SUBROUTINE spmat_four (bn,bs,ix,iy,gam,nobs,nvars,x,xidx,xcptr,nnz,y,pf,&
    DOUBLE PRECISION, DIMENSION (:), ALLOCATABLE :: b
    DOUBLE PRECISION, DIMENSION (:), ALLOCATABLE :: oldbeta
    DOUBLE PRECISION, DIMENSION (:), ALLOCATABLE :: r ! Residual
-   DOUBLE PRECISION, DIMENSION (:), ALLOCATABLE :: u 
+   DOUBLE PRECISION, DIMENSION (:), ALLOCATABLE :: u
    INTEGER, DIMENSION (:), ALLOCATABLE :: activeGroupIndex
    INTEGER :: g, j, l, ni, me, startix, endix, vl_iter
    ! - - - Aaron's declarations
@@ -606,11 +628,11 @@ SUBROUTINE spmat_four (bn,bs,ix,iy,gam,nobs,nvars,x,xidx,xcptr,nnz,y,pf,&
    oldbeta = 0.0D0
    activeGroup = 0
    activeGroupIndex = 0
-   npass = 0 
+   npass = 0
    ni = 0
    alf = 0.0D0
-   max_gam = MAXVAL(gam) 
-   t_for_s = 1/gam 
+   max_gam = MAXVAL(gam)
+   t_for_s = 1/gam
    ! --------- lambda loop ----------------------------
    IF (flmin < 1.0D0) THEN ! THIS is the default...
       flmin = MAX(mfl, flmin) ! just sets a threshold above zero
@@ -630,7 +652,7 @@ SUBROUTINE spmat_four (bn,bs,ix,iy,gam,nobs,nvars,x,xidx,xcptr,nnz,y,pf,&
       al0 = MAX(al0, ABS(vl(vl_iter))) ! Infty norm of X'y, big overkill for lam_max
    ENDDO
    ! PRINT *, alsparse
-   al = al0 !  this value ensures all betas are 0 
+   al = al0 !  this value ensures all betas are 0
    l = 0
    tlam = 0.0D0
    DO WHILE (l < nlam) !! This is the start of the loop over all lambda values...
@@ -683,7 +705,7 @@ SUBROUTINE spmat_four (bn,bs,ix,iy,gam,nobs,nvars,x,xidx,xcptr,nnz,y,pf,&
                   activeGroupIndex(g) = ni
                   activeGroup(ni) = g
                ENDIF
-            ENDDO 
+            ENDDO
             IF(intr .ne. 0) THEN
                d = sum(r) / nobs
                IF(d .ne. 0.0D0) THEN
