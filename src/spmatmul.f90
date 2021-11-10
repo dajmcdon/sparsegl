@@ -15,14 +15,14 @@ MODULE spmatmul
      ! and we need y <- y + b*A[,cj:ck]x (ypbspax)
    SUBROUTINE ymspax (a, ridx, cptr, n, p, nnz, x, y, cj, ck, lx)
       IMPLICIT NONE
-      INTEGER n, p, nnz, cj, ck, lx
+      INTEGER :: n, p, nnz, cj, ck, lx
       DOUBLE PRECISION, INTENT(in) :: a(nnz)
       INTEGER, INTENT(in) :: ridx(nnz)
       INTEGER, INTENT(in) :: cptr(p+1)
       DOUBLE PRECISION, INTENT(in) :: x(lx)
       DOUBLE PRECISION, INTENT(inout) :: y(n)
 
-      INTEGER i, j, k
+      INTEGER :: i, j, k
 
       DO i = cj, ck
          k = cptr(i + 1) - 1
@@ -36,14 +36,14 @@ MODULE spmatmul
 
     SUBROUTINE ypbspax (a, b, ridx, cptr, n, p, nnz, x, y, cj, ck, lx)
       IMPLICIT NONE
-      INTEGER n, p, nnz, cj, ck, lx
+      INTEGER :: n, p, nnz, cj, ck, lx
       DOUBLE PRECISION, INTENT(in) :: a(nnz), b(nnz)
       INTEGER, INTENT(in) :: ridx(nnz)
       INTEGER, INTENT(in) :: cptr(p+1)
       DOUBLE PRECISION, INTENT(in) :: x(lx)
       DOUBLE PRECISION, INTENT(inout) :: y(n)
 
-      INTEGER i, j, k
+      INTEGER :: i, j, k
 
       DO i = cj, ck
          k = cptr(i + 1) - 1
@@ -57,14 +57,14 @@ MODULE spmatmul
 
    SUBROUTINE spatx (a, ridx, cptr, n, p, nnz, x, y, cj, ck)
       IMPLICIT NONE
-      INTEGER n, p, nnz, cj, ck
+      INTEGER :: n, p, nnz, cj, ck
       DOUBLE PRECISION, INTENT(in) :: a(nnz)
       INTEGER, INTENT(in) :: ridx(nnz)
       INTEGER, INTENT(in) :: cptr(p+1)
       DOUBLE PRECISION, INTENT(in) :: x(n)
       DOUBLE PRECISION, INTENT(inout) :: y(ck - cj + 1)
 
-      INTEGER i, j, k
+      INTEGER :: i, j, k
       y = 0.0D0
 
       DO i = cj, ck
