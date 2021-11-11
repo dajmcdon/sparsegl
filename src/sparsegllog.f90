@@ -294,8 +294,8 @@ SUBROUTINE log_spmat_four (bn,bs,ix,iy,gam,nobs,nvars,x,xidx,xcptr,nnz,y,pf,&
   DOUBLE PRECISION :: ga(bn)
   DOUBLE PRECISION :: vl(nvars)
   ! - - - allocate variables - - -
-  ALLOCATE(b(0:nvars))
-  ALLOCATE(oldbeta(0:nvars))
+  ALLOCATE(b(1:nvars))
+  ALLOCATE(oldbeta(1:nvars))
   ALLOCATE(r(1:nobs))
   ALLOCATE(activeGroupIndex(1:bn))
   !    ALLOCATE(al_sparse)
@@ -373,7 +373,7 @@ SUBROUTINE log_spmat_four (bn,bs,ix,iy,gam,nobs,nvars,x,xidx,xcptr,nnz,y,pf,&
      ! --------- outer loop ---------------------------- !
      DO
         CALL rchkusr()
-        oldbeta(0) = b(0)
+        ! oldbeta(0) = b(0)
         IF (ni > 0) THEN
            DO j = 1, ni
               g = activeGroup(j)

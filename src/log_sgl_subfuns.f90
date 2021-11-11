@@ -62,7 +62,7 @@ CONTAINS
       DOUBLE PRECISION :: gamg
       DOUBLE PRECISION, INTENT(inout) :: maxDif
       DOUBLE PRECISION, DIMENSION (:), ALLOCATABLE :: oldb, s, dd
-      DOUBLE PRECISION, DIMENSION (0:nvars), INTENT(inout) :: b
+      DOUBLE PRECISION, DIMENSION (:), INTENT(inout) :: b
       DOUBLE PRECISION, DIMENSION (:), INTENT(inout) :: r
       DOUBLE PRECISION :: snorm, tea
       DOUBLE PRECISION, INTENT(in) :: lama, t_for_sg, pfg, lam1ma, lb, ub
