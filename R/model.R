@@ -95,7 +95,7 @@ sgl_logit <- function(
         nnz <- as.integer(tail(x@p, 1))
     }
 
-    gamma <- 0.25* calc_gamma(x, ix, iy, bn)
+    gamma <- 0.25 * calc_gamma(x, ix, iy, bn)
 
     fit <- switch(
         algorithm,
