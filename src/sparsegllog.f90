@@ -94,6 +94,7 @@ SUBROUTINE log_sparse_four (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,&
   al = al0 ! this value ensures all betas are 0
   tlam = 0.0D0
   DO l=1, nlam
+     CALL rchkusr()
      al0 = al
      IF(flmin>=1.0D0) THEN
         al=ulam(l)
@@ -122,6 +123,7 @@ SUBROUTINE log_sparse_four (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,&
      ! uses s_set instead of e_set...
      ! --------- outer loop ---------------------------- !
      DO
+        CALL rchkusr()
         IF (ni > 0) THEN
            DO j = 1, ni
               g = activeGroup(j)
@@ -131,6 +133,7 @@ SUBROUTINE log_sparse_four (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,&
         ! --inner loop-------------------------------------
         DO
            ! print *, "This is where we enter the inner loop"
+           CALL rchkusr()
            npass = npass + 1
            maxDif = 0.0D0
            isDifZero = 0 !Boolean to check if b-oldb nonzero. Unnec, in fn.
@@ -181,6 +184,7 @@ SUBROUTINE log_sparse_four (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,&
         IF (violation == 1) CYCLE
         ! Need to compute vl/ga for the ones that aren't already updated,
         ! before log_kkt_check
+        CALL rchkusr()
         DO g = 1, bn
            IF (is_in_S_set(g) == 0) THEN
               startix = ix(g)
@@ -331,6 +335,7 @@ SUBROUTINE log_spmat_four (bn,bs,ix,iy,gam,nobs,nvars,x,xidx,xcptr,nnz,y,pf,&
      ga(g) = SQRT(DOT_PRODUCT(u,u))
      DEALLOCATE(u)
   ENDDO
+  CALL rchkusr()
   DO vl_iter = 1, nvars
      al0 = MAX(al0, ABS(vl(vl_iter))) ! Infty norm of X'y, big overkill for lam_max
   ENDDO
@@ -338,6 +343,7 @@ SUBROUTINE log_spmat_four (bn,bs,ix,iy,gam,nobs,nvars,x,xidx,xcptr,nnz,y,pf,&
   al = al0 !  this value ensures all betas are 0
   tlam = 0.0D0
   DO l=1, nlam
+     CALL rchkusr()
      al0 = al
      IF(flmin>=1.0D0) THEN
         al=ulam(l)
@@ -366,6 +372,7 @@ SUBROUTINE log_spmat_four (bn,bs,ix,iy,gam,nobs,nvars,x,xidx,xcptr,nnz,y,pf,&
      ! uses s_set instead of e_set...
      ! --------- outer loop ---------------------------- !
      DO
+        CALL rchkusr()
         oldbeta(0) = b(0)
         IF (ni > 0) THEN
            DO j = 1, ni
@@ -375,6 +382,7 @@ SUBROUTINE log_spmat_four (bn,bs,ix,iy,gam,nobs,nvars,x,xidx,xcptr,nnz,y,pf,&
         ENDIF
         ! --inner loop-------------------------------------
         DO
+           CALL rchkusr()
            npass = npass + 1
            maxDif = 0.0D0
            isDifZero = 0 ! Boolean to check if b-oldb nonzero. Unnec, in fn.
@@ -422,6 +430,7 @@ SUBROUTINE log_spmat_four (bn,bs,ix,iy,gam,nobs,nvars,x,xidx,xcptr,nnz,y,pf,&
         IF (violation == 1) CYCLE
         ! Need to compute vl/ga for the ones that aren't already updated,
         ! before log_kkt_check
+        CALL rchkusr()
         DO g = 1, bn
            IF (is_in_S_set(g) == 0) THEN
               startix = ix(g)
