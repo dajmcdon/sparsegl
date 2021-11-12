@@ -1,11 +1,11 @@
 all: $(SHLIB)
 
-spmatmul.mod: spmatmul.f90
+spmatmul.o: spmatmul.f90
 
-sgl_subfuns.mod: sgl_subfuns.f90 spmatmul.mod
+sgl_subfuns.o: sgl_subfuns.f90 spmatmul.o
 
-log_sgl_subfuns.mod: log_sgl_subfuns.f90 spmatmul.mod
+log_sgl_subfuns.o: log_sgl_subfuns.f90 spmatmul.o
 
-sparsegl.o: sparsegl.f90 spmatmul.mod sgl_subfuns.mod
+sparsegl.o: sparsegl.f90 spmatmul.o sgl_subfuns.o
 
-sparsegllog.o: sparsegllog.f90 log_sgl_subfuns.mod sgl_subfuns.mod spmatmul.mod
+sparsegllog.o: sparsegllog.f90 log_sgl_subfuns.o sgl_subfuns.o spmatmul.o
