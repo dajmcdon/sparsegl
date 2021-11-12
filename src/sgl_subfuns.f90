@@ -23,7 +23,8 @@ MODULE sgl_subfuns
       RETURN
    END SUBROUTINE strong_rule
 
-   SUBROUTINE kkt_check(is_in_E_set, violation, bn, ix, iy, vl, pf, lam1ma, bs, lama, ga)
+   SUBROUTINE kkt_check(is_in_E_set, violation, bn, ix, iy, vl, pf,&
+        lam1ma, bs, lama, ga)
       IMPLICIT NONE
       INTEGER :: g, startix, endix
       INTEGER, INTENT(in) :: bn

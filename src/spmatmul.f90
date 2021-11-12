@@ -37,7 +37,7 @@ MODULE spmatmul
     SUBROUTINE ypbspax (a, b, ridx, cptr, n, p, nnz, x, y, cj, ck, lx)
       IMPLICIT NONE
       INTEGER :: n, p, nnz, cj, ck, lx
-      DOUBLE PRECISION, INTENT(in) :: a(nnz), b(nnz)
+      DOUBLE PRECISION, INTENT(in) :: a(nnz), b(n)
       INTEGER, INTENT(in) :: ridx(nnz)
       INTEGER, INTENT(in) :: cptr(p+1)
       DOUBLE PRECISION, INTENT(in) :: x(lx)

@@ -18,7 +18,7 @@ CONTAINS
       DOUBLE PRECISION :: snorm, tea
       DOUBLE PRECISION, INTENT(in) :: lama, t_for_sg, pfg, lam1ma, lb, ub
       DOUBLE PRECISION, DIMENSION (:), INTENT(in) :: x(nobs,nvars)
-      DOUBLE PRECISION :: y(nobs)
+      DOUBLE PRECISION, INTENT(in) :: y(nobs)
       INTEGER, INTENT(inout) :: isDifZero
       INTEGER :: k
 
@@ -66,7 +66,8 @@ CONTAINS
       DOUBLE PRECISION, DIMENSION (:), INTENT(inout) :: r
       DOUBLE PRECISION :: snorm, tea
       DOUBLE PRECISION, INTENT(in) :: lama, t_for_sg, pfg, lam1ma, lb, ub
-      DOUBLE PRECISION, INTENT(in) :: x(nnz), y(nnz)
+      DOUBLE PRECISION, INTENT(in) :: x(nnz)
+      DOUBLE PRECISION, INTENT(in) :: y(nobs)
       INTEGER, INTENT(in) :: xidx(nnz)
       INTEGER, INTENT(in) :: xcptr(nvars + 1)
       INTEGER, INTENT(inout) :: isDifZero
@@ -93,7 +94,7 @@ CONTAINS
       ENDIF
       ALLOCATE(dd(bsg))
       dd = b(startix:endix) - oldb
-      IF(ANY(dd .ne. 0.0D0)) THEN
+      IF(ANY(ABS(dd) > 0.0D0)) THEN
          maxDif = MAX(maxDif, gamg**2 * DOT_PRODUCT(dd,dd))
          CALL ypbspax(x, y, xidx, xcptr, nobs, nvars, nnz, dd, r, startix, endix, bsg)
          isDifZero = 1

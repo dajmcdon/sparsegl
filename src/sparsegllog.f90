@@ -73,6 +73,10 @@ SUBROUTINE log_sparse_four (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,&
   max_gam = MAXVAL(gam)
   t_for_s = 1 / gam
   acc = 0.0D0
+  IF (intr .ne. 0) THEN
+     acc = 4 * sum(y/2) / nobs
+     r = r + y * acc
+  ENDIF
   ! --------- lambda loop ----------------------------
   IF (flmin < 1.0D0) THEN ! THIS is the default...
      flmin = MAX(mfl, flmin) ! just sets a threshold above zero
@@ -87,33 +91,31 @@ SUBROUTINE log_sparse_four (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,&
      ga(g) = SQRT(DOT_PRODUCT(u, u))
      DEALLOCATE(u)
   ENDDO
+  CALL rchkusr()
   DO vl_iter = 1, nvars
      al0 = MAX(al0, ABS(vl(vl_iter))) ! Infty norm of X'y, big overkill for lam_max
   ENDDO
   ! PRINT *, alsparse
   al = al0 ! this value ensures all betas are 0
+  l = 0
   tlam = 0.0D0
-  DO l=1, nlam
+  DO WHILE (l < nlam)
+     ! PRINT *, "Lambda iter =  and al = "
+     ! PRINT *, l
+     ! PRINT *, al
      CALL rchkusr()
      al0 = al
-     IF(flmin>=1.0D0) THEN
-        al=ulam(l)
+     IF (flmin >= 1.0D0) THEN
+        l = l + 1
+        al = ulam(l)
      ELSE
-        IF(l > 2) THEN
-           al=al*alf
-           tlam = MAX(2.0*al-al0, 0.0)
-        ELSE IF(l==1) THEN
+        IF (l > 1) THEN
+           al = al * alf
+           tlam = MAX((2.0*al-al0), 0.0)
+           l = l+1
+        ELSE IF(l==0) THEN
            al= al * 0.99
            tlam = al
-        ELSE IF(l==2) THEN
-           al0 = 0.0D0
-           DO g = 1,bn
-              IF(pf(g)>0.0D0) THEN
-                 al0 = max(al0, ga(g) / pf(g))
-              ENDIF
-           END DO
-           al = al0 * alf
-           tlam = MAX(2.0*al-al0, 0.0)
         ENDIF
      ENDIF
      lama = al * alsparse
@@ -205,10 +207,11 @@ SUBROUTINE log_sparse_four (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,&
      ENDDO ! Ends outer loop
      !---------- final update variable and save results------------
      ! PRINT *, "Here is where the final update starts"
-     IF (l == 1) THEN
+     IF (l == 0) THEN
         IF (MAXVAL(is_in_E_set) == 0) THEN
            CYCLE ! don't save anything, we're still decrementing lambda
         ELSE
+           l = 2
            alam(1) = al / MAX(alf, .99) ! store previous, larger value
         ENDIF
      ENDIF
@@ -224,9 +227,7 @@ SUBROUTINE log_sparse_four (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,&
      ENDIF
      b0(l) = acc
      nbeta(l) = ni
-     IF (l /= 1) Then
-        alam(l) = al
-     ENDIF
+     alam(l) = al
      nalam = l
      IF (l < mnl) CYCLE
      me = 0
@@ -320,11 +321,16 @@ SUBROUTINE log_spmat_four (bn,bs,ix,iy,gam,nobs,nvars,x,xidx,xcptr,nnz,y,pf,&
   max_gam = MAXVAL(gam)
   t_for_s = 1/gam
   acc = 0.0D0
+  IF (intr .ne. 0) THEN
+     acc = 4 * sum(y/2) / nobs
+     r = r + y * acc
+  ENDIF
   ! --------- lambda loop ----------------------------
   IF (flmin < 1.0D0) THEN ! THIS is the default...
      flmin = MAX(mfl, flmin) ! just sets a threshold above zero
      alf = flmin**(1.0D0 / (nlam - 1.0D0))
   ENDIF
+  ! PRINT *, alf
   vl = 0.0D0
   CALL spatx(x, xidx, xcptr, nobs, nvars, nnz, y/(1.0D0+exp(r)), vl, 1, nvars)
   vl = vl / nobs
@@ -341,28 +347,25 @@ SUBROUTINE log_spmat_four (bn,bs,ix,iy,gam,nobs,nvars,x,xidx,xcptr,nnz,y,pf,&
   ENDDO
   ! PRINT *, alsparse
   al = al0 !  this value ensures all betas are 0
+  l = 0
   tlam = 0.0D0
-  DO l=1, nlam
+  DO WHILE (l < nlam)
+     ! PRINT *, "Lambda iter =  and al = "
+     ! PRINT *, l
+     ! PRINT *, al
      CALL rchkusr()
      al0 = al
-     IF(flmin>=1.0D0) THEN
-        al=ulam(l)
+     IF (flmin >= 1.0D0) THEN
+        l = l + 1
+        al = ulam(l)
      ELSE
-        IF(l > 2) THEN
-           al=al*alf
-           tlam = MAX(2.0*al-al0, 0.0)
-        ELSE IF(l==1) THEN
-           al= al * 0.99
+        IF (l > 1) THEN
+           al = al * alf
+           tlam = MAX((2.0 * al - al0), 0.0)
+           l = l + 1
+        ELSE IF (l == 0) THEN
+           al = al * 0.99
            tlam = al
-        ELSE IF(l==2) THEN
-           al0 = 0.0D0
-           DO g = 1,bn
-              IF(pf(g)>0.0D0) THEN
-                 al0 = max(al0, ga(g) / pf(g))
-              ENDIF
-           END DO
-           al = al0 * alf
-           tlam = MAX(2.0*al-al0, 0.0)
         ENDIF
      ENDIF
      lama = al * alsparse
@@ -452,10 +455,11 @@ SUBROUTINE log_spmat_four (bn,bs,ix,iy,gam,nobs,nvars,x,xidx,xcptr,nnz,y,pf,&
         EXIT
      ENDDO ! Ends outer loop
      !---------- final update variable and save results------------
-     IF (l == 1) THEN
+     IF (l == 0) THEN
         IF (MAXVAL(is_in_E_set) == 0) THEN
            CYCLE ! don't save anything, we're still decrementing lambda
         ELSE
+           l = 2
            alam(1) = al / MAX(alf, .99) ! store previous, larger value
         ENDIF
      ENDIF
@@ -472,9 +476,7 @@ SUBROUTINE log_spmat_four (bn,bs,ix,iy,gam,nobs,nvars,x,xidx,xcptr,nnz,y,pf,&
      ENDIF
      nbeta(l) = ni
      b0(l) = acc
-     IF (l /= 1) Then
-        alam(l) = al
-     ENDIF
+     alam(l) = al
      nalam = l
      IF (l < mnl) CYCLE
      me = 0
