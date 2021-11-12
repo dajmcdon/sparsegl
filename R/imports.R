@@ -6,5 +6,6 @@
 #' @importFrom stats approx coef predict
 #' @importFrom rlang .data
 #' @importFrom rlang :=
+#' @import dotCall64
 #' @docType package
 NULL

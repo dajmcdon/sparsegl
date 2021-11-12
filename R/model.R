@@ -39,12 +39,25 @@ sgl_ls <- function(
 
     fit <- switch(
         algorithm,
-        sgl = .Fortran(
-            sparse_four, bn, bs, ix, iy, gamma, nobs, nvars, as.double(x),
-            as.double(y), pf, dfmax, pmax, nlam, flmin, ulam, eps, maxit, nalam = 0L,
-            beta = double(nvars * nlam), activeGroup = integer(pmax),
-            nbeta = integer(nlam), alam = double(nlam), npass = 0L, jerr = 0L,
-            alsparse = as.double(asparse), lb = lower_bnd, ub = upper_bnd),
+        sgl = dotCall64::.C64(
+            "sparse_four",
+            SIGNATURE = c("integer", "integer", "integer", "integer", "double",
+                          "integer", "integer", "double", "double", "double",
+                          "integer", "integer", "integer", "double", "double",
+                          "double", "integer", "integer", "double", "integer",
+                          "integer", "double", "integer", "integer", "double",
+                          "double", "double"),
+            bn = bn, bs = bs, ix = ix, iy = iy, gam = gamma, nobs = nobs,
+            nvars = nvars, x = as.double(x), y = as.double(y), pf = pf,
+            dfmax = dfmax, pmax = pmax, nlam = nlam, flmin = flmin, ulam = ulam,
+            eps = eps, maxit = maxit,
+            nalam = integer_dc(1), beta = numeric_dc(nvars * nlam),
+            activeGroup = integer_dc(pmax), nbeta = integer_dc(nlam),
+            alam = numeric_dc(nlam), npass = integer_dc(1),
+            jerr = integer_dc(1),
+            alsparse = asparse, lb = lower_bnd, ub = upper_bnd,
+            INTENT = c(rep("r", 10), rep("rw", 7), rep("w", 7), rep("r", 3)),
+            PACKAGE = "sparsegl"),
         sp_sgl = .Fortran(
             spmat_four, bn, bs, ix, iy, gamma, nobs, nvars, xval, xidx, xcptr, nnz,
             as.double(y), pf, dfmax, pmax, nlam, flmin, ulam, eps, maxit,
