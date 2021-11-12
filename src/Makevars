@@ -1,11 +1,15 @@
-all: $(SHLIB)
+F_OBJS = spmatmul.o sparsegl.o sgl_subfuns.o log_sgl_subfuns.o sparsegllog.o
 
-spmatmul.o: spmatmul.f90
 
-sgl_subfuns.o: sgl_subfuns.f90 spmatmul.o
+all: $(SHLIB) clean
 
-log_sgl_subfuns.o: log_sgl_subfuns.f90 spmatmul.o
+$(SHLIB): $(F_OBJS)
 
-sparsegl.o: sparsegl.f90 spmatmul.o sgl_subfuns.o
+spmatmul.mod: spmatmul.o
+sgl_subfuns.mod: spmatmul.mod
+log_sgl_subfuns.mod: spmatmul.mod
+sparsegl.o: spmatmul.mod sgl_subfuns.mod
+sparsegllog.o: log_sgl_subfuns.mod sgl_subfuns.mod spmatmul.mod
 
-sparsegllog.o: sparsegllog.f90 log_sgl_subfuns.o sgl_subfuns.o spmatmul.o
+clean:
+	@rm -rf *.mod *.o
