@@ -40,13 +40,13 @@ sgl_ls <- function(
     fit <- switch(
         algorithm,
         sgl = .Fortran(
-            "sparse_four", bn, bs, ix, iy, gamma, nobs, nvars, as.double(x),
+            sparse_four, bn, bs, ix, iy, gamma, nobs, nvars, as.double(x),
             as.double(y), pf, dfmax, pmax, nlam, flmin, ulam, eps, maxit, nalam = 0L,
             beta = double(nvars * nlam), activeGroup = integer(pmax),
             nbeta = integer(nlam), alam = double(nlam), npass = 0L, jerr = 0L,
             alsparse = as.double(asparse), lb = lower_bnd, ub = upper_bnd),
         sp_sgl = .Fortran(
-            "spmat_four", bn, bs, ix, iy, gamma, nobs, nvars, xval, xidx, xcptr, nnz,
+            spmat_four, bn, bs, ix, iy, gamma, nobs, nvars, xval, xidx, xcptr, nnz,
             as.double(y), pf, dfmax, pmax, nlam, flmin, ulam, eps, maxit,
             as.integer(intr), nalam = 0L, b0 = double(nlam),
             beta = double(nvars * nlam),
@@ -100,14 +100,14 @@ sgl_logit <- function(
     fit <- switch(
         algorithm,
         sgl = .Fortran(
-            "log_sparse_four", bn, bs, ix, iy, gamma, nobs, nvars, as.double(x),
+            log_sparse_four, bn, bs, ix, iy, gamma, nobs, nvars, as.double(x),
             as.double(y), pf, dfmax, pmax, nlam, flmin, ulam, eps, maxit,
             as.integer(intr), nalam = 0L, b0 = double(nlam),
             beta = double(nvars * nlam), activeGroup = integer(pmax),
             nbeta = integer(nlam), alam = double(nlam), npass = 0L, jerr = 0L,
             alsparse = as.double(asparse), lb = lower_bnd, ub = upper_bnd),
         sp_sgl = .Fortran(
-            "log_spmat_four", bn, bs, ix, iy, gamma, nobs, nvars, xval, xidx, xcptr, nnz,
+            log_spmat_four, bn, bs, ix, iy, gamma, nobs, nvars, xval, xidx, xcptr, nnz,
             as.double(y), pf, dfmax, pmax, nlam, flmin, ulam, eps, maxit,
             as.integer(intr), nalam = 0L, b0 = double(nlam),
             beta = double(nvars * nlam),activeGroup = integer(pmax),
