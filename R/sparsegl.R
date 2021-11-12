@@ -16,7 +16,7 @@
 #' @param y Real-valued response variable.
 #' @param group A vector of consecutive integers describing the grouping of the
 #' coefficients (see example below).
-#' @param loss A character string specifying the loss function to use, valid 
+#' @param loss A character string specifying the loss function to use, valid
 #' options are: \itemize{\item\code{"ls"} least squares loss (regression), \item
 #' \code{"logit"} logistic loss (classification), }Default is \code{"ls"}.
 #' @param nlambda The number of \code{lambda} values - default is 100.
@@ -60,7 +60,7 @@
 #' @param standardize Logical flag for variable standardization (scaling) prior
 #' to fitting the model. Default is TRUE.
 #' @param lower_bnd Lower bound for coefficient values, a vector in length of 1
-#' or the number of groups including non-positive numbers only. Default value for 
+#' or the number of groups including non-positive numbers only. Default value for
 #' each entry is \code{-Inf}.
 #' @param upper_bnd Upper bound for coefficient values, a vector in length of 1
 #' or the number of groups including non-negative numbers only. Default value for
@@ -209,14 +209,15 @@ sparsegl <- function(
 
   #################################################################################
   # call R sub-function
-  fit <- switch(loss,
-      ls = sgl_ls(bn, bs, ix, iy, nobs, nvars, x, y, pf, dfmax, pmax, nlam, flmin, ulam,
-                  eps, maxit, vnames, group, intr, as.double(asparse),
-                  standardize, lower_bnd, upper_bnd),
-      logit = sgl_logit(bn, bs, ix, iy, nobs, nvars, x, y, pf, dfmax, pmax, nlam, flmin, ulam,
-                        eps, maxit, vnames, group, intr, as.double(asparse),
-                        standardize, lower_bnd, upper_bnd)
-                )
+  fit <- switch(
+    loss,
+    ls = sgl_ls(bn, bs, ix, iy, nobs, nvars, x, y, pf, dfmax, pmax, nlam, flmin, ulam,
+                eps, maxit, vnames, group, intr, as.double(asparse),
+                standardize, lower_bnd, upper_bnd),
+    logit = sgl_logit(bn, bs, ix, iy, nobs, nvars, x, y, pf, dfmax, pmax, nlam, flmin, ulam,
+                      eps, maxit, vnames, group, intr, as.double(asparse),
+                      standardize, lower_bnd, upper_bnd)
+  )
   #################################################################################
   # output
   if (is.null(lambda)) fit$lambda <- lamfix(fit$lambda)
