@@ -28,6 +28,7 @@ Imports:
     magrittr,
     rlang,
     scales,
+    dotCall64
 Depends: 
     R (>= 3.5)
 License: GPL (>= 2)
