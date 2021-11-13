@@ -10,7 +10,7 @@ cv.sparsegl(
   y,
   group,
   lambda = NULL,
-  loss = c("ls", "logit"),
+  family = c("gaussian", "binomial"),
   pred.loss = c("L2", "L1", "loss", "misclass"),
   nfolds = 5,
   foldid,
@@ -30,16 +30,16 @@ coefficients (see example below).}
 \item{lambda}{An optional user-supplied lambda sequence; default is
 \code{NULL}, and \code{\link[=sparsegl]{sparsegl()}} chooses its own sequence.}
 
-\item{loss}{A character string specifying the loss function to use, valid
-options are: \itemize{\item\code{"ls"} least squares loss (regression), \item
-\code{"logit"} logistic loss (classification), }Default is \code{"ls"}.}
+\item{family}{A character string specifying the loss function to use, valid
+options are: \itemize{\item\code{"gaussian"} least squares loss (regression), \item
+\code{"binomial"} logistic loss (classification), }Default is \code{"ls"}.}
 
 \item{pred.loss}{Loss to use for cross-validation error. Valid options are:
 \itemize{ \item \code{"L1"} for regression, mean square
-error used by least squares regression \code{loss = "ls"}, it measure the
+error used by least squares regression \code{family = "gaussian"}, it measures the
 deviation from the fitted mean to the response.  \item \code{"L2"} for
 regression, mean absolute error used by least squares regression
-\code{loss = "ls"}, it measure the deviation from the fitted mean to the
+\code{family = "gaussian"}, it measures the deviation from the fitted mean to the
 response. \item\code{"loss"} for classification, margin based loss function.
 \item\code{"misclass"} for classification giving misclassification error. }
 Default is \code{"L2"}.}

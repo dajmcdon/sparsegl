@@ -3,6 +3,19 @@ sgl_logit <- function(
   maxit, vnames, group, intr, asparse, standardize,
   lower_bnd, upper_bnd) {
   # call Fortran core
+  y <- as.factor(y)
+  ntab <- table(y)
+  minclass <- min(ntab)
+  if (minclass <= 1)
+    stop("Binomial regression: one class has 1 or 0 observations; not allowed")
+  if (length(ntab) != 2)
+    stop("Binomial regression: more than one class is not supported")
+  if (minclass < 8)
+    warning(paste0("Binomial regression: one class has fewer than 8\n",
+                   "observations; dangerous ground"))
+  # TODO, enable prediction with class labels if factor is passed
+  y <- 2 * (as.integer(y) - 1) - 1 # convert to -1 / 1
+
   is.sparse <- FALSE
   if (inherits(x,"sparseMatrix")) {
     is.sparse <- TRUE

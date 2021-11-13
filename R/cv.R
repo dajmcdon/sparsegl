@@ -18,16 +18,16 @@
 #' coefficients (see example below).
 #' @param lambda An optional user-supplied lambda sequence; default is
 #' \code{NULL}, and [sparsegl()] chooses its own sequence.
-#' @param loss A character string specifying the loss function to use, valid 
-#' options are: \itemize{\item\code{"ls"} least squares loss (regression), \item
-#' \code{"logit"} logistic loss (classification), }Default is \code{"ls"}.
+#' @param family A character string specifying the loss function to use, valid
+#' options are: \itemize{\item\code{"gaussian"} least squares loss (regression), \item
+#' \code{"binomial"} logistic loss (classification), }Default is \code{"ls"}.
 #' @param pred.loss Loss to use for cross-validation error. Valid options are:
 #' \itemize{ \item \code{"L1"} for regression, mean square
-#' error used by least squares regression \code{loss = "ls"}, it measure the
+#' error used by least squares regression \code{family = "gaussian"}, it measures the
 #' deviation from the fitted mean to the response.  \item \code{"L2"} for
 #' regression, mean absolute error used by least squares regression
-#' \code{loss = "ls"}, it measure the deviation from the fitted mean to the
-#' response. \item\code{"loss"} for classification, margin based loss function. 
+#' \code{family = "gaussian"}, it measures the deviation from the fitted mean to the
+#' response. \item\code{"loss"} for classification, margin based loss function.
 #' \item\code{"misclass"} for classification giving misclassification error. }
 #' Default is \code{"L2"}.
 #' @param nfolds Number of folds - default is 5. Although \code{nfolds} can be
@@ -62,15 +62,16 @@
 #' groups <- rep(1:(p / 5), each = 5)
 #' cv_fit <- cv.sparsegl(X, y, groups)
 cv.sparsegl <- function(x, y, group, lambda = NULL,
-                        loss = c("ls", "logit"),
+                        family = c("gaussian", "binomial"),
                         pred.loss = c("L2", "L1", "loss", "misclass"),
                         nfolds = 5, foldid, ...) {
-    loss <- match.arg(loss)
+    family <- match.arg(family)
     pred.loss <- match.arg(pred.loss)
     N <- nrow(x)
     ###Fit the model once to get dimensions etc of output
     y <- drop(y)
-    sparsegl.object <- sparsegl(x, y, group, lambda = lambda, loss = loss, ...)
+    sparsegl.object <- sparsegl(x, y, group, lambda = lambda, family = family,
+                                ...)
     lambda <- sparsegl.object$lambda
     # predict -> coef
     if (missing(foldid)) foldid <- sample(rep(seq(nfolds), length = N))
@@ -83,7 +84,8 @@ cv.sparsegl <- function(x, y, group, lambda = NULL,
         test_fold <- foldid == i
         outlist[[i]] <- sparsegl(
             x = x[!test_fold, , drop = FALSE],
-            y = y[!test_fold], group = group, lambda = lambda, loss = loss, ...)
+            y = y[!test_fold], group = group, lambda = lambda, family = family,
+            ...)
     }
     ###What to do depends on the pred.loss and the model fit
     fun <- paste("cv", class(sparsegl.object)[[2]], sep = ".")
@@ -101,7 +103,8 @@ cv.sparsegl <- function(x, y, group, lambda = NULL,
 }
 
 
-cv.ls <- function(outlist, lambda, x, y, foldid, pred.loss = c("L2","L1")) {
+cv.ls <- function(outlist, lambda, x, y, foldid,
+                        pred.loss = c("L2","L1")) {
     typenames <- c(L2 = "Least-Squares loss", L1 = "Absolute loss")
     pred.loss <- match.arg(pred.loss)
     predmat <- matrix(NA, length(y), length(lambda))
@@ -123,7 +126,8 @@ cv.ls <- function(outlist, lambda, x, y, foldid, pred.loss = c("L2","L1")) {
     list(cvm = cvm, cvsd = cvsd, name = typenames[pred.loss])
 }
 
-cv.logit <- function(outlist, lambda, x, y, foldid, pred.loss = c("loss", "misclass")) {
+cv.logit <- function(outlist, lambda, x, y, foldid,
+                        pred.loss = c("loss", "misclass")) {
     typenames <- c(loss = "Margin Based Loss", misclass = "Misclassification Error")
     pred.loss <- match.arg(pred.loss)
     prob_min <- 1e-05
@@ -147,6 +151,7 @@ cv.logit <- function(outlist, lambda, x, y, foldid, pred.loss = c("loss", "miscl
                     misclass = (y != ifelse(predmat > 0, 1, -1)))
     N <- length(y) - apply(is.na(predmat), 2, sum)
     cvm <- apply(cvraw, 2, mean, na.rm = TRUE)
-    cvsd <- sqrt(apply(scale(cvraw, cvm, FALSE)^2, 2, mean, NA.RM = TRUE)/(N - 1))
+    cvsd <- sqrt(apply(scale(cvraw, cvm, FALSE)^2, 2, mean, NA.RM = TRUE) /
+                     (N - 1))
     list(cvm = cvm, cvsd = cvsd, name = typenames[pred.loss])
 }

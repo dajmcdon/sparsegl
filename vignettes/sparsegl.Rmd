@@ -108,7 +108,6 @@ y <- X %*% beta_star + eps
 # Logistic regression model
 pr <- 1 / (1 + exp(-X %*% beta_star))
 y_binary <- rbinom(n, 1, pr)
-y_binary[which(y_binary == 0)] <- -1
 ```
 
 ## `sparsegl()`
@@ -123,8 +122,8 @@ are:
 of the features. By default, each group only contains one feature if without
 initialization.
 
-* `loss`: A character string specifying the loss function to use, could be either
-linear regression loss "ls" or logistic regression loss "ls". Default is "ls".
+* `family`: A character string specifying the likelihood to use, could be either
+linear regression "gaussian" or logistic regression loss "binomial". Default is "gaussian".
 
 * `pf`: a penalty vector of the length of the number of groups in total. Default 
 value for each entry is the square-root of the corresponding size of each group, 
@@ -149,7 +148,7 @@ an approximation to the exact degree-of-freedom. Detailed explanation can be che
 under function `estimate_risk()` below.
 
 ```{r}
-fit1 <- sparsegl(X, y, group = groups, loss = "ls")
+fit1 <- sparsegl(X, y, group = groups)
 ```
 
 ### Plotting function `plot()` for `sparsegl` object 
@@ -221,7 +220,7 @@ model, "loss" or "misclass"  for logistic regression model indicating the loss t
 use for cv error. This will return a `cv.sparseg` object.
 
 ```{r}
-fit_l1 <- cv.sparsegl(X, y, group = groups, loss = "ls", pred.loss = "L1")
+fit_l1 <- cv.sparsegl(X, y, group = groups, pred.loss = "L1")
 ```
 
 ### `plot()`, `coef()` and `predict()` for `cv.sparsegl` object
