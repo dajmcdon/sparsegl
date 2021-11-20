@@ -124,7 +124,7 @@ function from the <code>glmnet::cv.glmnet()</code> package.</p>
   <span class='va'>y</span>,
   <span class='va'>group</span>,
   lambda <span class='op'>=</span> <span class='cn'>NULL</span>,
-  loss <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"ls"</span>, <span class='st'>"logit"</span><span class='op'>)</span>,
+  family <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"gaussian"</span>, <span class='st'>"binomial"</span><span class='op'>)</span>,
   pred.loss <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"L2"</span>, <span class='st'>"L1"</span>, <span class='st'>"loss"</span>, <span class='st'>"misclass"</span><span class='op'>)</span>,
   nfolds <span class='op'>=</span> <span class='fl'>5</span>,
   <span class='va'>foldid</span>,
@@ -155,21 +155,21 @@ coefficients (see example below).</p></td>
 <code>NULL</code>, and <code><a href='sparsegl.html'>sparsegl()</a></code> chooses its own sequence.</p></td>
     </tr>
     <tr>
-      <th>loss</th>
+      <th>family</th>
       <td><p>A character string specifying the loss function to use, valid
 options are:</p><ul>
-<li><p><code>"logit"</code> logistic loss (classification),</p></li>
+<li><p><code>"binomial"</code> logistic loss (classification),</p></li>
 </ul><p>Default is <code>"ls"</code>.</p></td>
     </tr>
     <tr>
       <th>pred.loss</th>
       <td><p>Loss to use for cross-validation error. Valid options are:</p><ul>
 <li><p><code>"L1"</code> for regression, mean square
-error used by least squares regression <code>loss = "ls"</code>, it measure the
+error used by least squares regression <code>family = "gaussian"</code>, it measures the
 deviation from the fitted mean to the response.</p></li>
 <li><p><code>"L2"</code> for
 regression, mean absolute error used by least squares regression
-<code>loss = "ls"</code>, it measure the deviation from the fitted mean to the
+<code>family = "gaussian"</code>, it measures the deviation from the fitted mean to the
 response.</p></li>
 <li><p><code>"loss"</code> for classification, margin based loss function.</p></li>
 <li><p><code>"misclass"</code> for classification giving misclassification error.</p></li>

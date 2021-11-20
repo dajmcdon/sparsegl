@@ -121,7 +121,7 @@ sequence of regularization parameters <code>lambda</code>.</p>
   <span class='va'>x</span>,
   <span class='va'>y</span>,
   group <span class='op'>=</span> <span class='cn'>NULL</span>,
-  loss <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"ls"</span>, <span class='st'>"logit"</span><span class='op'>)</span>,
+  family <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"gaussian"</span>, <span class='st'>"binomial"</span><span class='op'>)</span>,
   nlambda <span class='op'>=</span> <span class='fl'>100</span>,
   lambda.factor <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/ifelse.html'>ifelse</a></span><span class='op'>(</span><span class='va'>nobs</span> <span class='op'>&lt;</span> <span class='va'>nvars</span>, <span class='fl'>0.01</span>, <span class='fl'>1e-04</span><span class='op'>)</span>,
   lambda <span class='op'>=</span> <span class='cn'>NULL</span>,
@@ -147,7 +147,10 @@ is a vector of measurements and each column is a feature</p></td>
     </tr>
     <tr>
       <th>y</th>
-      <td><p>Real-valued response variable.</p></td>
+      <td><p>Response variable. Quantitative for family="gaussian".
+For family="binomial" should be either a factor with two levels or
+a vector of integers taking 2 unique values.
+For a factor, the last level in alphabetical order is the target class.</p></td>
     </tr>
     <tr>
       <th>group</th>
@@ -155,11 +158,11 @@ is a vector of measurements and each column is a feature</p></td>
 coefficients (see example below).</p></td>
     </tr>
     <tr>
-      <th>loss</th>
+      <th>family</th>
       <td><p>A character string specifying the loss function to use, valid
 options are:</p><ul>
-<li><p><code>"logit"</code> logistic loss (classification),</p></li>
-</ul><p>Default is <code>"ls"</code>.</p></td>
+<li><p><code>"binomial"</code> logistic loss (classification),</p></li>
+</ul></td>
     </tr>
     <tr>
       <th>nlambda</th>

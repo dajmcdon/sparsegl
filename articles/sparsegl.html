@@ -133,8 +133,7 @@
 
 <span class="co"># Logistic regression model</span>
 <span class="va">pr</span> <span class="op">&lt;-</span> <span class="fl">1</span> <span class="op">/</span> <span class="op">(</span><span class="fl">1</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html">exp</a></span><span class="op">(</span><span class="op">-</span><span class="va">X</span> <span class="op"><a href="https://rdrr.io/r/base/matmult.html">%*%</a></span> <span class="va">beta_star</span><span class="op">)</span><span class="op">)</span>
-<span class="va">y_binary</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/Binomial.html">rbinom</a></span><span class="op">(</span><span class="va">n</span>, <span class="fl">1</span>, <span class="va">pr</span><span class="op">)</span>
-<span class="va">y_binary</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/which.html">which</a></span><span class="op">(</span><span class="va">y_binary</span> <span class="op">==</span> <span class="fl">0</span><span class="op">)</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="op">-</span><span class="fl">1</span></code></pre></div>
+<span class="va">y_binary</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/Binomial.html">rbinom</a></span><span class="op">(</span><span class="va">n</span>, <span class="fl">1</span>, <span class="va">pr</span><span class="op">)</span></code></pre></div>
 </div>
 <div id="sparsegl" class="section level2">
 <h2 class="hasAnchor">
@@ -143,7 +142,7 @@
 <p>Given an input matrix <code>X</code>, and a response vector <code>y</code> (or a matrix with 1 column), a sparse group-lasso regularized linear model is fitted for a sequence of penalty parameter values in terms of penalized maximum likelihood. The penalty is composed of lasso penalty and group lasso penalty. The other main arguments the users might give are:</p>
 <ul>
 <li><p><code>group</code>: a vector with consecutive integers of length <code>p</code> indicating the grouping of the features. By default, each group only contains one feature if without initialization.</p></li>
-<li><p><code>loss</code>: A character string specifying the loss function to use, could be either linear regression loss “ls” or logistic regression loss “ls”. Default is “ls”.</p></li>
+<li><p><code>family</code>: A character string specifying the likelihood to use, could be either linear regression “gaussian” or logistic regression loss “binomial”. Default is “gaussian”.</p></li>
 <li><p><code>pf</code>: a penalty vector of the length of the number of groups in total. Default value for each entry is the square-root of the corresponding size of each group, which is <span class="math inline">\(\sqrt{\text{bs}}\)</span> in <span class="math inline">\((*)\)</span> and <span class="math inline">\((**)\)</span> above.</p></li>
 <li><p><code>asparse</code>: changes the weight of lasso penalty, referring to <span class="math inline">\(\alpha\)</span> in <span class="math inline">\((*)\)</span> and <span class="math inline">\((**)\)</span> above: <code>asparse</code> = <span class="math inline">\(1\)</span> gives the lasso penalty only. <code>asparse</code> = <span class="math inline">\(0\)</span> gives the group lasso penalty only. The default value of <code>asparse</code> is <span class="math inline">\(0.05\)</span>.</p></li>
 <li><p><code>lower_bnd</code>: lower bound for coefficient values, a vector in length of 1 or the number of groups including non-positive numbers only. Default value for each entry is -<span class="math inline">\(\infty\)</span>.</p></li>
@@ -155,7 +154,7 @@
 <code>df</code>: the number of nonzero coefficients for each lambda value. This only represents an approximation to the exact degree-of-freedom. Detailed explanation can be checked under function <code><a href="../reference/estimate_risk.html">estimate_risk()</a></code> below.</li>
 </ul>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">fit1</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/sparsegl.html">sparsegl</a></span><span class="op">(</span><span class="va">X</span>, <span class="va">y</span>, group <span class="op">=</span> <span class="va">groups</span>, loss <span class="op">=</span> <span class="st">"ls"</span><span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span class="va">fit1</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/sparsegl.html">sparsegl</a></span><span class="op">(</span><span class="va">X</span>, <span class="va">y</span>, group <span class="op">=</span> <span class="va">groups</span><span class="op">)</span></code></pre></div>
 <div id="plotting-function-plot-for-sparsegl-object" class="section level3">
 <h3 class="hasAnchor">
 <a href="#plotting-function-plot-for-sparsegl-object" class="anchor"></a>Plotting function <code>plot()</code> for <code>sparsegl</code> object</h3>
@@ -202,7 +201,7 @@
 </h2>
 <p>This function does a k-fold cross-validation (cv) on <code>sparsegl</code>. It takes the same arguments <code>X</code>, <code>y</code>, <code>group</code>, which are specified above, with additional argument <code>pred.loss</code>. It can be set with either “L2” or “L1” for linear regression model, “loss” or “misclass” for logistic regression model indicating the loss to use for cv error. This will return a <code>cv.sparseg</code> object.</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">fit_l1</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/cv.sparsegl.html">cv.sparsegl</a></span><span class="op">(</span><span class="va">X</span>, <span class="va">y</span>, group <span class="op">=</span> <span class="va">groups</span>, loss <span class="op">=</span> <span class="st">"ls"</span>, pred.loss <span class="op">=</span> <span class="st">"L1"</span><span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span class="va">fit_l1</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/cv.sparsegl.html">cv.sparsegl</a></span><span class="op">(</span><span class="va">X</span>, <span class="va">y</span>, group <span class="op">=</span> <span class="va">groups</span>, pred.loss <span class="op">=</span> <span class="st">"L1"</span><span class="op">)</span></code></pre></div>
 <div id="plot-coef-and-predict-for-cv-sparsegl-object" class="section level3">
 <h3 class="hasAnchor">
 <a href="#plot-coef-and-predict-for-cv-sparsegl-object" class="anchor"></a><code>plot()</code>, <code>coef()</code> and <code>predict()</code> for <code>cv.sparsegl</code> object</h3>

@@ -40,8 +40,9 @@
 
 
 <meta property="og:title" content="Calculate information criteria. — estimate_risk" />
-<meta property="og:description" content="This functions uses the degrees of freedom to calculate various information
-criteria. This function uses the &quot;known variance&quot; verison of the likelihood." />
+<meta property="og:description" content="This function uses the degrees of freedom to calculate various information
+criteria. This function uses the &quot;known variance&quot; version of the likelihood.
+Only implemented for Gaussian regression." />
 
 
 
@@ -113,8 +114,9 @@ criteria. This function uses the &quot;known variance&quot; verison of the likel
     </div>
 
     <div class="ref-description">
-    <p>This functions uses the degrees of freedom to calculate various information
-criteria. This function uses the "known variance" verison of the likelihood.</p>
+    <p>This function uses the degrees of freedom to calculate various information
+criteria. This function uses the "known variance" version of the likelihood.
+Only implemented for Gaussian regression.</p>
     </div>
 
     <pre class="usage"><span class='fu'>estimate_risk</span><span class='op'>(</span><span class='va'>object</span>, <span class='va'>x</span>, <span class='va'>y</span>, type <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"AIC"</span>, <span class='st'>"BIC"</span>, <span class='st'>"GCV"</span><span class='op'>)</span>, approx_df <span class='op'>=</span> <span class='cn'>FALSE</span><span class='op'>)</span></pre>
