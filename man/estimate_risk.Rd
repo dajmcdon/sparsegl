@@ -25,8 +25,9 @@ some time.}
 a vector of the same length as \code{object$lambda}.
 }
 \description{
-This functions uses the degrees of freedom to calculate various information
-criteria. This function uses the "known variance" verison of the likelihood.
+This function uses the degrees of freedom to calculate various information
+criteria. This function uses the "known variance" version of the likelihood.
+Only implemented for Gaussian regression.
 }
 \examples{
 n <- 100
