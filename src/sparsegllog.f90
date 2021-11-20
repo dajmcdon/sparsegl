@@ -1,12 +1,12 @@
+SUBROUTINE log_sparse_four (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,&
+     nlam,flmin,ulam,eps,maxit,intr,nalam,b0,beta,activeGroup,nbeta,alam,&
+     npass,jerr,alsparse,lb,ub)
 
-!---------------------------------------------
-
-SUBROUTINE sparse_four (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,flmin,ulam,&
-     eps,maxit,nalam,beta,activeGroup,nbeta,alam,npass,jerr,alsparse,lb,ub)
-
+  USE log_sgl_subfuns
   USE sgl_subfuns
   IMPLICIT NONE
   ! - - - arg types - - -
+  DOUBLE PRECISION, PARAMETER :: big=9.9E30
   DOUBLE PRECISION, PARAMETER :: mfl = 1.0E-6
   INTEGER, PARAMETER :: mnlam = 6
   INTEGER:: isDifZero
@@ -15,30 +15,31 @@ SUBROUTINE sparse_four (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,flmin,
   INTEGER:: bs(bn)
   INTEGER:: ix(bn)
   INTEGER:: iy(bn)
-  INTEGER:: nobs, nvars, dfmax, pmax, nlam, nalam, npass, jerr, maxit
+  INTEGER:: nobs, nvars, dfmax, pmax, nlam, nalam, npass, jerr, maxit, intr
   INTEGER:: activeGroup(pmax)
   INTEGER:: nbeta(nlam)
-  DOUBLE PRECISION :: flmin, eps, alsparse, max_gam, maxDif, al, alf, snorm
-  DOUBLE PRECISION :: x(nobs,nvars)
-  DOUBLE PRECISION :: y(nobs)
+  DOUBLE PRECISION :: flmin, eps, alsparse, max_gam, maxDif, al, alf, snorm, d, acc
+  DOUBLE PRECISION, INTENT(in) :: x(nobs,nvars)
+  DOUBLE PRECISION, INTENT(in) :: y(nobs)
   DOUBLE PRECISION :: pf(bn)
   DOUBLE PRECISION :: ulam(nlam)
   DOUBLE PRECISION :: gam(bn)
   DOUBLE PRECISION :: lb(bn), ub(bn)
   DOUBLE PRECISION :: beta(nvars,nlam)
+  DOUBLE PRECISION :: b0(nlam)
   DOUBLE PRECISION :: alam(nlam)
 
-  DOUBLE PRECISION, DIMENSION (:), ALLOCATABLE :: s !need for sparse_four
+  DOUBLE PRECISION, DIMENSION (:), ALLOCATABLE :: s !need for log_sparse_four
   DOUBLE PRECISION, DIMENSION (:), ALLOCATABLE :: b
   DOUBLE PRECISION, DIMENSION (:), ALLOCATABLE :: oldbeta
   DOUBLE PRECISION, DIMENSION (:), ALLOCATABLE :: r ! Residual
-  DOUBLE PRECISION, DIMENSION (:), ALLOCATABLE :: u ! No longer using this for update step, but still need for other parts
+  DOUBLE PRECISION, DIMENSION (:), ALLOCATABLE :: u 
 
   INTEGER, DIMENSION (:), ALLOCATABLE :: activeGroupIndex
   INTEGER:: g, j, l, ni, me, startix, endix, vl_iter
   DOUBLE PRECISION::t_for_s(bn) ! this is for now just 1/gamma
-
   ! - - - begin local declarations - - -
+
   DOUBLE PRECISION:: tlam, lama, lam1ma, al0
   INTEGER:: violation
   INTEGER:: is_in_E_set(bn)
@@ -61,7 +62,7 @@ SUBROUTINE sparse_four (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,flmin,
   is_in_E_set = 0
   al = 0.0D0
   mnl = MIN(mnlam, nlam)
-  r = y
+  r = 0.0D0
   b = 0.0D0
   oldbeta = 0.0D0
   activeGroup = 0
@@ -71,13 +72,18 @@ SUBROUTINE sparse_four (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,flmin,
   alf = 0.0D0
   max_gam = MAXVAL(gam)
   t_for_s = 1 / gam
+  acc = 0.0D0
+  IF (intr .ne. 0) THEN
+     acc = 4 * sum(y/2) / nobs
+     r = r + y * acc
+  ENDIF
   ! --------- lambda loop ----------------------------
   IF (flmin < 1.0D0) THEN ! THIS is the default...
      flmin = MAX(mfl, flmin) ! just sets a threshold above zero
      alf = flmin ** (1.0D0 / (nlam - 1.0D0))
   ENDIF
   ! PRINT *, alf
-  vl = MATMUL(r, x)/nobs
+  vl = MATMUL(y/(1.0D0+exp(r)), x)/nobs
   al0 = 0.0D0
   DO g = 1, bn ! For each group...
      ALLOCATE(u(bs(g)))
@@ -93,35 +99,34 @@ SUBROUTINE sparse_four (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,flmin,
   al = al0 ! this value ensures all betas are 0
   l = 0
   tlam = 0.0D0
-  DO WHILE (l < nlam) !! This is the start of the loop over all lambda values...
+  DO WHILE (l < nlam)
+     ! PRINT *, "Lambda iter =  and al = "
+     ! PRINT *, l
+     ! PRINT *, al
      CALL rchkusr()
-     al0 = al ! store old al value on subsequent loops, first set to al
-     IF (flmin >= 1.0D0) THEN ! user supplied lambda value, break out of everything
-        l = l+1
+     al0 = al
+     IF (flmin >= 1.0D0) THEN
+        l = l + 1
         al = ulam(l)
-        ! print *, "This is at the flmin step of the while loop"
      ELSE
-        IF (l > 1) THEN ! have some active groups
+        IF (l > 1) THEN
            al = al * alf
-           tlam = MAX((2.0 * al - al0), 0.0) ! Here is the strong rule...
+           tlam = MAX((2.0*al-al0), 0.0)
            l = l+1
-           ! print *, "This is the l>1 step of while loop"
-        ELSE IF (l == 0) THEN
-           al = al * 0.99
+        ELSE IF(l==0) THEN
+           al= al * 0.99
            tlam = al
-           ! Trying to find an active group
         ENDIF
      ENDIF
      lama = al * alsparse
      lam1ma = al * (1 - alsparse)
      ! This is the start of the algorithm, for a given lambda...
-     CALL strong_rule (is_in_S_set, ga, pf, tlam, alsparse) !uses s_set instead of e_set...
+     CALL strong_rule (is_in_S_set, ga, pf, tlam, alsparse)
+     ! uses s_set instead of e_set...
      ! --------- outer loop ---------------------------- !
      DO
         CALL rchkusr()
-        ! print *, is_in_E_set
         IF (ni > 0) THEN
-           ! print *, "ni > 0"
            DO j = 1, ni
               g = activeGroup(j)
               oldbeta(ix(g):iy(g)) = b(ix(g):iy(g))
@@ -129,8 +134,8 @@ SUBROUTINE sparse_four (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,flmin,
         ENDIF
         ! --inner loop-------------------------------------
         DO
-           CALL rchkusr()
            ! print *, "This is where we enter the inner loop"
+           CALL rchkusr()
            npass = npass + 1
            maxDif = 0.0D0
            isDifZero = 0 !Boolean to check if b-oldb nonzero. Unnec, in fn.
@@ -138,8 +143,9 @@ SUBROUTINE sparse_four (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,flmin,
               IF (is_in_E_set(g) == 0) CYCLE
               startix = ix(g)
               endix = iy(g)
-              CALL update_step(bs(g), startix, endix, b, lama, t_for_s(g), pf(g), lam1ma, x,&
-                   isDifZero, nobs, r, gam(g), maxDif, nvars, lb(g), ub(g))
+              CALL log_update_step(bs(g), startix, endix, b, lama, t_for_s(g), pf(g),&
+                   lam1ma, x,y, isDifZero, nobs, r, gam(g), maxDif, nvars,&
+                   lb(g), ub(g))
               IF (activeGroupIndex(g) == 0 .AND. isDifZero == 1) THEN
                  ni = ni + 1
                  IF (ni > pmax) EXIT
@@ -147,6 +153,15 @@ SUBROUTINE sparse_four (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,flmin,
                  activeGroup(ni) = g
               ENDIF
            ENDDO
+           IF (intr /= 0) THEN
+              d = sum(y/(1.0D0+exp(r)))
+              d = 4.0D0*d/nobs
+              IF (d /= 0.0D0) THEN
+                 acc = acc + d
+                 r=r+y*d
+                 maxDif=MAX(maxDif,d**2)
+              ENDIF
+           ENDIF
            IF (ni > pmax) EXIT
            IF (maxDif < eps) EXIT
            IF (npass > maxit) THEN
@@ -155,24 +170,29 @@ SUBROUTINE sparse_four (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,flmin,
            ENDIF
         ENDDO ! End inner loop
         IF (ni > pmax) EXIT
-        !--- final check ------------------------ ! This checks which violate KKT condition
+        !--- final check ------------------------
+        ! This checks which violate KKT condition
         ! PRINT *, "Here is where the final check starts"
         ! print *, i ! Just to check how many final checks...
         ! i = i+1
         violation = 0
-        IF (ANY((max_gam * (b - oldbeta) / (1 + ABS(b)))**2 >= eps)) violation = 1 !has beta moved globally
+        ! PRINT *, (max_gam * (b - oldbeta) / (1 + ABS(b)))**2
+        ! PRINT *, b
+        IF (ANY((max_gam * (b - oldbeta) / (1 + ABS(b)))**2 >= eps)) violation = 1
+        ! has beta moved globally
         IF (violation == 1) CYCLE
-        CALL strong_kkt_check(is_in_E_set, violation, bn, ix, iy, pf, lam1ma,&
-             bs, lama, ga, is_in_S_set, x, r, nobs, nvars, vl) ! Step 3
+        CALL strong_kkt_check(is_in_E_set, violation, bn, ix, iy, pf, lam1ma, bs,&
+             lama, ga, is_in_S_set, x, y/(1.0D0+exp(r)), nobs, nvars, vl) ! Step 3
         IF (violation == 1) CYCLE
-        ! Need to compute vl/ga for the ones that aren't already updated, before kkt_check
+        ! Need to compute vl/ga for the ones that aren't already updated,
+        ! before log_kkt_check
+        CALL rchkusr()
         DO g = 1, bn
-           CALL rchkusr()
            IF (is_in_S_set(g) == 0) THEN
               startix = ix(g)
               endix = iy(g)
               ALLOCATE(s(bs(g)))
-              s = MATMUL(r, x(:,startix:endix)) / nobs
+              s = MATMUL(y/(1.0D0+exp(r)), x(:, startix:endix))/nobs
               vl(startix:endix) = s
               CALL softthresh(s, lama, bs(g))
               snorm = SQRT(DOT_PRODUCT(s,s))
@@ -180,11 +200,13 @@ SUBROUTINE sparse_four (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,flmin,
               DEALLOCATE(s)
            ENDIF
         ENDDO
-        CALL kkt_check(is_in_E_set, violation, bn, ix, iy, vl, pf, lam1ma, bs, lama, ga) ! Step 4
+        CALL kkt_check(is_in_E_set, violation, bn, ix, iy, vl, pf, lam1ma,&
+             bs, lama, ga) ! Step 4
         IF (violation == 1) CYCLE
         EXIT
      ENDDO ! Ends outer loop
      !---------- final update variable and save results------------
+     ! PRINT *, "Here is where the final update starts"
      IF (l == 0) THEN
         IF (MAXVAL(is_in_E_set) == 0) THEN
            CYCLE ! don't save anything, we're still decrementing lambda
@@ -193,8 +215,6 @@ SUBROUTINE sparse_four (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,flmin,
            alam(1) = al / MAX(alf, .99) ! store previous, larger value
         ENDIF
      ENDIF
-     CALL rchkusr()
-     ! PRINT *, "Here is where the final update starts"
      IF(ni > pmax) THEN
         jerr = -10000 - l
         EXIT
@@ -205,6 +225,7 @@ SUBROUTINE sparse_four (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,flmin,
            beta(ix(g):iy(g),l) = b(ix(g):iy(g))
         ENDDO
      ENDIF
+     b0(l) = acc
      nbeta(l) = ni
      alam(l) = al
      nalam = l
@@ -219,18 +240,22 @@ SUBROUTINE sparse_four (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,flmin,
   ! print *, is_in_E_set
   DEALLOCATE(b, oldbeta, r, activeGroupIndex)
   RETURN
-END SUBROUTINE sparse_four
+END SUBROUTINE log_sparse_four
+
 
 
 ! --------------------------------------------------
-SUBROUTINE spmat_four (bn,bs,ix,iy,gam,nobs,nvars,x,xidx,xcptr,nnz,y,pf,&
+SUBROUTINE log_spmat_four (bn,bs,ix,iy,gam,nobs,nvars,x,xidx,xcptr,nnz,y,pf,&
      dfmax,pmax,nlam,flmin,ulam,eps,maxit,intr,nalam,b0,beta,&
      activeGroup,nbeta,alam,npass,jerr,alsparse,lb,ub)
   ! --------------------------------------------------
+  USE log_sgl_subfuns
   USE sgl_subfuns
   USE spmatmul
+
   IMPLICIT NONE
   ! - - - arg types - - -
+  DOUBLE PRECISION, PARAMETER :: big=9.9E30
   DOUBLE PRECISION, PARAMETER :: mfl = 1.0E-6
   INTEGER, PARAMETER :: mnlam = 6
   INTEGER :: isDifZero, mnl, bn, nobs, nvars, nnz, dfmax, pmax, nlam, nalam
@@ -240,7 +265,7 @@ SUBROUTINE spmat_four (bn,bs,ix,iy,gam,nobs,nvars,x,xidx,xcptr,nnz,y,pf,&
   INTEGER :: iy(bn)
   INTEGER :: activeGroup(pmax)
   INTEGER :: nbeta(nlam)
-  DOUBLE PRECISION :: flmin, eps, max_gam, d, maxDif, al, alf, alsparse, snorm
+  DOUBLE PRECISION :: flmin, eps, max_gam, d, maxDif, al, alf, alsparse, snorm, acc
   DOUBLE PRECISION, INTENT(in) :: x(nnz)
   INTEGER, INTENT(in) :: xidx(nnz)
   INTEGER, INTENT(in) :: xcptr(nvars+1)
@@ -253,7 +278,7 @@ SUBROUTINE spmat_four (bn,bs,ix,iy,gam,nobs,nvars,x,xidx,xcptr,nnz,y,pf,&
   DOUBLE PRECISION :: beta(nvars,nlam)
   DOUBLE PRECISION :: alam(nlam)
   ! - - - local declarations - - -
-  DOUBLE PRECISION, DIMENSION (:), ALLOCATABLE :: s !need for sparse_four
+  DOUBLE PRECISION, DIMENSION (:), ALLOCATABLE :: s !need for log_sparse_four
   DOUBLE PRECISION, DIMENSION (:), ALLOCATABLE :: b
   DOUBLE PRECISION, DIMENSION (:), ALLOCATABLE :: oldbeta
   DOUBLE PRECISION, DIMENSION (:), ALLOCATABLE :: r ! Residual
@@ -267,11 +292,11 @@ SUBROUTINE spmat_four (bn,bs,ix,iy,gam,nobs,nvars,x,xidx,xcptr,nnz,y,pf,&
   INTEGER :: violation
   INTEGER :: is_in_E_set(bn)
   INTEGER :: is_in_S_set(bn) !this is for 4-step alg
-  DOUBLE PRECISION :: ga(bn) ! What is this for??
-  DOUBLE PRECISION :: vl(nvars) ! What is this for?
+  DOUBLE PRECISION :: ga(bn)
+  DOUBLE PRECISION :: vl(nvars)
   ! - - - allocate variables - - -
-  ALLOCATE(b(0:nvars))
-  ALLOCATE(oldbeta(0:nvars))
+  ALLOCATE(b(1:nvars))
+  ALLOCATE(oldbeta(1:nvars))
   ALLOCATE(r(1:nobs))
   ALLOCATE(activeGroupIndex(1:bn))
   !    ALLOCATE(al_sparse)
@@ -285,7 +310,7 @@ SUBROUTINE spmat_four (bn,bs,ix,iy,gam,nobs,nvars,x,xidx,xcptr,nnz,y,pf,&
   is_in_E_set = 0
   al = 0.0D0
   mnl = MIN(mnlam, nlam)
-  r = y
+  r = 0.0D0
   b = 0.0D0
   oldbeta = 0.0D0
   activeGroup = 0
@@ -295,13 +320,19 @@ SUBROUTINE spmat_four (bn,bs,ix,iy,gam,nobs,nvars,x,xidx,xcptr,nnz,y,pf,&
   alf = 0.0D0
   max_gam = MAXVAL(gam)
   t_for_s = 1/gam
+  acc = 0.0D0
+  IF (intr .ne. 0) THEN
+     acc = 4 * sum(y/2) / nobs
+     r = r + y * acc
+  ENDIF
   ! --------- lambda loop ----------------------------
   IF (flmin < 1.0D0) THEN ! THIS is the default...
      flmin = MAX(mfl, flmin) ! just sets a threshold above zero
      alf = flmin**(1.0D0 / (nlam - 1.0D0))
   ENDIF
+  ! PRINT *, alf
   vl = 0.0D0
-  CALL spatx(x, xidx, xcptr, nobs, nvars, nnz, r, vl, 1, nvars)
+  CALL spatx(x, xidx, xcptr, nobs, nvars, nnz, y/(1.0D0+exp(r)), vl, 1, nvars)
   vl = vl / nobs
   al0 = 0.0D0
   DO g = 1, bn ! For each group...
@@ -318,34 +349,34 @@ SUBROUTINE spmat_four (bn,bs,ix,iy,gam,nobs,nvars,x,xidx,xcptr,nnz,y,pf,&
   al = al0 !  this value ensures all betas are 0
   l = 0
   tlam = 0.0D0
-  DO WHILE (l < nlam) !! This is the start of the loop over all lambda values...
+  DO WHILE (l < nlam)
+     ! PRINT *, "Lambda iter =  and al = "
+     ! PRINT *, l
+     ! PRINT *, al
      CALL rchkusr()
-     al0 = al ! store old al value on subsequent loops, first set to al
-     IF (flmin >= 1.0D0) THEN ! user supplied lambda value, break out of everything
+     al0 = al
+     IF (flmin >= 1.0D0) THEN
         l = l + 1
         al = ulam(l)
-        ! print *, "This is at the flmin step of the while loop"
      ELSE
-        IF (l > 1) THEN ! have some active groups
-           ! print *, "l = ", l
+        IF (l > 1) THEN
            al = al * alf
-           tlam = MAX((2.0 * al - al0), 0.0) ! Here is the strong rule...
+           tlam = MAX((2.0 * al - al0), 0.0)
            l = l + 1
-           ! print *, "This is the l>1 step of while loop"
         ELSE IF (l == 0) THEN
-           al = al * .99
+           al = al * 0.99
            tlam = al
-           ! Trying to find an active group
         ENDIF
      ENDIF
      lama = al * alsparse
      lam1ma = al * (1-alsparse)
      ! This is the start of the algorithm, for a given lambda...
-     CALL strong_rule (is_in_S_set, ga, pf, tlam, alsparse) !uses s_set instead of e_set...
+     CALL strong_rule (is_in_S_set, ga, pf, tlam, alsparse)
+     ! uses s_set instead of e_set...
      ! --------- outer loop ---------------------------- !
      DO
         CALL rchkusr()
-        oldbeta(0) = b(0)
+        ! oldbeta(0) = b(0)
         IF (ni > 0) THEN
            DO j = 1, ni
               g = activeGroup(j)
@@ -357,13 +388,13 @@ SUBROUTINE spmat_four (bn,bs,ix,iy,gam,nobs,nvars,x,xidx,xcptr,nnz,y,pf,&
            CALL rchkusr()
            npass = npass + 1
            maxDif = 0.0D0
-           isDifZero = 0 !Boolean to check if b-oldb nonzero. Unnec, in fn.
+           isDifZero = 0 ! Boolean to check if b-oldb nonzero. Unnec, in fn.
            DO g = 1, bn
               IF (is_in_E_set(g) == 0) CYCLE
               startix = ix(g)
               endix = iy(g)
-              CALL sp_update_step(bs(g), startix, endix, b, lama, t_for_s(g),&
-                   pf(g), lam1ma, x, xidx, xcptr, nnz, isDifZero, nobs,&
+              CALL log_sp_update_step(bs(g), startix, endix, b, lama, t_for_s(g),&
+                   pf(g), lam1ma, x,y, xidx, xcptr, nnz, isDifZero, nobs,&
                    r, gam(g), maxDif, nvars, lb(g), ub(g))
               IF (activeGroupIndex(g) == 0 .AND. isDifZero == 1) THEN
                  ni = ni+1
@@ -372,12 +403,13 @@ SUBROUTINE spmat_four (bn,bs,ix,iy,gam,nobs,nvars,x,xidx,xcptr,nnz,y,pf,&
                  activeGroup(ni) = g
               ENDIF
            ENDDO
-           IF(intr .ne. 0) THEN
-              d = sum(r) / nobs
-              IF(d .ne. 0.0D0) THEN
-                 b(0) = b(0) + d
-                 r = r - d
-                 maxDif = max(maxDif, d**2)
+           IF (intr /= 0) THEN
+              d = sum(y/(1.0D0+exp(r)))
+              d = 4.0D0*d/nobs
+              IF (d /= 0.0D0) THEN
+                 acc = acc + d
+                 r=r+y*d
+                 maxDif=max(maxDif,d**2)
               ENDIF
            ENDIF
            IF (ni > pmax) EXIT
@@ -388,24 +420,28 @@ SUBROUTINE spmat_four (bn,bs,ix,iy,gam,nobs,nvars,x,xidx,xcptr,nnz,y,pf,&
            ENDIF
         ENDDO ! End inner loop
         IF (ni > pmax) EXIT
-        !--- final check ------------------------ ! This checks which violate KKT condition
+        !--- final check ------------------------
+        ! This checks which violate KKT condition
         ! PRINT *, "Here is where the final check starts"
         violation = 0
-        IF (ANY((max_gam * (b - oldbeta) / (1 + ABS(b)))**2 >= eps)) violation = 1 !has beta moved globally
+        IF (ANY((max_gam * (b - oldbeta) / (1 + ABS(b)))**2 >= eps)) violation = 1
+        ! has beta moved globally
         IF (violation == 1) CYCLE
         CALL sp_strong_kkt_check(is_in_E_set, violation, bn, ix, iy, pf,&
              lam1ma, bs, lama, ga, is_in_S_set, x, xidx, xcptr, nnz,&
-             r,nobs,nvars, vl)
+             y/(1.0D0+exp(r)), nobs, nvars, vl)
         IF (violation == 1) CYCLE
-        ! Need to compute vl/ga for the ones that aren't already updated, before kkt_check
+        ! Need to compute vl/ga for the ones that aren't already updated,
+        ! before log_kkt_check
+        CALL rchkusr()
         DO g = 1, bn
-           CALL rchkusr()
            IF (is_in_S_set(g) == 0) THEN
               startix = ix(g)
               endix = iy(g)
               ALLOCATE(s(bs(g)))
               s = 0.0D0
-              CALL spatx(x, xidx, xcptr, nobs, nvars, nnz, r, s, startix, endix)
+              CALL spatx(x, xidx, xcptr, nobs, nvars, nnz, y/(1.0D0+exp(r)),&
+                   s, startix, endix)
               vl(startix:endix) = s / nobs
               CALL softthresh(s, lama, bs(g))
               snorm = SQRT(DOT_PRODUCT(s,s))
@@ -413,7 +449,8 @@ SUBROUTINE spmat_four (bn,bs,ix,iy,gam,nobs,nvars,x,xidx,xcptr,nnz,y,pf,&
               DEALLOCATE(s)
            ENDIF
         ENDDO
-        CALL kkt_check(is_in_E_set, violation, bn, ix, iy, vl, pf, lam1ma, bs, lama, ga) ! Step 4
+        CALL kkt_check(is_in_E_set, violation, bn, ix, iy, vl, pf, lam1ma,&
+             bs, lama, ga) ! Step 4
         IF (violation == 1) CYCLE
         EXIT
      ENDDO ! Ends outer loop
@@ -422,7 +459,7 @@ SUBROUTINE spmat_four (bn,bs,ix,iy,gam,nobs,nvars,x,xidx,xcptr,nnz,y,pf,&
         IF (MAXVAL(is_in_E_set) == 0) THEN
            CYCLE ! don't save anything, we're still decrementing lambda
         ELSE
-           l=2
+           l = 2
            alam(1) = al / MAX(alf, .99) ! store previous, larger value
         ENDIF
      ENDIF
@@ -438,7 +475,7 @@ SUBROUTINE spmat_four (bn,bs,ix,iy,gam,nobs,nvars,x,xidx,xcptr,nnz,y,pf,&
         ENDDO
      ENDIF
      nbeta(l) = ni
-     b0(l) = b(0)
+     b0(l) = acc
      alam(l) = al
      nalam = l
      IF (l < mnl) CYCLE
@@ -451,4 +488,4 @@ SUBROUTINE spmat_four (bn,bs,ix,iy,gam,nobs,nvars,x,xidx,xcptr,nnz,y,pf,&
   ENDDO ! end lambda loop
   DEALLOCATE(b,oldbeta,r,activeGroupIndex)
   RETURN
-END SUBROUTINE spmat_four
+END SUBROUTINE log_spmat_four
