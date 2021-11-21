@@ -13,12 +13,15 @@
 #'
 #' @param x Matrix of predictors, of dimension \eqn{n \times p}{n * p}; each row
 #'   is a vector of measurements and each column is a feature
-#' @param y Real-valued response variable.
+#' @param y Response variable. Quantitative for family="gaussian".
+#'   For family="binomial" should be either a factor with two levels or
+#'   a vector of integers taking 2 unique values.
+#'   For a factor, the last level in alphabetical order is the target class.
 #' @param group A vector of consecutive integers describing the grouping of the
 #' coefficients (see example below).
-#' @param loss A character string specifying the loss function to use, valid
-#' options are: \itemize{\item\code{"ls"} least squares loss (regression), \item
-#' \code{"logit"} logistic loss (classification), }Default is \code{"ls"}.
+#' @param family A character string specifying the loss function to use, valid
+#' options are: \itemize{\item\code{"gaussian"} least squares loss (regression),
+#' \item \code{"binomial"} logistic loss (classification), }
 #' @param nlambda The number of \code{lambda} values - default is 100.
 #' @param lambda.factor The factor for getting the minimal lambda in
 #' \code{lambda} sequence, where \code{min(lambda)} = \code{lambda.factor} *
@@ -88,7 +91,7 @@
 #' groups <- rep(1:(p / 5), each = 5)
 #' fit1 <- sparsegl(X, y, group = groups)
 sparsegl <- function(
-  x, y, group = NULL, loss = c("ls", "logit"),
+  x, y, group = NULL, family = c("gaussian", "binomial"),
   nlambda = 100, lambda.factor = ifelse(nobs < nvars, 0.01, 1e-04),
   lambda = NULL, pf = sqrt(bs),
   intercept = TRUE, asparse = 0.05, standardize = TRUE,
@@ -96,16 +99,16 @@ sparsegl <- function(
   dfmax = as.integer(max(group)) + 1L,
   pmax = min(dfmax * 1.2, as.integer(max(group))),
   eps = 1e-08, maxit = 3e+08) {
-  #################################################################################
-  #\tDesign matrix setup, error checking
+
   this.call <- match.call()
-  loss <- match.arg(loss)
+  family <- match.arg(family)
   if (!is.matrix(x) && !inherits(x, "sparseMatrix"))
-    stop("x has to be a matrix")
+    stop("x must be a matrix")
 
   if (any(is.na(x))) stop("Missing values in x not allowed!")
 
   y <- drop(y)
+  if (!is.null(dim(y))) stop("y must be a vector or 1-column matrix.")
   np <- dim(x)
   nobs <- as.integer(np[1])
   nvars <- as.integer(np[2])
@@ -113,11 +116,8 @@ sparsegl <- function(
 
   if (is.null(vnames)) vnames <- paste("V", seq(nvars), sep = "")
 
-  assertthat::assert_that(length(y) == nobs,
-                          msg = "x and y have different number of rows")
-  assertthat::assert_that(is.numeric(y),
-                          msg = "The response y must be numeric.")
-  #################################################################################
+  if (length(y) != nobs) stop("x and y have different numbers of observations.")
+
   #    group setup
   if (is.null(group)) {
     group <- 1:nvars
@@ -127,8 +127,8 @@ sparsegl <- function(
       msg = "group length does not match the number of predictors in x")
   }
 
-  bn <- as.integer(max(group))  # number of group
-  bs <- as.integer(as.numeric(table(group)))  # number of elements within a group
+  bn <- as.integer(max(group))  # number of groups
+  bs <- as.integer(as.numeric(table(group)))  # number of elements in each group
 
   if (!identical(as.integer(sort(unique(group))), as.integer(1:bn)))
     stop("Groups must be consecutively numbered 1, 2, 3, ...")
@@ -148,7 +148,7 @@ sparsegl <- function(
   ix <- as.integer(ix)
   iy <- as.integer(iy)
   group <- as.integer(group)
-  #################################################################################
+
   #parameter setup
   assertthat::assert_that(
     length(pf) == bn,
@@ -159,7 +159,7 @@ sparsegl <- function(
   eps <- as.double(eps)
   dfmax <- as.integer(dfmax)
   pmax <- as.integer(pmax)
-  #################################################################################
+
   #lambda setup
   nlam <- as.integer(nlambda)
   if (is.null(lambda)) {
@@ -206,19 +206,18 @@ sparsegl <- function(
   storage.mode(lower_bnd) <- "double"
   ### end check on limits
 
-
-  #################################################################################
   # call R sub-function
   fit <- switch(
-    loss,
-    ls = sgl_ls(bn, bs, ix, iy, nobs, nvars, x, y, pf, dfmax, pmax, nlam, flmin, ulam,
+    family,
+    gaussian = sgl_ls(bn, bs, ix, iy, nobs, nvars, x, y, pf, dfmax, pmax, nlam,
+                flmin, ulam,
                 eps, maxit, vnames, group, intr, as.double(asparse),
                 standardize, lower_bnd, upper_bnd),
-    logit = sgl_logit(bn, bs, ix, iy, nobs, nvars, x, y, pf, dfmax, pmax, nlam, flmin, ulam,
+    binomial = sgl_logit(bn, bs, ix, iy, nobs, nvars, x, y, pf, dfmax, pmax,
+                      nlam, flmin, ulam,
                       eps, maxit, vnames, group, intr, as.double(asparse),
                       standardize, lower_bnd, upper_bnd)
   )
-  #################################################################################
   # output
   if (is.null(lambda)) fit$lambda <- lamfix(fit$lambda)
   fit$call <- this.call

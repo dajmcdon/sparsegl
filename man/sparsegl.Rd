@@ -8,7 +8,7 @@ sparsegl(
   x,
   y,
   group = NULL,
-  loss = c("ls", "logit"),
+  family = c("gaussian", "binomial"),
   nlambda = 100,
   lambda.factor = ifelse(nobs < nvars, 0.01, 1e-04),
   lambda = NULL,
@@ -28,14 +28,17 @@ sparsegl(
 \item{x}{Matrix of predictors, of dimension \eqn{n \times p}{n * p}; each row
 is a vector of measurements and each column is a feature}
 
-\item{y}{Real-valued response variable.}
+\item{y}{Response variable. Quantitative for family="gaussian".
+For family="binomial" should be either a factor with two levels or
+a vector of integers taking 2 unique values.
+For a factor, the last level in alphabetical order is the target class.}
 
 \item{group}{A vector of consecutive integers describing the grouping of the
 coefficients (see example below).}
 
-\item{loss}{A character string specifying the loss function to use, valid
-options are: \itemize{\item\code{"ls"} least squares loss (regression), \item
-\code{"logit"} logistic loss (classification), }Default is \code{"ls"}.}
+\item{family}{A character string specifying the loss function to use, valid
+options are: \itemize{\item\code{"gaussian"} least squares loss (regression),
+\item \code{"binomial"} logistic loss (classification), }}
 
 \item{nlambda}{The number of \code{lambda} values - default is 100.}
 

@@ -414,10 +414,10 @@ y1 <- y0
 y1[which(y1 == 0)] <- -1
 ```
 
-To perform the regularization path fitting at a sequence of regularization parameters, \textbf{sparsegl()} consumes aforementioned $\mX, \vY$, the grouping vector \textbf{group}, and other main arguments such that users can assign them with different values rather than follow the default: loss function indicator \textbf{loss} could either assigned with "ls" or "logit", a penalty vector \textbf{pf}, the weight of lasso penalty \textbf{asparse}, the lower and upper bounds for coefficient values \textbf{lower\_bnd} and \textbf{upper\_bnd}. This returns a \textbf{sparsegl} object and its associated attributes. One of the main attribute of this object, \textbf{df}, is a vector representing the number of nonzero coefficients at each $\lambda$ value and also an approximation to the exact degree-of-freedom.
+To perform the regularization path fitting at a sequence of regularization parameters, \textbf{sparsegl()} consumes aforementioned $\mX, \vY$, the grouping vector \textbf{group}, and other main arguments such that users can assign them with different values rather than follow the default: loss function indicator \textbf{family} could either assigned with "gaussian" or "binomial", a penalty vector \textbf{pf}, the weight of lasso penalty \textbf{asparse}, the lower and upper bounds for coefficient values \textbf{lower\_bnd} and \textbf{upper\_bnd}. This returns a \textbf{sparsegl} object and its associated attributes. One of the main attribute of this object, \textbf{df}, is a vector representing the number of nonzero coefficients at each $\lambda$ value and also an approximation to the exact degree-of-freedom.
 
 ```{r}
-fit <- sparsegl(X, y, group = groups, loss = "ls")
+fit <- sparsegl(X, y, group = groups, family = "gaussian")
 ```
 
 The affiliated functions to this fitted \textbf{sparsegl} object are \textbf{plot()},\textbf{coef()}, \textbf{predict()} and \textbf{print()}. Function \textbf{plot()} either produces a coefficient profile plot of the coefficient paths to $\{\lambda_s\}_{s=1}^n$, or a group-norm plot against the penalties scaled by the max penalty value, in terms of the assignments to the arguments. Functions \textbf{coef()} and \textbf{predict()} computes the coefficients and predictions $\hat{\vY}$ given a matrix $\tilde{\mX}$ at the requested $\lambda$s' respectively, and the selection for $\lambda$ values different than the used sequence at the fitting stage is also allowed. Function \textbf{print()} returns the number of nonzero features with nonzero coefficients at each $\lambda$.
@@ -430,10 +430,10 @@ predict(fit, newx = X[100,], x = fit$lambda[2:3])
 print(fit)
 ```
 
-This package also supports for conducting a k-fold cross-validation with \textbf{cv.sparsegl()} given $\mX, \vY$, a vector \textbf{group}, loss function indicator \textbf{loss}, and an additional argument \textbf{pred.loss} indicating the loss to use for cross-validation error. This returns a fitted \textbf{cv.sparsegl} object. The affiliated functions are \textbf{plot()}, \textbf{coef()}, \textbf{predict()} for the \textbf{cv.sparsegl} object. Function \textbf{plot()} produces cross-validation curve with upper and lower confidence bounds plots for each $\lambda$ in the regularization path for the fitted \textbf{cv.sprasegl}. Functions \textbf{coef()} and \textbf{predict()} works similarly to those introduced above. The only differences are that they both consume \textbf{cv.sparsegl} objects, and the passed $\lambda$ values are also be \textbf{lambda.min} (the optimal $\lambda$ that gives the minimum mean cross-validation error) or \textbf{lambda.1se} (the largest $\lambda$ such that the error is within 1 standard error or the minimum).
+This package also supports for conducting a k-fold cross-validation with \textbf{cv.sparsegl()} given $\mX, \vY$, a vector \textbf{group}, loss function indicator \textbf{family}, and an additional argument \textbf{pred.loss} indicating the loss to use for cross-validation error. This returns a fitted \textbf{cv.sparsegl} object. The affiliated functions are \textbf{plot()}, \textbf{coef()}, \textbf{predict()} for the \textbf{cv.sparsegl} object. Function \textbf{plot()} produces cross-validation curve with upper and lower confidence bounds plots for each $\lambda$ in the regularization path for the fitted \textbf{cv.sprasegl}. Functions \textbf{coef()} and \textbf{predict()} works similarly to those introduced above. The only differences are that they both consume \textbf{cv.sparsegl} objects, and the passed $\lambda$ values are also be \textbf{lambda.min} (the optimal $\lambda$ that gives the minimum mean cross-validation error) or \textbf{lambda.1se} (the largest $\lambda$ such that the error is within 1 standard error or the minimum).
 
 ```{r, results = "hide", fig.width = 4, fig.height = 2}
-cv_fit <- cv.sparsegl(X, y, groups, loss = "ls", pred.loss = "L2")
+cv_fit <- cv.sparsegl(X, y, groups, family = "gaussian", pred.loss = "L2")
 plot(cv_fit)
 coef(cv_fit, s = c(0.02, 0.03))
 predict(cv_fit, newx = X[50:60, ], s = "lambda.min")
@@ -442,7 +442,7 @@ predict(cv_fit, newx = X[50:60, ], s = "lambda.min")
 To build up the logistic regression model, only several arguments are required to change based on how we use them from above:
 
 ```{r, results = "hide", fig.width = 4, fig.height = 2}
-fit_logit <- sparsegl(X, y1, group = groups, loss = "logit")
+fit_logit <- sparsegl(X, y1, group = groups, family = "binomial")
 
 plot(fit_logit, y_axis = "coef", x_axis = "penalty", add_legend = FALSE)
 plot(fit_logit, y_axis = "group", x_axis = "lambda", add_legend = FALSE)
@@ -450,7 +450,7 @@ coef(fit_logit, s = c(0.02, 0.03))
 predict(fit_logit, newx = X[100,], x = fit$lambda[2:3])
 print(fit_logit)
 
-cv_fit_logit <- cv.sparsegl(X, y1, groups, loss = "logit", pred.loss = "misclass")
+cv_fit_logit <- cv.sparsegl(X, y1, groups, family = "binomial", pred.loss = "misclass")
 
 plot(cv_fit_logit)
 coef(cv_fit_logit, s = c(0.02, 0.03))

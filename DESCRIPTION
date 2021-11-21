@@ -15,7 +15,7 @@ Description: Performs sparse group lasso with optional bound constraints on
 Encoding: UTF-8
 LazyData: true
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.1.1
+RoxygenNote: 7.1.2
 Imports: 
     Matrix,
     RSpectra,
@@ -28,6 +28,7 @@ Imports:
     magrittr,
     rlang,
     scales,
+    dotCall64
 Depends: 
     R (>= 3.5)
 License: GPL (>= 2)
