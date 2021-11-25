@@ -218,6 +218,7 @@ sparsegl <- function(
                       eps, maxit, vnames, group, intr, as.double(asparse),
                       standardize, lower_bnd, upper_bnd)
   )
+
   # output
   if (is.null(lambda)) fit$lambda <- lamfix(fit$lambda)
   fit$call <- this.call
