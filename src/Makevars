@@ -21,4 +21,3 @@ sparsegl_init.o: sparsegl.o sparsegllog.o spmatmul.o sgl_subfuns.o\
 
 clean:
 	@rm -rf *.mod *.o
-
