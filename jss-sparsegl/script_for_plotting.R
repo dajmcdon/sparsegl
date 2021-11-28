@@ -130,5 +130,5 @@ plot_box <- function(df) {
 # df1 <- bind_rows(within_p, within_n, without_p, without_n) %>% mutate(type = "linear")
 # df2 <- bind_rows(log_within_p, log_within_n, log_without_p, log_without_n) %>% mutate(type = "logistic")
 # df <- bind_rows(df1, df2)
-# saveRDS(df, "./running-time-records-current")
+# saveRDS(df, "/Users/xiaoxuanliang/Desktop/sparsegl/jss-sparsegl/running-time-records-current")
 # plot_box(df)
