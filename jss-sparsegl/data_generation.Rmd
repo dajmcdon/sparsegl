@@ -3,7 +3,7 @@ title: "Script_for_plotting"
 output: html_document
 ---
 
-```{r setup, include=FALSE}
+```{r setup, include = FALSE, message = FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 
 library(SGL)

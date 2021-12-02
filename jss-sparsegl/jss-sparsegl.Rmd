@@ -471,7 +471,7 @@ For each combination, the elapsed time (in milliseconds) is recorded for fitting
 
 Figure 1 incorporates all the cases above and plots the change in running time (in log scale) against different sample sizes $n$ or the number of features $p$. When implementing linear regression models, we notice that three packages have similar performance and consume approximately similar time when varying $n$ and $p$, but \pkg{SGL} always requires longer running time when moving to larger $n$ and $p$. In particular, the trajectories of \pkg{gglasso} and \pkg{sparsegl} are similar as shown in plots when not taking within-group sparsity into account. However, a remarkable improvement is demonstrated when building logistic regression models using \pkg{sparsegl}, which takes less time compared to both \pkg{gglasso} and \pkg{SGL}. The increment of time consumption is also comparably small when increasing $n$ and $p$ compared with the other two packages in this example. Overall, \pkg{sparsegl} makes a significant contribution as compared to the existing packages that address sparse group-lasso high-dimensional optimization problems, especially in the logistic regression.
 
-```{r,echo = FALSE, eval = TRUE, warning = FALSE, fig.cap = "Running Time Comparison", fig.width = 5, fig.height = 9}
+```{r,echo = FALSE, eval = TRUE, message = FALSE, warning = FALSE, fig.cap = "Running Time Comparison", fig.width = 5, fig.height = 9}
  source("helper_function.R")
  df <- readRDS("./running-time-records-current.rds")
  plot_box(df)
