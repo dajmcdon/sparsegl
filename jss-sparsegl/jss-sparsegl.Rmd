@@ -60,6 +60,8 @@ knitr::write_bib(c("devtools", "knitr", "testthat", "usethis", "rticles",
 
 # Introduction
 
+\nocite{R-gglasso,R-SGL,R-msgl}
+
 * Introduction to the package what does it do. 1-2 paragraphs.
 
 * Description of related packages and what they do and don't do. 3-4 paragraphs.
