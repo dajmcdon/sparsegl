@@ -3,10 +3,18 @@ Type: Package
 Title: Sparse Group Lasso
 Version: 0.3.0
 Authors@R: 
-    person(given = "Daniel J.",
+    c(person(given = "Daniel J.",
            family = "McDonald",
            role = c("aut", "cre"),
-           email = "daniel@stat.ubc.ca")
+           email = "daniel@stat.ubc.ca"),
+      person(given = "Xiaoxuan",
+            family = "Liang", 
+            role = "aut",
+            email = "xiaoxuan.liang@stat.ubc.ca"),
+      person(given = "Aaron",
+            family = "Cohen", 
+            role = "aut",
+            email = "cohenaa@indiana.edu")
 Description: Performs sparse group lasso with optional bound constraints on
   the coefficients. Supports the use of a sparse design matrix as well as 
   returning coefficient estimates in a sparse matrix. Furthermore, it correctly
