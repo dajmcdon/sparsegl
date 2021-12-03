@@ -14,7 +14,7 @@ Authors@R:
       person(given = "Aaron",
             family = "Cohen", 
             role = "aut",
-            email = "cohenaa@indiana.edu")
+            email = "cohenaa@indiana.edu"))
 Description: Performs sparse group lasso with optional bound constraints on
   the coefficients. Supports the use of a sparse design matrix as well as 
   returning coefficient estimates in a sparse matrix. Furthermore, it correctly
