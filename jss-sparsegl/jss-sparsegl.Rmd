@@ -60,6 +60,8 @@ knitr::write_bib(c("devtools", "knitr", "testthat", "usethis", "rticles",
 
 # Introduction
 
+\nocite{R-gglasso,R-SGL,R-msgl}
+
 * Introduction to the package what does it do. 1-2 paragraphs.
 
 * Description of related packages and what they do and don't do. 3-4 paragraphs.
@@ -70,7 +72,7 @@ Linear regression is the most common type of statistical model for fitting and p
 
 Many packages have been developed to perform group-lasso in different programming languages. In the same environment R, there are already other existing \pkg{SGL}, \pkg{R} packages and \pkg{gglasso},\pkg{biglasso}. All of them are with strengths but also certain limitations to some extent: the SGL package has sparsity, but does direct coordinate descent and does not apply a heuristic like the strong rule, so it does not take advantage of such a computational speedup. Because of this, \pkg{SGL} is too slow to be of use in analyzing the high-dimensional problems that occur commonly, for example in genetic applications. The \pkg{gglasso} and \pkg{biglasso} \citep{zeng2020biglasso} packages, on the other hand, both are computationally fast. The former incorporates the strong rule, and the latter involves a hybrid safe-strong rule and various procedures such as scalable storage, parallel implementation in C++ and R levels to manage data-larger-than-RAM cases, realizing memory efficiency as well. Nevertheless, they do not incorporate within-group sparsity (i.e., it performs group lasso, not sparse group lasso). When this package is used on a grouped dataset, the solution will have some active groups and some inactive, but within an active group, generally all the coefficients will be nonzero. 
 
-\pkg{msgl} \citep{vincent2014sparse} is also an R package solving sparsel group lasso multiclassification problems via fitting multinomial logistic regression model. This package overcomes the nondifferential penalty problem at zero and since the algorithm is Newton-based, it substitutes the Hessian matrix with an upper bound on that, which reduces the costs of computation. However, multinomial logistic regression is an extension to binary logistic regression, allowing for multiple classes of the response variable, it consumes a excessive amount of time for model fitting for processing binary response variable.
+\pkg{msgl} \citep{vincent2014sparse} is also an R package solving sparsel group lasso multiclassification problems via fitting multinomial logistic regression model. This package overcomes the nondifferential penalty problem at zero and since the algorithm is Newton-based, it substitutes the Hessian matrix with an upper bound on that, which reduces the costs of computation. However, the multinomial logistic regression is an extension to the binary logistic regression, allowing for taking the response variable with multiple classes, which consumes an excessive amount of time for model fitting when processing binary response variable.
 
 In the environment Python, \pkg{asgl} \citep{civieta2020adaptive} proposed an adaptive sparse group-lasso, which improves the variable selection accuracy by flexibly adjusting the weights in the penalization on the groups of features in terms of the feature importance. Another breakthrough of this package is that the loss function being penalized is in the framework of quantile regression, inducing two dimensionality-reduction techniques, Principal Component Analysis and Partial Least Squares for tackling high-dimensional optimization problems. However, one drawback of this package is that it could be time-consuming to use grid-search for hyper-parameters tuning process.
 
@@ -387,7 +389,7 @@ In this algorithm, we are careful to put potentially active groups into the acti
 
 
 # Example usage
-This section provides a simple guidance for how to employ this package for fitting the regularization paths for sparse group-lasso penalized learning problems. For simplicity, we only show the case when using linear regression model. We first import the sparsegl package, and start with a simulated regression dataset including an input matrix of predictors $\mX$, a real-valued response vector $\vY$, and a vector indicating the grouping structure:
+This section provides a simple guidance for how to employ this package for fitting the regularization paths for sparse group-lasso penalized learning problems. For simplicity, we will focus on how to apply the linear regression model when response variable is continuous, and briefly go over the logistic regression case. We first import the sparsegl package, and start with a simulated regression dataset including an input matrix of predictors $\mX$, a real-valued response vector $\vY$, and a vector indicating the grouping structure:
 ```{r}
 library(sparsegl)
 ```
@@ -400,21 +402,25 @@ X <- matrix(data = rnorm(n*p, mean = 0, sd = 1), nrow = n, ncol = p)
 beta_star <- c(rep(5, 5), c(5, -5, 2, 0, 0), rep(-5, 5), c(2, -3, 8, 0, 0), 
                rep(0, (p - 20)))
 groups <- rep(1:(p / 5), each = 5)
-
-# linear regression
+# simulate data for y in linear regression
 eps <- rnorm(n, mean = 0, sd = 1)
 y <- X %*% beta_star + eps
+# simulate data for y in logistic regression
+pr <- 1 / (1 + exp(-X %*% beta_star))
+y0 <- rbinom(n, 1, pr)
+y1 <- y0
+y1[which(y1 == 0)] <- -1
 ```
 
-To perform the regularization path fitting at a sequence of regularization parameters, \textbf{sparsegl()} consumes aforementioned $\mX, \vY$, the grouping vector \textbf{group}, and other main arguments such that users can assign them with different values rather than follow the default: loss function indicator \textbf{loss} could either assigned with "ls" or "logit", a penalty vector \textbf{pf}, the weight of lasso penalty \textbf{asparse}, the lower and upper bounds for coefficient values \textbf{lower\_bnd} and \textbf{upper\_bnd}. This returns a \textbf{sparsegl} object and its associated attributes. One of the main attribute of this object, \textbf{df}, is a vector representing the number of nonzero coefficients at each $\lambda$ value and also an approximation to the exact degree-of-freedom.
+To perform the regularization path fitting at a sequence of regularization parameters, \textbf{sparsegl()} consumes aforementioned $\mX, \vY$, the grouping vector \textbf{group}, and other main arguments such that users can assign them with different values rather than follow the default: loss function indicator \textbf{family} could either assigned with "gaussian" or "binomial", a penalty vector \textbf{pf}, the weight of lasso penalty \textbf{asparse}, the lower and upper bounds for coefficient values \textbf{lower\_bnd} and \textbf{upper\_bnd}. This returns a \textbf{sparsegl} object and its associated attributes. One of the main attribute of this object, \textbf{df}, is a vector representing the number of nonzero coefficients at each $\lambda$ value and also an approximation to the exact degree-of-freedom.
 
 ```{r}
-fit <- sparsegl(X, y, group = groups)
+fit <- sparsegl(X, y, group = groups, family = "gaussian")
 ```
 
-The affiliated functions to this fitted \textbf{sparsegl} object are \textbf{plot()},\textbf{coef()}, \textbf{predict()} and \textbf{print()}. Function textbf{plot()} either produces a coefficient profile plot of the coefficient paths to $\{\lambda_s\}_{s=1}^n$, or a group-norm plot against the penalties scaled by the max penalty value, in terms of the assignments to the arguments. Functions \textbf{coef()} and \textbf{predict()} computes the coefficients and predictions $\hat{\vY}$ given a matrix $\tilde{\mX}$ at the requested $\lambda$s' respectively, and the selection for $\lambda$ values different than the used sequence at the fitting stage is also allowed. Function \textbf{print()} returns the number of nonzero features with nonzero coefficients at each $\lambda$.
+The affiliated functions to this fitted \textbf{sparsegl} object are \textbf{plot()},\textbf{coef()}, \textbf{predict()} and \textbf{print()}. Function \textbf{plot()} either produces a coefficient profile plot of the coefficient paths to $\{\lambda_s\}_{s=1}^n$, or a group-norm plot against the penalties scaled by the max penalty value, in terms of the assignments to the arguments. Functions \textbf{coef()} and \textbf{predict()} computes the coefficients and predictions $\hat{\vY}$ given a matrix $\tilde{\mX}$ at the requested $\lambda$s' respectively, and the selection for $\lambda$ values different than the used sequence at the fitting stage is also allowed. Function \textbf{print()} returns the number of nonzero features with nonzero coefficients at each $\lambda$.
 
-```{r, results = "hide", fig.show = "hide"}
+```{r, results = "hide", fig.width = 4, fig.height = 2}
 plot(fit, y_axis = "coef", x_axis = "penalty", add_legend = FALSE)
 plot(fit, y_axis = "group", x_axis = "lambda", add_legend = FALSE)
 coef(fit, s = c(0.02, 0.03))
@@ -422,14 +428,30 @@ predict(fit, newx = X[100,], x = fit$lambda[2:3])
 print(fit)
 ```
 
-This package also supports for conducting a k-fold cross-validation with \textbf{cv.sparsegl()} given $\mX, \vY$, a vector \textbf{group} and an additional argument \textbf{pred.loss} indicating the loss to use for cross-validation error. This returns a fitted \textbf{cv.sparsegl} object. The affiliated functions are \textbf{plot()}, \textbf{coef()}, \textbf{predict()} for the \textbf{cv.sparsegl} object. Function \textbf{plot()} produces cross-validation curve with upper and lower confidence bounds plots for each $\lambda$ in the regularization path for the fitted \textbf{cv.sprasegl}. Functions \textbf{coef()} and \textbf{predict()} works similarly to those introduced above. The only differences are that they both consume \textbf{cv.sparsegl} objects, and the passed $\lambda$ values are also be \textbf{lambda.min} (the optimal $\lambda$ that gives the minimum mean cross-validation error) or \textbf{lambda.1se} (the largest $\lambda$ such that the error is within 1 standard error or the minimum).
+This package also supports for conducting a k-fold cross-validation with \textbf{cv.sparsegl()} given $\mX, \vY$, a vector \textbf{group}, loss function indicator \textbf{family}, and an additional argument \textbf{pred.loss} indicating the loss to use for cross-validation error. This returns a fitted \textbf{cv.sparsegl} object. The affiliated functions are \textbf{plot()}, \textbf{coef()}, \textbf{predict()} for the \textbf{cv.sparsegl} object. Function \textbf{plot()} produces cross-validation curve with upper and lower confidence bounds plots for each $\lambda$ in the regularization path for the fitted \textbf{cv.sprasegl}. Functions \textbf{coef()} and \textbf{predict()} works similarly to those introduced above. The only differences are that they both consume \textbf{cv.sparsegl} objects, and the passed $\lambda$ values are also be \textbf{lambda.min} (the optimal $\lambda$ that gives the minimum mean cross-validation error) or \textbf{lambda.1se} (the largest $\lambda$ such that the error is within 1 standard error or the minimum).
 
-```{r, results = "hide", fig.show = "hide"}
-cv_fit <- cv.sparsegl(X, y, groups)
+```{r, results = "hide", fig.width = 4, fig.height = 2}
+cv_fit <- cv.sparsegl(X, y, groups, family = "gaussian", pred.loss = "L2")
 plot(cv_fit)
 coef(cv_fit, s = c(0.02, 0.03))
 predict(cv_fit, newx = X[50:60, ], s = "lambda.min")
 ```
+
+To build up the logistic regression model, only several arguments are required to change based on how we use them from above:
+
+```{r, results = "hide", fig.width = 4, fig.height = 2}
+fit_logit <- sparsegl(X, y1, group = groups, family = "binomial")
+plot(fit_logit, y_axis = "coef", x_axis = "penalty", add_legend = FALSE)
+plot(fit_logit, y_axis = "group", x_axis = "lambda", add_legend = FALSE)
+coef(fit_logit, s = c(0.02, 0.03))
+predict(fit_logit, newx = X[100,], x = fit$lambda[2:3])
+print(fit_logit)
+cv_fit_logit <- cv.sparsegl(X, y1, groups, family = "binomial", pred.loss = "misclass")
+plot(cv_fit_logit)
+coef(cv_fit_logit, s = c(0.02, 0.03))
+predict(cv_fit_logit, newx = X[50:60, ], s = "lambda.min")
+```
+
 
 For further detailed documentation and examples towards this package, it is recommended to look into this [website](https://dajmcdon.github.io/sparsegl/index.html).
 
@@ -440,159 +462,25 @@ As we have stated in the beginning, \pkg{SGL} package is computationally ineffic
 The approach to simulating models is as follows: for each dataset, we first generate an input matrix $\mX$ by randomly sampling numbers from the standard normal distribution and converting them into a $n$-by-$p$ matrix, and the response vector depends on the regression model used in the optimization problem. For linear regression models, the vector $\vY$ is generated linearly by $\vY = \mX\vbeta^* + \boldsymbol\epsilon$, where the error term $\epsilon$ is also generated from the standard normal distribution as white noise. For logistic regression models, $vY$ is a vector containing binary values only. A vector of probabilities with length $n$, namely $\frac{1}{1 + \exp(-\mX\vbeta^*)}$ should be calculated, and each $y_i$ is randomly generated by Bernoulli distribution with the corresponding probability. The entries of coefficients vector $\vbeta^*$ from both models are zeros or nonzero, which is generated depending on whether within-group sparsity is considered. For the coefficients in the group $k$, all the entries of $\vbeta^{*(k)}$ are zeros or nonzeros if the grouping structure is not within-group sparse, otherwise, $\vbeta^{*(k)}$ could a subvector with a mixture of zero and nonzero values. We consider the following combinations of (n, p, within-group sparsity):
 
 \begin{itemize}
-\item $n = 100$, $p = 20, 60, 100, 200, 500$ and within-group sparsity exists.
-\item $p = 100$, $n = 20, 60, 100, 200, 500$ and within-group sparsity exists.
-\item $n = 100$, $p = 20, 60, 100, 200, 500$ and within-group sparsity not exists.
-\item $p = 100$, $n = 20, 60, 100, 200, 500$ and within-group sparsity not exists.
+\item $n = 100$, $p = 20, 60, 100, 200, 300, 500$ and within-group sparsity exists.
+\item $p = 100$, $n = 20, 60, 100, 200, 300, 500$ and within-group sparsity exists.
+\item $n = 100$, $p = 20, 60, 100, 200, 300, 500$ and within-group sparsity not exists.
+\item $p = 100$, $n = 20, 60, 100, 200, 300, 500$ and within-group sparsity not exists.
 \end{itemize}
 
 For each combination, the elapsed time (in milliseconds) is recorded for fitting regularization path at 100 $\lambda$s' values by constructing models using \pkg{sparsegl}, \pkg{SGL} and \pkg{gglasso} in terms of the existence of within-group sparsity over 50 independent datasets. The boxplots illustrate the consumed time on each run.
 
-Figure 1 incorporates all the cases above and plots the change in running time (in log scale) against different sample sizes $n$ or the number of features $p$. In all subplots, the running time of \pkg{SGL} is approximately linearly increasing when the sample size or the number of features increases, which is actually exponentially increasing, indicating that \pkg{SGL} could be enormously influenced by the dimensionality of the input matrix $X$ and the complexity of the problem. On the other hand, we can see that \pkg{sparsegl} and \pkg{gglasso} have roughly the same performance in computation efficiency and spend much less time in computing the solution paths. Particularly, in this example, both packages consume approximately the consistent time when the sample size $n$ increases, while require slowly-increasing time when the number of features $p$ increases. Therefore, \pkg{sparsegl} makes a significant improvement as compared to the existing packages that address sparse group-lasso high-dimensional optimization problems.
 
-```{r, load packages, include=FALSE}
-library(SGL)
-library(gglasso)
-library(sparsegl)
-library(msgl)
+Figure 1 incorporates all the cases above and plots the change in running time (in log scale) against different sample sizes $n$ or the number of features $p$. When implementing linear regression models, we notice that three packages have similar performance and consume approximately similar time when varying $n$ and $p$, but \pkg{SGL} always requires longer running time when moving to larger $n$ and $p$. In particular, the trajectories of \pkg{gglasso} and \pkg{sparsegl} are similar as shown in plots when not taking within-group sparsity into account. However, a remarkable improvement is demonstrated when building logistic regression models using \pkg{sparsegl}, which takes less time compared to both \pkg{gglasso} and \pkg{SGL}. The increment of time consumption is also comparably small when increasing $n$ and $p$ compared with the other two packages in this example. Overall, \pkg{sparsegl} makes a significant contribution as compared to the existing packages that address sparse group-lasso high-dimensional optimization problems, especially in the logistic regression.
 
-library(dplyr)
-library(tidyr)
-library(ggplot2)
-
-library(microbenchmark)
+```{r,echo = FALSE, eval = TRUE, message = FALSE, warning = FALSE, fig.cap = "Running Time Comparison", fig.width = 5, fig.height = 9}
+ source("helper_function.R")
+ df <- readRDS("./running-time-records-current.rds")
+ plot_box(df)
 ```
-
-```{r, functions, include = FALSE}
-beta_generate <- function(p, within_group = TRUE, group_size) { 
-  if (!within_group) {
-    beta_star <- c(rep(5, 5), rep(-5, 5), c(2, -3, 8, 1, 3), c(5, -5, 2, -2, 1), 
-                   rep(c(-5, 0, 1, 5), each = 5, times = (p - 20) / 20))
-  } else {
-    beta_star <- c(rep(5, 5), c(5, -5, 2, 0, 0), rep(-5, 5), c(2, -3, 8, 0, 0), 
-                   rep(c(rep(5, 5), rep(0, 5), rep(-5, 5), c(2, 3, 5, 0, 0)), times = (p - 20) / 20))
-  }
-  beta_star
-}
-
-
-simulate <- function(change_list,
-                     change_feature = c("n", "p"), 
-                     within_group = TRUE, 
-                     group_size = 5,
-                     loss = c("ls", "logit")) {
-  change_feature <- match.arg(change_feature)
-  loss <- match.arg(loss, c("ls", "logit"))
-  df <- list()
-  k <- 1
-  
-  if (change_feature == "n") {
-    p <- 100
-    beta_star <- beta_generate(p, within_group, group_size)
-    groups <- rep(1:(p / group_size), each = group_size)
-  } else {
-    n <- 100
-  }
-  
-  for (i in seq(length(change_list))) {
-    if (change_feature == "n") {
-      n <- change_list[i]
-    } else {
-      p <- change_list[i]
-      beta_star <- beta_generate(p, within_group, group_size)
-      groups <- rep(1:(p / group_size), each = group_size)
-    }
-    set.seed(1010)
-    X <- matrix(rnorm(n * p), nrow = n)
-    for (j in seq(50)) {
-      set.seed(j)
-      if (loss == "ls") {
-        eps <- rnorm(n)
-        y <- X %*% beta_star + eps
-        data <- list(x = X, y = y)
-        y_gglasso <- y
-      } else {
-        pr <- 1 / (1 + exp(-X %*% beta_star))
-        y <- rbinom(n, 1, pr)
-        data <- list(x = X, y = y)
-        y_gglasso <- y
-        y_gglasso[which(y_gglasso == 0)] = -1
-      }
-        if (!within_group) {
-        df[[k]] <- as.data.frame(summary(
-          microbenchmark(sparsegl = sparsegl(X, y, groups, loss = loss, asparse = 0),
-                         SGL = SGL(data, groups, type = ifelse(loss == "ls", "linear", loss), alpha = 1),
-                         gglasso = gglasso(X, y_gglasso, groups, loss = loss),
-                         times = 1))) 
-        } else {
-          df[[k]] <- as.data.frame(summary(
-            microbenchmark(sparsegl = sparsegl(X, y, groups, loss = loss),
-                           SGL = SGL(data, groups, type = ifelse(loss == "ls", "linear", loss)), 
-                           times = 1)))
-        }
-      df[[k]] <- df[[k]] %>% 
-        select(expr, mean) %>% 
-        mutate(
-          change_feature = factor(change_feature),
-          change_list := factor(!!rlang::sym(change_feature)),
-          within_group = within_group)
-      k <- k + 1
-    }
-  }
-  datf <- bind_rows(df)
-  return(datf)
-}
-
-
-plot_box <- function(df, loss = c("ls", "logit")) {
-  loss <-
-  plot <- ggplot(df, aes(x = change_list, y = mean, fill = expr)) +
-    geom_boxplot(fatten = 0.5) +
-    theme_bw() + 
-    theme(legend.position = "bottom", legend.title = element_blank()) +
-    xlab("Change values") +
-    ylab(paste("Running Time (ms) for", 
-               switch(loss,
-                      ls = "Linear Regression Model",
-                      logit = "Logistic Regression Model"))) +
-    facet_grid(vars(within_group), vars(change_feature), 
-               labeller = as_labeller(c('p' = "Number of features p", 'n' = "Sample size n",
-                                        'TRUE' = "Within-group sparsity", 'FALSE' = "Without-group sparsity"))) +
-    scale_fill_brewer(palette = "Set1") +
-    scale_y_log10() 
-  return(plot)
-}
-```
-
-```{r, simulation, include = FALSE}
-within_p <- simulate(change_list = c(20, 60, 100, 200, 500), change_feature = "p", within_group = TRUE, group_size = 5, loss = "ls")
-within_n <- simulate(change_list = c(20, 60, 100, 200, 500), change_feature = "n", within_group = TRUE, group_size = 5, loss = "ls")
-without_p <- simulate(change_list = c(20, 60, 100, 200, 500), change_feature = "p", within_group = FALSE, group_size = 5, loss = "ls")
-without_n <- simulate(change_list = c(20, 60, 100, 200, 500), change_feature = "n", within_group = FALSE, group_size = 5, loss = "ls")
-```
-
-```{r, simulation log, include = FALSE}
-log_within_p <- simulate(change_list = c(20, 60, 100, 200, 500), change_feature = "p", within_group = TRUE, group_size = 5, loss = "logit")
-log_within_n <- simulate(change_list = c(20, 60, 100, 200, 500), change_feature = "n", within_group = TRUE, group_size = 5, loss = "logit")
-log_without_p <- simulate(change_list = c(20, 60, 100, 200, 500), change_feature = "p", within_group = FALSE, group_size = 5, loss = "logit")
-log_without_n <- simulate(change_list = c(20, 60, 100, 200, 500), change_feature = "n", within_group = FALSE, group_size = 5, loss = "logit")
-```
-
-```{r, concat, include = FALSE}
-df1 <- bind_rows(within_p, within_n, without_p, without_n)
-df2 <- bind_rows(log_within_p, log_within_n, log_without_p, log_without_n)
-```
-
-```{r, echo = FALSE, fig.cap = "Running Time Comparison", fit.width = 5, fig.height = 5}
-plot_box(df1, loss = "ls")
-plot_box(df2, loss = "logit")
-```
-
-
 
 # Discussion and future work
 We developed this package for solving sparse group lasso optimization problem based on \textbf{four-step algorithm} with a convex loss function and a combination of $l1$ and $l2$ penalties. This preserves the grouping structure for coefficients by producing both among- and within- group sparsity, and also makes a huge improvement on computational efficiency compared to other existing sparse group lasso packages, which is achieved by applying strong rule check and KKT check iteratively.
-
 
 
 # Acknowledgements {.unnumbered}
