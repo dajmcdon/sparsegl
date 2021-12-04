@@ -13,23 +13,23 @@
 )
 }
 \arguments{
-\item{x}{Fitted \code{\link[=sparsegl]{sparsegl()}} model.}
+\item{x}{Fitted \code{\link[=sparsegl]{sparsegl()}} object.}
 
 \item{y_axis}{Variable on the y_axis. Either the coefficients (default)
 or the group norm.}
 
 \item{x_axis}{Variable on the x-axis. Either the (log)-lambda
-sequence (default) or value of the penalty. The penalty is scaled by its
-maximum along the path.}
+sequence (default) or the value of the penalty. In the second case,
+the penalty is scaled by its maximum along the path.}
 
 \item{add_legend}{Show the legend. Often, with many groups/predictors, this
 can become overwhelming.}
 
-\item{\dots}{Not used.}
+\item{...}{Not used.}
 }
 \description{
-Produces a coefficient profile plot of the coefficient paths for a fitted
-\code{\link[=sparsegl]{sparsegl()}} object. The result is a \code{ggplot}. Additional user
+Produces a coefficient profile plot of a fitted
+\code{\link[=sparsegl]{sparsegl()}} object. The result is a \code{\link[ggplot2:ggplot]{ggplot2::ggplot()}}. Additional user
 modifications can be added as desired.
 }
 \examples{

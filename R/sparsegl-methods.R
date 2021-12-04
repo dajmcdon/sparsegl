@@ -1,23 +1,23 @@
 #' Extract model coefficients from a `sparsegl` object.
 #'
 #' Computes the coefficients at the requested value(s) for `lambda` from a
-#'[sparsegl()] object.
+#' [sparsegl()] object.
 #'
-#' `s` is the new vector at which predictions are requested. If \code{s}
-#' is not in the lambda sequence used for fitting the model, the \code{coef}
+#' `s` is the new vector at which predictions are requested. If `s`
+#' is not in the lambda sequence used for fitting the model, the `coef`
 #' function will use linear interpolation to make predictions. The new values
 #' are interpolated using a fraction of coefficients from both left and right
-#' \code{lambda} indices.
+#' `lambda` indices.
 #'
-#' @param object Fitted [sparsegl()] model object.
-#' @param s Value(s) of the penalty parameter \code{lambda} at which
-#' predictions are required. Default is the entire sequence used to create the
-#' model.
-#' @param \dots Not used.
-#' @seealso [sparsegl()], [predict.sparsegl()] and 
+#' @param object Fitted [sparsegl()] object.
+#' @param s Value(s) of the penalty parameter `lambda` at which
+#'  coefficients are required. Default is the entire sequence.
+#' @param ... Not used.
+#' @seealso [sparsegl()], [predict.sparsegl()] and
 #' [print.sparsegl()] methods.
-#' @return The coefficients at the requested values for \code{lambda}.
-#' 
+#'
+#' @return The coefficients at the requested values for `lambda`.
+#'
 #' @method coef sparsegl
 #' @export
 #' @examples
@@ -57,25 +57,25 @@ coef.sparsegl <- function(object, s = NULL, ...) {
 
 #' Make predictions from a `sparsegl` object.
 #'
-#' Similar to other predict methods, this functions predicts fitted values and
+#' Similar to other predict methods, this function produces fitted values and
 #' class labels from a fitted [`sparsegl`] object.
 #'
-#' `s` is the new vector at which predictions are requested. If \code{s}
-#' is not in the lambda sequence used for fitting the model, the \code{predict}
+#' `s` is new vector at which predictions are requested. If `s`
+#' is not in the lambda sequence used for fitting the model, the
 #' function will use linear interpolation to make predictions. The new values
 #' are interpolated using a fraction of predicted values from both left and
-#' right \code{lambda} indices.
+#' right `lambda` indices.
 #'
 #' @param object Fitted [sparsegl()] model object.
-#' @param newx Matrix of new values for \code{x} at which predictions are to be
-#' made. Must be a matrix.
-#' @param s Value(s) of the penalty parameter \code{lambda} at which
-#' predictions are required. Default is the entire sequence used to create the
-#' model.
+#' @param newx Matrix of new values for `x` at which predictions are to be
+#'   made. Must be a matrix.
+#' @param s Value(s) of the penalty parameter `lambda` at which
+#'   predictions are required. Default is the entire sequence used to create the
+#'   model.
 #'
-#' @param \dots Not used. Other arguments to predict.
+#' @param ... Not used.
 #' @return The object returned depends on type.
-#' @seealso [sparsegl()], [coef.sparsegl()] and 
+#' @seealso [sparsegl()], [coef.sparsegl()] and
 #' [print.sparsegl()] methods.
 #'
 #' @method predict sparsegl
@@ -102,14 +102,16 @@ predict.sparsegl <- function(object, newx, s = NULL, ...) {
 
 #' Print a `sparsegl` object.
 #'
-#' Prints a few summaries of the fitted [sparsegl()] model object.
+#' Prints some summary information about the fitted [sparsegl()] object.
 #'
 #'
 #' @param x Fitted [sparsegl()] object.
 #' @param digits Significant digits in printout.
-#' @param \dots Additional print arguments.
-#' @seealso [sparsegl()], [coef.sparsegl()] and 
+#' @param ... not used
+#'
+#' @seealso [sparsegl()], [coef.sparsegl()] and
 #' [predict.sparsegl()] methods.
+#'
 #' @method print sparsegl
 #' @export
 #' @examples

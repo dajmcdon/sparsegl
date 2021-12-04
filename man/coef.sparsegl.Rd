@@ -7,13 +7,12 @@
 \method{coef}{sparsegl}(object, s = NULL, ...)
 }
 \arguments{
-\item{object}{Fitted \code{\link[=sparsegl]{sparsegl()}} model object.}
+\item{object}{Fitted \code{\link[=sparsegl]{sparsegl()}} object.}
 
 \item{s}{Value(s) of the penalty parameter \code{lambda} at which
-predictions are required. Default is the entire sequence used to create the
-model.}
+coefficients are required. Default is the entire sequence.}
 
-\item{\dots}{Not used.}
+\item{...}{Not used.}
 }
 \value{
 The coefficients at the requested values for \code{lambda}.

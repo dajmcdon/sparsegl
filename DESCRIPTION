@@ -15,11 +15,14 @@ Authors@R:
             family = "Cohen", 
             role = "aut",
             email = "cohenaa@indiana.edu"))
-Description: Performs sparse group lasso with optional bound constraints on
-  the coefficients. Supports the use of a sparse design matrix as well as 
+Description: This package performs sparse group lasso with optional bound 
+  constraints on the coefficients. It supports the use of a sparse design matrix 
+  as well as 
   returning coefficient estimates in a sparse matrix. Furthermore, it correctly
   calculates the degrees of freedom to allow for information criteria rather
-  than cross-validation with very large data.
+  than cross-validation with very large data. Finally, the interface to 
+  compiled Fortran code avoids unnecessary copies and allows for the use of
+  long integers.
 Encoding: UTF-8
 LazyData: true
 Roxygen: list(markdown = TRUE)
@@ -40,6 +43,8 @@ Imports:
 Depends: 
     R (>= 3.5)
 License: GPL (>= 2)
+URL: https://github.com/dajmcdon/sparsegl
+BugReports: https://github.com/dajmcdon/sparsegl/issues
 Suggests: 
     testthat (>= 3.0.0),
     knitr,

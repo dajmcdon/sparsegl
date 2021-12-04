@@ -16,18 +16,18 @@ made. Must be a matrix.}
 predictions are required. Default is the entire sequence used to create the
 model.}
 
-\item{\dots}{Not used. Other arguments to predict.}
+\item{...}{Not used.}
 }
 \value{
 The object returned depends on type.
 }
 \description{
-Similar to other predict methods, this functions predicts fitted values and
+Similar to other predict methods, this function produces fitted values and
 class labels from a fitted \code{\link{sparsegl}} object.
 }
 \details{
-\code{s} is the new vector at which predictions are requested. If \code{s}
-is not in the lambda sequence used for fitting the model, the \code{predict}
+\code{s} is new vector at which predictions are requested. If \code{s}
+is not in the lambda sequence used for fitting the model, the
 function will use linear interpolation to make predictions. The new values
 are interpolated using a fraction of predicted values from both left and
 right \code{lambda} indices.
