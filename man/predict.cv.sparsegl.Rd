@@ -13,25 +13,21 @@
 made. Must be a matrix. See documentation for \code{\link[=predict.sparsegl]{predict.sparsegl()}}.}
 
 \item{s}{Value(s) of the penalty parameter \code{lambda} at which
-predictions are required. Default is the value \code{s = "lambda.1se"} stored
-on the CV object. Alternatively \code{s = "lambda.min"} can be used. If
-\code{s} is numeric, it is taken as the value(s) of \code{lambda} to be
-used.}
+coefficients are desired. Default is the single
+value \code{s = "lambda.1se"} stored on the CV \code{object} (corresponding to
+the largest value of \code{lambda} such that CV error estimate is within 1
+standard error of the minimum). Alternatively \code{s = "lambda.min"} can be
+used (corresponding to the minimum of cross validation error estimate).
+If \code{s} is numeric, it is taken as the value(s) of \code{lambda} to be used.}
 
-\item{\dots}{Not used. Other arguments to predict.}
+\item{...}{Not used. Other arguments to \code{\link[=predict]{predict()}}.}
 }
 \value{
-The returned object depends on the \dots{} argument which is passed
-on to the \code{\link[=predict]{predict()}} method for \code{\link[=sparsegl]{sparsegl()}} objects.
+A matrix or vector of predicted values.
 }
 \description{
-This function makes predictions from a cross-validated \code{\link[=sparsegl]{sparsegl()}} model,
-using the stored \code{"sparsegl.fit"} object, and the value chosen
-for \code{lambda}.
-}
-\details{
-This function makes it easier to use the results of cross-validation to make
-a prediction.
+This function makes predictions from a cross-validated \code{\link[=cv.sparsegl]{cv.sparsegl()}} object,
+using the stored \code{"sparsegl.fit"} object, and the value chosen for \code{lambda}.
 }
 \examples{
 n <- 100
@@ -44,10 +40,8 @@ groups <- rep(1:(p / 5), each = 5)
 fit1 <- sparsegl(X, y, group = groups)
 cv_fit <- cv.sparsegl(X, y, groups)
 predict(cv_fit, newx = X[50:60, ], s = "lambda.min")
+
 }
 \seealso{
-\code{\link[=cv.sparsegl]{cv.sparsegl()}}, and \code{\link[=coef.cv.sparsegl]{coef.cv.sparsegl()}}
-methods.
+\code{\link[=cv.sparsegl]{cv.sparsegl()}}, and \code{\link[=coef.cv.sparsegl]{coef.cv.sparsegl()}} methods.
 }
-\keyword{models}
-\keyword{regression}

@@ -17,28 +17,31 @@
 #' @param pred.loss Loss to use for cross-validation error. Valid options are:
 #'  * `"L2"` for regression, mean square error
 #'  * `"L1"` for regression, mean absolute error
-#'  * `"loss"` for classification, deviance
+#'  * `"margin"` for classification, margin loss
 #'  * `"misclass"` for classification, misclassification error. `"L2"`.
 #' @param nfolds Number of folds - default is 10. Although `nfolds` can be
 #'   as large as the sample size (leave-one-out CV), it is not recommended for
 #'   large datasets. Smallest value allowable is `nfolds = 3`.
-#' @param foldid An optional vector of values between 1 and \code{nfolds}
-#' identifying which fold each observation is in. If supplied, \code{nfolds} can
-#' be missing.
+#' @param foldid An optional vector of values between 1 and `nfolds`
+#'   identifying which fold each observation is in. If supplied, `nfolds` can
+#'   be missing.
 #' @param ... Other arguments that can be passed to sparsegl.
 #'
 #' @return An object of class [cv.sparsegl()] is returned, which is a
-#' list with the ingredients of the cross-validation fit.  \item{lambda}{The
-#' values of \code{lambda} used in the fits.} \item{cvm}{The mean
-#' cross-validated error - a vector of length \code{length(lambda)}.}
-#' \item{cvsd}{Estimate of standard error of \code{cvm}.} \item{cvupper}{Upper
-#' curve = \code{cvm + cvsd}.} \item{cvlower}{Lower curve = \code{cvm - cvsd}.}
-#' \item{name}{A text string indicating type of measure (for plotting
-#' purposes).} \item{sparsegl.fit}{A fitted [sparsegl()] object for the
-#' full data.} \item{lambda.min}{The optimal value of \code{lambda} that gives
-#' minimum cross validation error \code{cvm}.} \item{lambda.1se}{The largest
-#' value of \code{lambda} such that error is within 1 standard error of the
-#' minimum.}
+#'   list with the ingredients of the cross-validation fit.
+#'   \item{lambda}{The values of \code{lambda} used in the fits.}
+#'   \item{cvm}{The mean cross-validated error - a vector of
+#'     length \code{length(lambda)}.}
+#'   \item{cvsd}{Estimate of standard error of \code{cvm}.}
+#'   \item{cvupper}{Upper curve = \code{cvm + cvsd}.}
+#'   \item{cvlower}{Lower curve = \code{cvm - cvsd}.}
+#'   \item{name}{A text string indicating type of measure (for plotting
+#'     purposes).}
+#'   \item{sparsegl.fit}{A fitted [sparsegl()] object for the full data.}
+#'   \item{lambda.min}{The optimal value of \code{lambda} that gives
+#'     minimum cross validation error \code{cvm}.}
+#'   \item{lambda.1se}{The largest value of \code{lambda} such that error
+#'     is within 1 standard error of the minimum.}
 #'
 #'
 #' @seealso [sparsegl()], [plot.cv.sparsegl()],
@@ -59,8 +62,8 @@
 #'
 cv.sparsegl <- function(x, y, group, family = c("gaussian", "binomial"),
                         lambda = NULL,
-                        pred.loss = c("L2", "L1", "loss", "misclass"),
-                        nfolds = 5, foldid, ...) {
+                        pred.loss = c("L2", "L1", "margin", "misclass"),
+                        nfolds = 10, foldid, ...) {
     family <- match.arg(family)
     pred.loss <- match.arg(pred.loss)
     N <- nrow(x)
@@ -123,8 +126,9 @@ cv.ls <- function(outlist, lambda, x, y, foldid,
 }
 
 cv.logit <- function(outlist, lambda, x, y, foldid,
-                        pred.loss = c("loss", "misclass")) {
-    typenames <- c(loss = "Margin Based Loss", misclass = "Misclassification Error")
+                        pred.loss = c("margin", "misclass")) {
+    typenames <- c(margin = "Margin-based Loss",
+                   misclass = "Misclassification Error")
     pred.loss <- match.arg(pred.loss)
     prob_min <- 1e-05
     fmax <- log(1/prob_min - 1)
@@ -143,7 +147,7 @@ cv.logit <- function(outlist, lambda, x, y, foldid,
         nlams[i] <- nlami
     }
     predmat <- pmin(pmax(predmat, fmin), fmax)
-    cvraw <- switch(pred.loss, loss = 2 * log(1 + exp(-y + predmat)),
+    cvraw <- switch(pred.loss, margin = 2 * log(1 + exp(-y + predmat)),
                     misclass = (y != ifelse(predmat > 0, 1, -1)))
     N <- length(y) - apply(is.na(predmat), 2, sum)
     cvm <- apply(cvraw, 2, mean, na.rm = TRUE)

@@ -60,10 +60,10 @@ saturated fit. This argument has no effect if there is user-defined
 \code{lambda} sequence.}
 
 \item{lambda}{A user supplied \code{lambda} sequence. The default, \code{NULL}
-results in an automatic computation based on \code{nlambda} the smallest value
+results in an automatic computation based on \code{nlambda}, the smallest value
 of \code{lambda} that would give the null model (all coefficient estimates equal
-to zero) and \code{lambda.factor}.
-Supplying a value of \code{lambda} overrides this behaviour. It is better to supply a
+to zero), and \code{lambda.factor}. Supplying a value of \code{lambda} overrides
+this behaviour. It is likely better to supply a
 decreasing sequence of \code{lambda} values than a single (small) value. If
 supplied, the user-defined \code{lambda} sequence is automatically sorted in
 decreasing order.}

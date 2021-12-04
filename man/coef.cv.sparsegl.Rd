@@ -2,7 +2,7 @@
 % Please edit documentation in R/cv.sparsegl-methods.R
 \name{coef.cv.sparsegl}
 \alias{coef.cv.sparsegl}
-\title{Get coefficients or make coefficient predictions from a \code{cv.sparsegl} object.}
+\title{Get coefficients from a \code{cv.sparsegl} object.}
 \usage{
 \method{coef}{cv.sparsegl}(object, s = c("lambda.1se", "lambda.min"), ...)
 }
@@ -10,26 +10,22 @@
 \item{object}{Fitted \code{\link[=cv.sparsegl]{cv.sparsegl()}} object.}
 
 \item{s}{Value(s) of the penalty parameter \code{lambda} at which
-predictions are required. Default is the value \code{s = "lambda.1se"} stored
-on the CV \code{object}, it is the largest value of \code{lambda} such that
-error is within 1 standard error of the minimum. Alternatively
-\code{s = "lambda.min"} can be used, it is the optimal value of \code{lambda}
-that gives minimum cross validation error \code{cvm}. If \code{s} is
-numeric, it is taken as the value(s) of \code{lambda} to be used.}
+coefficients are desired. Default is the single
+value \code{s = "lambda.1se"} stored on the CV \code{object} (corresponding to
+the largest value of \code{lambda} such that CV error estimate is within 1
+standard error of the minimum). Alternatively \code{s = "lambda.min"} can be
+used (corresponding to the minimum of cross validation error estimate).
+If \code{s} is numeric, it is taken as the value(s) of \code{lambda} to be used.}
 
-\item{\dots}{Not used. Other arguments to predict.}
+\item{...}{Not used. Other arguments to \code{\link[=predict]{predict()}}.}
 }
 \value{
-The coefficients at the requested values for \code{lambda}.
+The coefficients at the requested value(s) for \code{lambda}.
 }
 \description{
-This function gets coefficients or makes coefficient predictions from a
+This function gets coefficients from a
 cross-validated \code{\link[=sparsegl]{sparsegl()}} model, using the stored \code{"sparsegl.fit"}
 object, and the optimal value chosen for \code{lambda}.
-}
-\details{
-This function makes it easier to use the results of cross-validation to get
-coefficients or make coefficient predictions.
 }
 \examples{
 n <- 100
@@ -44,6 +40,5 @@ cv_fit <- cv.sparsegl(X, y, groups)
 coef(cv_fit, s = c(0.02, 0.03))
 }
 \seealso{
-\code{\link[=cv.sparsegl]{cv.sparsegl()}}, and \code{\link[=predict.cv.sparsegl]{predict.cv.sparsegl()}}
-methods.
+\code{\link[=cv.sparsegl]{cv.sparsegl()}}, and \code{\link[=predict.cv.sparsegl]{predict.cv.sparsegl()}} methods.
 }

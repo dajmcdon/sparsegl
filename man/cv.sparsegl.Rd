@@ -9,36 +9,50 @@ cv.sparsegl(
   x,
   y,
   group,
-  lambda = NULL,
   family = c("gaussian", "binomial"),
-  pred.loss = c("L2", "L1", "loss", "misclass"),
-  nfolds = 5,
+  lambda = NULL,
+  pred.loss = c("L2", "L1", "margin", "misclass"),
+  nfolds = 10,
   foldid,
   ...
 )
 }
 \arguments{
-\item{x}{Matrix of predictors, of dimension n x p; each row
-is an observation vector.}
+\item{x}{Double. A matrix of predictors, of dimension
+\eqn{n \times p}{n * p}; each row
+is a vector of measurements and each column is a feature. Objects of class
+\code{\link[Matrix:sparseMatrix]{Matrix::sparseMatrix}} are supported.}
 
-\item{y}{Response variable. This argument should be quantitative for
-regression (least squares).}
+\item{y}{Double/Integer/Factor. The response variable.
+Quantitative for \code{family="gaussian"}.
+For \code{family="binomial"} should be either a factor with two levels or
+a vector of integers taking 2 unique values.
+For a factor, the last level in alphabetical order is the target class.}
 
-\item{group}{A vector of consecutive integers describing the grouping of the
-coefficients (see example below).}
+\item{group}{Integer. A vector of consecutive integers describing the
+grouping of the coefficients (see example below).}
 
-\item{lambda}{An optional user-supplied lambda sequence; default is
-\code{NULL}, and \code{\link[=sparsegl]{sparsegl()}} chooses its own sequence.}
+\item{family}{Character. Specifies the loss function to use, valid
+options are:
+\itemize{
+\item \code{"gaussian"} - least squares loss (regression, the default),
+\item \code{"binomial"} - logistic loss (classification)
+}}
 
-\item{family}{A character string specifying the loss function to use, valid
-options are: \itemize{\item\code{"gaussian"} least squares loss (regression), \item
-\code{"binomial"} logistic loss (classification), }Default is \code{"ls"}.}
+\item{lambda}{A user supplied \code{lambda} sequence. The default, \code{NULL}
+results in an automatic computation based on \code{nlambda}, the smallest value
+of \code{lambda} that would give the null model (all coefficient estimates equal
+to zero), and \code{lambda.factor}. Supplying a value of \code{lambda} overrides
+this behaviour. It is likely better to supply a
+decreasing sequence of \code{lambda} values than a single (small) value. If
+supplied, the user-defined \code{lambda} sequence is automatically sorted in
+decreasing order.}
 
 \item{pred.loss}{Loss to use for cross-validation error. Valid options are:
 \itemize{
 \item \code{"L2"} for regression, mean square error
 \item \code{"L1"} for regression, mean absolute error
-\item \code{"loss"} for classification, deviance
+\item \code{"margin"} for classification, margin loss
 \item \code{"misclass"} for classification, misclassification error. \code{"L2"}.
 }}
 
@@ -54,17 +68,20 @@ be missing.}
 }
 \value{
 An object of class \code{\link[=cv.sparsegl]{cv.sparsegl()}} is returned, which is a
-list with the ingredients of the cross-validation fit.  \item{lambda}{The
-values of \code{lambda} used in the fits.} \item{cvm}{The mean
-cross-validated error - a vector of length \code{length(lambda)}.}
-\item{cvsd}{Estimate of standard error of \code{cvm}.} \item{cvupper}{Upper
-curve = \code{cvm + cvsd}.} \item{cvlower}{Lower curve = \code{cvm - cvsd}.}
+list with the ingredients of the cross-validation fit.
+\item{lambda}{The values of \code{lambda} used in the fits.}
+\item{cvm}{The mean cross-validated error - a vector of
+length \code{length(lambda)}.}
+\item{cvsd}{Estimate of standard error of \code{cvm}.}
+\item{cvupper}{Upper curve = \code{cvm + cvsd}.}
+\item{cvlower}{Lower curve = \code{cvm - cvsd}.}
 \item{name}{A text string indicating type of measure (for plotting
-purposes).} \item{sparsegl.fit}{A fitted \code{\link[=sparsegl]{sparsegl()}} object for the
-full data.} \item{lambda.min}{The optimal value of \code{lambda} that gives
-minimum cross validation error \code{cvm}.} \item{lambda.1se}{The largest
-value of \code{lambda} such that error is within 1 standard error of the
-minimum.}
+purposes).}
+\item{sparsegl.fit}{A fitted \code{\link[=sparsegl]{sparsegl()}} object for the full data.}
+\item{lambda.min}{The optimal value of \code{lambda} that gives
+minimum cross validation error \code{cvm}.}
+\item{lambda.1se}{The largest value of \code{lambda} such that error
+is within 1 standard error of the minimum.}
 }
 \description{
 Does k-fold cross-validation for \code{\link[=sparsegl]{sparsegl()}}.
