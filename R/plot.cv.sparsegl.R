@@ -1,16 +1,16 @@
 #' Plot cross-validation curves produced from a `cv.sparsegl` object.
 #'
 #' Plots the cross-validation curve, and upper and lower standard deviation
-#' curves, as a function of the \code{lambda} values used. This function is
-#' modified based on the \code{plot.cv} function from the [glmnet::plot.cv.glmnet()] 
-#' package.
+#' curves, as a function of the `lambda` values used. This function is
+#' modified based on [glmnet::plot.cv.glmnet()].
 #'
-#' A plot is produced.
+#' A plot is produced, a [ggplot2::ggplot()] object. Additional user
+#' modifications can be added as desired.
 #'
 #' @param x Fitted [cv.sparsegl()] object
-#' @param sign.lambda Either plot against \code{log(lambda)} (default) or its
-#' negative if \code{sign.lambda = -1}.
-#' @param \dots Not used.
+#' @param sign.lambda Either plot against `log(lambda)` (default) or its
+#'   negative if `sign.lambda = -1`.
+#' @param ... Not used.
 #' @seealso [cv.sparsegl()].
 #' @method plot cv.sparsegl
 #' @export

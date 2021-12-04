@@ -12,16 +12,16 @@
 \item{sign.lambda}{Either plot against \code{log(lambda)} (default) or its
 negative if \code{sign.lambda = -1}.}
 
-\item{\dots}{Not used.}
+\item{...}{Not used.}
 }
 \description{
 Plots the cross-validation curve, and upper and lower standard deviation
 curves, as a function of the \code{lambda} values used. This function is
-modified based on the \code{plot.cv} function from the \code{\link[glmnet:plot.cv.glmnet]{glmnet::plot.cv.glmnet()}}
-package.
+modified based on \code{\link[glmnet:plot.cv.glmnet]{glmnet::plot.cv.glmnet()}}.
 }
 \details{
-A plot is produced.
+A plot is produced, a \code{\link[ggplot2:ggplot]{ggplot2::ggplot()}} object. Additional user
+modifications can be added as desired.
 }
 \examples{
 n <- 100

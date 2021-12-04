@@ -11,10 +11,10 @@
 
 \item{digits}{Significant digits in printout.}
 
-\item{\dots}{Additional print arguments.}
+\item{...}{not used}
 }
 \description{
-Prints a few summaries of the fitted \code{\link[=sparsegl]{sparsegl()}} model object.
+Prints some summary information about the fitted \code{\link[=sparsegl]{sparsegl()}} object.
 }
 \examples{
 n <- 100
