@@ -3,5 +3,8 @@ pkgdown: 2.0.1
 pkgdown_sha: ~
 articles:
   sparsegl: sparsegl.html
-last_built: 2021-12-03T23:52Z
+last_built: 2021-12-04T23:14Z
+urls:
+  reference: https://dajmcdon.github.io/sparsegl/reference
+  article: https://dajmcdon.github.io/sparsegl/articles
 
