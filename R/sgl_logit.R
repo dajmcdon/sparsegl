@@ -17,10 +17,10 @@ sgl_logit <- function(
   y <- 2 * (as.integer(y) - 1) - 1 # convert to -1 / 1
 
   is.sparse <- FALSE
-  if (inherits(x,"sparseMatrix")) {
+  if (inherits(x, "sparseMatrix")) {
     is.sparse <- TRUE
-    x <- methods::as(x,"CsparseMatrix")
-    x <- methods::as(x,"dgCMatrix")
+    x <- methods::as(x, "CsparseMatrix")
+    x <- methods::as(x, "dgCMatrix")
   }
   if (standardize) {
     sx <- sqrt(Matrix::colSums(x^2))

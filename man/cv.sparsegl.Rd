@@ -18,7 +18,7 @@ cv.sparsegl(
 )
 }
 \arguments{
-\item{x}{Matrix of predictors, of dimension \eqn{n \times p}{n * p}; each row
+\item{x}{Matrix of predictors, of dimension n x p; each row
 is an observation vector.}
 
 \item{y}{Response variable. This argument should be quantitative for
@@ -35,16 +35,14 @@ options are: \itemize{\item\code{"gaussian"} least squares loss (regression), \i
 \code{"binomial"} logistic loss (classification), }Default is \code{"ls"}.}
 
 \item{pred.loss}{Loss to use for cross-validation error. Valid options are:
-\itemize{ \item \code{"L1"} for regression, mean square
-error used by least squares regression \code{family = "gaussian"}, it measures the
-deviation from the fitted mean to the response.  \item \code{"L2"} for
-regression, mean absolute error used by least squares regression
-\code{family = "gaussian"}, it measures the deviation from the fitted mean to the
-response. \item\code{"loss"} for classification, margin based loss function.
-\item\code{"misclass"} for classification giving misclassification error. }
-Default is \code{"L2"}.}
+\itemize{
+\item \code{"L2"} for regression, mean square error
+\item \code{"L1"} for regression, mean absolute error
+\item \code{"loss"} for classification, deviance
+\item \code{"misclass"} for classification, misclassification error. \code{"L2"}.
+}}
 
-\item{nfolds}{Number of folds - default is 5. Although \code{nfolds} can be
+\item{nfolds}{Number of folds - default is 10. Although \code{nfolds} can be
 as large as the sample size (leave-one-out CV), it is not recommended for
 large datasets. Smallest value allowable is \code{nfolds = 3}.}
 
@@ -52,7 +50,7 @@ large datasets. Smallest value allowable is \code{nfolds = 3}.}
 identifying which fold each observation is in. If supplied, \code{nfolds} can
 be missing.}
 
-\item{\dots}{Other arguments that can be passed to sparsegl.}
+\item{...}{Other arguments that can be passed to sparsegl.}
 }
 \value{
 An object of class \code{\link[=cv.sparsegl]{cv.sparsegl()}} is returned, which is a
@@ -70,11 +68,10 @@ minimum.}
 }
 \description{
 Does k-fold cross-validation for \code{\link[=sparsegl]{sparsegl()}}.
-This function is modified based on the \code{cv}
-function from the \code{\link[glmnet:cv.glmnet]{glmnet::cv.glmnet()}} package.
+This function is largely similar \code{\link[glmnet:cv.glmnet]{glmnet::cv.glmnet()}}.
 }
 \details{
-The function runs \code{\link[=sparsegl]{sparsegl()}} \code{nfolds}+1 times; the first to
+The function runs \code{\link[=sparsegl]{sparsegl()}} \code{nfolds + 1} times; the first to
 get the \code{lambda} sequence, and then the remainder to compute the fit
 with each of the folds omitted. The average error and standard deviation
 over the folds are computed.
@@ -88,6 +85,7 @@ beta_star <- c(rep(5, 5), c(5, -5, 2, 0, 0), rep(-5, 5), rep(0, (p - 15)))
 y <- X \%*\% beta_star + eps
 groups <- rep(1:(p / 5), each = 5)
 cv_fit <- cv.sparsegl(X, y, groups)
+
 }
 \seealso{
 \code{\link[=sparsegl]{sparsegl()}}, \code{\link[=plot.cv.sparsegl]{plot.cv.sparsegl()}},

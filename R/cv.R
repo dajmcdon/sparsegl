@@ -1,42 +1,32 @@
 #' Cross-validation for a `sparsegl` object.
 #'
 #' Does k-fold cross-validation for [sparsegl()].
-#' This function is modified based on the \code{cv}
-#' function from the [glmnet::cv.glmnet()] package.
+#' This function is largely similar [glmnet::cv.glmnet()].
 #'
-#' The function runs [sparsegl()] \code{nfolds}+1 times; the first to
-#' get the \code{lambda} sequence, and then the remainder to compute the fit
+#' The function runs [sparsegl()] `nfolds + 1` times; the first to
+#' get the `lambda` sequence, and then the remainder to compute the fit
 #' with each of the folds omitted. The average error and standard deviation
 #' over the folds are computed.
 #'
 #' @aliases cv.sparsegl cv.ls
-#' @param x Matrix of predictors, of dimension \eqn{n \times p}{n * p}; each row
-#' is an observation vector.
-#' @param y Response variable. This argument should be quantitative for
-#' regression (least squares).
-#' @param group A vector of consecutive integers describing the grouping of the
-#' coefficients (see example below).
-#' @param lambda An optional user-supplied lambda sequence; default is
-#' \code{NULL}, and [sparsegl()] chooses its own sequence.
-#' @param family A character string specifying the loss function to use, valid
-#' options are: \itemize{\item\code{"gaussian"} least squares loss (regression), \item
-#' \code{"binomial"} logistic loss (classification), }Default is \code{"ls"}.
+#' @template param_x-template
+#' @template param_y-template
+#' @template param_group-template
+#' @template param_family-template
+#' @template param_lambda-template
 #' @param pred.loss Loss to use for cross-validation error. Valid options are:
-#' \itemize{ \item \code{"L1"} for regression, mean square
-#' error used by least squares regression \code{family = "gaussian"}, it measures the
-#' deviation from the fitted mean to the response.  \item \code{"L2"} for
-#' regression, mean absolute error used by least squares regression
-#' \code{family = "gaussian"}, it measures the deviation from the fitted mean to the
-#' response. \item\code{"loss"} for classification, margin based loss function.
-#' \item\code{"misclass"} for classification giving misclassification error. }
-#' Default is \code{"L2"}.
-#' @param nfolds Number of folds - default is 5. Although \code{nfolds} can be
-#' as large as the sample size (leave-one-out CV), it is not recommended for
-#' large datasets. Smallest value allowable is \code{nfolds = 3}.
+#'  * `"L2"` for regression, mean square error
+#'  * `"L1"` for regression, mean absolute error
+#'  * `"loss"` for classification, deviance
+#'  * `"misclass"` for classification, misclassification error. `"L2"`.
+#' @param nfolds Number of folds - default is 10. Although `nfolds` can be
+#'   as large as the sample size (leave-one-out CV), it is not recommended for
+#'   large datasets. Smallest value allowable is `nfolds = 3`.
 #' @param foldid An optional vector of values between 1 and \code{nfolds}
 #' identifying which fold each observation is in. If supplied, \code{nfolds} can
 #' be missing.
-#' @param \dots Other arguments that can be passed to sparsegl.
+#' @param ... Other arguments that can be passed to sparsegl.
+#'
 #' @return An object of class [cv.sparsegl()] is returned, which is a
 #' list with the ingredients of the cross-validation fit.  \item{lambda}{The
 #' values of \code{lambda} used in the fits.} \item{cvm}{The mean
@@ -49,9 +39,14 @@
 #' minimum cross validation error \code{cvm}.} \item{lambda.1se}{The largest
 #' value of \code{lambda} such that error is within 1 standard error of the
 #' minimum.}
+#'
+#'
 #' @seealso [sparsegl()], [plot.cv.sparsegl()],
 #' [predict.cv.sparsegl()], and [coef.cv.sparsegl()] methods.
+#'
 #' @export
+#'
+#'
 #' @examples
 #' n <- 100
 #' p <- 20
@@ -61,8 +56,9 @@
 #' y <- X %*% beta_star + eps
 #' groups <- rep(1:(p / 5), each = 5)
 #' cv_fit <- cv.sparsegl(X, y, groups)
-cv.sparsegl <- function(x, y, group, lambda = NULL,
-                        family = c("gaussian", "binomial"),
+#'
+cv.sparsegl <- function(x, y, group, family = c("gaussian", "binomial"),
+                        lambda = NULL,
                         pred.loss = c("L2", "L1", "loss", "misclass"),
                         nfolds = 5, foldid, ...) {
     family <- match.arg(family)
