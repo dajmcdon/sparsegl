@@ -2,17 +2,17 @@
 #'
 #' This function uses the degrees of freedom to calculate various information
 #' criteria. This function uses the "known variance" version of the likelihood.
-#' Only implemented for Gaussian regression.
+#' Only implemented for Gaussian regression. The constant is ignored (as in
+#' [stats::extractAIC()]).
 #'
 #' @param object fitted object from a call to [sparsegl()].
-#' @param x matrix of predictors, of dimension \eqn{n \times p}{n * p}; each row
-#'   is a vector of measurement and each column is a feature.
-#' @param y real-valued response variable.
+#' @template param_x-template
+#' @template param_y-template
 #' @param type one of AIC, BIC, or GCV.
 #' @param approx_df the `df` component of a [sparsegl()] object is an
-#' approximation (albeit a fairly accurate one) to the actual degrees-of-freedom.
-#' However, the exact value requires inverting a portion of `X'X`. So this may take
-#' some time.
+#'   approximation (albeit a fairly accurate one) to the actual degrees-of-freedom.
+#'   However, the exact value requires inverting a portion of `X'X`. So this
+#'   computation may take some time (the default computes the exact df).
 #' @seealso [sparsegl()] method.
 #' @references Vaiter S, Deledalle C, Peyré G, Fadili J, Dossal C. (2012). \emph{The
 #' Degrees of Freedom of the Group Lasso for a General Design}.

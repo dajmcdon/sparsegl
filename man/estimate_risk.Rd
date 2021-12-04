@@ -9,10 +9,16 @@ estimate_risk(object, x, y, type = c("AIC", "BIC", "GCV"), approx_df = FALSE)
 \arguments{
 \item{object}{fitted object from a call to \code{\link[=sparsegl]{sparsegl()}}.}
 
-\item{x}{matrix of predictors, of dimension \eqn{n \times p}{n * p}; each row
-is a vector of measurement and each column is a feature.}
+\item{x}{Double. A matrix of predictors, of dimension
+\eqn{n \times p}{n * p}; each row
+is a vector of measurements and each column is a feature. Objects of class
+\code{\link[Matrix:sparseMatrix]{Matrix::sparseMatrix}} are supported.}
 
-\item{y}{real-valued response variable.}
+\item{y}{Double/Integer/Factor. The response variable.
+Quantitative for \code{family="gaussian"}.
+For \code{family="binomial"} should be either a factor with two levels or
+a vector of integers taking 2 unique values.
+For a factor, the last level in alphabetical order is the target class.}
 
 \item{type}{one of AIC, BIC, or GCV.}
 
@@ -27,7 +33,8 @@ a vector of the same length as \code{object$lambda}.
 \description{
 This function uses the degrees of freedom to calculate various information
 criteria. This function uses the "known variance" version of the likelihood.
-Only implemented for Gaussian regression.
+Only implemented for Gaussian regression. The constant is ignored (as in
+\code{\link[stats:extractAIC]{stats::extractAIC()}}).
 }
 \examples{
 n <- 100
