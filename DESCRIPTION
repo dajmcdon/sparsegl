@@ -21,7 +21,7 @@ Description: This package performs sparse group lasso with optional bound
   returning coefficient estimates in a sparse matrix. Furthermore, it correctly
   calculates the degrees of freedom to allow for information criteria rather
   than cross-validation with very large data. Finally, the interface to 
-  compiled fortran code avoids unnecessary copies and allows for the use of
+  compiled Fortran code avoids unnecessary copies and allows for the use of
   long integers.
 Encoding: UTF-8
 LazyData: true

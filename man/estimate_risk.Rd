@@ -24,8 +24,8 @@ For a factor, the last level in alphabetical order is the target class.}
 
 \item{approx_df}{the \code{df} component of a \code{\link[=sparsegl]{sparsegl()}} object is an
 approximation (albeit a fairly accurate one) to the actual degrees-of-freedom.
-However, the exact value requires inverting a portion of \verb{X'X}. So this may take
-some time.}
+However, the exact value requires inverting a portion of \verb{X'X}. So this
+computation may take some time (the default computes the exact df).}
 }
 \value{
 a vector of the same length as \code{object$lambda}.
