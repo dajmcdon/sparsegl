@@ -4,6 +4,7 @@ sgl_logit <- function(
   lower_bnd, upper_bnd) {
   # call Fortran core
   y <- as.factor(y)
+  lev <- levels(y)
   ntab <- table(y)
   minclass <- min(ntab)
   if (minclass <= 1)
@@ -96,7 +97,8 @@ sgl_logit <- function(
 
   outlist$b0 <- matrix(outlist$b0, nrow = 1)
   outlist <- c(outlist,
-               list(npasses = fit$npass, jerr = fit$jerr, group = group))
+               list(npasses = fit$npass, jerr = fit$jerr, group = group,
+                    classnames = lev))
   class(outlist) <- c("logit")
   outlist
 }
