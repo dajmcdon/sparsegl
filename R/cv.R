@@ -141,7 +141,7 @@ cv.logit <- function(outlist, lambda, x, y, foldid,
     for (i in seq(nfolds)) {
         test_fold <- foldid == i
         fitobj <- outlist[[i]]
-        preds <- predict(fitobj, x[test_fold, , drop = FALSE], type = "class")
+        preds <- predict(fitobj, x[test_fold, , drop = FALSE], type = "link")
         nlami <- length(outlist[[i]]$lambda)
         predmat[test_fold, seq(nlami)] <- preds
         nlams[i] <- nlami
