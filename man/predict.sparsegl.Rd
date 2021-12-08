@@ -4,7 +4,13 @@
 \alias{predict.sparsegl}
 \title{Make predictions from a \code{sparsegl} object.}
 \usage{
-\method{predict}{sparsegl}(object, newx, s = NULL, ...)
+\method{predict}{sparsegl}(
+  object,
+  newx,
+  s = NULL,
+  type = c("link", "response", "coefficients", "nonzero", "class"),
+  ...
+)
 }
 \arguments{
 \item{object}{Fitted \code{\link[=sparsegl]{sparsegl()}} model object.}
@@ -15,6 +21,19 @@ made. Must be a matrix.}
 \item{s}{Value(s) of the penalty parameter \code{lambda} at which
 predictions are required. Default is the entire sequence used to create the
 model.}
+
+\item{type}{Type of prediction required. Type \code{"link"} gives the linear
+predictors for \code{"binomial"}; for \code{"gaussian"} models it gives the fitted
+values. Type \code{"response"} gives the fitted probabilities for
+\code{"binomial"}; for \code{"gaussian"} type
+\code{"response"} is equivalent to type \code{"link"}. Type
+\code{"coefficients"} computes the coefficients at the requested values for
+\code{s}.  Note that for \code{"binomial"} models, results are returned only
+for the class corresponding to the second level of the factor response.
+Type \code{"class"} applies only to \code{"binomial"} models, and produces the
+class label corresponding to
+the maximum probability. Type \code{"nonzero"} returns a list of the indices
+of the nonzero coefficients for each value of \code{s}.}
 
 \item{...}{Not used.}
 }
