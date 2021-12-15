@@ -69,6 +69,13 @@ test_that("tests for logistic regression model", {
   res1 <- sparsegl(X, y1, lambda = 0, family = "binomial")
   res2 <- glmnet(X, y1, family = "binomial", lambda = 0)
   
+  # check whether y can be corrected if y is a numeric vector
+  res3 <- sparsegl(X, y0, lambda = 0, family = "binomial")
+  chars <- y0
+  chars[chars == 0] <- 'a'
+  chars[chars == 1] <- 'b'
+  res4 <- sparsegl(X, chars, lambda = 0, family = "binomial")
+  
   expect_equal(as.numeric(predict(res1, type = "coefficients")[, 1]), 
                as.numeric(c(res2$a0, res2$beta[, 1])), tolerance = 1e-3)
   expect_equal(predict(res1, newx = X, type = "link"), predict(res2, newx = X), 
@@ -77,4 +84,9 @@ test_that("tests for logistic regression model", {
                1 / (1 + exp(-predict(res2, newx = X))), tolerance = 1e-3)
   expect_equal(predict(res1, newx = X, type = "class"),
                res2$classnames[ifelse(predict(res2, newx = X) > 0, 2, 1)])
+  
+  expect_equal(as.numeric(predict(res1, type = "coefficients")[, 1]), 
+               as.numeric(predict(res3, type = "coefficients")[, 1]))
+  expect_equal(as.numeric(predict(res1, type = "coefficients")[, 1]), 
+               as.numeric(predict(res4, type = "coefficients")[, 1]))
 })
