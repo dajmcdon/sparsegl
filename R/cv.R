@@ -60,7 +60,7 @@
 #' groups <- rep(1:(p / 5), each = 5)
 #' cv_fit <- cv.sparsegl(X, y, groups)
 #'
-cv.sparsegl <- function(x, y, group, family = c("gaussian", "binomial"),
+cv.sparsegl <- function(x, y, group = NULL, family = c("gaussian", "binomial"),
                         lambda = NULL,
                         pred.loss = c("L2", "L1", "margin", "misclass"),
                         nfolds = 10, foldid, ...) {

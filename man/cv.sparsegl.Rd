@@ -8,7 +8,7 @@
 cv.sparsegl(
   x,
   y,
-  group,
+  group = NULL,
   family = c("gaussian", "binomial"),
   lambda = NULL,
   pred.loss = c("L2", "L1", "margin", "misclass"),

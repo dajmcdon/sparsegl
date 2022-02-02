@@ -4,13 +4,15 @@
 \alias{plot.cv.sparsegl}
 \title{Plot cross-validation curves produced from a \code{cv.sparsegl} object.}
 \usage{
-\method{plot}{cv.sparsegl}(x, sign.lambda = 1, ...)
+\method{plot}{cv.sparsegl}(x, log_axis = c("xy", "x", "y", "none"), sign.lambda = 1, ...)
 }
 \arguments{
 \item{x}{Fitted \code{\link[=cv.sparsegl]{cv.sparsegl()}} object}
 
-\item{sign.lambda}{Either plot against \code{log(lambda)} (default) or its
-negative if \code{sign.lambda = -1}.}
+\item{log_axis}{Apply log scaling to the requested axes.}
+
+\item{sign.lambda}{Either plot against \code{log(lambda)} (default) or the
+reverse if \code{sign.lambda < 0}.}
 
 \item{...}{Not used.}
 }
