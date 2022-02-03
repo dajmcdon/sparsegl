@@ -8,7 +8,7 @@
 #' @param object fitted object from a call to [sparsegl()].
 #' @template param_x-template
 #' @template param_y-template
-#' @param type one of AIC, BIC, or GCV.
+#' @param type one or more of AIC, BIC, or GCV.
 #' @param approx_df the `df` component of a [sparsegl()] object is an
 #'   approximation (albeit a fairly accurate one) to the actual degrees-of-freedom.
 #'   However, the exact value requires inverting a portion of `X'X`. So this
@@ -17,7 +17,8 @@
 #' @references Vaiter S, Deledalle C, Peyré G, Fadili J, Dossal C. (2012). \emph{The
 #' Degrees of Freedom of the Group Lasso for a General Design}.
 #' \url{https://arxiv.org/pdf/1212.6478.pdf}.
-#' @return a vector of the same length as `object$lambda`.
+#' @return a `data.frame` with as many rows as `object$lambda`. It contains
+#'   columns `lambda`, `df`, and the requested risk types.
 #' @export
 #' @examples
 #' n <- 100
@@ -33,7 +34,7 @@ estimate_risk <- function(object, x, y,
                           type = c("AIC", "BIC", "GCV"),
                           approx_df = FALSE) {
   if (! "ls" %in% class(object)) stop("Only linear regression is supported.")
-  type <- match.arg(type)
+  type <- match.arg(type, several.ok = TRUE)
   if (is.matrix(y)) {
     stopifnot(dim(y)[2] == 1)
     y <- drop(y)
@@ -44,14 +45,13 @@ estimate_risk <- function(object, x, y,
 
   if (approx_df) df <- object$df
   else df <- exact_df(object, x)
-
-  pen <- switch(type,
-                AIC = 2 * df / n,
-                BIC = log(n) * df / n,
-                GCV = -2 * log(1 - df / n))
-  risk <- err + pen
-  if (type == "GCV") risk <- exp(risk)
-  return(risk)
+  out <- data.frame(lambda = object$lambda,
+                    df = df,
+                    AIC = err + 2 * df / n,
+                    BIC = err + log(n) * df / n,
+                    GCV = exp(err - 2 * log(1 - df / n)))
+  out <- out[c("lambda", "df", type)]
+  return(out)
 }
 
 

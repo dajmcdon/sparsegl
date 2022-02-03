@@ -490,20 +490,27 @@ log-likelihood with a penalty term for model flexibility. In addition to a fitte
 where df is the degree-of-freedom, and $n$ is the sample size. Because the exact degrees-of-freedom can be computationally expensive, setting `approx_df=TRUE` uses the number of non-zero coefficient estimates, which is a fairly accurate approximation.
 
 ```{r risk-estimate, fig.width = 4, fig.height = 2}
-er <- estimate_risk(fit, X, y)
+er <- estimate_risk(fit, X, y, c("AIC", "BIC"))
 ```
 
 ```{r re-plot, echo=FALSE, message=FALSE, warning=FALSE, fig.width = 4, fig.height = 2}
-library(ggplot2)
-data.frame(Lambda = fit$lambda, AIC = er) %>%
-  ggplot(aes(Lambda, AIC)) +
-  geom_point(color = "darkblue") +
+library(tidyverse)
+er <- er %>% select(-df) %>% pivot_longer(-lambda, values_to = "risk")
+err <- er %>% group_by(name) %>% summarise(lambda = lambda[which.min(risk)])
+ggplot(er, aes(lambda, risk, color = name)) +
+  geom_line() +
+  scale_color_manual(values = c("darkblue", "orange")) +
+  geom_vline(data = err, aes(xintercept = lambda, color=name), linetype="dashed") +
   theme_bw() +
-  geom_vline(xintercept = fit$lambda[which.min(er)], linetype="dashed") +
+  ylab("Estimated risk") +
+  xlab("Lambda") +
+  theme(legend.position = "none") +
+  annotate("label", x=c(.32, .03), y=c(5,2.5),color=c("darkblue", "orange"),
+           label = c("A I C", "B I C")) +
   scale_x_log10()
 ```
 
-In this simulation, the $\lambda$ that minimizes AIC is `r round(fit$lambda[which.min(er)],3)` while the CV minimizer is `r round(cv_fit$lambda.min,3)`.
+In this simulation, the $\lambda$ that minimizes AIC is `r round(err$lambda[1],3)` while the CV minimizer is `r round(cv_fit$lambda.min,3)`.
 
 Additional documentation and examples are provided on the package [website](https://dajmcdon.github.io/sparsegl).
 
