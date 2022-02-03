@@ -23,7 +23,7 @@ stats::extractAIC()).'><!-- mathjax --><script src="https://cdnjs.cloudflare.com
       <span class="navbar-toggler-icon"></span>
     </button>
 
-    <div id="navbar" class="collapse navbar-collapse ms-2">
+    <div id="navbar" class="collapse navbar-collapse ms-3">
       <ul class="navbar-nav me-auto"><li class="nav-item">
   <a class="nav-link" href="../articles/sparsegl.html">Get started</a>
 </li>
@@ -112,36 +112,40 @@ Degrees of Freedom of the Group Lasso for a General Design</em>.
 <span class="r-in"><span class="va">groups</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="op">(</span><span class="va">p</span> <span class="op">/</span> <span class="fl">5</span><span class="op">)</span>, each <span class="op">=</span> <span class="fl">5</span><span class="op">)</span></span>
 <span class="r-in"><span class="va">fit1</span> <span class="op">&lt;-</span> <span class="fu"><a href="sparsegl.html">sparsegl</a></span><span class="op">(</span><span class="va">X</span>, <span class="va">y</span>, group <span class="op">=</span> <span class="va">groups</span><span class="op">)</span></span>
 <span class="r-in"><span class="fu">estimate_risk</span><span class="op">(</span><span class="va">fit1</span>, <span class="va">X</span>, <span class="va">y</span>, type <span class="op">=</span> <span class="st">"AIC"</span><span class="op">)</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         s0         s1         s2         s3         s4         s5         s6 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 5.67839372 5.76238213 5.68025178 5.66922267 5.53786402 5.41115250 5.37688502 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         s7         s8         s9        s10        s11        s12        s13 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 5.21061446 5.04112766 4.87101347 4.70045002 4.52949362 4.35820392 4.18664752 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>        s14        s15        s16        s17        s18        s19        s20 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4.01490329 3.84306577 3.67121617 3.49954667 3.32819083 3.15733645 2.98720299 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>        s21        s22        s23        s24        s25        s26        s27 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2.81804527 2.65015713 2.48387493 2.31958057 2.15770356 1.99872162 1.84315912 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>        s28        s29        s30        s31        s32        s33        s34 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1.69158253 1.54459232 1.40281044 1.26686331 1.13748143 1.01498856 0.90000394 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>        s35        s36        s37        s38        s39        s40        s41 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 0.79293202 0.69405827 0.60353288 0.52136189 0.44740780 0.38153075 0.32306991 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>        s42        s43        s44        s45        s46        s47        s48 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 0.27168870 0.22684554 0.18795855 0.24879613 0.21575251 0.18686919 0.16180894 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>        s49        s50        s51        s52        s53        s54        s55 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 0.12040668 0.12218648 0.10644589 0.09302170 0.08160487 0.07191870 0.06377966 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>        s56        s57        s58        s59        s60        s61        s62 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 0.05684707 0.05099779 0.04607291 0.04193264 0.03845667 0.03558214 0.03313807 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>        s63        s64        s65        s66        s67        s68        s69 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 0.03108952 0.02937630 0.02794482 0.02674959 0.02577754 0.02494520 0.02424839 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>        s70        s71        s72        s73        s74        s75        s76 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 0.02366730 0.02318320 0.02278008 0.02244453 0.02220430 0.02193748 0.02176863 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>        s77        s78        s79        s80        s81        s82        s83 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 0.02161073 0.02147456 0.02135966 0.02126352 0.02118337 0.02113309 0.02106552 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>        s84        s85        s86        s87        s88        s89        s90 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 0.02102894 0.02099324 0.02096124 0.02093351 0.02090986 0.02088988 0.02087308 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>        s91        s92        s93        s94        s95        s96        s97 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 0.02085902 0.02084728 0.02083749 0.02082934 0.02082255 0.02081691 0.02081223 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>        s98        s99 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 0.02080834 0.02080511 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>           s0           s1           s2           s3           s4           s5 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  5.769901750  5.857847823  5.832085805  5.695983642  5.563382804  5.435236470 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>           s6           s7           s8           s9          s10          s11 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  5.370976069  5.201760215  5.030938427  4.858846053  4.685678763  4.491665571 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>          s12          s13          s14          s15          s16          s17 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  4.317075975  4.141975126  3.966528458  3.790908300  3.615296199  3.459777658 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>          s18          s19          s20          s21          s22          s23 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  3.284437253  3.109688891  2.935783835  2.763001152  2.591652747  2.422116420 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>          s24          s25          s26          s27          s28          s29 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  2.254729537  2.089952904  1.928268356  1.770202714  1.616323837  1.467232706 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>          s30          s31          s32          s33          s34          s35 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  1.323551009  1.185903962  1.054898569  0.931173990  0.815070186  0.707057343 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>          s36          s37          s38          s39          s40          s41 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  0.607411149  0.516268369  0.433619478  0.359309890  0.293137624  0.234517627 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>          s42          s43          s44          s45          s46          s47 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  0.183180412  0.138289331  0.099390616  0.065881732  0.037324023  0.012810012 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>          s48          s49          s50          s51          s52          s53 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> -0.008026963 -0.025671549  0.055354966  0.019687397  0.005994994  0.014231699 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>          s54          s55          s56          s57          s58          s59 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  0.004169022 -0.004368860 -0.011703399 -0.017952826 -0.023267115 -0.027778736 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>          s60          s61          s62          s63          s64          s65 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> -0.031602813 -0.034839059 -0.057546543 -0.039820023 -0.041762169 -0.043403560 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>          s66          s67          s68          s69          s70          s71 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> -0.044741504 -0.045901243 -0.046879399 -0.047700476 -0.048388513 -0.048964457 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>          s72          s73          s74          s75          s76          s77 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> -0.049446161 -0.049822558 -0.050156945 -0.050403868 -0.050634983 -0.050835543 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>          s78          s79          s80          s81          s82          s83 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> -0.051005679 -0.051148687 -0.051268373 -0.051368310 -0.051451646 -0.051500177 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>          s84          s85          s86          s87          s88          s89 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> -0.051572465 -0.051608625 -0.051644896 -0.051678024 -0.051707155 -0.051732278 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>          s90          s91          s92          s93          s94          s95 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> -0.051753700 -0.051771832 -0.051787105 -0.051799925 -0.051810659 -0.051819628 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>          s96          s97          s98          s99 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> -0.051827113 -0.051833351 -0.051838547 -0.051842871 </span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>
@@ -153,7 +157,7 @@ Degrees of Freedom of the Group Lasso for a General Design</em>.
 </div>
 
 <div class="pkgdown-footer-right">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.1.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.2.</p>
 </div>
 
     </footer></div>
