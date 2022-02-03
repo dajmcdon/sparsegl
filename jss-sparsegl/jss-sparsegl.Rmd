@@ -47,7 +47,7 @@ keep_tex: true
 ---
 
 ```{r, setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE, cache = TRUE, fig.path = "fig/", autodep = TRUE)
+knitr::opts_chunk$set(echo = TRUE, cache = FALSE, fig.path = "fig/")
 options(prompt = 'R> ', continue = '+ ')
 # Add any packages we want to cite to the list below. Don't edit the bib
 # manually, or changes will be overwritten. Add other references to
@@ -440,16 +440,16 @@ library(sparsegl)
 fit <- sparsegl(X, y, group = groups, family = "gaussian")
 ```
 
-S3 methods for the `sparsegl` object are `plot()`, `coef()`, `predict()` and `print()`. The `plot()` function displays either the coefficients or the group norms on the $y$-axis against either $\{\lambda_s\}_{s=1}^S$ or the scaled penalty on the $x$-axis.
+\pkg{S3} methods for the `sparsegl` object are `plot()`, `coef()`, `predict()` and `print()`. The `plot()` function displays either the coefficients or the group norms on the $y$-axis against either $\{\lambda_s\}_{s=1}^S$ or the scaled penalty on the $x$-axis.
 
 ```{r coef-trace, fig.width = 4, fig.height = 2}
 plot(fit, y_axis = "coef", x_axis = "penalty", add_legend = FALSE)
 plot(fit, y_axis = "group", x_axis = "lambda", add_legend = FALSE)
 ```
 
-The S3 methods `coef()` and `predict()` compute, respectively, the coefficients and predictions $\widehat{\vY}$ given a matrix $\tilde{\mX}$ at the requested $\lambda$s, potentially allowing for $\lambda$ values different from those used at the fitting stage. 
+The `coef()` and `predict()` methods compute, respectively, the coefficients and predictions $\widehat{\vY}$ given a matrix $\tilde{\mX}$ at the requested $\lambda$s, potentially allowing for $\lambda$ values different from those used at the fitting stage. 
 
-```{r}
+```{r, message=FALSE}
 coef(fit, s = c(0.02, 0.03))[c(1,3,25,29),] # display a few
 predict(fit, newx = tail(X), s = fit$lambda[2:3]) 
 print(fit)
@@ -471,16 +471,41 @@ predict(cv_fit, newx = tail(X), s = "lambda.min")
 ```
 
 For logistic regression, only a different `family` is required. Cross validation
-can be implemented with misclassification of deviance loss.
+can be implemented with misclassification or deviance loss.
 
 ```{r logitres, fig.width = 4, fig.height = 2}
 fit_logit <- sparsegl(X, y0, groups, family = "binomial")
-cv_fit_logit <- cv.sparsegl(X, y0, groups, family = "binomial", pred.loss = "misclass")
-plot(cv_fit_logit)
+cv_fit_logit <- cv.sparsegl(X, y0, groups, family = "binomial", 
+                            pred.loss = "misclass")
+plot(cv_fit_logit, log_axis = "none")
 ```
 
+In some cases, when computations are at a premium, cross validation my be too demanding for the purposes of risk estimation. For this reason, \pkg{sparsegl} provides a `estimate_risk()` function. It can be used to compute AIC \citep{Akaike1973}, BIC \citep{Schwarz1978}, and GCV \citep{golub1979generalized}information criteria. All three are computed by combining the
+log-likelihood with a penalty term for model flexibility. In addition to a fitted `sparsegl` model, `estimate_risk()` also needs the original data. The three available penalties are
 
-For further detailed documentation and examples towards this package, it is recommended to look into this [website](https://dajmcdon.github.io/sparsegl).
+- `"AIC"` (Akaike information criterion): $2\textrm{df} / n$;
+- `"BIC"` (Bayesian information criterion): $\log(n)\textrm{df} / n$;
+- `"GCV"` (Generalized cross validation): $-2\log(1 - \textrm{df} / n)$;  
+
+where df is the degree-of-freedom, and $n$ is the sample size. Because the exact degrees-of-freedom can be computationally expensive, setting `approx_df=TRUE` uses the number of non-zero coefficient estimates, which is a fairly accurate approximation.
+
+```{r risk-estimate, fig.width = 4, fig.height = 2}
+er <- estimate_risk(fit, X, y)
+```
+
+```{r re-plot, echo=FALSE, message=FALSE, warning=FALSE, fig.width = 4, fig.height = 2}
+library(ggplot2)
+data.frame(Lambda = fit$lambda, AIC = er) %>%
+  ggplot(aes(Lambda, AIC)) +
+  geom_point(color = "darkblue") +
+  theme_bw() +
+  geom_vline(xintercept = fit$lambda[which.min(er)], linetype="dashed") +
+  scale_x_log10()
+```
+
+In this simulation, the $\lambda$ that minimizes AIC is `r round(fit$lambda[which.min(er)],3)` while the CV minimizer is `r round(cv_fit$lambda.min,3)`.
+
+Additional documentation and examples are provided on the package [website](https://dajmcdon.github.io/sparsegl).
 
 # Application to tractography
 

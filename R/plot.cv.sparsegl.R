@@ -38,7 +38,6 @@ plot.cv.sparsegl <- function(x, log_axis = c("xy", "x", "y", "none"),
         ggplot2::ggplot(ggplot2::aes(x = .data$X, y = .data$y)) +
         ggplot2::geom_errorbar(
             ggplot2::aes(ymin = .data$lower, ymax = .data$upper),
-            width = 0.1,
             color = 'darkgrey') +
         ggplot2::geom_point(color = 'darkblue') +
         ggplot2::xlab("Lambda") +

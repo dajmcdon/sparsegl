@@ -63,7 +63,7 @@
 cv.sparsegl <- function(x, y, group = NULL, family = c("gaussian", "binomial"),
                         lambda = NULL,
                         pred.loss = c("L2", "L1", "binomial", "misclass"),
-                        nfolds = 10, foldid, ...) {
+                        nfolds = 10, foldid = NULL, ...) {
     family <- match.arg(family)
     pred.loss <- match.arg(pred.loss)
     N <- nrow(x)
@@ -73,7 +73,7 @@ cv.sparsegl <- function(x, y, group = NULL, family = c("gaussian", "binomial"),
                                 ...)
     lambda <- sparsegl.object$lambda
     # predict -> coef
-    if (missing(foldid)) foldid <- sample(rep(seq(nfolds), length = N))
+    if (is.null(foldid)) foldid <- sample(rep(seq(nfolds), length = N))
     else nfolds <- max(foldid)
     assertthat::assert_that(
         nfolds > 1, msg = "nfolds must be at least 2; nfolds = 10 recommended")
