@@ -109,7 +109,7 @@ predict.sparsegl <- function(object, newx, s = NULL,
                              ...) {
   type <- match.arg(type)
   if (missing(newx)) {
-    if (! match(type, c("coefficients", "nonzero"), FALSE))
+    if (!match(type, c("coefficients", "nonzero"), FALSE))
       stop("You need to supply a value for 'newx'")
   }
   if (class(object)[2] == "ls" && type == "class")
@@ -120,7 +120,7 @@ predict.sparsegl <- function(object, newx, s = NULL,
   if (inherits(newx, "sparseMatrix")) newx <- as(newx,"dgCMatrix")
   dx <- dim(newx)
   p <- object$dim[1]
-  if (is.null(dx)) newx <- matrix(newx, 1, byrow=TRUE)
+  if (is.null(dx)) newx <- matrix(newx, 1, byrow = TRUE)
   if (ncol(newx) != p)
     stop(paste0("The number of variables in newx must be ", p))
   fit <- as.matrix(cbind2(1, newx) %*% nbeta)
@@ -128,9 +128,10 @@ predict.sparsegl <- function(object, newx, s = NULL,
   if (type == "response" && class(object)[2] == "ls") return(fit)
   if (type == "response" && class(object)[2] == "logit")
     return(1 / (1 + exp(-fit)))
-  if (type == "class"){
+  if (type == "class") {
     fit <- ifelse(fit > 0, 2, 1)
     fit <- object$classnames[fit]
+    return(fit)
   }
 }
 

@@ -11,7 +11,7 @@ cv.sparsegl(
   group = NULL,
   family = c("gaussian", "binomial"),
   lambda = NULL,
-  pred.loss = c("L2", "L1", "margin", "misclass"),
+  pred.loss = c("L2", "L1", "binomial", "misclass"),
   nfolds = 10,
   foldid,
   ...
@@ -52,8 +52,8 @@ decreasing order.}
 \itemize{
 \item \code{"L2"} for regression, mean square error
 \item \code{"L1"} for regression, mean absolute error
-\item \code{"margin"} for classification, margin loss
-\item \code{"misclass"} for classification, misclassification error. \code{"L2"}.
+\item \code{"binomial"} for classification, binomial deviance loss
+\item \code{"misclass"} for classification, misclassification error.
 }}
 
 \item{nfolds}{Number of folds - default is 10. Although \code{nfolds} can be

@@ -117,7 +117,7 @@ lamfix <- function(lam) {
     lam
 }
 
-nonzeroCoef <- function (beta) {
+nonzeroCoef <- function(beta) {
     nr <- nrow(beta)
     if (nr == 1) { # degenerate case
         apply(beta, 2, function(x) if (abs(x) > 0) 1 else NULL)
@@ -129,7 +129,7 @@ nonzeroCoef <- function (beta) {
         which <- which[nz]
 
         if (length(which) > 0) {
-            beta <- as.matrix(beta[which, , drop=FALSE])
+            beta <- as.matrix(beta[which, , drop = FALSE])
             nzel <- function(x, which) if (any(x)) which[x] else NULL
             which <- apply(beta, 2, nzel, which)
             if (!is.list(which)) which <- data.frame(which)# apply can return a matrix!!
