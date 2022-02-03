@@ -17,8 +17,8 @@
 #' @param pred.loss Loss to use for cross-validation error. Valid options are:
 #'  * `"L2"` for regression, mean square error
 #'  * `"L1"` for regression, mean absolute error
-#'  * `"margin"` for classification, margin loss
-#'  * `"misclass"` for classification, misclassification error. `"L2"`.
+#'  * `"binomial"` for classification, binomial deviance loss
+#'  * `"misclass"` for classification, misclassification error.
 #' @param nfolds Number of folds - default is 10. Although `nfolds` can be
 #'   as large as the sample size (leave-one-out CV), it is not recommended for
 #'   large datasets. Smallest value allowable is `nfolds = 3`.
@@ -60,10 +60,10 @@
 #' groups <- rep(1:(p / 5), each = 5)
 #' cv_fit <- cv.sparsegl(X, y, groups)
 #'
-cv.sparsegl <- function(x, y, group, family = c("gaussian", "binomial"),
+cv.sparsegl <- function(x, y, group = NULL, family = c("gaussian", "binomial"),
                         lambda = NULL,
-                        pred.loss = c("L2", "L1", "margin", "misclass"),
-                        nfolds = 10, foldid, ...) {
+                        pred.loss = c("L2", "L1", "binomial", "misclass"),
+                        nfolds = 10, foldid = NULL, ...) {
     family <- match.arg(family)
     pred.loss <- match.arg(pred.loss)
     N <- nrow(x)
@@ -73,7 +73,7 @@ cv.sparsegl <- function(x, y, group, family = c("gaussian", "binomial"),
                                 ...)
     lambda <- sparsegl.object$lambda
     # predict -> coef
-    if (missing(foldid)) foldid <- sample(rep(seq(nfolds), length = N))
+    if (is.null(foldid)) foldid <- sample(rep(seq(nfolds), length = N))
     else nfolds <- max(foldid)
     assertthat::assert_that(
         nfolds > 1, msg = "nfolds must be at least 2; nfolds = 10 recommended")
@@ -112,7 +112,7 @@ cv.ls <- function(outlist, lambda, x, y, foldid,
     for (i in seq(nfolds)) {
         test_fold <- foldid == i
         fitobj <- outlist[[i]]
-        preds <- predict(fitobj, x[test_fold, , drop = FALSE])
+        preds <- predict(fitobj, x[test_fold, , drop = FALSE], type = "link")
         nlami <- length(outlist[[i]]$lambda)
         predmat[test_fold, seq(nlami)] <- preds
         nlams[i] <- nlami
@@ -126,8 +126,8 @@ cv.ls <- function(outlist, lambda, x, y, foldid,
 }
 
 cv.logit <- function(outlist, lambda, x, y, foldid,
-                        pred.loss = c("margin", "misclass")) {
-    typenames <- c(margin = "Margin-based Loss",
+                        pred.loss = c("binomial", "misclass")) {
+    typenames <- c(binomial = "Binomial Deviance Loss",
                    misclass = "Misclassification Error")
     pred.loss <- match.arg(pred.loss)
     prob_min <- 1e-05
@@ -141,13 +141,13 @@ cv.logit <- function(outlist, lambda, x, y, foldid,
     for (i in seq(nfolds)) {
         test_fold <- foldid == i
         fitobj <- outlist[[i]]
-        preds <- predict(fitobj, x[test_fold, , drop = FALSE])
+        preds <- predict(fitobj, x[test_fold, , drop = FALSE], type = "link")
         nlami <- length(outlist[[i]]$lambda)
         predmat[test_fold, seq(nlami)] <- preds
         nlams[i] <- nlami
     }
     predmat <- pmin(pmax(predmat, fmin), fmax)
-    cvraw <- switch(pred.loss, margin = 2 * log(1 + exp(-y + predmat)),
+    cvraw <- switch(pred.loss, binomial = log(1 + exp(-y * predmat)),
                     misclass = (y != ifelse(predmat > 0, 1, -1)))
     N <- length(y) - apply(is.na(predmat), 2, sum)
     cvm <- apply(cvraw, 2, mean, na.rm = TRUE)

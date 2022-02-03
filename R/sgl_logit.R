@@ -4,6 +4,7 @@ sgl_logit <- function(
   lower_bnd, upper_bnd) {
   # call Fortran core
   y <- as.factor(y)
+  lev <- levels(y)
   ntab <- table(y)
   minclass <- min(ntab)
   if (minclass <= 1)
@@ -32,7 +33,7 @@ sgl_logit <- function(
     xidx <- as.integer(x@i + 1)
     xcptr <- as.integer(x@p + 1)
     xval <- as.double(x@x)
-    nnz <- as.integer(tail(x@p, 1))
+    nnz <- as.integer(utils::tail(x@p, 1))
   }
 
   gamma <- 0.25 * calc_gamma(x, ix, iy, bn)
@@ -96,7 +97,8 @@ sgl_logit <- function(
 
   outlist$b0 <- matrix(outlist$b0, nrow = 1)
   outlist <- c(outlist,
-               list(npasses = fit$npass, jerr = fit$jerr, group = group))
+               list(npasses = fit$npass, jerr = fit$jerr, group = group,
+                    classnames = lev))
   class(outlist) <- c("logit")
   outlist
 }
