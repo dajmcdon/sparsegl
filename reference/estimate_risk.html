@@ -112,40 +112,107 @@ Degrees of Freedom of the Group Lasso for a General Design</em>.
 <span class="r-in"><span class="va">groups</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="op">(</span><span class="va">p</span> <span class="op">/</span> <span class="fl">5</span><span class="op">)</span>, each <span class="op">=</span> <span class="fl">5</span><span class="op">)</span></span>
 <span class="r-in"><span class="va">fit1</span> <span class="op">&lt;-</span> <span class="fu"><a href="sparsegl.html">sparsegl</a></span><span class="op">(</span><span class="va">X</span>, <span class="va">y</span>, group <span class="op">=</span> <span class="va">groups</span><span class="op">)</span></span>
 <span class="r-in"><span class="fu">estimate_risk</span><span class="op">(</span><span class="va">fit1</span>, <span class="va">X</span>, <span class="va">y</span>, type <span class="op">=</span> <span class="st">"AIC"</span><span class="op">)</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>           s0           s1           s2           s3           s4           s5 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  5.769901750  5.857847823  5.832085805  5.695983642  5.563382804  5.435236470 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>           s6           s7           s8           s9          s10          s11 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  5.370976069  5.201760215  5.030938427  4.858846053  4.685678763  4.491665571 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>          s12          s13          s14          s15          s16          s17 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  4.317075975  4.141975126  3.966528458  3.790908300  3.615296199  3.459777658 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>          s18          s19          s20          s21          s22          s23 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  3.284437253  3.109688891  2.935783835  2.763001152  2.591652747  2.422116420 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>          s24          s25          s26          s27          s28          s29 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  2.254729537  2.089952904  1.928268356  1.770202714  1.616323837  1.467232706 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>          s30          s31          s32          s33          s34          s35 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  1.323551009  1.185903962  1.054898569  0.931173990  0.815070186  0.707057343 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>          s36          s37          s38          s39          s40          s41 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  0.607411149  0.516268369  0.433619478  0.359309890  0.293137624  0.234517627 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>          s42          s43          s44          s45          s46          s47 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  0.183180412  0.138289331  0.099390616  0.065881732  0.037324023  0.012810012 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>          s48          s49          s50          s51          s52          s53 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> -0.008026963 -0.025671549  0.055354966  0.019687397  0.005994994  0.014231699 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>          s54          s55          s56          s57          s58          s59 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  0.004169022 -0.004368860 -0.011703399 -0.017952826 -0.023267115 -0.027778736 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>          s60          s61          s62          s63          s64          s65 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> -0.031602813 -0.034839059 -0.057546543 -0.039820023 -0.041762169 -0.043403560 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>          s66          s67          s68          s69          s70          s71 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> -0.044741504 -0.045901243 -0.046879399 -0.047700476 -0.048388513 -0.048964457 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>          s72          s73          s74          s75          s76          s77 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> -0.049446161 -0.049822558 -0.050156945 -0.050403868 -0.050634983 -0.050835543 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>          s78          s79          s80          s81          s82          s83 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> -0.051005679 -0.051148687 -0.051268373 -0.051368310 -0.051451646 -0.051500177 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>          s84          s85          s86          s87          s88          s89 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> -0.051572465 -0.051608625 -0.051644896 -0.051678024 -0.051707155 -0.051732278 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>          s90          s91          s92          s93          s94          s95 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> -0.051753700 -0.051771832 -0.051787105 -0.051799925 -0.051810659 -0.051819628 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>          s96          s97          s98          s99 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> -0.051827113 -0.051833351 -0.051838547 -0.051842871 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>           lambda        df        AIC</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> s0  5.468287e-01  0.000000 5.60180307</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> s1  4.982499e-01  4.371636 5.68686708</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> s2  4.539868e-01  9.946090 5.67092103</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> s3  4.136558e-01  9.976484 5.52818347</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> s4  3.769078e-01  9.985485 5.38937730</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> s5  3.434243e-01  9.989807 5.25552645</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> s6  3.129155e-01  9.992334 5.12735495</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> s7  2.851169e-01  9.993984 5.00550257</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> s8  2.597879e-01  9.995140 4.89053289</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> s9  2.367091e-01 14.973283 4.82844585</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> s10 2.156805e-01 14.986312 4.66104660</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> s11 1.965200e-01 14.990708 4.49263607</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> s12 1.790617e-01 14.993016 4.32344198</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> s13 1.631544e-01 14.994472 4.15359763</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> s14 1.486602e-01 14.995485 3.98323869</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> s15 1.354536e-01 14.996235 3.81248625</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> s16 1.234203e-01 14.996812 3.64156419</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> s17 1.124560e-01 14.997271 3.47064364</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> s18 1.024657e-01 14.997642 3.29994419</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> s19 9.336294e-02 14.997949 3.12971356</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> s20 8.506883e-02 14.998205 2.96023078</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> s21 7.751155e-02 14.998422 2.79180958</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> s22 7.062564e-02 14.998607 2.62480194</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> s23 6.435145e-02 14.998765 2.45960134</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> s24 5.863464e-02 14.998903 2.29664533</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> s25 5.342570e-02 14.999022 2.13641684</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> s26 4.867951e-02 14.999126 1.97944361</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> s27 4.435496e-02 14.999218 1.82629477</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> s28 4.041459e-02 14.999299 1.67757405</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> s29 3.682427e-02 14.999370 1.53390867</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> s30 3.355290e-02 14.999434 1.39593375</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> s31 3.057215e-02 14.999490 1.26427201</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> s32 2.785621e-02 14.999540 1.13962717</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> s33 2.538154e-02 14.999585 1.02228428</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> s34 2.312671e-02 14.999625 0.91279570</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> s35 2.107220e-02 14.999661 0.81148180</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> s36 1.920020e-02 14.999693 0.71852941</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> s37 1.749451e-02 14.999722 0.63398139</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> s38 1.594035e-02 14.999749 0.55773497</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> s39 1.452425e-02 14.999772 0.48968337</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> s40 1.323395e-02 19.813583 0.52341443</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> s41 1.205829e-02 18.985877 0.43968580</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> s42 1.098706e-02 19.989534 0.39979024</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> s43 1.001100e-02 18.994708 0.32654081</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> s44 9.121652e-03 18.996177 0.27982644</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> s45 8.311309e-03 18.997071 0.23885828</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> s46 7.572956e-03 19.997030 0.22304288</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> s47 6.900195e-03 19.997581 0.19204423</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> s48 6.287201e-03 19.997993 0.16535760</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> s49 5.728663e-03 19.998310 0.14249422</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> s50 5.219745e-03 19.998560 0.12299018</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> s51 4.756037e-03 19.998762 0.10641447</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> s52 4.333524e-03 19.998927 0.09246165</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> s53 3.948545e-03 19.999065 0.08059110</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> s54 3.597767e-03 19.999180 0.07058704</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> s55 3.278152e-03 19.999278 0.06217549</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> s56 2.986930e-03 18.999507 0.03512003</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> s57 2.721579e-03 18.999562 0.02921090</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> s58 2.479802e-03 18.999611 0.02426620</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> s59 2.259503e-03 18.999653 0.02018528</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> s60 2.058775e-03 18.999689 0.01672756</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> s61 1.875879e-03 19.999641 0.03383566</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> s62 1.709231e-03 19.999678 0.03142196</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> s63 1.557388e-03 19.999710 0.02941031</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> s64 1.419034e-03 19.999739 0.02773476</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> s65 1.292971e-03 19.999765 0.02637465</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> s66 1.178107e-03 19.999788 0.02521050</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> s67 1.073447e-03 19.999809 0.02423963</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> s68 9.780848e-04 19.999827 0.02343193</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> s69 8.911945e-04 19.999844 0.02279460</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> s70 8.120232e-04 19.999859 0.02223500</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> s71 7.398853e-04 19.999872 0.02176597</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> s72 6.741559e-04 19.999884 0.02137561</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> s73 6.142658e-04 19.999895 0.02108751</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> s74 5.596961e-04 19.999905 0.02078602</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> s75 5.099742e-04 19.999913 0.02058387</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> s76 4.646695e-04 19.999921 0.02039869</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> s77 4.233896e-04 19.999929 0.02024090</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> s78 3.857768e-04 19.999935 0.02010883</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> s79 3.515055e-04 19.999941 0.01999888</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> s80 3.202787e-04 19.999946 0.01990750</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> s81 2.918260e-04 19.999951 0.01985329</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> s82 2.659010e-04 19.999956 0.01977319</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> s83 2.422791e-04 19.999960 0.01973346</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> s84 2.207557e-04 19.999963 0.01969292</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> s85 2.011443e-04 19.999967 0.01965613</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> s86 1.832752e-04 19.999970 0.01962417</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> s87 1.669936e-04 19.999972 0.01959696</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> s88 1.521583e-04 19.999975 0.01957404</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> s89 1.386410e-04 19.999977 0.01955486</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> s90 1.263245e-04 19.999979 0.01953886</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> s91 1.151022e-04 19.999981 0.01952553</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> s92 1.048768e-04 19.999983 0.01951445</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> s93 9.555986e-05 19.999984 0.01950525</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> s94 8.707059e-05 19.999986 0.01949760</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> s95 7.933548e-05 19.999987 0.01949125</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> s96 7.228753e-05 19.999988 0.01948598</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> s97 6.586571e-05 19.999989 0.01948161</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> s98 6.001438e-05 19.999990 0.01947798</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> s99 5.468287e-05 19.999991 0.01947496</span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>
