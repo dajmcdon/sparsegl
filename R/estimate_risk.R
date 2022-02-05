@@ -1,7 +1,7 @@
 #' Calculate information criteria.
 #'
 #' This function uses the degrees of freedom to calculate various information
-#' criteria. This function uses the "known variance" version of the likelihood.
+#' criteria. This function uses the "unknown variance" version of the likelihood.
 #' Only implemented for Gaussian regression. The constant is ignored (as in
 #' [stats::extractAIC()]).
 #'

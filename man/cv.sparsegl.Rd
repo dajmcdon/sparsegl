@@ -13,7 +13,7 @@ cv.sparsegl(
   lambda = NULL,
   pred.loss = c("L2", "L1", "binomial", "misclass"),
   nfolds = 10,
-  foldid,
+  foldid = NULL,
   ...
 )
 }
