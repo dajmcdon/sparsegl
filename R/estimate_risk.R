@@ -49,7 +49,7 @@ estimate_risk <- function(object, x, y,
                     df = df,
                     AIC = err + 2 * df / n,
                     BIC = err + log(n) * df / n,
-                    GCV = exp(err - 2 * log(1 - df / n)))
+                    GCV = err - 2 * log(1 - df / n)) # actually log(GCV)
   out <- out[c("lambda", "df", type)]
   return(out)
 }

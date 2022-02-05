@@ -20,7 +20,7 @@ author:
       | Department of Statistics
       | Bloomington, IN USA
 title:
-  formatted: "Estimating Sparse Group Lasso with the \\pkg{sparsegl} R Package"
+  formatted: "Estimating Sparse Group Lasso with the \\pkg{sparsegl} \\proglang{R} Package"
   # If you use tex in the formatted title, also supply version without
   plain:     "Sparse Group Lasso with \\pkg{sparsegl}"
   # For running headers, if needed
@@ -29,15 +29,14 @@ abstract: >
   The sparse group lasso is a high-dimensional regression technique that is
   useful for problems whose covariates have a naturally grouped structure, and
   where sparsity is encouraged at both the group and individual covariate
-  level. In this paper we discuss two algorithms for this optimization
-  problem, as well as their implementation in Fortran as part of a new R
-  package. This R package is an advance over existing packages, as it is the
-  only one that solves this problem in a sufficiently fast computation time
-  for truly high-dimensional situations.
+  level. In this paper we discuss a new \proglang{R} package for computing
+  such regularized models. The intention is to provide highly optimized 
+  solution routines enabling analysis of very large datasets, especially
+  in the context of sparse design matrices.
 keywords:
   # at least one keyword must be supplied
-  formatted: [keywords, not capitalized, "\\proglang{Java}"]
-  plain:     [keywords, not capitalized, Java]
+  formatted: [generalized linear model, reqularized, strong rule, sparse matrix]
+  plain:     [generalized linear model, reqularized, strong rule, sparse matrix]
 preamble: >
   \usepackage{amsmath}
   \input{jss-sparsegl-preamble}
@@ -66,19 +65,19 @@ knitr::write_bib(c("devtools", "knitr", "testthat", "usethis",
 
 \nocite{R-gglasso,R-SGL}
 
-Regularized linear models are now ubiquitous tools for prediction and increasingly inference. When solving the high-dimensional learning problems, adding regularization helps to reduce the chances of overfitting and improve the model performance on unseen data. Sparsity inducing  $\ell_1$-type penalties such as the lasso \citep{tibshirani1996regression} or the Dantzig selector 
+Regularized linear models are now ubiquitous tools for prediction and increasingly inference. When solving such high-dimensional learning problems, adding regularization helps to reduce the chances of overfitting and improve the model performance on unseen data. Sparsity inducing  $\ell_1$-type penalties such as the lasso \citep{tibshirani1996regression} or the Dantzig selector 
 \citep{CandesTao2007} perform both variable selection and shrinkage, resulting in near-optimal
-statistical properties. The group lasso \citep{yuan2006model} modifies the regularizer with a group $\ell_2$ for grouped covariates (e.g. one-hot factor variables). The resulting estimate will include or exclude entire groups of covariates. To simultaneously attain sparsity at both group and individual feature levels, \citet{simon2013sparse} proposed the sparse group-lasso convex combination of the $\ell_1$ lasso penalty and the group lasso-penalty. 
+statistical properties. The group lasso \citep{yuan2006model} modifies the regularizer, replacing the $\ell_1$ penalty with a groupwise sum of $\ell_2$ norms. When covariates have natural groupings, such as with genomics data or one-hot encoded factors, this group penalty is preferable, because the resulting estimate will include or exclude entire groups of covariates. To simultaneously attain sparsity at both group and individual feature levels, \citet{simon2013sparse} proposed the sparse group-lasso, a convex combination of the $\ell_1$ lasso penalty and the group lasso-penalty. 
 
-While a number of packages exist for solving the sparse group lasso, our \proglang{R} implementation in \pkg{sparsegl} is designed to be fast, especially in the case of large, sparse covariate matrices. This package focuses on finding the optimal solutions to the sparse group-lasso penalized learning problems at a sequence of regularization parameters, implements risk estimators in an effort to avoid cross validation if necessary, leverages a fast, compiled \proglang{Fortran} implementation, avoids extraneous data copies, and undertakes a number of additional computational efficiency improvements.
+While a number of packages exist for solving the sparse group lasso, our \proglang{R} implementation in \pkg{sparsegl} is designed to be fast, especially in the case of large, sparse covariate matrices. This package focuses on finding the optimal solutions to sparse group-lasso penalized learning problems at a sequence of regularization parameters, implements risk estimators in an effort to avoid cross validation if necessary, leverages a fast, compiled \proglang{Fortran} implementation, avoids extraneous data copies, and undertakes a number of additional computational efficiency improvements.
+In \proglang{R}, there are already excellent implementations of sparse group lasso and group lasso, namely \pkg{SGL}, \pkg{gglasso}, and \pkg{biglasso}. Of these, only \pkg{SGL} employs the additional $\ell_1$ sparsity-inducing penalty. However, it has a number of drawbacks that result in much slower performance, even on small data. One major reason is the omission of so-called "strong rules" \citep{tibshirani2012strong} that help coordinate descent algorithms to avoid many of the groups which will turn out to have zero coefficient estimates. The \pkg{gglasso} \citep{R-gglasso,yang2015fast} and \pkg{biglasso} \citep{R-biglasso,zeng2020biglasso} packages are both computationally fast. The former incorporates the strong rule, and the latter involves a hybrid safe-strong rule along with scalable storage and a parallel implementation in \proglang{C++} and \proglang{R} that allows for data that exceeds the size of installed random access memory. Unfortunately, neither allows within-group sparsity (i.e., they performs group lasso, not sparse group lasso). Thus, the estimated coefficients produced by these packages will have some active groups and some inactive groups, but within an active group, generally all the coefficients will be nonzero. 
 
-In \proglang{R}, there are already excellent implementations of sparse group lasso and group lasso, namely \pkg{SGL}, \pkg{gglasso}, and \pkg{biglasso}. Only \pkg{SGL} employs the additional $\ell_1$ sparsity-inducing penalty. However, it has a number of drawbacks that result in much slower performance, even on small data. One major reason is the omission of so-called "strong rules" \citep{tibshirani2012strong} that help gradient descent algorithms to ignore many groups. The \pkg{gglasso} and \pkg{biglasso} \citep{zeng2020biglasso} packages are both computationally fast. The former incorporates the strong rule, and the latter involves a hybrid safe-strong rule along with scalable storage and a parallel implementation in \proglang{C++} and \proglang{R} that allows for data that exceeds the size of installed random access memory. Unfortunately, neither allows do not incorporate within-group sparsity (i.e., it performs group lasso, not sparse group lasso). When this package is used on a grouped dataset, the solution will have some active groups and some inactive, but within an active group, generally all the coefficients will be nonzero. 
 
 
 <!-- \pkg{msgl} \citep{vincent2014sparse} is also an \proglang{R} package solving sparsel group lasso multiclassification problems via fitting multinomial logistic regression model. This package overcomes the nondifferential penalty problem at zero and since the algorithm is Newton-based, it substitutes the Hessian matrix with an upper bound on that, which reduces the costs of computation. However, the multinomial logistic regression is an extension to the binary logistic regression, allowing for taking the response variable with multiple classes, which consumes an excessive amount of time for model fitting when processing binary response variable. -->
 
 
-In \proglang{python}, \pkg{asgl} \citep{civieta2020adaptive} implements an adaptive sparse group-lasso, which improves the variable selection accuracy by flexibly adjusting the weights in the penalization on the groups of features. As with other packages mentioned above, it can also solve the special cases (lasso and group lasso). Additionally it incorporates quantile loss. For all optimization problems, it directly uses \pkg{cvxpy} without strong rules or other tricks.
+In \proglang{python}, \pkg{asgl} \citep{civieta2020adaptive} implements adaptive sparse group-lasso, which flexibly adjusts the weights in the penalization on the groups of features. Additionally it incorporates quantile loss. As with the other packages mentioned above, it can also solve the special cases (lasso and group lasso). However, for all optimization problems, it directly uses \pkg{cvxpy} without strong rules or other tricks to relate solutions to each other across values of the tuning parameter.
 
 <!-- The paper \citep{ida2019fast} also brings up a fast algorithm applying KKT and revised KKT checks repetitively through block coordinate descent for computing sparse group-lasso model. In this algorithm, the main feature is that the revised KKT check first searches through all groups to filter out the groups whose feature coefficients are zero, then the original KKT check confirms the actual nonzero coefficient groups among the remaining candidate active groups. The revised KKT check could remarkably reduce the time complexity, which is introduced by approximating a metric used to compare against a fixed threshold with a tight upper bound.-->
 
@@ -91,18 +90,35 @@ Our contribution, then, is to provide a package that performs sparse group lasso
 \item Uses \pkg{dotCall64} to interface with low-level \proglang{Fortran} functions and avoid unnecessary copying as well as allow for 64-bit integers \citep[see][]{gerber2017dotcall,gerber2018dotcall};
 \item Provides information criteria as risk estimators (AIC/BIC/GCV);
 \end{itemize}
-In Section \ref{methodology-estimation-and-prediction}, we describe the algorithmic implementation in detail, paying particular attention to the strong rule. In Section \ref{example-usage}, we show how to use the package, running through an example with simulated data. 
+A comparison of features of this and related \proglang{R} packages is shown in Table \ref{tab:comparison}. In Section \ref{methodology-estimation-and-prediction}, we describe the algorithmic implementation in detail, paying particular attention to the strong rule. In Section \ref{example-usage}, we show how to use the package, running through an example with simulated data. 
 <!-- In Section \ref{comparisons-with-other-packages}, we compare our package to the other existing group-lasso packages, and also compare the two variants of our algorithm with each other. -->
 We summarize and discuss paths for future work in Section \ref{discussion-and-future-work}, and make promising proposals for potential future research as well.
 
 
-
+\begin{table}
+\label{tab:comparison}
+\caption{Summary of features available in this and related \proglang{R} packages.}
+\begin{tabular}{lcccccc}
+\toprule
+& Regression \& & Within group & Sparse & Strong & Avoids & Interval \\
+& classification & sparsity & matrices & rules & copies & constraints \\
+\midrule
+\pkg{sparsegl} & \checkmark & \checkmark & \checkmark & \checkmark & \checkmark & \checkmark \\
+\pkg{gglasso} & \checkmark & & &\checkmark \\
+\pkg{SGL} & \checkmark & \checkmark \\
+\bottomrule
+\end{tabular}
+\end{table}
 
 
 # Methodology, estimation and prediction
 
 Given a sample of $n$ observations of a univariate response $y_i$ and $p$ features $\mathbf{x}_i$, the standard linear regression setup has
-$$y_i = \mathbf{x}_i^\T \vbeta + \sigma\epsilon_i,\ \ i=1,\ldots,n,$$ where $\epsilon_i$ is independent standard Gaussian noise and $\sigma > 0$. While standard linear regression estimates the coefficient vector $\vbeta$ by solving $\min_{\vbeta} \frac{1}{2n}\sum_{i=1}^n (y_i - \vx_i^\T\vbeta)^2$, this method tends to behave poorly if $p \gg n$. In what follows, we will write $\vy = (y_1,\ldots,y_n)$ and let $\mX$ be the rowwise concatenation of $\vx^\T_1,\ldots,\vx_n^\T$.
+\begin{equation}
+\label{eq:linmod}
+y_i = \mathbf{x}_i^\T \vbeta + \sigma\epsilon_i,\ \ i=1,\ldots,n,
+\end{equation}
+where $\epsilon_i$ is independent standard Gaussian noise and $\sigma > 0$. While standard linear regression estimates the coefficient vector $\vbeta$ by solving $\min_{\vbeta} \frac{1}{2n}\sum_{i=1}^n (y_i - \vx_i^\T\vbeta)^2$, this method tends to behave poorly if $p \gg n$. In what follows, we will write $\vy = (y_1,\ldots,y_n)$ and let $\mX$ be the rowwise concatenation of $\vx^\T_1,\ldots,\vx_n^\T$.
 
 
 The lasso addresses this difficulty by adding an $\ell_1$ penalty to the
@@ -389,6 +405,42 @@ Assume we have solved the problem for $\lambda_{s-1}$. We loop over $\mathcal{E}
 
 In this algorithm, we are careful to put potentially active groups into the active set. Instead of putting groups in $\mathcal{E}$ immediately after applying the strong rule, we are hesitant to commit to running the algorithm on the strong rule alone. We run the strong rule after convergence, but then double-check that the suspected 'active' groups are actually so by using the KKT check.
 
+## Risk estimation
+
+For many regularized prediction methods, tuning parameter selection is largely performed with cross validation. However, cross validation can be computationally expensive when the data set is large enough that the initial fit is slow. For this reason, \pkg{sparsegl} provides information criteria as well as cross validation routines.
+
+In the Gaussian linear regression model given by Equation \eqref{eq:linmod}, if $\sigma$ is
+unknown then a general form for a family of information criteria is given by
+\begin{equation}
+  \label{eq:GICsigUnknown}
+  \textrm{info}(C_n,g) 
+  =\log\left(\frac{1}{n}\snorm{\vY-\mX\hat\vbeta}_2^2\right) +
+  C_n \; g(\df),
+\end{equation}
+where $C_n$ depends only on $n$, $g: [0,\infty) \rightarrow \mathbb{R}$ is a fixed function, and the degrees of freedom ($\df$) measures the complexity of the estimation procedure.
+The choices
+$C_n = 2/n$ or $C_n = \log(n)/n$ with $g(x) = x$ are commonly referred to as AIC \citep{Akaike1973} and BIC \citep{Schwarz1978}, respectively.  Additionally, generalized
+cross validation \citep[GCV]{golub1979generalized} is defined as
+\begin{equation}
+\textrm{GCV} = \frac{\frac{1}{n}\snorm{\vY-\mX\hat\vbeta}_2^2}{(1-\df/n)^2}.
+\label{eq:gcv}
+\end{equation}
+Written on the log scale, GCV takes the form of equation \eqref{eq:GICsigUnknown} with $g(x) = \log(1-x/n)$ and $C_n = -2$.
+
+The key components for all three information criteria are the negative log likelihood and the degrees of freedom. The first is simply a function of the in sample (training) error. On the other hand, the degrees of freedom, while simple in the unregularized linear model---it is the number of parameters---is less obvious for the sparse group lasso. In general, the degress of freedom for any predictor $\hat{\vy}$ of $\vY$ is defined as \citep{Efron1986}
+$$\mathrm{df}(\hat\vy) = \frac{1}{\sigma^2}\sum_{i=1}^n\mathrm{Cov}(\vy_i,\ \hat\vy_i).$$
+In the case of any linear predictor, $\hat\vy = \mathbf{A}\vy$ for some matrix $\mathbf{A}$, it is easy to see that $\mathrm{df} = \mathrm{tr}(\mathbf{A})$.
+\citet{vaiter2012degrees} gives an explicit formula for the group lasso (without within-group sparsity), but only minor modifications are required for the sparse group lasso. We give a simplified version of their result here
+
+\begin{proposition}[\citet{vaiter2012degrees}]
+Suppose that for a fixed $\lambda >0$, the support set of $\hat{\beta} = \mathcal{S}$ and that $\mX_{\mathcal{S}}$ is the set of columns associated to $\mathcal{S}$. Assume that $\mX_{\mathcal{S}}$ has full column rank. Then, 
+$$\df = \mathrm{tr}\left(\mX_\mathcal{S}\left(\mX_\mathcal{S}^\T \mX_\mathcal{S} + \lambda \mathbf{K}\right)^{-1}\mX_{\mathcal{S}}^\T\right).$$
+Here, $\mathbf{K}\in \R^{\mathcal{S}\times\mathcal{S}}$ is a block diagonal matrix with each block corresponding to a group $g$ having at least 1 nonzero $\hat\beta$. For such a group $g$, denote $\hat\beta_{g | \mathcal{S}}$ the subvector of nonzero coefficient estimates. Then $$\mathbf{K}_g = \frac{1}{\snorm{\hat\vbeta_{g | \mathcal{S}}}_2}\left(\mathbf{I} - \frac{\hat\vbeta_{g | \mathcal{S}} \hat\vbeta_{g | \mathcal{S}}^\T}{\snorm{\hat\vbeta_{g | \mathcal{S}}}^2_2} \right).$$
+\end{proposition}
+
+As long as the number of nonzero coefficients $|\mathcal{S}$ is reasonably small, the degrees of freedom can be efficiently calculated for each value of $\lambda$. However, this calculation is generally cubic in $|\mathcal{S}|$. In these cases, an approximation may be desired. We have found, in practice, that $\lambda \mathbf{K}\approx \mathbf{I}$ is reasonably accurate, suggesting that $\mathrm{df} \approx |\mathcal{S}|$ is also reasonable. This approximation is exact for the lasso with $\alpha=1$ \citep{ZouHastie2007}.
+
+
 
 # Example usage
 
@@ -437,7 +489,7 @@ library(sparsegl)
 ```
 
 ```{r}
-fit <- sparsegl(X, y, group = groups, family = "gaussian")
+fit <- sparsegl(X, y, group = groups)
 ```
 
 \pkg{S3} methods for the `sparsegl` object are `plot()`, `coef()`, `predict()` and `print()`. The `plot()` function displays either the coefficients or the group norms on the $y$-axis against either $\{\lambda_s\}_{s=1}^S$ or the scaled penalty on the $x$-axis.
@@ -490,7 +542,7 @@ log-likelihood with a penalty term for model flexibility. In addition to a fitte
 where df is the degree-of-freedom, and $n$ is the sample size. Because the exact degrees-of-freedom can be computationally expensive, setting `approx_df=TRUE` uses the number of non-zero coefficient estimates, which is a fairly accurate approximation.
 
 ```{r risk-estimate, fig.width = 4, fig.height = 2}
-er <- estimate_risk(fit, X, y, c("AIC", "BIC"))
+er <- estimate_risk(fit, X, y)
 ```
 
 ```{r re-plot, echo=FALSE, message=FALSE, warning=FALSE, fig.width = 4, fig.height = 2}
@@ -499,15 +551,14 @@ er <- er %>% select(-df) %>% pivot_longer(-lambda, values_to = "risk")
 err <- er %>% group_by(name) %>% summarise(lambda = lambda[which.min(risk)])
 ggplot(er, aes(lambda, risk, color = name)) +
   geom_line() +
-  scale_color_manual(values = c("darkblue", "orange")) +
-  geom_vline(data = err, aes(xintercept = lambda, color=name), linetype="dashed") +
+  scale_color_brewer(palette = "Dark2") +
+  geom_vline(data = err, aes(xintercept = lambda, color=name),
+             linetype="dashed", show.legend = FALSE) +
   theme_bw() +
   ylab("Estimated risk") +
   xlab("Lambda") +
-  theme(legend.position = "none") +
-  annotate("label", x=c(.32, .03), y=c(5,2.5),color=c("darkblue", "orange"),
-           label = c("A I C", "B I C")) +
-  scale_x_log10()
+  scale_x_log10() +
+  theme(legend.title = element_blank())
 ```
 
 In this simulation, the $\lambda$ that minimizes AIC is `r round(err$lambda[1],3)` while the CV minimizer is `r round(cv_fit$lambda.min,3)`.
