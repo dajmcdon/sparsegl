@@ -265,71 +265,48 @@ While the procedure described so far solves Equation \eqref{eq:sparsegl} for fix
 
 
 
-## KKT Check and the Strong Rule
+## Sequential strong rule and KKT conditions
 
-As mentioned above, the strong rule \citep{tibshirani2012strong} is easy and fast to perform, discarding large numbers of predictors before computation, but it is not guaranteed to be correct, so it becomes necessary to double-check the solution after convergence, to make sure active groups were not accidentally discarded. 
+For any fixed value of $\lambda$, many groups of coefficient estimates will end up being equal to zero. If, somehow, we knew _which_ groups, we could completely avoid visiting them in the blockwise coordinate descent updates, and therefore avoid calculating any portion of Equation \eqref{eq:updateStep}. This would significantly speed up computations. 
 
-The version of the strong rule used here is called the \textbf{sequential strong rule}; it makes use of the fact that we are solving for a sequence $\{\lambda_1 \geq \lambda_2 \geq \dots \geq\lambda_S\}$ of lambda parameters, rather than a single value. At each $\lambda_s$, we rely on the fact that we have solved the problem for the previous $\lambda_{s-1}$, and use this information to quickly discard many predictors. Without loss of generality, for the rest of this section assume that the problem has already been solved for $\lambda_{s-1}$.
-
-
-
-The motivation for the strong rule comes from the KKT stationarity condition, which is similar to the first derivative test for minima \citep{boyd2004convex}. Explicitly, this is the condition that the subdifferential equations (see \autoref{eq:subgrad}) are satisfied at the proposed minimum $\hat{\vbeta} =\hat{\vbeta}(\lambda_s)$. This is the necessary and sufficient condition for a global optimum. Note that we will be emphasizing the dependence of $\hat{\vbeta},\vR_{(-k)}$, and so forth, on $\lambda$ in this section.
- 
-From \autoref{eq:subgrad} we derive an inequality that is equivalent to the KKT stationarity condition in the case that $\hat{\vbeta}^{(k)} = \mathbf{0}$. Because the algorithm is guaranteed to converge to the optimum for all groups on which it is run, we only need to check the condition for the discarded groups, i.e., those that we have preassigned $\hat{\vbeta}^{(k)} = \mathbf{0}$ (at a given $\lambda$). 
-
-First, if $\hat{\vbeta}^{(k)} = \mathbf{0}$, the subgradient equations reduce to the following:
+Re-examining Equation \eqref{eq:subgrad}, we can see that the first order condition implies that, for each group $g$, any solution must satisfy
 
 \begin{equation}
-\label{eq:subgradreduced}
-\mX^{(k)\T}\vR_{(-k)}/n - \alpha \lambda \mathbf{v} = (1-\alpha) \lambda \mathbf{u},
+\label{eq:subgrad-again}
+\snorm{S(\nabla \ell(\vbeta_g),\ \lambda\alpha)}_2 \leq (1-\alpha)\lambda.
 \end{equation}
-where $\mathbf{u}$ and $\mathbf{v}$ are the subdifferentials of $\norm{\vbeta^{(k)}}_2$ and $\norm{\vbeta^{(k)}}_1$, as in section 2.1. We claim that if the following inequality
 
-\begin{equation}
-\label{eq:kkt}
-\norm{S(\mX^{(k)\T}\vR_{(-k)}/n,\ \alpha\lambda)}_2 \leq (1-\alpha)\lambda
-\end{equation}
-is satisfied (with $S(\cdot)$ the soft-threshold operator from section 2.1), then $\hat{\vbeta}^{(k)} = \mathbf{0}$ is the optimum for that group at that particular $\lambda$. In other words, this inequality is equivalent to the KKT stationarity condition for inactive groups.
+This is because, as $\mathbf{u}$ is the subgradient of $\snorm{\vbeta_g}_2$, $\snorm{\mathbf{u}}_2\leq 1$. Furthermore, if $\snorm{\mathbf{u}}_2 < 1$, then $\hat{\vbeta}_j = \mathbf{0}$. In the previous section, we used the sufficiency of the first order Karush-Kuhn-Tucker (KKT) stationarity condition to derive a solution, while Equation \eqref{eq:subgrad-again} is the necessary version. So given a potential solution, it is easy to check its validity. Unfortunately, this is not constructive. 
 
-The proof is as follows: denote $\boldsymbol\gamma = \mX^{(k)\T}\vR_{(-k)}/n$, and define $v_j = \text{sign}(\gamma_j)$ if $|\gamma_j| > \alpha \lambda$, and $v_j = \frac{\gamma_j}{\alpha \lambda}$ otherwise. Then 
-\[
-\boldsymbol\gamma - \alpha \lambda \mathbf{v} = S(\boldsymbol\gamma,\alpha \lambda).
-\]
-Next, define $\mathbf{u} = S(\boldsymbol\gamma,\alpha \lambda)/(1-\alpha)(\lambda)$. From these two definitions it follows that \autoref{eq:subgradreduced} is satisfied, but not necessarily by elements of the subdifferentials. But if \autoref{eq:kkt} is also satisfied, then $\boldsymbol{u}$ is a subgradient of $\norm{\vbeta^{(k)}}_2$, and $\boldsymbol{v}$ a subgradient of $\norm{\vbeta^{(k)}}_1$, evaluated at $\vbeta^{(k)}=0$.
+The sequential strong rule \citep{tibshirani2012strong} begins from Equation \eqref{eq:subgrad-again} and makes use of the fact that we are solving for a sequence $\{\lambda_1 \geq \lambda_2 \geq \dots \geq\lambda_S\}$ of lambda parameters, rather than a single value. At each $\lambda_s$, we rely on the fact that we have solved the problem for the previous $\lambda_{s-1}$, and use this information to quickly discard many groups of predictors. Without loss of generality, for the rest of this section assume that the problem has already been solved for $\lambda_{s-1}$.
 
-We have derived the KKT condition for the $k$-th group to be $0$. We will now derive and explain the strong rule, which is based on this inequality. At this point it will be helpful to make explicit the dependence of these expressions on $\lambda$. First, for each group $k$, we define a function of $\lambda$:
-
-\begin{equation}
-c_k(\lambda) = S(\mX^{(k)\T}\vR_{(-k)}(\lambda)/n,\ \alpha\lambda).
-\end{equation}
-So for example \autoref{eq:kkt} becomes $\norm{c_k(\lambda)}_2 \leq (1-\alpha)\lambda$. There is a different function for every group $k$. Note that, since $\vR_{(-k)}$ involves $\hat{\vbeta}$, we needed to have actually solved the optimization problem at $\lambda$ in order to compute $c_k(\lambda)$.
-
-It is natural to consider the properties such a function would have. These functions are continuous, for example, as the solution to the optimization problem, \autoref{eq:sparsegl} varies continuously with its tuning parameter $\lambda$. We are now going to make an assumption about $c_k$, which seems unintuitive at first, and in fact is not always true, but is true often enough to be useful: we assume that $c_k(\lambda)$ is $(1-\alpha)$-Lipschitz, i.e., that
+Define $c_g(\lambda) = S(\nabla \ell(\vbeta_g),\ \lambda\alpha)$. Now, we make the assumption that $c_g(\lambda)$ is $(1-\alpha)$-Lipschitz, i.e., that
 \begin{equation}
 \label{eq:lipschitz}
-\forall \lambda,\ \lambda^{\prime}\ \  \ \norm{c_k(\lambda)-c_k(\lambda^{\prime})}_2 \leq (1-\alpha)\norm{\lambda - \lambda^{\prime}}_2.
+\forall \lambda,\ \lambda^{\prime}\ \  \ \snorm{c_g(\lambda)-c_g(\lambda^{\prime})}_2 \leq (1-\alpha)|\lambda - \lambda'|.
 \end{equation}
-This is essentially saying that $c_k$ is not only continuous but does not vary 'too fast'; this is equivalent to saying that the function is differentiable almost everywhere and has bounded derivative.
+This is essentially saying that $c_g$ is not only continuous but does not vary too much in $\lambda$; this is equivalent to saying that the function is differentiable almost everywhere and has bounded derivative. This Lipschitz assumption appears a unintuitive, and in fact, is not always true. But it turns out to be useful. 
 
-
-We can finally define the \textbf{strong rule} check for discarding groups. Assume that the optimization problem has been solved for $\lambda_{s-1}$; then if the inequality
+If we knew that $\snorm{c_g(\lambda_s)}_2 < (1-\alpha)\lambda_s$ then we could safely ignore it. But we already have the solution at $\lambda_{s-1}$. By the triangle inequality,
+$$
+\snorm{c_g(\lambda_s)}_2 \leq \snorm{c_g(\lambda_s) - c_g(\lambda_{s-1})}_2 +
+\snorm{c_g(\lambda_{s-1})}_2 \leq (1-\alpha)(\lambda_{s-1} - \lambda_s) + \snorm{c_g(\lambda_{s-1})}_2.
+$$
+To continue this upper bound, we want
+$(1-\alpha)(\lambda_{s-1} - \lambda_s) + \snorm{c_g(\lambda_{s-1})}_2 \leq (1-\alpha)\lambda_s$ which holds if
 \begin{equation}
 \label{eq:strong}
-\norm{c_k(\lambda_{s-1})}_2 \leq (1-\alpha)(2\lambda_s - \lambda_{s-1})
+\snorm{c_g(\lambda_{s-1})}_2 \leq (1-\alpha)(2\lambda_s - \lambda_{s-1}).
 \end{equation}
-holds, then we discard group $k$ from the problem, before solving for $\lambda_s$. That is to say, when we move from $\lambda_{s-1}$ to $\lambda_s$, we first run this check on all groups, using the previously computed solution for $\hat{\vbeta}(\lambda_{s-1})$, and then move on to coordinate descent, using only those groups that failed this inequality.
+This is the sequential strong rule for the sparse group lasso. For more details in related settings, see \citep{tibshirani2012strong}.
+If Equation \eqref{eq:strong}
+holds, then we discard group $g$ from the problem, before solving for $\lambda_s$. That is to say, when we move from $\lambda_{s-1}$ to $\lambda_s$, we first check this condition on all groups, using the previously computed solution for $\hat{\vbeta}(\lambda_{s-1})$, and then perform blockwise coordinate descent, using only those groups that failed this inequality.
 
-This discarding rule is fast, using the previously computed solution and a simple inequality, and in practice it tends to accurately discard large numbers of groups. The reason why it works is as follows: assuming the Lipschitz condition on $c_k(\lambda)$, then if the strong rule is satisfied for $\lambda_s$, we get by the triangle inequality that
-\begin{align*}
-\norm{c_k(\lambda_s)}_2 &\leq \norm{c_k(\lambda_s) - c_k(\lambda_{s-1})}_2 + \norm{c_k(\lambda_{s-1})}_2 \\
-&\leq (1-\alpha)(\lambda_{s-1} - \lambda_s) + (1-\alpha)(2\lambda_s - \lambda_{s-1})
-=(1-\alpha)\lambda_s,
-\end{align*}
-which is exactly the KKT condition required for $\hat{\vbeta}^{(k)}(\lambda_s) = 0$, \autoref{eq:kkt}.
+This discarding rule is fast, because it uses the previously computed solution and a simple inequality, and in practice it tends to accurately discard large numbers of groups. However, we should reiterate that it is possible for the strong rule to fail. The $(1-\alpha)$-Lipschitz assumption is not a guarantee. Because of this, it is critical that, after discarding some of the groups and running the algorithm on the others, the KKT condition is checked on all discarded groups. If there are no violations, then we have the solution. 
 
-Note that the upper bound for the strong rule condition, the right-hand side of \autoref{eq:strong}, is smaller than the upper bound for the KKT condition inequality, i.e., $(1-\alpha)(2\lambda_s - \lambda_{s-1}) < (1-\alpha)(\lambda_{s-1})$, since $\lambda_{s} < \lambda_{s-1}$. We see from this that the strong rule condition, which is a condition on the subdifferential at $\lambda_{s-1}$, is stronger than the zero KKT condition at $\lambda_{s-1}$; the logic of the strong rule is that, if group $k$ satisfies the zero KKT condition at $\lambda_{s-1}$, with some wiggle room in the inequality, and if the function $c_k(\lambda)$ which characterizes the zero KKT condition does not change too much going from one lambda to the next, then the zero KKT will be satisfied for the next value $\lambda_s$.
+**Stop here**
 
-Finally, we should reiterate that it is possible for the strong rule to make a mistake, the Lipschitz assumption is just that, an assumption. Because of this, it is critical that, after discarding some of the groups and running the algorithm on the others, the zero KKT condition is checked on all those discarded groups to make sure that the strong rule made the right decision, and that those groups are actually zero. Violators of the KKT condition should be put in 'active' status and the algorithm re-run with those groups included. The details of this are in the next section.
+Violators of the KKT condition should be put in 'active' status and the algorithm re-run with those groups included. The details of this are in the next section.
 
 Now that we understand the KKT check and strong rule check on groups, we briefly discuss some notation which is used in the next section. In this section we defined a function $c_k(\lambda)$ that was parameterized by the group $k$ and taking in as an argument $\lambda$. We will change emphasis and define a function:
 \[
@@ -399,6 +376,27 @@ The highlight of four-step algorithm, \autoref{alg:fourStep} is that instead of 
     \RETURN{$\hat{\vbeta} \leftarrow \{\hat{\vbeta}_{\{\lambda_s\}}\}_{s = 1}^n$}
   \end{algorithmic}
 \end{algorithm}
+
+
+\begin{algorithm}[tb!]
+  \caption{DJM}
+  \label{alg:djm}
+  \begin{algorithmic}[1]
+  \STATE {\bfseries Input:} $\mX$, $\vY$, $\mathcal{G}$, (required) $\{\lambda_1,\ldots,\lambda_K\}$ (optional)
+  \STATE {\bfseries Initialize:} $\mathcal{A} = \mathcal{S} = \varnothing$
+  \FOR{$k=1$ \TO  $K$} 
+  \STATE \textbf{for each} $g\in\mathcal{S}^c$, apply the strong rule add violators to $\mathcal{S}$ \COMMENT{Equation \eqref{eq:strong}}
+  \WHILE{$\max_{g\in\mathcal{A}} \snorm{\hat{\vbeta}^{(g)} - U(\hat{\vbeta}^{(g)})}_2 >\epsilon$}
+    \STATE For each $g\in\mathcal{A}$, update $\hat{\vbeta}^{(g)}\leftarrow U(\hat{\vbeta}^{(g)})$ \COMMENT{Equation \eqref{eq:updateStep}}
+  \ENDWHILE
+  \STATE \textbf{for} $g\in\mathcal{S}$, If $\snorm{S(\nabla \ell(\hat\vbeta_g),\ \lambda_k\alpha)}_2 > (1-\alpha)\lambda_k$, add $g$ to $\mathcal{A}$ 
+  \STATE If there were any violations, return to Line 4.
+  \STATE \textbf{for} $g\in\mathcal{A}^c$, If $\snorm{S(\nabla \ell(\hat\vbeta_g),\ \lambda_k\alpha)}_2 > (1-\alpha)\lambda_k$, add $g$ to $\mathcal{A}$
+  \STATE If there were any violations, return to Line 4.
+  \ENDFOR
+  \end{algorithmic}
+\end{algorithm}
+
 
 
 Assume we have solved the problem for $\lambda_{s-1}$. We loop over $\mathcal{E}$, which was passed over from $\lambda_{s-1}$, and update until convergence. The difference here is that we do not perform the strong check first. After we have run the update loop until convergence on the active set, we then perform the strong rule on the complement, $\mathcal{E}^c$. Since the strong rule depends on the computation of $\vbeta_{\{\lambda_{s-1}\}}$, it doesn't actually matter whether the coefficients are converged or not. For any groups that fail the strong rule check, we run the KKT check; if there are any violators, put them in $\mathcal{E}$ and go back to step 1. Therefore, the difference is that the condition for adding groups to $\mathcal{E}$ is more stringent and is done after obtaining the converged coefficients. Otherwise, we run the KKT check on the full complement $\mathcal{E}^c$. Again, if there are any violators, we put them in $\mathcal{E}$ and go back to check if coefficients are diverged. If there are no violators, we are done, and we move on to the next $\lambda$ in the sequence.
