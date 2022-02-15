@@ -9,3 +9,4 @@
 ^docs$
 ^pkgdown$
 ^man-roxygen$
+^data-raw$
