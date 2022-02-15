@@ -563,7 +563,22 @@ In this simulation, the $\lambda$ that minimizes AIC is `r round(err$lambda[1],3
 
 Additional documentation and examples are provided on the package [website](https://dajmcdon.github.io/sparsegl).
 
-# Application to tractography
+# Applications
+
+## Geographic distribution of trust in experts {#sec:trust}
+
+Two typical uses for sparse group lasso are (1) additive models where continuous predictors are expanded in a basis and (2) discrete factors as predictors. Here we demonstrate an example using both at the same time. We examine data from The Delphi Group at Carnegie Mellon University U.S. [COVID-19 Trends and Impact Survey (CTIS)](https://cmu-delphi.github.io/delphi-epidata/symptom-survey/contingency-tables.html), in partnership with Facebook. In particular, we examine the publicly available contingency table reports, which breakdown survey responses by age, race/ethnicity, gender, and other demographic variables of interest. The necessary data to reproduce this analysis (a sparse `dgCmatrix` object) is included in \pkg{sparsegl} as `trust_experts`.
+
+In particular, we will focus on the "estimated percentage of respondents who trust ... to provide accurate news and information about COVID-19."  This survey item is reported for a variety of different potential sources of information---personal doctors/nurses, scientists, the Centers for Disease Control (CDC), government health officials, politicians, journalists, friends, and religious leaders. In this analysis, we average the first 4, characterize the combination as "experts", and use this as the response variable in a linear model.
+
+We regress "trust in experts" on discrete predictors representing (1) month of report, (2) state of residence, (3) age group, (4) race/ethnicity, and (5) self-reported gender identity. This leads to 76 0-1 valued predictors in 5 groups. We also use spline basis expansions with 10 degrees-of-freedom to include continuous variables for "estimated percentage of people with Covid-like illness" and "estimated percentage of people reporting Covid-like illness in their local community, including their household" to control for the amount of exposure that respondents may have been having to the pandemic. 
+
+After omitting both structural and otherwise missing data, the final model is estimated with 3775 observations on 96 predictors. Encoded as a sparse matrix, this takes requires about 500 kb of RAM to store, as opposed to 3 Mb if it were dense. We estimated the model using `sparsegl()` and default arguments. Finally, we chose $\lambda$ to minimize BIC. Figure \ref{fig:trust} displays the estimated coefficients for the state-of-residence terms. Even controlling for age, race, gender, and the amount of circulating Covid-like illness, the United States displays strong geographic disparities when it comes to citizens' trust in scientists and other health authorities. 
+
+```{r trust, echo=FALSE, fig.cap="State-level estimates for the amount of trust in experts about Covid-19.", fig.width=8, fig.height=4, message=FALSE, warning=FALSE, out.width="5in"}
+source("code/covid.R")
+g
+```
 
 <!--
 
@@ -599,6 +614,8 @@ We developed this package for solving sparse group lasso optimization problem ba
 
 # Acknowledgements {.unnumbered}
 
-Here we list all the packages that we needed to compile this code. \pkg{devtools} [@R-devtools] \pkg{usethis} [@R-usethis] \pkg{testthat} [@R-testthat] \pkg{knitr} [@R-knitr] \pkg{microbenchmark} [@R-microbenchmark] \pkg{ggplot2}[-@R-ggplot2] and \pkg{rticles} [-@R-rticles]. Also NSF and NSERC funding.
+Here we list all the packages that we needed to compile this code. \pkg{devtools} [@R-devtools] \pkg{usethis} [@R-usethis] \pkg{testthat} [@R-testthat] \pkg{knitr} [@R-knitr] \pkg{ggplot2}[-@R-ggplot2] and \pkg{rticles} [-@R-rticles]. 
+
+Daniel J. McDonald was partially supported by the National Science Foundation (DMS–1753171) and the National Sciences and Engineering Research Council of Canada (RGPIN-2021-02618). The analysis in Section \ref{sec:trust} is based on survey results from Carnegie Mellon University’s Delphi Group.
 
 
