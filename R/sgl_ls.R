@@ -93,6 +93,8 @@ sgl_ls <- function(
   if (intr) {
     if (is.sparse) outlist$b0 <- outlist$b0 + ym
     else outlist$b0 <- ym - xm %*% outlist$beta
+  } else {
+    if (!is.sparse) outlist$b0 <- rep(0, dim(outlist$beta)[2])
   }
   outlist <- c(outlist,
                list(npasses = fit$npass, jerr = fit$jerr, group = group))

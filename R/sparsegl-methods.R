@@ -31,7 +31,7 @@
 #' fit1 <- sparsegl(X, y, group = groups)
 #' coef(fit1, s = c(0.02, 0.03))
 coef.sparsegl <- function(object, s = NULL, ...) {
-  b0 <- as.matrix(object$b0)
+  b0 <- matrix(object$b0, nrow = 1)
   # if conflicts happens and throw an error here, remove t() outside as.matrix()
   rownames(b0) <- "(Intercept)"
   nbeta <- rbind2(b0, object$beta)
