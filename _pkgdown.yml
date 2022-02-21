@@ -35,3 +35,6 @@ reference:
 - title: "Norm calculation"
 - contents:
     - ends_with("norm")
+- title: "Data"
+- contents:
+    - trust_experts
