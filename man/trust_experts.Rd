@@ -34,7 +34,7 @@ Roni Rosenfeld, and Ryan J. Tibshirani (2021). "The US COVID-19 Trends
 and Impact Survey: Continuous real-time measurement of COVID-19 symptoms,
 risks, protective behaviors, testing, and vaccination”, Proceedings of the
 National Academy of Sciences 118 (51) e2111454118.
-\url{https://doi.org/10.1073/pnas.2111454118}.
+\url{doi:10.1073/pnas.2111454118}.
 
 \href{https://cmu-delphi.github.io/delphi-epidata/symptom-survey/contingency-tables.html}{The Public Delphi US CTIS Documentation}
 }

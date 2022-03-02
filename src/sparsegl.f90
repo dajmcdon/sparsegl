@@ -103,7 +103,7 @@ SUBROUTINE sparse_four (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,flmin,
      ELSE
         IF (l > 1) THEN ! have some active groups
            al = al * alf
-           tlam = MAX((2.0 * al - al0), 0.0) ! Here is the strong rule...
+           tlam = MAX((2.0 * al - al0), 0.0D0) ! Here is the strong rule...
            l = l+1
            ! print *, "This is the l>1 step of while loop"
         ELSE IF (l == 0) THEN
@@ -190,7 +190,7 @@ SUBROUTINE sparse_four (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,flmin,
            CYCLE ! don't save anything, we're still decrementing lambda
         ELSE
            l = 2
-           alam(1) = al / MAX(alf, .99) ! store previous, larger value
+           alam(1) = al / MAX(alf, .99D0) ! store previous, larger value
         ENDIF
      ENDIF
      CALL rchkusr()
@@ -329,7 +329,7 @@ SUBROUTINE spmat_four (bn,bs,ix,iy,gam,nobs,nvars,x,xidx,xcptr,nnz,y,pf,&
         IF (l > 1) THEN ! have some active groups
            ! print *, "l = ", l
            al = al * alf
-           tlam = MAX((2.0 * al - al0), 0.0) ! Here is the strong rule...
+           tlam = MAX((2.0 * al - al0), 0.0D0) ! Here is the strong rule...
            l = l + 1
            ! print *, "This is the l>1 step of while loop"
         ELSE IF (l == 0) THEN
@@ -423,7 +423,7 @@ SUBROUTINE spmat_four (bn,bs,ix,iy,gam,nobs,nvars,x,xidx,xcptr,nnz,y,pf,&
            CYCLE ! don't save anything, we're still decrementing lambda
         ELSE
            l=2
-           alam(1) = al / MAX(alf, .99) ! store previous, larger value
+           alam(1) = al / MAX(alf, .99D0) ! store previous, larger value
         ENDIF
      ENDIF
      ! PRINT *, "Here is where the final update starts"

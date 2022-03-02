@@ -33,7 +33,7 @@ SUBROUTINE log_sparse_four (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,&
   DOUBLE PRECISION, DIMENSION (:), ALLOCATABLE :: b
   DOUBLE PRECISION, DIMENSION (:), ALLOCATABLE :: oldbeta
   DOUBLE PRECISION, DIMENSION (:), ALLOCATABLE :: r ! Residual
-  DOUBLE PRECISION, DIMENSION (:), ALLOCATABLE :: u 
+  DOUBLE PRECISION, DIMENSION (:), ALLOCATABLE :: u
 
   INTEGER, DIMENSION (:), ALLOCATABLE :: activeGroupIndex
   INTEGER:: g, j, l, ni, me, startix, endix, vl_iter
@@ -111,7 +111,7 @@ SUBROUTINE log_sparse_four (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,&
      ELSE
         IF (l > 1) THEN
            al = al * alf
-           tlam = MAX((2.0*al-al0), 0.0)
+           tlam = MAX((2.0*al-al0), 0.0D0)
            l = l+1
         ELSE IF(l==0) THEN
            al= al * 0.99
@@ -212,7 +212,7 @@ SUBROUTINE log_sparse_four (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,&
            CYCLE ! don't save anything, we're still decrementing lambda
         ELSE
            l = 2
-           alam(1) = al / MAX(alf, .99) ! store previous, larger value
+           alam(1) = al / MAX(alf, .99D0) ! store previous, larger value
         ENDIF
      ENDIF
      IF(ni > pmax) THEN
@@ -361,7 +361,7 @@ SUBROUTINE log_spmat_four (bn,bs,ix,iy,gam,nobs,nvars,x,xidx,xcptr,nnz,y,pf,&
      ELSE
         IF (l > 1) THEN
            al = al * alf
-           tlam = MAX((2.0 * al - al0), 0.0)
+           tlam = MAX((2.0 * al - al0), 0.0D0)
            l = l + 1
         ELSE IF (l == 0) THEN
            al = al * 0.99
@@ -460,7 +460,7 @@ SUBROUTINE log_spmat_four (bn,bs,ix,iy,gam,nobs,nvars,x,xidx,xcptr,nnz,y,pf,&
            CYCLE ! don't save anything, we're still decrementing lambda
         ELSE
            l = 2
-           alam(1) = al / MAX(alf, .99) ! store previous, larger value
+           alam(1) = al / MAX(alf, .99D0) ! store previous, larger value
         ENDIF
      ENDIF
      ! PRINT *, "Here is where the final update starts"

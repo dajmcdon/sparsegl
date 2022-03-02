@@ -1,10 +1,10 @@
-#' Fits the regularization paths for sparse group-lasso penalized learning problems.
+#' Regularization paths for sparse group-lasso models
 #'
 #' Fits regularization paths for sparse group-lasso penalized learning problems at a
 #' sequence of regularization parameters `lambda`.
 #'
 #' Note that the objective function for least squares is
-#' \deqn{RSS/(2n) + \lambda \times \text{penalty}}
+#' \deqn{RSS/(2n) + \lambda penalty}
 #' Users can also tweak the penalty by choosing a different penalty factor.
 #'
 #' For computing speed reason, if models are not converging or running slowly,

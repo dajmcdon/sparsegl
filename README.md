@@ -52,4 +52,4 @@ plot(fit1, y_axis = "coef", x_axis = "penalty", add_legend = FALSE)
 ## Documentation
 
 The package documentation and more examples are [available
-online](https://dajmcdon.github.io/sparsegl).
+online](https://dajmcdon.github.io/sparsegl/).

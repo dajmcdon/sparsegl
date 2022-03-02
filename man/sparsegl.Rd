@@ -2,7 +2,7 @@
 % Please edit documentation in R/sparsegl.R
 \name{sparsegl}
 \alias{sparsegl}
-\title{Fits the regularization paths for sparse group-lasso penalized learning problems.}
+\title{Regularization paths for sparse group-lasso models}
 \usage{
 sparsegl(
   x,
@@ -126,7 +126,7 @@ sequence of regularization parameters \code{lambda}.
 }
 \details{
 Note that the objective function for least squares is
-\deqn{RSS/(2n) + \lambda \times \text{penalty}}
+\deqn{RSS/(2n) + \lambda penalty}
 Users can also tweak the penalty by choosing a different penalty factor.
 
 For computing speed reason, if models are not converging or running slowly,
