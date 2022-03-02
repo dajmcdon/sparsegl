@@ -33,12 +33,9 @@ Imports:
     assertthat,
     methods,
     tidyr,
-    dplyr,
-    tibble,
     ggplot2,
     magrittr,
     rlang,
-    scales,
     dotCall64
 Depends: 
     R (>= 3.5)
