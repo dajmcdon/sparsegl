@@ -1,7 +1,7 @@
 
 !---------------------------------------------
 
-SUBROUTINE sparse_four (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,flmin,ulam,&
+SUBROUTINE sparse_four (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,pfl1,dfmax,pmax,nlam,flmin,ulam,&
      eps,maxit,nalam,beta,activeGroup,nbeta,alam,npass,jerr,alsparse,lb,ub)
 
   USE sgl_subfuns
@@ -22,6 +22,7 @@ SUBROUTINE sparse_four (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,flmin,
   DOUBLE PRECISION :: x(nobs,nvars)
   DOUBLE PRECISION :: y(nobs)
   DOUBLE PRECISION :: pf(bn)
+  DOUBLE PRECISION :: pfl1
   DOUBLE PRECISION :: ulam(nlam)
   DOUBLE PRECISION :: gam(bn)
   DOUBLE PRECISION :: lb(bn), ub(bn)
@@ -138,7 +139,7 @@ SUBROUTINE sparse_four (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,flmin,
               IF (is_in_E_set(g) == 0) CYCLE
               startix = ix(g)
               endix = iy(g)
-              CALL update_step(bs(g), startix, endix, b, lama, t_for_s(g), pf(g), lam1ma, x,&
+              CALL update_step(bs(g), startix, endix, b, lama, t_for_s(g), pf(g), pfl1, lam1ma, x,&
                    isDifZero, nobs, r, gam(g), maxDif, nvars, lb(g), ub(g))
               IF (activeGroupIndex(g) == 0 .AND. isDifZero == 1) THEN
                  ni = ni + 1
@@ -162,7 +163,7 @@ SUBROUTINE sparse_four (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,flmin,
         violation = 0
         IF (ANY((max_gam * (b - oldbeta) / (1 + ABS(b)))**2 >= eps)) violation = 1 !has beta moved globally
         IF (violation == 1) CYCLE
-        CALL strong_kkt_check(is_in_E_set, violation, bn, ix, iy, pf, lam1ma,&
+        CALL strong_kkt_check(is_in_E_set, violation, bn, ix, iy, pf, pfl1, lam1ma,&
              bs, lama, ga, is_in_S_set, x, r, nobs, nvars, vl) ! Step 3
         IF (violation == 1) CYCLE
         ! Need to compute vl/ga for the ones that aren't already updated, before kkt_check
@@ -180,7 +181,7 @@ SUBROUTINE sparse_four (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,flmin,
               DEALLOCATE(s)
            ENDIF
         ENDDO
-        CALL kkt_check(is_in_E_set, violation, bn, ix, iy, vl, pf, lam1ma, bs, lama, ga) ! Step 4
+        CALL kkt_check(is_in_E_set, violation, bn, ix, iy, vl, pf, pfl1, lam1ma, bs, lama, ga) ! Step 4
         IF (violation == 1) CYCLE
         EXIT
      ENDDO ! Ends outer loop
@@ -223,7 +224,7 @@ END SUBROUTINE sparse_four
 
 
 ! --------------------------------------------------
-SUBROUTINE spmat_four (bn,bs,ix,iy,gam,nobs,nvars,x,xidx,xcptr,nnz,y,pf,&
+SUBROUTINE spmat_four (bn,bs,ix,iy,gam,nobs,nvars,x,xidx,xcptr,nnz,y,pf,pfl1,&
      dfmax,pmax,nlam,flmin,ulam,eps,maxit,intr,nalam,b0,beta,&
      activeGroup,nbeta,alam,npass,jerr,alsparse,lb,ub)
   ! --------------------------------------------------
@@ -246,6 +247,7 @@ SUBROUTINE spmat_four (bn,bs,ix,iy,gam,nobs,nvars,x,xidx,xcptr,nnz,y,pf,&
   INTEGER, INTENT(in) :: xcptr(nvars+1)
   DOUBLE PRECISION, INTENT(in) :: y(nobs)
   DOUBLE PRECISION :: pf(bn)
+  DOUBLE PRECISION :: pfl1
   DOUBLE PRECISION :: ulam(nlam)
   DOUBLE PRECISION :: gam(bn)
   DOUBLE PRECISION, INTENT(in) :: lb(bn), ub(bn)
@@ -363,7 +365,7 @@ SUBROUTINE spmat_four (bn,bs,ix,iy,gam,nobs,nvars,x,xidx,xcptr,nnz,y,pf,&
               startix = ix(g)
               endix = iy(g)
               CALL sp_update_step(bs(g), startix, endix, b, lama, t_for_s(g),&
-                   pf(g), lam1ma, x, xidx, xcptr, nnz, isDifZero, nobs,&
+                   pf(g), pfl1, lam1ma, x, xidx, xcptr, nnz, isDifZero, nobs,&
                    r, gam(g), maxDif, nvars, lb(g), ub(g))
               IF (activeGroupIndex(g) == 0 .AND. isDifZero == 1) THEN
                  ni = ni+1
@@ -393,7 +395,7 @@ SUBROUTINE spmat_four (bn,bs,ix,iy,gam,nobs,nvars,x,xidx,xcptr,nnz,y,pf,&
         violation = 0
         IF (ANY((max_gam * (b - oldbeta) / (1 + ABS(b)))**2 >= eps)) violation = 1 !has beta moved globally
         IF (violation == 1) CYCLE
-        CALL sp_strong_kkt_check(is_in_E_set, violation, bn, ix, iy, pf,&
+        CALL sp_strong_kkt_check(is_in_E_set, violation, bn, ix, iy, pf, pfl1,&
              lam1ma, bs, lama, ga, is_in_S_set, x, xidx, xcptr, nnz,&
              r,nobs,nvars, vl)
         IF (violation == 1) CYCLE
@@ -413,7 +415,7 @@ SUBROUTINE spmat_four (bn,bs,ix,iy,gam,nobs,nvars,x,xidx,xcptr,nnz,y,pf,&
               DEALLOCATE(s)
            ENDIF
         ENDDO
-        CALL kkt_check(is_in_E_set, violation, bn, ix, iy, vl, pf, lam1ma, bs, lama, ga) ! Step 4
+        CALL kkt_check(is_in_E_set, violation, bn, ix, iy, vl, pf, pfl1, lam1ma, bs, lama, ga) ! Step 4
         IF (violation == 1) CYCLE
         EXIT
      ENDDO ! Ends outer loop

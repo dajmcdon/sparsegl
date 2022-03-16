@@ -1,4 +1,4 @@
-SUBROUTINE log_sparse_four (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,&
+SUBROUTINE log_sparse_four (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,pfl1,dfmax,pmax,&
      nlam,flmin,ulam,eps,maxit,intr,nalam,b0,beta,activeGroup,nbeta,alam,&
      npass,jerr,alsparse,lb,ub)
 
@@ -22,6 +22,7 @@ SUBROUTINE log_sparse_four (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,&
   DOUBLE PRECISION, INTENT(in) :: x(nobs,nvars)
   DOUBLE PRECISION, INTENT(in) :: y(nobs)
   DOUBLE PRECISION :: pf(bn)
+  DOUBLE PRECISION :: pfl1
   DOUBLE PRECISION :: ulam(nlam)
   DOUBLE PRECISION :: gam(bn)
   DOUBLE PRECISION :: lb(bn), ub(bn)
@@ -143,7 +144,7 @@ SUBROUTINE log_sparse_four (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,&
               IF (is_in_E_set(g) == 0) CYCLE
               startix = ix(g)
               endix = iy(g)
-              CALL log_update_step(bs(g), startix, endix, b, lama, t_for_s(g), pf(g),&
+              CALL log_update_step(bs(g), startix, endix, b, lama, t_for_s(g), pf(g), pfl1,&
                    lam1ma, x,y, isDifZero, nobs, r, gam(g), maxDif, nvars,&
                    lb(g), ub(g))
               IF (activeGroupIndex(g) == 0 .AND. isDifZero == 1) THEN
@@ -181,7 +182,7 @@ SUBROUTINE log_sparse_four (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,&
         IF (ANY((max_gam * (b - oldbeta) / (1 + ABS(b)))**2 >= eps)) violation = 1
         ! has beta moved globally
         IF (violation == 1) CYCLE
-        CALL strong_kkt_check(is_in_E_set, violation, bn, ix, iy, pf, lam1ma, bs,&
+        CALL strong_kkt_check(is_in_E_set, violation, bn, ix, iy, pf, pfl1, lam1ma, bs,&
              lama, ga, is_in_S_set, x, y/(1.0D0+exp(r)), nobs, nvars, vl) ! Step 3
         IF (violation == 1) CYCLE
         ! Need to compute vl/ga for the ones that aren't already updated,
@@ -200,7 +201,7 @@ SUBROUTINE log_sparse_four (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,&
               DEALLOCATE(s)
            ENDIF
         ENDDO
-        CALL kkt_check(is_in_E_set, violation, bn, ix, iy, vl, pf, lam1ma,&
+        CALL kkt_check(is_in_E_set, violation, bn, ix, iy, vl, pf, pfl1, lam1ma,&
              bs, lama, ga) ! Step 4
         IF (violation == 1) CYCLE
         EXIT
@@ -245,7 +246,7 @@ END SUBROUTINE log_sparse_four
 
 
 ! --------------------------------------------------
-SUBROUTINE log_spmat_four (bn,bs,ix,iy,gam,nobs,nvars,x,xidx,xcptr,nnz,y,pf,&
+SUBROUTINE log_spmat_four (bn,bs,ix,iy,gam,nobs,nvars,x,xidx,xcptr,nnz,y,pf,pfl1,&
      dfmax,pmax,nlam,flmin,ulam,eps,maxit,intr,nalam,b0,beta,&
      activeGroup,nbeta,alam,npass,jerr,alsparse,lb,ub)
   ! --------------------------------------------------
@@ -271,6 +272,7 @@ SUBROUTINE log_spmat_four (bn,bs,ix,iy,gam,nobs,nvars,x,xidx,xcptr,nnz,y,pf,&
   INTEGER, INTENT(in) :: xcptr(nvars+1)
   DOUBLE PRECISION, INTENT(in) :: y(nobs)
   DOUBLE PRECISION :: pf(bn)
+  DOUBLE PRECISION :: pfl1
   DOUBLE PRECISION :: ulam(nlam)
   DOUBLE PRECISION :: gam(bn)
   DOUBLE PRECISION, INTENT(in) :: lb(bn), ub(bn)
@@ -394,7 +396,7 @@ SUBROUTINE log_spmat_four (bn,bs,ix,iy,gam,nobs,nvars,x,xidx,xcptr,nnz,y,pf,&
               startix = ix(g)
               endix = iy(g)
               CALL log_sp_update_step(bs(g), startix, endix, b, lama, t_for_s(g),&
-                   pf(g), lam1ma, x,y, xidx, xcptr, nnz, isDifZero, nobs,&
+                   pf(g), pfl1, lam1ma, x,y, xidx, xcptr, nnz, isDifZero, nobs,&
                    r, gam(g), maxDif, nvars, lb(g), ub(g))
               IF (activeGroupIndex(g) == 0 .AND. isDifZero == 1) THEN
                  ni = ni+1
@@ -427,7 +429,7 @@ SUBROUTINE log_spmat_four (bn,bs,ix,iy,gam,nobs,nvars,x,xidx,xcptr,nnz,y,pf,&
         IF (ANY((max_gam * (b - oldbeta) / (1 + ABS(b)))**2 >= eps)) violation = 1
         ! has beta moved globally
         IF (violation == 1) CYCLE
-        CALL sp_strong_kkt_check(is_in_E_set, violation, bn, ix, iy, pf,&
+        CALL sp_strong_kkt_check(is_in_E_set, violation, bn, ix, iy, pf, pfl1,&
              lam1ma, bs, lama, ga, is_in_S_set, x, xidx, xcptr, nnz,&
              y/(1.0D0+exp(r)), nobs, nvars, vl)
         IF (violation == 1) CYCLE
@@ -449,7 +451,7 @@ SUBROUTINE log_spmat_four (bn,bs,ix,iy,gam,nobs,nvars,x,xidx,xcptr,nnz,y,pf,&
               DEALLOCATE(s)
            ENDIF
         ENDDO
-        CALL kkt_check(is_in_E_set, violation, bn, ix, iy, vl, pf, lam1ma,&
+        CALL kkt_check(is_in_E_set, violation, bn, ix, iy, vl, pf, pfl1, lam1ma,&
              bs, lama, ga) ! Step 4
         IF (violation == 1) CYCLE
         EXIT

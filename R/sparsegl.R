@@ -33,6 +33,7 @@
 #' groups, which implies no shrinkage, and results in that group always being
 #' included in the model. Default value for each entry is the square-root of
 #' the corresponding size of each group.
+#' @param pfl1 Another penalty factor, a numeric value imposed on $l1$ norm.
 #' @param dfmax Limit the maximum number of groups in the model. Default is
 #'   no limit.
 #' @param pmax Limit the maximum number of groups ever to be nonzero. For
@@ -89,7 +90,7 @@
 sparsegl <- function(
   x, y, group = NULL, family = c("gaussian", "binomial"),
   nlambda = 100, lambda.factor = ifelse(nobs < nvars, 0.01, 1e-04),
-  lambda = NULL, pf = sqrt(bs),
+  lambda = NULL, pf = sqrt(bs), pfl1 = 1,
   intercept = TRUE, asparse = 0.05, standardize = TRUE,
   lower_bnd = -Inf, upper_bnd = Inf,
   dfmax = as.integer(max(group)) + 1L,
@@ -153,6 +154,7 @@ sparsegl <- function(
 
   maxit <- as.integer(maxit)
   pf <- as.double(pf)
+  pfl1 <- as.double(pfl1)
   eps <- as.double(eps)
   dfmax <- as.integer(dfmax)
   pmax <- as.integer(pmax)
@@ -206,11 +208,11 @@ sparsegl <- function(
   # call R sub-function
   fit <- switch(
     family,
-    gaussian = sgl_ls(bn, bs, ix, iy, nobs, nvars, x, y, pf, dfmax, pmax, nlam,
+    gaussian = sgl_ls(bn, bs, ix, iy, nobs, nvars, x, y, pf, pfl1, dfmax, pmax, nlam,
                 flmin, ulam,
                 eps, maxit, vnames, group, intr, as.double(asparse),
                 standardize, lower_bnd, upper_bnd),
-    binomial = sgl_logit(bn, bs, ix, iy, nobs, nvars, x, y, pf, dfmax, pmax,
+    binomial = sgl_logit(bn, bs, ix, iy, nobs, nvars, x, y, pf, pfl1, dfmax, pmax,
                       nlam, flmin, ulam,
                       eps, maxit, vnames, group, intr, as.double(asparse),
                       standardize, lower_bnd, upper_bnd)

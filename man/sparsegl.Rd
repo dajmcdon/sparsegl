@@ -13,6 +13,7 @@ sparsegl(
   lambda.factor = ifelse(nobs < nvars, 0.01, 1e-04),
   lambda = NULL,
   pf = sqrt(bs),
+  pfl1 = 1,
   intercept = TRUE,
   asparse = 0.05,
   standardize = TRUE,
@@ -74,6 +75,8 @@ of groups. Separate penalty weights can be applied to each group of
 groups, which implies no shrinkage, and results in that group always being
 included in the model. Default value for each entry is the square-root of
 the corresponding size of each group.}
+
+\item{pfl1}{Another penalty factor, a numeric value imposed on $l1$ norm.}
 
 \item{intercept}{Whether to include intercept in the model. Default is TRUE.}
 
