@@ -33,7 +33,8 @@
 #' groups, which implies no shrinkage, and results in that group always being
 #' included in the model. Default value for each entry is the square-root of
 #' the corresponding size of each group.
-#' @param pfl1 Another penalty factor, a numeric value imposed on $l1$ norm.
+#' @param pfl1 Another penalty factor, a vector of the same length as the total
+#' number of predictors. Each entry should be non-negative in this vector.
 #' @param dfmax Limit the maximum number of groups in the model. Default is
 #'   no limit.
 #' @param pmax Limit the maximum number of groups ever to be nonzero. For
@@ -90,7 +91,7 @@
 sparsegl <- function(
   x, y, group = NULL, family = c("gaussian", "binomial"),
   nlambda = 100, lambda.factor = ifelse(nobs < nvars, 0.01, 1e-04),
-  lambda = NULL, pf = sqrt(bs), pfl1 = 1,
+  lambda = NULL, pf = sqrt(bs), pfl1 = rep(1, nvars),
   intercept = TRUE, asparse = 0.05, standardize = TRUE,
   lower_bnd = -Inf, upper_bnd = Inf,
   dfmax = as.integer(max(group)) + 1L,
@@ -139,7 +140,9 @@ sparsegl <- function(
     warning("asparse must be in [0,1], running ordinary group lasso.")
   }
 
-
+  if (any(pfl1 < 0)) {
+    stop("lasso penalty factor must be non-negative.")
+  }
   iy <- cumsum(bs) # last column of x in each group
   ix <- c(0, iy[-bn]) + 1 # first column of x in each group
   ix <- as.integer(ix)
@@ -151,7 +154,14 @@ sparsegl <- function(
     length(pf) == bn,
     msg = paste("The length of group-lasso penalty factor must be",
                 "same as the number of groups"))
-
+  assertthat::assert_that(
+    length(pfl1) == nvars,
+    msg = paste("The length of lasso penalty factor must be", 
+                "same as the number of predictors"))
+  
+  if (sum(pfl1) != nvars) {
+    pfl1 <- pfl1 / sum(pfl1) * nvars
+  }
   maxit <- as.integer(maxit)
   pf <- as.double(pf)
   pfl1 <- as.double(pfl1)

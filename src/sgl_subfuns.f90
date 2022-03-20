@@ -23,7 +23,7 @@ MODULE sgl_subfuns
       RETURN
    END SUBROUTINE strong_rule
 
-   SUBROUTINE kkt_check(is_in_E_set, violation, bn, ix, iy, vl, pf,pfl1,&
+   SUBROUTINE kkt_check(is_in_E_set, violation, bn, ix, iy, vl, pf, pfl1,&
         lam1ma, bs, lama, ga)
       IMPLICIT NONE
       INTEGER :: g, startix, endix
@@ -36,7 +36,7 @@ MODULE sgl_subfuns
       DOUBLE PRECISION, DIMENSION (:), ALLOCATABLE :: s
       DOUBLE PRECISION :: snorm
       DOUBLE PRECISION, INTENT(in) :: pf(bn)
-      DOUBLE PRECISION, INTENT(in) :: pfl1
+      DOUBLE PRECISION, INTENT(in) :: pfl1(bn)
       INTEGER, INTENT(inout) :: violation
       DOUBLE PRECISION, INTENT(in) :: lam1ma, lama
 
@@ -46,7 +46,7 @@ MODULE sgl_subfuns
          endix = iy(g)
          ALLOCATE(s(bs(g)))
          s = vl(startix:endix)
-         CALL softthresh(s, lama*pfl1, bs(g))
+         CALL softthresh(s, lama*pfl1(startix : endix), bs(g))
          snorm = SQRT(DOT_PRODUCT(s,s))
          ga(g) = snorm
          IF(ga(g) > pf(g) * lam1ma) THEN
@@ -69,7 +69,8 @@ MODULE sgl_subfuns
       DOUBLE PRECISION, DIMENSION (:), ALLOCATABLE :: oldb, s, dd
       DOUBLE PRECISION, DIMENSION (:), INTENT(inout) :: b, r
       DOUBLE PRECISION :: snorm, tea
-      DOUBLE PRECISION, INTENT(in) :: lama, t_for_sg, pfg, pfl1, lam1ma, lb, ub
+      DOUBLE PRECISION, INTENT(in) :: lama, t_for_sg, pfg, lam1ma, lb, ub
+      DOUBLE PRECISION, INTENT(in) :: pfl1(endix - startix + 1)
       DOUBLE PRECISION, DIMENSION (:), INTENT(in) :: x(nobs,nvars)
       INTEGER, INTENT(inout) :: isDifZero
       INTEGER :: k
@@ -80,7 +81,7 @@ MODULE sgl_subfuns
       oldb = b(startix:endix)
       s = MATMUL(r, x(:, startix:endix))/nobs
       s = s*t_for_sg + b(startix:endix)
-      CALL softthresh(s, lama*t_for_sg*pfl1, bsg)
+      CALL softthresh(s, lama*t_for_sg*pfl1(startix : endix), bsg)
       snorm = SQRT(DOT_PRODUCT(s,s))
       tea = snorm - t_for_sg * lam1ma * pfg
       IF (tea > 0.0D0) THEN
@@ -121,7 +122,7 @@ MODULE sgl_subfuns
       DOUBLE PRECISION, DIMENSION (:), ALLOCATABLE :: s
       DOUBLE PRECISION :: snorm
       DOUBLE PRECISION, INTENT(in) :: pf(bn)
-      DOUBLE PRECISION, INTENT(in) :: pfl1
+      DOUBLE PRECISION, INTENT(in) :: pfl1(bn)
       INTEGER, INTENT(inout) :: violation
       DOUBLE PRECISION, INTENT(in) :: lam1ma, lama
 
@@ -133,7 +134,7 @@ MODULE sgl_subfuns
             ALLOCATE(s(bs(g)))
             s = MATMUL(r, x(:,startix:endix)) / nobs
             vl(startix:endix) = s
-            CALL softthresh(s, lama*pfl1, bs(g))
+            CALL softthresh(s, lama*pfl1(startix : endix), bs(g))
             snorm = SQRT(dot_PRODUCT(s,s))
             ga(g) = snorm
             DEALLOCATE(s)
@@ -159,7 +160,8 @@ MODULE sgl_subfuns
       DOUBLE PRECISION, DIMENSION (0:nvars), INTENT(inout) :: b
       DOUBLE PRECISION, DIMENSION (:), INTENT(inout) :: r
       DOUBLE PRECISION :: snorm, tea
-      DOUBLE PRECISION, INTENT(in) :: lama, t_for_sg, pfg, pfl1, lam1ma, lb, ub
+      DOUBLE PRECISION, INTENT(in) :: lama, t_for_sg, pfg, lam1ma, lb, ub
+      DOUBLE PRECISION, INTENT(in) :: pfl1(endix - startix + 1)
       DOUBLE PRECISION, INTENT(in) :: x(nnz)
       INTEGER, INTENT(in) :: xidx(nnz)
       INTEGER, INTENT(in) :: xcptr(nvars + 1)
@@ -175,7 +177,7 @@ MODULE sgl_subfuns
 
       CALL spatx(x, xidx, xcptr, nobs, nvars, nnz, r, s, startix, endix)
       s = s * t_for_sg / nobs + b(startix:endix)
-      CALL softthresh(s, lama * t_for_sg * pfl1, bsg)
+      CALL softthresh(s, lama * t_for_sg * pfl1(startix : endix), bsg)
       snorm = SQRT(DOT_PRODUCT(s,s))
       tea = snorm - t_for_sg * lam1ma * pfg
       IF (tea > 0.0D0) THEN
@@ -218,7 +220,7 @@ MODULE sgl_subfuns
       DOUBLE PRECISION, DIMENSION (:), ALLOCATABLE :: s
       DOUBLE PRECISION :: snorm
       DOUBLE PRECISION, INTENT(in) :: pf(bn)
-      DOUBLE PRECISION, INTENT(in) :: pfl1
+      DOUBLE PRECISION, INTENT(in) :: pfl1(bn)
       INTEGER, INTENT(inout) :: violation
       DOUBLE PRECISION, INTENT(in) :: lam1ma, lama
 
@@ -231,7 +233,7 @@ MODULE sgl_subfuns
             s = 0.0D0
             CALL spatx(x, xidx, xcptr, nobs, nvars, nnz, r, s, startix, endix)
             vl(startix:endix) = s / nobs
-            CALL softthresh(s, lama * pfl1, bs(g))
+            CALL softthresh(s, lama * pfl1(startix : endix), bs(g))
             snorm = SQRT(dot_PRODUCT(s,s))
             ! print *, "kkt snorm = ", snorm
             ga(g) = snorm

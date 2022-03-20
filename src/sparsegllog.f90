@@ -22,7 +22,7 @@ SUBROUTINE log_sparse_four (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,pfl1,dfmax,pmax,&
   DOUBLE PRECISION, INTENT(in) :: x(nobs,nvars)
   DOUBLE PRECISION, INTENT(in) :: y(nobs)
   DOUBLE PRECISION :: pf(bn)
-  DOUBLE PRECISION :: pfl1
+  DOUBLE PRECISION :: pfl1(nvars)
   DOUBLE PRECISION :: ulam(nlam)
   DOUBLE PRECISION :: gam(bn)
   DOUBLE PRECISION :: lb(bn), ub(bn)
@@ -195,7 +195,7 @@ SUBROUTINE log_sparse_four (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,pfl1,dfmax,pmax,&
               ALLOCATE(s(bs(g)))
               s = MATMUL(y/(1.0D0+exp(r)), x(:, startix:endix))/nobs
               vl(startix:endix) = s
-              CALL softthresh(s, lama, bs(g))
+              CALL softthresh(s, lama * pfl1(startix : endix), bs(g))
               snorm = SQRT(DOT_PRODUCT(s,s))
               ga(g) = snorm
               DEALLOCATE(s)
@@ -272,7 +272,7 @@ SUBROUTINE log_spmat_four (bn,bs,ix,iy,gam,nobs,nvars,x,xidx,xcptr,nnz,y,pf,pfl1
   INTEGER, INTENT(in) :: xcptr(nvars+1)
   DOUBLE PRECISION, INTENT(in) :: y(nobs)
   DOUBLE PRECISION :: pf(bn)
-  DOUBLE PRECISION :: pfl1
+  DOUBLE PRECISION :: pfl1(nvars)
   DOUBLE PRECISION :: ulam(nlam)
   DOUBLE PRECISION :: gam(bn)
   DOUBLE PRECISION, INTENT(in) :: lb(bn), ub(bn)
@@ -445,7 +445,7 @@ SUBROUTINE log_spmat_four (bn,bs,ix,iy,gam,nobs,nvars,x,xidx,xcptr,nnz,y,pf,pfl1
               CALL spatx(x, xidx, xcptr, nobs, nvars, nnz, y/(1.0D0+exp(r)),&
                    s, startix, endix)
               vl(startix:endix) = s / nobs
-              CALL softthresh(s, lama, bs(g))
+              CALL softthresh(s, lama * pfl1(startix : endix), bs(g))
               snorm = SQRT(DOT_PRODUCT(s,s))
               ga(g) = snorm
               DEALLOCATE(s)
