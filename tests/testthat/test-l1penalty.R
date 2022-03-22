@@ -47,6 +47,7 @@ test_that("function behaviors changed by pfl1", {
   out1 <- sparsegl(X, y, group = gr, pfl1 = pfl1_1)
   out2 <- sparsegl(X, y, group = gr, pfl1 = pfl1_2)
   
+  # out1 and out2 are the same models.
   expect_equal(out1$b0, out2$b0)
   expect_equal(out1$beta, out2$beta)
   expect_equal(out1$lambda, out2$lambda)
@@ -55,11 +56,8 @@ test_that("function behaviors changed by pfl1", {
   out1 <- sparsegl(X, y, group = gr)
   out2 <- sparsegl(X, y, group = gr, pfl1 = pfl1_2)
   
-  # predictor 15 has larger coefficient in model out1 than in out2
-  expect_equal(as.numeric(abs(out1$beta[6, ]) >= abs(out2$beta[6, ])), 
-               rep(1, 100))
   
-  # lambda is larger when the coefficient of predictor15 turns nonzero in out1
+  # lambda is larger when the coefficient of predictor15 turns nonzero in out1.
   expect_true(out1$lambda[which(out1$beta[4, ] != 0)[1]] >= 
                 out2$lambda[which(out2$beta[4, ] != 0)[1]])
 })
