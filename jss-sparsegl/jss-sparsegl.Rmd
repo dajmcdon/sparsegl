@@ -46,7 +46,7 @@ keep_tex: true
 ---
 
 ```{r, setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE, cache = FALSE, fig.path = "fig/")
+knitr::opts_chunk$set(echo = TRUE, cache = TRUE, fig.path = "fig/")
 options(prompt = 'R> ', continue = '+ ')
 # Add any packages we want to cite to the list below. Don't edit the bib
 # manually, or changes will be overwritten. Add other references to
@@ -390,9 +390,10 @@ The highlight of four-step algorithm, \autoref{alg:fourStep} is that instead of 
     \STATE For each $g\in\mathcal{A}$, update $\hat{\vbeta}^{(g)}\leftarrow U(\hat{\vbeta}^{(g)})$ \COMMENT{Equation \eqref{eq:updateStep}}
   \ENDWHILE
   \STATE \textbf{for} $g\in\mathcal{S}$, If $\snorm{S(\nabla \ell(\hat\vbeta_g),\ \lambda_k\alpha)}_2 > (1-\alpha)\lambda_k$, add $g$ to $\mathcal{A}$ 
-  \STATE If there were any violations, return to Line 4.
+  \STATE If there were any violations, return to Line 5.
   \STATE \textbf{for} $g\in\mathcal{A}^c$, If $\snorm{S(\nabla \ell(\hat\vbeta_g),\ \lambda_k\alpha)}_2 > (1-\alpha)\lambda_k$, add $g$ to $\mathcal{A}$
-  \STATE If there were any violations, return to Line 4.
+  \STATE If there were any violations, return to Line 5.
+  \STATE \textbf{Set} $\mathcal{S} = \mathcal{S} \bigcup \mathcal{A}$.
   \ENDFOR
   \end{algorithmic}
 \end{algorithm}
