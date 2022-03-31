@@ -21,6 +21,6 @@ g <- ggplot(states, aes(map_id = state_name)) +
     breaks = c(-10, -5, -2, 0, 2, 5, 10, 20),
   ) +
   coord_map(projection = "albers", parameters = c(30,40)) +
-  theme_void(base_family = "Palatino") +
+  theme_void() +
   theme(legend.position = "bottom", legend.key.width = unit(2, "cm"),
         legend.title = element_blank())
