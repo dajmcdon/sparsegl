@@ -34,7 +34,7 @@ author:
 title:
   formatted: "Estimating Sparse Group Lasso with the \\pkg{sparsegl} \\proglang{R} Package"
   # If you use tex in the formatted title, also supply version without
-  plain:     "Sparse Group Lasso with \\pkg{sparsegl}"
+  plain:     "Estimating Sparse Group Lasso with the sparsegl R Package"
   # For running headers, if needed
   short:     "\\pkg{sparsegl}: Sparse Group Lasso"
 abstract: >
@@ -161,9 +161,9 @@ As with Equation \eqref{eq:lasso}, there is only a single tuning parameter $\lam
 Finally, in a group-structured problem as above, it may be desirable to enforce sparsity, not only among the groups, but also within the groups. The sparse group lasso \citep{simon2013sparse} does this by combining the penalties in Equations \eqref{eq:lasso} and \eqref{eq:group-lasso}:
 \begin{equation}
   \label{eq:sparsegl}
-\min_{\vbeta}\left\{\frac{1}{2n}\snorm{\vY-\mX\vbeta}_2^2 + (1-\alpha)\lambda\sum_{g=1}^G \snorm{\vbeta^{(g)}}_2+\alpha\lambda\snorm{\vbeta}_1\right\}.
+\min_{\vbeta}\left\{\frac{1}{2n}\snorm{\vY-\mX\vbeta}_2^2 + (1-\alpha)\lambda\sum_{g=1}^G \snorm{\vbeta^{(g)}}_2+\alpha\lambda\sum_{g=1}^G\snorm{\vbeta^{(g)}}_1\right\}.
 \end{equation}
-There is now a second tuning parameter $\alpha$, which controls the relative emphasis of intra- vs inter-group sparsity in the predictors.
+There is now a second tuning parameter $\alpha$, which controls the relative emphasis of intra- vs inter-group sparsity in the predictors. In Equation \ref{eq:sparsegl}, we have chosen to write the group dependence explicitly in the $\ell_1$ component of the penalty, but note that $\sum_{g=1}^G\snorm{\vbeta^{(g)}}_1 = \snorm{\vbeta}_1$.
 
 <!--
 The solution to the sparse group lasso in Equation \eqref{eq:sparsegl}, like the other two procedures, does not have a closed form expression and thus relies on algorithmic implementations, which may be computationally expensive for large datasets and/or many values of $\lambda$. The rest of this paper therefore concerns the mitigation of this issue, in particular the following question: if we are solving the sparse group lasso, not for a single value of the tuning parameter $\lambda$ but a whole parameter space---in this context, a range of values $\{\lambda_1,\dots \lambda_S\}$--- can we shorten the total computational time by making use of the already-computed solution at previous $\lambda$s' in the parameter space to speed up computation at a given $\lambda$?
@@ -557,7 +557,7 @@ We developed this package for solving sparse group lasso optimization problem ba
 
 # Acknowledgements {.unnumbered}
 
-Here we list all the packages that we needed to compile this code. \pkg{devtools} [@R-devtools] \pkg{usethis} [@R-usethis] \pkg{testthat} [@R-testthat] \pkg{knitr} [@R-knitr] \pkg{ggplot2}[-@R-ggplot2] and \pkg{rticles} [-@R-rticles]. 
+In addition to the \proglang{R} packages described above, this manuscript and \pkg{sparsegl} benefitted from \pkg{devtools} [@R-devtools], \pkg{usethis} [@R-usethis], \pkg{testthat} [@R-testthat], \pkg{knitr} [@R-knitr], \pkg{ggplot2} [Wickham _et al._ -@R-ggplot2], and \pkg{rticles} [Allaire _et al._ -@R-rticles]. 
 
 Daniel J. McDonald was partially supported by the National Science Foundation (DMS–1753171) and the National Sciences and Engineering Research Council of Canada (RGPIN-2021-02618). The analysis in Section \ref{sec:trust} is based on survey results from Carnegie Mellon University’s Delphi Group.
 
