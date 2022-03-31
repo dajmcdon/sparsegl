@@ -19,6 +19,18 @@ author:
     address: |
       | Department of Statistics
       | Bloomington, IN USA
+  - name: Anibal Solón Heinsfeld
+    affiliation: 'The University of Texas at Austin \AND'
+    address: |
+      | Department of Computer Science
+      | Austin, TX USA
+  - name: Franco Pestilli
+    affiliation: 'The University of Texas at Austin'
+    address: |
+      | Department of Psychology
+      | Center for Perceptual Systems
+      | Austin, TX USA
+
 title:
   formatted: "Estimating Sparse Group Lasso with the \\pkg{sparsegl} \\proglang{R} Package"
   # If you use tex in the formatted title, also supply version without
@@ -486,7 +498,7 @@ er <- estimate_risk(fit, X, y)
 
 ```{r re-plot, echo=FALSE, message=FALSE, warning=FALSE, fig.width = 4, fig.height = 2, fig.cap="AIC, BIC, and GCV (solid lines) along with their minima (vertical dashed lines)."}
 library(tidyverse)
-er <- er %>% select(-df) %>% pivot_longer(-lambda, values_to = "risk")
+er <- er %>% dplyr::select(-df) %>% pivot_longer(-lambda, values_to = "risk")
 err <- er %>% group_by(name) %>% summarise(lambda = lambda[which.min(risk)])
 ggplot(er, aes(lambda, risk, color = name)) +
   geom_line() +
