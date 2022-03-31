@@ -33,8 +33,10 @@
 #' groups, which implies no shrinkage, and results in that group always being
 #' included in the model. Default value for each entry is the square-root of
 #' the corresponding size of each group.
-#' @param pfl1 Another penalty factor, a vector of the same length as the total
-#' number of predictors. Each entry should be non-negative in this vector.
+#' @param pfl1 A penalty factor on l1-norm, and each value is for one predictor,
+#'  A vector of the same length as the total. Can be 0 for some predictors, which
+#'  implies that predictor will be only imposed by the group-sparse l2-norm penalty.
+#'  Each entry should be non-negative in this vector.
 #' @param dfmax Limit the maximum number of groups in the model. Default is
 #'   no limit.
 #' @param pmax Limit the maximum number of groups ever to be nonzero. For
@@ -159,9 +161,8 @@ sparsegl <- function(
     msg = paste("The length of lasso penalty factor must be", 
                 "same as the number of predictors"))
   
-  if (sum(pfl1) != nvars) {
-    pfl1 <- pfl1 / sum(pfl1) * nvars
-  }
+  pfl1 <- pfl1 / sum(pfl1) * nvars
+  
   maxit <- as.integer(maxit)
   pf <- as.double(pf)
   pfl1 <- as.double(pfl1)
