@@ -1,6 +1,7 @@
 
 <!-- badges: start -->
-[![R-CMD-check](https://github.com/dajmcdon/sparsegl/workflows/R-CMD-check/badge.svg)](https://github.com/dajmcdon/sparsegl/actions)
+[![R-CMD-check](https://github.com/dajmcdon/sparsegl/workflows/R-CMD-check/badge.svg)](https://github.com/dajmcdon/sparsegl/actions)[![CRAN
+status](https://www.r-pkg.org/badges/version/sparsegl)](https://CRAN.R-project.org/package=sparsegl)
 <!-- badges: end -->
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
@@ -13,15 +14,12 @@ of the regularization parameter lambda.
 
 ## Installation
 
-<!--
-You can install the released version of sparsegl from [CRAN](https://CRAN.R-project.org) with:
+You can install the released version of sparsegl from
+[CRAN](https://CRAN.R-project.org) with:
 
-
-```r
+``` r
 install.packages("sparsegl")
 ```
-
--->
 
 You can install the development version from
 [Github](https://github.com/) with:
