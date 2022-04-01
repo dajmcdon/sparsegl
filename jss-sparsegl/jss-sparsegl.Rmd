@@ -2,7 +2,6 @@
 documentclass: jss
 author:
   - name: Daniel J. McDonald
-    orcid: "0000-0002-0443-4282"
     affiliation: |
       | University of British Columbia
     address: |
@@ -35,9 +34,9 @@ author:
 title:
   formatted: "Estimating Sparse Group Lasso with the \\pkg{sparsegl} \\proglang{R} Package"
   # If you use tex in the formatted title, also supply version without
-  plain:     "Estimating Sparse Group Lasso with the sparsegl R Package"
+  plain: "Estimating Sparse Group Lasso with the sparsegl R Package"
   # For running headers, if needed
-  short:     "\\pkg{sparsegl}: Sparse Group Lasso"
+  short: "\\pkg{sparsegl}: Sparse Group Lasso"
 abstract: >
   The sparse group lasso is a high-dimensional regression technique that is
   useful for problems whose covariates have a naturally grouped structure, and
@@ -104,10 +103,10 @@ Our contribution, then, is to provide a package that performs sparse group lasso
 \item Uses \pkg{dotCall64} to interface with low-level \proglang{Fortran} functions and avoid unnecessary copying as well as allow for 64-bit integers \citep[see][]{gerber2017dotcall,gerber2018dotcall};
 \item Provides information criteria as risk estimators (AIC/BIC/GCV);
 \end{itemize}
-A comparison of features of this and related \proglang{R} packages is shown in Table \ref{tab:comparison}. In Section \ref{methodology-estimation-and-prediction}, we describe the algorithmic implementation in detail, paying particular attention to the strong rule. In Section \ref{example-usage}, we show how to use the package, running through an example with simulated data. Section \ref{applications} demonstrates many of the
+A comparison of features of this and related \proglang{R} packages is shown in \autoref{tab:comparison}. In \autoref{methodology-estimation-and-prediction}, we describe the algorithmic implementation in detail, paying particular attention to the strong rule. In \autoref{example-usage}, we show how to use the package, running through an example with simulated data. \autoref{applications} demonstrates many of the
 unique features of \pkg{sparsegl} in two applications.
 <!-- In Section \ref{comparisons-with-other-packages}, we compare our package to the other existing group-lasso packages, and also compare the two variants of our algorithm with each other. -->
-We summarize and discuss paths for future work in Section \ref{discussion-and-future-work}, and make promising proposals for potential future research as well.
+We summarize and discuss paths for future work in \autoref{discussion-and-future-work}, and make promising proposals for potential future research as well.
 
 
 \begin{table}
@@ -259,7 +258,7 @@ An examination Equation \eqref{eq:updateStep} shows that it is possible for the 
     \WHILE{Not converged}
     \FOR{$g \in \mathcal{G}$}
     \STATE Update $\vbeta^{(g)} = \left(1-\frac{t(1-\alpha)\lambda}{\snorm{S\big(\vbeta^{(g)}-t\nabla \ell(\vbeta^{(g)}),\ t\alpha\lambda\big)}_2}\right)_+ S\big(\vbeta^{(g)}-t\nabla \ell(\vbeta^{(g)}),\ t\alpha\lambda\big)$.
-    \STATE Update $\mathbf{r} = \mathbf{r} - \mX\vbeta^{(g)}$.
+    \STATE Update $\mathbf{r} = \mathbf{r} - \mX^{(g)}\vbeta^{(g)}$.
     \ENDFOR
     \ENDWHILE 
     \RETURN{$\vbeta$}
@@ -273,7 +272,7 @@ Above, we have focused on the Gaussian linear model with $\ell(\vbeta) = \frac{1
 In the case of logistic regression, we use exactly the same procedure but with
 $\ell(\vbeta) = \frac{1}{n}\sum_{i}\log(1 + \exp\{-r_i\vx_i^\T\vbeta\})$, $\nabla \ell(\vbeta) = -\frac{1}{n}\sum_{i}y_i\vx_i^\top (1 + \exp\{-r_i\vx_i^\T\vbeta\})^{-1}$, and $\mathbf{H}(\vbeta) \leq 4t\mathbf{I}$. This procedure is explicitly stated in \autoref{alg:sparsegl}.
 
-While the procedure described so far solves Equation \eqref{eq:sparsegl} for fixed choices of $\lambda$ and $\alpha$, the data analyst does not typically know these ahead of time. Rather, we would like to solve the problem for a collection of values of $\lambda$ (and perhaps $\alpha$ as well). It turns out that the structure of this optimization problem allows for some heuristics that can perform this sequential optimization with a minimum of additional computational resources, in some cases, solving Equation \eqref{eq:sparsegl} faster for a sequence of values $\lambda_s \in \{\lambda_1,\ldots,\lambda_S\}$ than for a single choice \citep{tibshirani2012strong}. We describe our implementation of this procedure next.
+While the procedure described so far solves Equation \eqref{eq:sparsegl} for fixed choices of $\lambda$ and $\alpha$, the data analyst does not typically know these ahead of time. Rather, we would like to solve the problem for a collection of values of $\lambda$ (and perhaps $\alpha$ as well). It turns out that the structure of this optimization problem allows for some heuristics that can perform this sequential optimization with a minimum of additional computational resources, in some cases, solving Equation \eqref{eq:sparsegl} faster for a sequence of values $\lambda_m \in \{\lambda_1,\ldots,\lambda_M\}$ than for a single choice \citep{tibshirani2012strong}. We describe our implementation of this procedure next.
 
 
 <!-- Because the optimization problem is convex, with differentiable loss and separable penalty, it can be shown that this type of blockwise coordinate descent algorithm is guaranteed to converge to the optimal solution for the full vector $\hat{\vbeta}$. That is, it does not get `stuck' at any inflection points or local minima. Therefore, if that was all the algorithm did, there would be no need to check the KKT conditions for optimality. -->
@@ -296,7 +295,7 @@ Re-examining Equation \eqref{eq:subgrad}, we can see that the first order condit
 
 This is because, as $\mathbf{u}$ is the subgradient of $\snorm{\vbeta_g}_2$, $\snorm{\mathbf{u}}_2\leq 1$. Furthermore, if $\snorm{\mathbf{u}}_2 < 1$, then $\hat{\vbeta}_j = \mathbf{0}$. In the previous section, we used the sufficiency of the first order Karush-Kuhn-Tucker (KKT) stationarity condition to derive a solution, while Equation \eqref{eq:subgrad-again} is the necessary version. So given a potential solution, it is easy to check its validity. Unfortunately, this is not constructive. 
 
-The sequential strong rule \citep{tibshirani2012strong} begins from Equation \eqref{eq:subgrad-again} and makes use of the fact that we are solving for a sequence $\{\lambda_1 \geq \lambda_2 \geq \dots \geq\lambda_M\}$ of lambda parameters, rather than a single value. At each $\lambda_m$, we rely on the fact that we have solved the problem for the previous $\lambda_{m-1}$, and use this information to quickly discard many groups of predictors. Without loss of generality, for the rest of this section assume that the problem has already been solved for $\lambda_{m-1}$.
+The sequential strong rule \citep{tibshirani2012strong} begins from Equation \eqref{eq:subgrad-again} and makes use of the fact that we are solving for a sequence of parameters $\{\lambda_1 > \lambda_2 > \dots > \lambda_M\}$ of parameters rather than a single value. At each $\lambda_m$, we rely on the fact that we have solved the problem for the previous $\lambda_{m-1}$, and use this information to quickly discard many groups of predictors. Without loss of generality, for the rest of this section assume that the problem has already been solved for $\lambda_{m-1}$.
 
 Define $c_g(\lambda) = S(\nabla \ell(\vbeta_g),\ \lambda\alpha)$. Now, we make the assumption that $c_g(\lambda)$ is $(1-\alpha)$-Lipschitz, i.e., that
 \begin{equation}
@@ -312,8 +311,9 @@ $$
 \snorm{c_g(\lambda_m)}_2 \leq \snorm{c_g(\lambda_m) - c_g(\lambda_{m-1})}_2 +
 \snorm{c_g(\lambda_{m-1})}_2 \leq (1-\alpha)(\lambda_{m-1} - \lambda_m) + \snorm{c_g(\lambda_{m-1})}_2.
 $$
-To continue this upper bound, we want
-$(1-\alpha)(\lambda_{m-1} - \lambda_sm) + \snorm{c_g(\lambda_{m-1})}_2 \leq (1-\alpha)\lambda_m$ which holds if
+We want to be able to assert that
+$(1-\alpha)(\lambda_{m-1} - \lambda_m) + \snorm{c_g(\lambda_{m-1})}_2 \leq (1-\alpha)\lambda_m$, allowing us to ignore group $g$, but this assertion holds 
+precisely when
 \begin{equation}
 \label{eq:strong}
 \snorm{c_g(\lambda_{m-1})}_2 \leq (1-\alpha)(2\lambda_m - \lambda_{m-1}).
@@ -325,12 +325,12 @@ Applying this logic to Equation \eqref{eq:Meq} above gives the sequential strong
 \snorm{S\big(\nabla \ell(\vbeta_g),\ t\alpha\lambda_{m-1}\big)}_2 \leq t(1-\alpha)(2\lambda_m - \lambda_{m-1}).
 \end{equation}
 For more details in related settings, see \citep{tibshirani2012strong}.
-If Equation \eqref{eq:strong}
+If Equation \eqref{eq:sgl-strong}
 holds, then we ignore group $g$ when solving the problem at $\lambda_m$. That is to say, when we move from $\lambda_{m-1}$ to $\lambda_m$, we first check this condition on all groups, using the previously computed solution for $\hat{\vbeta}(\lambda_{m-1})$, and then perform blockwise coordinate descent, using only those groups that failed this inequality.
 
-This discarding rule is fast, because it uses the previously computed solution and a simple inequality, and in practice, it tends to accurately discard large numbers of groups. However, we should reiterate that it is possible for the strong rule to fail. The $(1-\alpha)$-Lipschitz assumption is not a guarantee. Because of this, it is critical that, after discarding some of the groups and running the algorithm on the others, the KKT condition is checked on all discarded groups. If there are no violations, then we have the solution. 
+This discarding rule is fast, because it uses the previously computed solution and a simple inequality, and in practice, it tends to accurately discard large numbers of groups. However, we should reiterate that it is possible for the strong rule to fail. The Lipschitz assumption is not a guarantee. Because of this, it is critical that, after discarding some of the groups and running the algorithm on the others, the KKT condition is checked on all discarded groups. If there are no violations, then we have the solution. 
 
-To minimize gradient computations for groups that will eventually be determined to be inactive, we actually keep track of two sets: the strong set $\mathcal{S}$ and the active set $\mathcal{A}$. The active set collects all groups that have ever had non-zero coefficients at previous values of $\lambda$. We first iterate over previously active groups, then check the strong set to see if we missed any, and finally check all the remaining groups. When $p$ is very large, this avoids onerous computations for as many groups as possible. The complete algorithm is shown in Algorithm \ref{alg:djm}.
+To minimize gradient computations for groups that will eventually be determined to be inactive, we actually keep track of two sets: the strong set $\mathcal{S}$ and the active set $\mathcal{A}$. The active set collects all groups that have ever had non-zero coefficients at previous values of $\lambda$. We first iterate over previously active groups, then check the strong set to see if we missed any, and finally check all the remaining groups. When the number of groups is very large, this avoids onerous computations for as many groups as possible. The complete algorithm is shown in \autoref{alg:djm}.
 
 \begin{algorithm}[tb!]
   \caption{Sequential strong rule and Majorization Minimization in \pkg{sparsegl}}
@@ -342,7 +342,7 @@ To minimize gradient computations for groups that will eventually be determined 
   \STATE \textbf{Update} $\mathcal{S} \leftarrow \mathcal{S} \bigcup \left\{
   g\in\mathcal{S}^c : \snorm{S(\nabla \ell(\hat\vbeta_g),\ 
   t\alpha\lambda_m)}_2 > t(1-\alpha)\lambda_m \right\}$.
-  \STATE \textbf{Apply} Algorithm \ref{alg:sparsegl} with $\mathcal{G} = \mathcal{A}$ (MM gradient update).
+  \STATE \textbf{Apply} \autoref{alg:sparsegl} with $\mathcal{G} = \mathcal{A}$ (MM gradient update).
   \STATE \textbf{Update} $\mathcal{A} \leftarrow \mathcal{A} \bigcup \left\{g \in\mathcal{S}\bigcap\mathcal{A}^c : \snorm{S(\nabla \ell(\hat\vbeta_g),\ t\alpha\lambda_m)}_2 > t(1-\alpha)\lambda_m\right\}.$
   \begin{ALC@g}
   \STATE If there were any violations, \textbf{go to} to Line 5.
@@ -444,7 +444,7 @@ library(sparsegl)
 fit <- sparsegl(X, y, group = groups)
 ```
 
-We include a number of \pkg{S3} methods for the `sparsegl` typical for linear models: `plot()`, `coef()`, `predict()` and `print()`. The `plot()` function displays either the coefficients or the group norms on the $y$-axis against either $\{\lambda_s\}_{s=1}^S$ or the scaled penalty on the $x$-axis. The resulting figures are shown in Figure \ref{fig:coef-trace}.
+We include a number of \pkg{S3} methods for the `sparsegl` typical for linear models: `plot()`, `coef()`, `predict()` and `print()`. The `plot()` function displays either the coefficients or the group norms on the $y$-axis against either $\{\lambda_s\}_{s=1}^S$ or the scaled penalty on the $x$-axis. The resulting figures are shown in \autoref{fig:coef-trace}.
 
 ```{r coef-trace, fig.width = 4, fig.height = 2, fig.cap="Coefficient trace plots produced with the \\texttt{plot()} method.", fig.show='hold', out.width="45%"}
 plot(fit, y_axis = "coef", x_axis = "penalty", add_legend = FALSE)
@@ -527,7 +527,7 @@ In particular, we will focus on the "estimated percentage of respondents who tru
 
 We regress "trust in experts" on discrete predictors representing (1) month of report, (2) state of residence, (3) age group, (4) race/ethnicity, and (5) self-reported gender identity. This leads to 76 0-1 valued predictors in 5 groups. We also use spline basis expansions with 10 degrees-of-freedom to include continuous variables for "estimated percentage of people with Covid-like illness" and "estimated percentage of people reporting Covid-like illness in their local community, including their household" to control for the amount of exposure that respondents may have been having to the pandemic. 
 
-After omitting both structural and otherwise missing data, the final model is estimated with 3775 observations on 96 predictors. Encoded as a sparse matrix, this takes requires about 500 KB of RAM to store, as opposed to 3 MB if it were dense. We estimated the model using `sparsegl()` and default arguments. Finally, we chose $\lambda$ to minimize BIC. Figure \ref{fig:trust} displays the estimated coefficients for the state-of-residence terms. Even controlling for age, race, gender, and the amount of circulating Covid-like illness, the United States displays strong geographic disparities when it comes to citizens' trust in scientists and other health authorities. 
+After omitting both structural and otherwise missing data, the final model is estimated with 3775 observations on 96 predictors. Encoded as a sparse matrix, this takes requires about 500 KB of RAM to store, as opposed to 3 MB if it were dense. We estimated the model using `sparsegl()` and default arguments. Finally, we chose $\lambda$ to minimize BIC. \autoref{fig:trust} displays the estimated coefficients for the state-of-residence terms. Even controlling for age, race, gender, and the amount of circulating Covid-like illness, the United States displays strong geographic disparities when it comes to citizens' trust in scientists and other health authorities. 
 
 ```{r trust, echo=FALSE, fig.cap="State-level estimates for the amount of trust in experts about Covid-19.", fig.width=8, fig.height=4, message=FALSE, warning=FALSE, out.width="5in"}
 source("code/covid.R")
@@ -548,7 +548,7 @@ Here we undertake an analysis similar to that in \cite{aminmansour2019} though w
 In \cite{aminmansour2019}, the authors propose an algorithm based on Orthogonal Matching Pursuit to estimate the group-regularized linear model. The data they use measures 12K voxels on 96 angles and attempts to reconstruct the white matter using the ENCODE method \citep{encode2017} with 1057 orientations and 868 fascicles. Converting this into a linear regression problem (rather than a tensor regression problem) results in a linear model with $n \approx 10^6$ and $p = 868$. 
 
 In comparison, we use 150K voxels measured on `r meta$nangles` angles with 130K orientations and 26K streamlines. The resulting linear model has $n\approx 9M$ and $p=26K$, about 230$\times$ the size of the previous analysis. The design matrix would occupy nearly 2 PB if it were dense, but since it is only about 0.05% non-zero, it requires 1.2 GB of memory when stored in CSC format.
-Estimating the group lasso using \pkg{sparsegl} with 61 groups based on neuroanatomy and 100 values of $\lambda$ took just under 2 minutes on a 2020 MacBook Air (Apple M1 chip) with 16 GB of RAM. Figure \ref{fig:brains} shows the group norm of the 61 groups against the magnitude of the group penalty.
+Estimating the group lasso using \pkg{sparsegl} with 61 groups based on neuroanatomy and 100 values of $\lambda$ took just under 2 minutes on a 2020 MacBook Air (Apple M1 chip) with 16 GB of RAM. \autoref{fig:brains} shows the group norm of the 61 groups against the magnitude of the group penalty.
 
 
 # Discussion and future work
@@ -560,6 +560,6 @@ We developed this package for solving sparse group lasso optimization problem ba
 
 In addition to the \proglang{R} packages described above, this manuscript and \pkg{sparsegl} benefitted from \pkg{devtools} [@R-devtools], \pkg{usethis} [@R-usethis], \pkg{testthat} [@R-testthat], \pkg{knitr} [@R-knitr], \pkg{ggplot2} [Wickham _et al._ -@R-ggplot2], and \pkg{rticles} [Allaire _et al._ -@R-rticles]. 
 
-Daniel J. McDonald was partially supported by the National Science Foundation (DMS–1753171) and the National Sciences and Engineering Research Council of Canada (RGPIN-2021-02618). The analysis in Section \ref{sec:trust} is based on survey results from Carnegie Mellon University’s Delphi Group.
+Daniel J. McDonald was partially supported by the National Science Foundation (DMS–1753171) and the National Sciences and Engineering Research Council of Canada (RGPIN-2021-02618). The analysis in \autoref{sec:trust} is based on survey results from Carnegie Mellon University’s Delphi Group.
 
 
