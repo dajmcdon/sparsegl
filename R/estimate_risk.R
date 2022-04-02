@@ -6,10 +6,10 @@
 #' [stats::extractAIC()]).
 #'
 #' @param object fitted object from a call to [sparsegl()].
-#' @template param_x-template
-#' @template param_y-template
+#' @param x Matrix. The matrix of predictors used to estimate
+#'   the `sparsegl` object. May be missing if `approx_df = TRUE`.
 #' @param type one or more of AIC, BIC, or GCV.
-#' @param approx_df the `df` component of a [sparsegl()] object is an
+#' @param approx_df the `df` component of a `sparsegl` object is an
 #'   approximation (albeit a fairly accurate one) to the actual degrees-of-freedom.
 #'   However, the exact value requires inverting a portion of `X'X`. So this
 #'   computation may take some time (the default computes the exact df).
@@ -29,19 +29,15 @@
 #' y <- X %*% beta_star + eps
 #' groups <- rep(1:(p / 5), each = 5)
 #' fit1 <- sparsegl(X, y, group = groups)
-#' estimate_risk(fit1, X, y, type = "AIC")
-estimate_risk <- function(object, x, y,
+#' estimate_risk(fit1, type = "AIC", approx_df = TRUE)
+estimate_risk <- function(object, x,
                           type = c("AIC", "BIC", "GCV"),
                           approx_df = FALSE) {
   if (! "ls" %in% class(object)) stop("Only linear regression is supported.")
   type <- match.arg(type, several.ok = TRUE)
-  if (is.matrix(y)) {
-    stopifnot(dim(y)[2] == 1)
-    y <- drop(y)
-  }
-  preds <- predict(object, x)
-  err <- log(colMeans((y - preds)^2))
-  n <- length(y)
+
+  err <- log(object$mse)
+  n <- object$nobs
 
   if (approx_df) df <- object$df
   else df <- exact_df(object, x)
@@ -58,6 +54,8 @@ estimate_risk <- function(object, x, y,
 exact_df <- function(object, x) {
   # See the correct formula in https://arxiv.org/pdf/1212.6478.pdf
   # Theorem 2
+  if (missing(x))
+    stop("Risk estimation with exact df requires the design matrix `x`.")
   Iset <- abs(object$beta) > 0
   Imax <- which(apply(Iset, 1, any))
   Iset <- Iset[Imax,]

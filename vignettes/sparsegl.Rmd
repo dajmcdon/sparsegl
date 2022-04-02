@@ -273,11 +273,11 @@ the program will compute the unbiased estimate of the exact degree-of-freedom.
 FYI: Degree-of-freedom is a tool to assess the complexity of a statistical modeling
 procedure. `object$df`, the approximation to the degree-of-freedom is the number of nonzero
 coefficients of the model. Notice that it would take some time to calculate the 
-unbiased estimate of the exact degreeo-of-freedom if `X` is complicated. For more
+unbiased estimate of the exact degrees-of-freedom if `X` is complicated. For more
 details about how to realize this calculation, our method is implemented based on
 the paper https://arxiv.org/pdf/1212.6478.pdf. 
 
 ```{r}
-risk <- estimate_risk(fit1, X, y, type = "AIC", approx_df = FALSE)
+risk <- estimate_risk(fit1, X, type = "AIC", approx_df = FALSE)
 ```
 

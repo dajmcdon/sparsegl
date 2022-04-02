@@ -1,8 +1,9 @@
 
 !---------------------------------------------
 
-SUBROUTINE sparse_four (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,flmin,ulam,&
-     eps,maxit,nalam,beta,activeGroup,nbeta,alam,npass,jerr,alsparse,lb,ub)
+SUBROUTINE sparse_four (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,&
+      flmin,ulam,eps,maxit,nalam,beta,activeGroup,nbeta,alam,npass,jerr,mse,&
+      alsparse,lb,ub)
 
   USE sgl_subfuns
   IMPLICIT NONE
@@ -26,7 +27,7 @@ SUBROUTINE sparse_four (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,flmin,
   DOUBLE PRECISION :: gam(bn)
   DOUBLE PRECISION :: lb(bn), ub(bn)
   DOUBLE PRECISION :: beta(nvars,nlam)
-  DOUBLE PRECISION :: alam(nlam)
+  DOUBLE PRECISION :: alam(nlam), mse(nlam)
 
   DOUBLE PRECISION, DIMENSION (:), ALLOCATABLE :: s !need for sparse_four
   DOUBLE PRECISION, DIMENSION (:), ALLOCATABLE :: b
@@ -190,6 +191,7 @@ SUBROUTINE sparse_four (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,flmin,
            CYCLE ! don't save anything, we're still decrementing lambda
         ELSE
            l = 2
+           mse(1) = DOT_PRODUCT(y/nobs, y)
            alam(1) = al / MAX(alf, .99D0) ! store previous, larger value
         ENDIF
      ENDIF
@@ -207,6 +209,7 @@ SUBROUTINE sparse_four (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,flmin,
      ENDIF
      nbeta(l) = ni
      alam(l) = al
+     mse(l) = DOT_PRODUCT(r/nobs, r)
      nalam = l
      IF (l < mnl) CYCLE
      me = 0
@@ -225,7 +228,7 @@ END SUBROUTINE sparse_four
 ! --------------------------------------------------
 SUBROUTINE spmat_four (bn,bs,ix,iy,gam,nobs,nvars,x,xidx,xcptr,nnz,y,pf,&
      dfmax,pmax,nlam,flmin,ulam,eps,maxit,intr,nalam,b0,beta,&
-     activeGroup,nbeta,alam,npass,jerr,alsparse,lb,ub)
+     activeGroup,nbeta,alam,npass,jerr,mse,alsparse,lb,ub)
   ! --------------------------------------------------
   USE sgl_subfuns
   USE spmatmul
@@ -251,7 +254,7 @@ SUBROUTINE spmat_four (bn,bs,ix,iy,gam,nobs,nvars,x,xidx,xcptr,nnz,y,pf,&
   DOUBLE PRECISION, INTENT(in) :: lb(bn), ub(bn)
   DOUBLE PRECISION :: b0(nlam)
   DOUBLE PRECISION :: beta(nvars,nlam)
-  DOUBLE PRECISION :: alam(nlam)
+  DOUBLE PRECISION :: alam(nlam), mse(nlam)
   ! - - - local declarations - - -
   DOUBLE PRECISION, DIMENSION (:), ALLOCATABLE :: s !need for sparse_four
   DOUBLE PRECISION, DIMENSION (:), ALLOCATABLE :: b
@@ -423,6 +426,7 @@ SUBROUTINE spmat_four (bn,bs,ix,iy,gam,nobs,nvars,x,xidx,xcptr,nnz,y,pf,&
            CYCLE ! don't save anything, we're still decrementing lambda
         ELSE
            l=2
+           mse(1) = DOT_PRODUCT(y/nobs, y)
            alam(1) = al / MAX(alf, .99D0) ! store previous, larger value
         ENDIF
      ENDIF
@@ -440,6 +444,7 @@ SUBROUTINE spmat_four (bn,bs,ix,iy,gam,nobs,nvars,x,xidx,xcptr,nnz,y,pf,&
      nbeta(l) = ni
      b0(l) = b(0)
      alam(l) = al
+     mse(l) = DOT_PRODUCT(r / nobs ,r)
      nalam = l
      IF (l < mnl) CYCLE
      me = 0
