@@ -118,6 +118,7 @@ An object with S3 class \code{\link[=sparsegl]{sparsegl()}}.
 \item \code{jerr} Error flag, for warnings and errors, 0 if no error.
 \item \code{group} A vector of consecutive integers describing the grouping of the
 coefficients.
+\item \code{nobs} The number of observations used to estimate the model.
 }
 }
 \description{

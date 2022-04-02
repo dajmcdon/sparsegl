@@ -4,25 +4,17 @@
 \alias{estimate_risk}
 \title{Calculate information criteria.}
 \usage{
-estimate_risk(object, x, y, type = c("AIC", "BIC", "GCV"), approx_df = FALSE)
+estimate_risk(object, x, type = c("AIC", "BIC", "GCV"), approx_df = FALSE)
 }
 \arguments{
 \item{object}{fitted object from a call to \code{\link[=sparsegl]{sparsegl()}}.}
 
-\item{x}{Double. A matrix of predictors, of dimension
-\eqn{n \times p}{n * p}; each row
-is a vector of measurements and each column is a feature. Objects of class
-\code{\link[Matrix:sparseMatrix]{Matrix::sparseMatrix}} are supported.}
-
-\item{y}{Double/Integer/Factor. The response variable.
-Quantitative for \code{family="gaussian"}.
-For \code{family="binomial"} should be either a factor with two levels or
-a vector of integers taking 2 unique values.
-For a factor, the last level in alphabetical order is the target class.}
+\item{x}{Matrix. The matrix of predictors used to estimate
+the \code{sparsegl} object. May be missing if \code{approx_df = TRUE}.}
 
 \item{type}{one or more of AIC, BIC, or GCV.}
 
-\item{approx_df}{the \code{df} component of a \code{\link[=sparsegl]{sparsegl()}} object is an
+\item{approx_df}{the \code{df} component of a \code{sparsegl} object is an
 approximation (albeit a fairly accurate one) to the actual degrees-of-freedom.
 However, the exact value requires inverting a portion of \verb{X'X}. So this
 computation may take some time (the default computes the exact df).}
@@ -46,7 +38,7 @@ beta_star <- c(rep(5, 5), c(5, -5, 2, 0, 0), rep(-5, 5), rep(0, (p - 15)))
 y <- X \%*\% beta_star + eps
 groups <- rep(1:(p / 5), each = 5)
 fit1 <- sparsegl(X, y, group = groups)
-estimate_risk(fit1, X, y, type = "AIC")
+estimate_risk(fit1, type = "AIC", approx_df = TRUE)
 }
 \references{
 Vaiter S, Deledalle C, Peyré G, Fadili J, Dossal C. (2012). \emph{The

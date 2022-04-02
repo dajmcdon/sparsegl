@@ -41,7 +41,7 @@ sgl_ls <- function(
                     "integer", "integer", "integer", "double", "double",
                     "double", "integer", "integer", "double", "integer",
                     "integer", "double", "integer", "integer", "double",
-                    "double", "double"),
+                    "double", "double", "double"),
       # Read only
       bn = bn, bs = bs, ix = ix, iy = iy, gam = gamma, nobs = nobs,
       nvars = nvars, x = as.double(x), y = as.double(y), pf = pf,
@@ -52,10 +52,10 @@ sgl_ls <- function(
       nalam = integer_dc(1), beta = numeric_dc(nvars * nlam),
       activeGroup = integer_dc(pmax), nbeta = integer_dc(nlam),
       alam = numeric_dc(nlam), npass = integer_dc(1),
-      jerr = integer_dc(1),
+      jerr = integer_dc(1), mse = numeric_dc(nlam),
       # read only
       alsparse = asparse, lb = lower_bnd, ub = upper_bnd,
-      INTENT = c(rep("r", 10), rep("rw", 7), rep("w", 7), rep("r", 3)),
+      INTENT = c(rep("r", 10), rep("rw", 7), rep("w", 8), rep("r", 3)),
       NAOK = TRUE,
       PACKAGE = "sparsegl")
   } else { # sparse design matrix
@@ -67,7 +67,7 @@ sgl_ls <- function(
                     "integer", "double", "double", "double", "integer",
                     "integer", "integer", "double", "double", "integer",
                     "integer", "double", "integer", "integer", "double",
-                    "double", "double"),
+                    "double", "double", "double"),
       # Read only
       bn = bn, bs = bs, ix = ix, iy = iy, gam = gamma, nobs = nobs,
       nvars = nvars, x = as.double(xval), xidx = xidx, xcptr = xcptr,
@@ -79,10 +79,10 @@ sgl_ls <- function(
       nalam = integer_dc(1), b0 = numeric_dc(nlam),
       beta = numeric_dc(nvars * nlam), activeGroup = integer_dc(pmax),
       nbeta = integer_dc(nlam), alam = numeric_dc(nlam),
-      npass = integer_dc(1), jerr = integer_dc(1),
+      npass = integer_dc(1), jerr = integer_dc(1), mse = numeric_dc(nlam),
       # Read only
       alsparse = as.double(asparse), lb = lower_bnd, ub = upper_bnd,
-      INTENT = c(rep("r", 13), rep("rw", 8), rep("w", 8), rep("r", 3)),
+      INTENT = c(rep("r", 13), rep("rw", 8), rep("w", 9), rep("r", 3)),
       NAOK = TRUE,
       PACKAGE = "sparsegl")
   }
@@ -97,7 +97,8 @@ sgl_ls <- function(
     if (!is.sparse) outlist$b0 <- rep(0, dim(outlist$beta)[2])
   }
   outlist <- c(outlist,
-               list(npasses = fit$npass, jerr = fit$jerr, group = group))
+               list(npasses = fit$npass, jerr = fit$jerr, group = group,
+                    mse = fit$mse[seq(fit$nalam)]))
   class(outlist) <- c("ls")
   outlist
 }

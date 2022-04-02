@@ -67,6 +67,7 @@
 #' * `jerr` Error flag, for warnings and errors, 0 if no error.
 #' * `group` A vector of consecutive integers describing the grouping of the
 #'     coefficients.
+#' * `nobs` The number of observations used to estimate the model.
 #'
 #'
 #' @seealso [plot.sparsegl()], [coef.sparsegl()], [predict.sparsegl()]
@@ -220,6 +221,7 @@ sparsegl <- function(
   if (is.null(lambda)) fit$lambda <- lamfix(fit$lambda)
   fit$call <- this.call
   fit$asparse <- asparse
+  fit$nobs <- nobs
   class(fit) <- c("sparsegl", class(fit))
   fit
 }

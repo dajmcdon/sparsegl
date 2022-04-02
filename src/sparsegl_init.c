@@ -34,6 +34,7 @@ void F77_NAME(sparse_four)(
     double *alam,
     int *npass,
     int *jerr,
+    double *mse,
     double *alsparse,
     double *lb,
     double *ub
@@ -64,6 +65,7 @@ static R_NativePrimitiveArgType sparse_four_t[] = {
   REALSXP,
   INTSXP,
   INTSXP,
+  REALSXP,
   REALSXP,
   REALSXP,
   REALSXP
@@ -98,6 +100,7 @@ void F77_NAME(spmat_four)(
     double *alam,
     int *npass,
     int *jerr,
+    double *mse,
     double *alsparse,
     double *lb,
     double *ub
@@ -133,6 +136,7 @@ static R_NativePrimitiveArgType spmat_four_t[] = {
   REALSXP,
   INTSXP,
   INTSXP,
+  REALSXP,
   REALSXP,
   REALSXP,
   REALSXP
