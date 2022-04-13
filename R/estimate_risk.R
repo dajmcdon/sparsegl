@@ -41,11 +41,13 @@ estimate_risk <- function(object, x,
 
   if (approx_df) df <- object$df
   else df <- exact_df(object, x)
-  out <- data.frame(lambda = object$lambda,
-                    df = df,
-                    AIC = err + 2 * df / n,
-                    BIC = err + log(n) * df / n,
-                    GCV = err - 2 * log(1 - df / n)) # actually log(GCV)
+  out <- data.frame(
+    lambda = object$lambda,
+    df = df,
+    AIC = err + 2 * df / n,
+    BIC = err + log(n) * df / n,
+    GCV = err - 2 * log(1 - df / n) # actually log(GCV)
+  )
   out <- out[c("lambda", "df", type)]
   return(out)
 }
@@ -70,8 +72,6 @@ exact_df <- function(object, x) {
       xx_sub <- xx[Idx, Idx]
       del <- delP(beta[Idx, i], group[Idx])
       df[i] <- sum(solve(xx_sub + object$lambda[i] * del) * xx_sub)
-    } else {
-      df[i] <- 0
     }
   }
   return(df)
@@ -83,7 +83,6 @@ delP <- function(beta, group) {
     p <- length(x)
     bn <- two_norm(x)
     Matrix::diag(1/bn, nrow = p, ncol = p) - outer(x, x) / bn^3
-
   })
   return(Matrix::bdiag(mats))
 }
