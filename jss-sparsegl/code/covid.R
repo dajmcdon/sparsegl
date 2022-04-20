@@ -7,7 +7,7 @@ y <- trust_experts[,"y"]
 x <- trust_experts[,-1]
 gr <- c(rep(1:7, times = c(8, 51, 5, 4, 8, 10, 10)))
 fit <- sparsegl(x, y, gr)
-er <- estimate_risk(fit, x, y, approx_df = FALSE)
+er <- estimate_risk(fit, x, approx_df = FALSE)
 cc <- coef(fit, s = er$lambda[which.min(er$BIC)])
 states <- tibble(state = rownames(cc)[10:60], coef = cc[10:60]) %>%
   mutate(state_name = tolower(covidcast::abbr_to_name(state, TRUE)))

@@ -485,7 +485,7 @@ plot(cv_fit_logit, log_axis = "none")
 ```
 
 In some cases, when computations are at a premium, cross validation my be too demanding for the purposes of risk estimation. For this reason, \pkg{sparsegl} provides an `estimate_risk()` function. It can be used to compute AIC \citep{Akaike1973}, BIC \citep{Schwarz1978}, and GCV \citep{golub1979generalized} information criteria. All three are computed by combining the
-log-likelihood with a penalty term for model flexibility. In addition to a fitted `sparsegl` model, `estimate_risk()` also needs the original data. The three available penalties are
+log-likelihood with a penalty term for model flexibility. In addition to a fitted `sparsegl` model, `estimate_risk()` also needs the original design matrix. The three available penalties are
 
 - `"AIC"` (Akaike information criterion): $2\textrm{df} / n$;
 - `"BIC"` (Bayesian information criterion): $\log(n)\textrm{df} / n$;
@@ -494,7 +494,7 @@ log-likelihood with a penalty term for model flexibility. In addition to a fitte
 where df is the degree-of-freedom, and $n$ is the sample size. Because the exact degrees-of-freedom can be computationally expensive, setting `approx_df=TRUE` uses the number of non-zero coefficient estimates, which is a fairly accurate approximation.
 
 ```{r risk-estimate, fig.width = 4, fig.height = 2}
-er <- estimate_risk(fit, X, y)
+er <- estimate_risk(fit, X)
 ```
 
 ```{r re-plot, echo=FALSE, message=FALSE, warning=FALSE, fig.width = 4, fig.height = 2, fig.cap="AIC, BIC, and GCV (solid lines) along with their minima (vertical dashed lines)."}
