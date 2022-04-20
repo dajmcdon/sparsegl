@@ -2,7 +2,7 @@
 documentclass: jss
 author:
   - name: Xiaoxuan Liang
-    affiliation: 'University of British Columbia \AND'
+    affiliation: 'University of British Columbia'
     address: |
       | Department of Statistics
       | Vancouver, BC Canada
@@ -446,7 +446,7 @@ fit <- sparsegl(X, y, group = groups)
 
 We include a number of \pkg{S3} methods for the `sparsegl` typical for linear models: `plot()`, `coef()`, `predict()` and `print()`. The `plot()` function displays either the coefficients or the group norms on the $y$-axis against either $\{\lambda_s\}_{s=1}^S$ or the scaled penalty on the $x$-axis. The resulting figures are shown in \autoref{fig:coef-trace}.
 
-```{r coef-trace, fig.width = 4, fig.height = 2, fig.cap="Coefficient trace plots produced with the \\texttt{plot()} method.", fig.show='hold', out.width="45%"}
+```{r coef-trace, fig.width = 4, fig.height = 3, fig.cap="Coefficient trace plots produced with the \\texttt{plot()} method.", fig.show='hold', out.width="45%"}
 plot(fit, y_axis = "coef", x_axis = "penalty", add_legend = FALSE)
 plot(fit, y_axis = "group", x_axis = "lambda", add_legend = FALSE)
 ```
@@ -462,7 +462,7 @@ print(fit)
 The `cv.sparsegl()` function implements $K$-fold cross validation and has a similar signature to `sparsegl()`. It allows the user to choose the number of splits and the loss function for measuring prediction or classification accuracy on the held-out sets.
 Here, the \pkg{S3} `plot()` method displays the cross-validation curve with upper and lower confidence bounds plots calculated as $\pm 1$ standard error across the folds for each $\lambda$ in the regularization path. 
 
-```{r cv-plot, fig.width = 4, fig.height = 2, fig.cap = "Cross validation error produced by the \\texttt{plot()} method for a \texttt{cv.sparsegl} object."}
+```{r cv-plot, fig.width = 4, fig.height = 2, fig.cap = "Cross validation error produced by the \\texttt{plot()} method for a \\texttt{cv.sparsegl} object."}
 cv_fit <- cv.sparsegl(X, y, groups, nfolds = 15)
 plot(cv_fit)
 ```
@@ -484,7 +484,7 @@ cv_fit_logit <- cv.sparsegl(X, y0, groups, family = "binomial",
 plot(cv_fit_logit, log_axis = "none")
 ```
 
-In some cases, when computations are at a premium, cross validation my be too demanding for the purposes of risk estimation. For this reason, \pkg{sparsegl} provides a `estimate_risk()` function. It can be used to compute AIC \citep{Akaike1973}, BIC \citep{Schwarz1978}, and GCV \citep{golub1979generalized}information criteria. All three are computed by combining the
+In some cases, when computations are at a premium, cross validation my be too demanding for the purposes of risk estimation. For this reason, \pkg{sparsegl} provides an `estimate_risk()` function. It can be used to compute AIC \citep{Akaike1973}, BIC \citep{Schwarz1978}, and GCV \citep{golub1979generalized} information criteria. All three are computed by combining the
 log-likelihood with a penalty term for model flexibility. In addition to a fitted `sparsegl` model, `estimate_risk()` also needs the original data. The three available penalties are
 
 - `"AIC"` (Akaike information criterion): $2\textrm{df} / n$;
