@@ -1,14 +1,6 @@
 ---
 documentclass: jss
 author:
-  - name: Daniel J. McDonald
-    affiliation: |
-      | University of British Columbia
-    address: |
-      | Department of Statistics
-      | Vancouver, BC Canada
-    email: \email{daniel@stat.ubc.ca}
-    url: \url{https://dajmcdon.github.io/}
   - name: Xiaoxuan Liang
     affiliation: 'University of British Columbia \AND'
     address: |
@@ -30,6 +22,14 @@ author:
       | Department of Psychology
       | Center for Perceptual Systems
       | Austin, TX USA
+  - name: Daniel J. McDonald
+    affiliation: |
+      | University of British Columbia
+    address: |
+      | Department of Statistics
+      | Vancouver, BC Canada
+    email: \email{daniel@stat.ubc.ca}
+    url: \url{https://dajmcdon.github.io/}
 
 title:
   formatted: "Estimating Sparse Group Lasso with the \\pkg{sparsegl} \\proglang{R} Package"
