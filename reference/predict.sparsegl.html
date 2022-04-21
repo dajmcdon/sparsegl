@@ -123,8 +123,8 @@ right <code>lambda</code> indices.</p>
 <span class="r-in"><span class="va">groups</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="op">(</span><span class="va">p</span> <span class="op">/</span> <span class="fl">5</span><span class="op">)</span>, each <span class="op">=</span> <span class="fl">5</span><span class="op">)</span></span>
 <span class="r-in"><span class="va">fit1</span> <span class="op">&lt;-</span> <span class="fu"><a href="sparsegl.html">sparsegl</a></span><span class="op">(</span><span class="va">X</span>, <span class="va">y</span>, group <span class="op">=</span> <span class="va">groups</span><span class="op">)</span></span>
 <span class="r-in"><span class="fu"><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict</a></span><span class="op">(</span><span class="va">fit1</span>, newx <span class="op">=</span> <span class="va">X</span><span class="op">[</span><span class="fl">10</span>, <span class="op">]</span>, s <span class="op">=</span> <span class="va">fit1</span><span class="op">$</span><span class="va">lambda</span><span class="op">[</span><span class="fl">3</span><span class="op">:</span><span class="fl">5</span><span class="op">]</span><span class="op">)</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>              1         2        3</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1,] -1.562269 -2.292325 -2.93115</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>              1        2        3</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1,] 0.6890889 2.723115 6.168937</span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>
