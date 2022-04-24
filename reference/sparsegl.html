@@ -26,9 +26,6 @@ sequence of regularization parameters lambda."><!-- mathjax --><script src="http
 <li class="active nav-item">
   <a class="nav-link" href="../reference/index.html">Reference</a>
 </li>
-<li class="nav-item">
-  <a class="nav-link" href="../news/index.html">Changelog</a>
-</li>
       </ul><form class="form-inline my-2 my-lg-0" role="search">
         <input type="search" class="form-control me-sm-2" aria-label="Toggle navigation" name="search-input" data-search-index="../search.json" id="search-input" placeholder="Search for" autocomplete="off"></form>
 
@@ -65,8 +62,7 @@ sequence of regularization parameters <code>lambda</code>.</p>
   nlambda <span class="op">=</span> <span class="fl">100</span>,
   lambda.factor <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span><span class="va">nobs</span> <span class="op">&lt;</span> <span class="va">nvars</span>, <span class="fl">0.01</span>, <span class="fl">1e-04</span><span class="op">)</span>,
   lambda <span class="op">=</span> <span class="cn">NULL</span>,
-  pf_group <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/MathFun.html" class="external-link">sqrt</a></span><span class="op">(</span><span class="va">bs</span><span class="op">)</span>,
-  pf_sparse <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">1</span>, <span class="va">nvars</span><span class="op">)</span>,
+  pf <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/MathFun.html" class="external-link">sqrt</a></span><span class="op">(</span><span class="va">bs</span><span class="op">)</span>,
   intercept <span class="op">=</span> <span class="cn">TRUE</span>,
   asparse <span class="op">=</span> <span class="fl">0.05</span>,
   standardize <span class="op">=</span> <span class="cn">TRUE</span>,
@@ -122,20 +118,13 @@ this behaviour. It is likely better to supply a
 decreasing sequence of <code>lambda</code> values than a single (small) value. If
 supplied, the user-defined <code>lambda</code> sequence is automatically sorted in
 decreasing order.</p></dd>
-<dt>pf_group</dt>
-<dd><p>Penalty factor on the groups, a vector of the same
-length as the total number of groups. Separate penalty weights can be applied
-to each group of \(\beta\)s to allow differential shrinkage.
-Can be 0 for some
+<dt>pf</dt>
+<dd><p>Penalty factor, a vector of the same length as the total number
+of groups. Separate penalty weights can be applied to each group of
+\(\beta\)s to allow differential shrinkage. Can be 0 for some
 groups, which implies no shrinkage, and results in that group always being
-included in the model (depending on <code>pf_sparse</code>). Default value for each
-entry is the square-root of the corresponding size of each group.</p></dd>
-<dt>pf_sparse</dt>
-<dd><p>Penalty factor on l1-norm, a vector the same length as the
-total number of columns in <code>x</code>. Each value corresponds to one predictor
-Can be 0 for some predictors, which
-implies that predictor will be receive by the group l2-norm penalty.
-Each entry should be non-negative in this vector.</p></dd>
+included in the model. Default value for each entry is the square-root of
+the corresponding size of each group.</p></dd>
 <dt>intercept</dt>
 <dd><p>Whether to include intercept in the model. Default is TRUE.</p></dd>
 <dt>asparse</dt>
@@ -179,7 +168,6 @@ value. Default is <code>3e8</code>. If models do not converge, consider increasi
 <li><p><code>jerr</code> Error flag, for warnings and errors, 0 if no error.</p></li>
 <li><p><code>group</code> A vector of consecutive integers describing the grouping of the
 coefficients.</p></li>
-<li><p><code>nobs</code> The number of observations used to estimate the model.</p></li>
 </ul></div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
