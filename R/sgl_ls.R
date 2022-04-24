@@ -1,6 +1,6 @@
 sgl_ls <- function(
-  bn, bs, ix, iy, nobs, nvars, x, y, pf, dfmax, pmax, nlam, flmin, ulam, eps,
-  maxit, vnames, group, intr, asparse, standardize,
+  bn, bs, ix, iy, nobs, nvars, x, y, pf, pfl1, dfmax, pmax, nlam,
+  flmin, ulam, eps, maxit, vnames, group, intr, asparse, standardize,
   lower_bnd, upper_bnd) {
   # call Fortran core
   is.sparse <- FALSE
@@ -37,7 +37,7 @@ sgl_ls <- function(
     fit <- dotCall64::.C64(
       "sparse_four",
       SIGNATURE = c("integer", "integer", "integer", "integer", "double",
-                    "integer", "integer", "double", "double", "double",
+                    "integer", "integer", "double", "double", "double", "double",
                     "integer", "integer", "integer", "double", "double",
                     "double", "integer", "integer", "double", "integer",
                     "integer", "double", "integer", "integer", "double",
@@ -45,6 +45,7 @@ sgl_ls <- function(
       # Read only
       bn = bn, bs = bs, ix = ix, iy = iy, gam = gamma, nobs = nobs,
       nvars = nvars, x = as.double(x), y = as.double(y), pf = pf,
+      pfl1 = pfl1,
       # Read / write
       dfmax = dfmax, pmax = pmax, nlam = nlam, flmin = flmin, ulam = ulam,
       eps = eps, maxit = maxit,
@@ -55,7 +56,7 @@ sgl_ls <- function(
       jerr = integer_dc(1), mse = numeric_dc(nlam),
       # read only
       alsparse = asparse, lb = lower_bnd, ub = upper_bnd,
-      INTENT = c(rep("r", 10), rep("rw", 7), rep("w", 8), rep("r", 3)),
+      INTENT = c(rep("r", 11), rep("rw", 7), rep("w", 8), rep("r", 3)),
       NAOK = TRUE,
       PACKAGE = "sparsegl")
   } else { # sparse design matrix
@@ -63,7 +64,7 @@ sgl_ls <- function(
       "spmat_four",
       SIGNATURE = c("integer", "integer", "integer", "integer", "double",
                     "integer", "integer", "double", "integer", "integer",
-                    "integer", "double", "double", "integer", "integer",
+                    "integer", "double", "double", "double", "integer", "integer",
                     "integer", "double", "double", "double", "integer",
                     "integer", "integer", "double", "double", "integer",
                     "integer", "double", "integer", "integer", "double",
@@ -71,7 +72,7 @@ sgl_ls <- function(
       # Read only
       bn = bn, bs = bs, ix = ix, iy = iy, gam = gamma, nobs = nobs,
       nvars = nvars, x = as.double(xval), xidx = xidx, xcptr = xcptr,
-      nnz = nnz, y = as.double(y), pf = pf,
+      nnz = nnz, y = as.double(y), pf = pf, pfl1 = pfl1,
       # Read write
       dfmax = dfmax, pmax = pmax, nlam = nlam, flmin = flmin,
       ulam = ulam, eps = eps, maxit = maxit, intr = as.integer(intr),
@@ -82,7 +83,7 @@ sgl_ls <- function(
       npass = integer_dc(1), jerr = integer_dc(1), mse = numeric_dc(nlam),
       # Read only
       alsparse = as.double(asparse), lb = lower_bnd, ub = upper_bnd,
-      INTENT = c(rep("r", 13), rep("rw", 8), rep("w", 9), rep("r", 3)),
+      INTENT = c(rep("r", 14), rep("rw", 8), rep("w", 9), rep("r", 3)),
       NAOK = TRUE,
       PACKAGE = "sparsegl")
   }

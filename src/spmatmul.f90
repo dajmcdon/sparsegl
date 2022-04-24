@@ -82,10 +82,10 @@ MODULE spmatmul
       INTEGER :: n, it
       DOUBLE PRECISION :: sg
       DOUBLE PRECISION :: vec(n)
-      DOUBLE PRECISION :: thresh
+      DOUBLE PRECISION :: thresh(n)
       DO it=1,n
          sg = vec(it)
-         vec(it) = SIGN(MAX(ABS(sg) - thresh, 0.0D0), sg)
+         vec(it) = SIGN(MAX(ABS(sg) - thresh(it), 0.0D0), sg)
       ENDDO
       RETURN
    END SUBROUTINE softthresh
