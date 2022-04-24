@@ -24,9 +24,9 @@ MODULE sgl_subfuns
    END SUBROUTINE strong_rule
 
    SUBROUTINE kkt_check(is_in_E_set, violation, bn, ix, iy, vl, pf,pfl1,&
-        lam1ma, bs, lama, ga)
+        lam1ma, bs, lama, ga, nvars)
       IMPLICIT NONE
-      INTEGER :: g, startix, endix
+      INTEGER :: g, startix, endix, nvars
       INTEGER, INTENT(in) :: bn
       INTEGER, INTENT(in) :: bs(bn)
       INTEGER, INTENT(in) :: ix(bn), iy(bn)
@@ -36,7 +36,7 @@ MODULE sgl_subfuns
       DOUBLE PRECISION, DIMENSION (:), ALLOCATABLE :: s
       DOUBLE PRECISION :: snorm
       DOUBLE PRECISION, INTENT(in) :: pf(bn)
-      DOUBLE PRECISION, INTENT(in) :: pfl1
+      DOUBLE PRECISION, INTENT(in) :: pfl1(nvars)
       INTEGER, INTENT(inout) :: violation
       DOUBLE PRECISION, INTENT(in) :: lam1ma, lama
 
@@ -69,7 +69,8 @@ MODULE sgl_subfuns
       DOUBLE PRECISION, DIMENSION (:), ALLOCATABLE :: oldb, s, dd
       DOUBLE PRECISION, DIMENSION (:), INTENT(inout) :: b, r
       DOUBLE PRECISION :: snorm, tea
-      DOUBLE PRECISION, INTENT(in) :: lama, t_for_sg, pfg, pfl1, lam1ma, lb, ub
+      DOUBLE PRECISION, INTENT(in) :: lama, t_for_sg, pfg, lam1ma, lb, ub
+      DOUBLE PRECISION, INTENT(in) :: pfl1(bsg)
       DOUBLE PRECISION, DIMENSION (:), INTENT(in) :: x(nobs,nvars)
       INTEGER, INTENT(inout) :: isDifZero
       INTEGER :: k
@@ -80,7 +81,7 @@ MODULE sgl_subfuns
       oldb = b(startix:endix)
       s = MATMUL(r, x(:, startix:endix))/nobs
       s = s*t_for_sg + b(startix:endix)
-      CALL softthresh(s, lama*t_for_sg*pfl1(startix:endix), bsg)
+      CALL softthresh(s, lama*t_for_sg*pfl1, bsg)
       snorm = SQRT(DOT_PRODUCT(s,s))
       tea = snorm - t_for_sg * lam1ma * pfg
       IF (tea > 0.0D0) THEN
@@ -161,7 +162,7 @@ MODULE sgl_subfuns
       DOUBLE PRECISION :: snorm, tea
       DOUBLE PRECISION, INTENT(in) :: lama, t_for_sg, pfg, lam1ma, lb, ub
       DOUBLE PRECISION, INTENT(in) :: x(nnz)
-      DOUBLE PRECISION, INTENT(in) :: pfl1(nvars)
+      DOUBLE PRECISION, INTENT(in) :: pfl1(bsg)
       INTEGER, INTENT(in) :: xidx(nnz)
       INTEGER, INTENT(in) :: xcptr(nvars + 1)
       INTEGER, INTENT(inout) :: isDifZero
@@ -176,7 +177,7 @@ MODULE sgl_subfuns
 
       CALL spatx(x, xidx, xcptr, nobs, nvars, nnz, r, s, startix, endix)
       s = s * t_for_sg / nobs + b(startix:endix)
-      CALL softthresh(s, lama * t_for_sg * pfl1(startix:endix), bsg)
+      CALL softthresh(s, lama * t_for_sg * pfl1, bsg)
       snorm = SQRT(DOT_PRODUCT(s,s))
       tea = snorm - t_for_sg * lam1ma * pfg
       IF (tea > 0.0D0) THEN

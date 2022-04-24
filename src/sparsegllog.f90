@@ -58,7 +58,6 @@ SUBROUTINE log_sparse_four (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,pfl1,dfmax,pmax,&
      jerr = 10000
      RETURN
   ENDIF
-  pf = MAX(0.0D0, pf)
   ! - - - some initial setup - - -
   is_in_E_set = 0
   al = 0.0D0
@@ -145,7 +144,7 @@ SUBROUTINE log_sparse_four (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,pfl1,dfmax,pmax,&
               startix = ix(g)
               endix = iy(g)
               CALL log_update_step(bs(g), startix, endix, b, lama, t_for_s(g), pf(g),&
-                   pfl1, lam1ma, x,y, isDifZero, nobs, r, gam(g), maxDif, nvars,&
+                   pfl1(startix:endix), lam1ma, x,y, isDifZero, nobs, r, gam(g), maxDif, nvars,&
                    lb(g), ub(g))
               IF (activeGroupIndex(g) == 0 .AND. isDifZero == 1) THEN
                  ni = ni + 1
@@ -202,7 +201,7 @@ SUBROUTINE log_sparse_four (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,pfl1,dfmax,pmax,&
            ENDIF
         ENDDO
         CALL kkt_check(is_in_E_set, violation, bn, ix, iy, vl, pf, pfl1, lam1ma,&
-             bs, lama, ga) ! Step 4
+             bs, lama, ga, nvars) ! Step 4
         IF (violation == 1) CYCLE
         EXIT
      ENDDO ! Ends outer loop
@@ -307,7 +306,7 @@ SUBROUTINE log_spmat_four (bn,bs,ix,iy,gam,nobs,nvars,x,xidx,xcptr,nnz,y,pf,pfl1
      jerr = 10000
      RETURN
   ENDIF
-  pf = MAX(0.0D0, pf)
+
   ! - - - some initial setup - - -
   is_in_E_set = 0
   al = 0.0D0
@@ -396,7 +395,7 @@ SUBROUTINE log_spmat_four (bn,bs,ix,iy,gam,nobs,nvars,x,xidx,xcptr,nnz,y,pf,pfl1
               startix = ix(g)
               endix = iy(g)
               CALL log_sp_update_step(bs(g), startix, endix, b, lama, t_for_s(g),&
-                   pf(g), pfl1, lam1ma, x,y, xidx, xcptr, nnz, isDifZero, nobs,&
+                   pf(g), pfl1(startix:endix), lam1ma, x,y, xidx, xcptr, nnz, isDifZero, nobs,&
                    r, gam(g), maxDif, nvars, lb(g), ub(g))
               IF (activeGroupIndex(g) == 0 .AND. isDifZero == 1) THEN
                  ni = ni+1
@@ -452,7 +451,7 @@ SUBROUTINE log_spmat_four (bn,bs,ix,iy,gam,nobs,nvars,x,xidx,xcptr,nnz,y,pf,pfl1
            ENDIF
         ENDDO
         CALL kkt_check(is_in_E_set, violation, bn, ix, iy, vl, pf, pfl1, lam1ma,&
-             bs, lama, ga) ! Step 4
+             bs, lama, ga, nvars) ! Step 4
         IF (violation == 1) CYCLE
         EXIT
      ENDDO ! Ends outer loop

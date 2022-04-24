@@ -147,6 +147,9 @@ sparsegl <- function(
   if (any(pf_sparse < 0)) stop("`pf_sparse` must be non-negative.")
   if (any(is.infinite(pf_sparse)))
     stop("`pf_sparse` may not be infinite. Simply remove the column from `x`.")
+  if (any(pf_group < 0)) stop("`pf_group` must be non-negative.")
+  if (any(is.infinite(pf_group)))
+    stop("`pf_group` may not be infinite. Simply remove the group from `x`.")
 
   iy <- cumsum(bs) # last column of x in each group
   ix <- c(0, iy[-bn]) + 1 # first column of x in each group
@@ -166,7 +169,7 @@ sparsegl <- function(
 
   pf_sparse <- pf_sparse / sum(pf_sparse) * nvars
   maxit <- as.integer(maxit)
-  pf_group <- as.double(pf)
+  pf_group <- as.double(pf_group)
   pf_sparse <- as.double(pf_sparse)
   eps <- as.double(eps)
   dfmax <- as.integer(dfmax)

@@ -58,7 +58,7 @@ SUBROUTINE sparse_four (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,pfl1,dfmax,pmax,nlam,&
      jerr = 10000
      RETURN
   ENDIF
-  pf = MAX(0.0D0, pf)
+
   ! - - - some initial setup - - -
   is_in_E_set = 0
   al = 0.0D0
@@ -141,7 +141,7 @@ SUBROUTINE sparse_four (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,pfl1,dfmax,pmax,nlam,&
               startix = ix(g)
               endix = iy(g)
               CALL update_step(bs(g), startix, endix, b, lama, t_for_s(g),&
-                   pf(g), pfl1, lam1ma, x,&
+                   pf(g), pfl1(startix:endix), lam1ma, x,&
                    isDifZero, nobs, r, gam(g), maxDif, nvars, lb(g), ub(g))
               IF (activeGroupIndex(g) == 0 .AND. isDifZero == 1) THEN
                  ni = ni + 1
@@ -183,7 +183,7 @@ SUBROUTINE sparse_four (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,pfl1,dfmax,pmax,nlam,&
               DEALLOCATE(s)
            ENDIF
         ENDDO
-        CALL kkt_check(is_in_E_set, violation, bn, ix, iy, vl, pf, pfl1,lam1ma, bs, lama, ga) ! Step 4
+        CALL kkt_check(is_in_E_set, violation, bn, ix, iy, vl, pf, pfl1,lam1ma, bs, lama, ga, nvars) ! Step 4
         IF (violation == 1) CYCLE
         EXIT
      ENDDO ! Ends outer loop
@@ -286,7 +286,7 @@ SUBROUTINE spmat_four (bn,bs,ix,iy,gam,nobs,nvars,x,xidx,xcptr,nnz,y,pf,pfl1,&
      jerr = 10000
      RETURN
   ENDIF
-  pf = MAX(0.0D0, pf)
+
   ! - - - some initial setup - - -
   is_in_E_set = 0
   al = 0.0D0
@@ -369,7 +369,7 @@ SUBROUTINE spmat_four (bn,bs,ix,iy,gam,nobs,nvars,x,xidx,xcptr,nnz,y,pf,pfl1,&
               startix = ix(g)
               endix = iy(g)
               CALL sp_update_step(bs(g), startix, endix, b, lama, t_for_s(g),&
-                   pf(g), pfl1, lam1ma, x, xidx, xcptr, nnz, isDifZero, nobs,&
+                   pf(g), pfl1(startix:endix), lam1ma, x, xidx, xcptr, nnz, isDifZero, nobs,&
                    r, gam(g), maxDif, nvars, lb(g), ub(g))
               IF (activeGroupIndex(g) == 0 .AND. isDifZero == 1) THEN
                  ni = ni+1
@@ -419,7 +419,7 @@ SUBROUTINE spmat_four (bn,bs,ix,iy,gam,nobs,nvars,x,xidx,xcptr,nnz,y,pf,pfl1,&
               DEALLOCATE(s)
            ENDIF
         ENDDO
-        CALL kkt_check(is_in_E_set, violation, bn, ix, iy, vl, pf, pfl1, lam1ma, bs, lama, ga) ! Step 4
+        CALL kkt_check(is_in_E_set, violation, bn, ix, iy, vl, pf, pfl1, lam1ma, bs, lama, ga, nvars) ! Step 4
         IF (violation == 1) CYCLE
         EXIT
      ENDDO ! Ends outer loop
