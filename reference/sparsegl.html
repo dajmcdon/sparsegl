@@ -65,7 +65,8 @@ sequence of regularization parameters <code>lambda</code>.</p>
   nlambda <span class="op">=</span> <span class="fl">100</span>,
   lambda.factor <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span><span class="va">nobs</span> <span class="op">&lt;</span> <span class="va">nvars</span>, <span class="fl">0.01</span>, <span class="fl">1e-04</span><span class="op">)</span>,
   lambda <span class="op">=</span> <span class="cn">NULL</span>,
-  pf <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/MathFun.html" class="external-link">sqrt</a></span><span class="op">(</span><span class="va">bs</span><span class="op">)</span>,
+  pf_group <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/MathFun.html" class="external-link">sqrt</a></span><span class="op">(</span><span class="va">bs</span><span class="op">)</span>,
+  pf_sparse <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">1</span>, <span class="va">nvars</span><span class="op">)</span>,
   intercept <span class="op">=</span> <span class="cn">TRUE</span>,
   asparse <span class="op">=</span> <span class="fl">0.05</span>,
   standardize <span class="op">=</span> <span class="cn">TRUE</span>,
@@ -121,13 +122,20 @@ this behaviour. It is likely better to supply a
 decreasing sequence of <code>lambda</code> values than a single (small) value. If
 supplied, the user-defined <code>lambda</code> sequence is automatically sorted in
 decreasing order.</p></dd>
-<dt>pf</dt>
-<dd><p>Penalty factor, a vector of the same length as the total number
-of groups. Separate penalty weights can be applied to each group of
-\(\beta\)s to allow differential shrinkage. Can be 0 for some
+<dt>pf_group</dt>
+<dd><p>Penalty factor on the groups, a vector of the same
+length as the total number of groups. Separate penalty weights can be applied
+to each group of \(\beta\)s to allow differential shrinkage.
+Can be 0 for some
 groups, which implies no shrinkage, and results in that group always being
-included in the model. Default value for each entry is the square-root of
-the corresponding size of each group.</p></dd>
+included in the model (depending on <code>pf_sparse</code>). Default value for each
+entry is the square-root of the corresponding size of each group.</p></dd>
+<dt>pf_sparse</dt>
+<dd><p>Penalty factor on l1-norm, a vector the same length as the
+total number of columns in <code>x</code>. Each value corresponds to one predictor
+Can be 0 for some predictors, which
+implies that predictor will be receive by the group l2-norm penalty.
+Each entry should be non-negative in this vector.</p></dd>
 <dt>intercept</dt>
 <dd><p>Whether to include intercept in the model. Default is TRUE.</p></dd>
 <dt>asparse</dt>
@@ -211,7 +219,7 @@ and <code><a href="print.sparsegl.html">print.sparsegl()</a></code> methods.</p>
 </div>
 
 <div class="pkgdown-footer-right">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.2.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.3.</p>
 </div>
 
     </footer></div>

@@ -1,9 +1,9 @@
 pandoc: 2.7.3
-pkgdown: 2.0.2
+pkgdown: 2.0.3
 pkgdown_sha: ~
 articles:
   sparsegl: sparsegl.html
-last_built: 2022-04-21T21:45Z
+last_built: 2022-04-24T22:14Z
 urls:
   reference: https://dajmcdon.github.io/sparsegl/reference
   article: https://dajmcdon.github.io/sparsegl/articles
