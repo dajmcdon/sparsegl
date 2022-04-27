@@ -1,3 +1,8 @@
+#' @describeIn grouped_sp_norm l0-norm (number of nonzero entries).
+#' @export
+zero_norm <- function(x) sum(abs(x) > 0)
+
+
 #' @describeIn grouped_sp_norm l1-norm (Absolute-value norm).
 #' @export
 one_norm <- function(x) sum(abs(x))
@@ -6,6 +11,10 @@ one_norm <- function(x) sum(abs(x))
 #' @export
 two_norm <- function(x) sqrt(sum(x^2))
 
+
+#' @describeIn grouped_sp_norm A vector of group-wise l0-norms.
+#' @export
+grouped_zero_norm <- function(x, gr) as.vector(tapply(x, gr, zero_norm))
 
 #' @describeIn grouped_sp_norm A vector of group-wise l1-norms.
 #' @export

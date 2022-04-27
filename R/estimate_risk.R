@@ -39,7 +39,7 @@ estimate_risk <- function(object, x,
   err <- log(object$mse)
   n <- object$nobs
 
-  if (approx_df) df <- object$df
+  if (approx_df) df <- object$df + df_correction(object)
   else df <- exact_df(object, x)
   out <- data.frame(
     lambda = object$lambda,
@@ -52,6 +52,19 @@ estimate_risk <- function(object, x,
   return(out)
 }
 
+df_correction <- function(obj) {
+  # This is based on X being orthogonal. See the proof of corollary 1
+  # in https://arxiv.org/pdf/1212.6478.pdf
+  group <- obj$group
+  beta <- obj$beta
+  lambda <- obj$lambda
+  pf <- (1 - obj$asparse) * obj$pf_group
+  num <- pmax(apply(beta, 2, grouped_zero_norm, gr = group) - 1, 0)
+  norms <- apply(beta, 2, grouped_two_norm, gr = group)
+  colSums(num / (1 + outer(pf, lambda) / norms))
+}
+
+
 
 exact_df <- function(object, x) {
   # See the correct formula in https://arxiv.org/pdf/1212.6478.pdf
@@ -63,19 +76,24 @@ exact_df <- function(object, x) {
   Iset <- Iset[Imax,]
   group <- object$group[Imax]
   beta <- object$beta[Imax,]
+  pf <- (1 - object$asparse) * object$pf_group[group]
   nlambda <- length(object$lambda)
   xx <- Matrix::crossprod(x[,Imax])
   df <- double(nlambda)
   for (i in seq(nlambda)) {
     Idx <- Iset[, i]
     if (any(Idx)) {
+      gr <- group[Idx]
       xx_sub <- xx[Idx, Idx]
-      del <- delP(beta[Idx, i], group[Idx])
-      df[i] <- sum(solve(xx_sub + object$lambda[i] * del) * xx_sub)
+      del <- delP(beta[Idx, i], gr)
+      li <- object$lambda[i] * pf[Idx]
+      df[i] <- sum(solve(xx_sub + li * del) * xx_sub)
     }
   }
   return(df)
 }
+
+
 
 delP <- function(beta, group) {
   betas <- split(beta, group)
