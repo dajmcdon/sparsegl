@@ -39,7 +39,7 @@ estimate_risk <- function(object, x,
   err <- log(object$mse)
   n <- object$nobs
 
-  if (approx_df) df <- object$df
+  if (approx_df) df <- object$df + df_correction(object)
   else df <- exact_df(object, x)
   out <- data.frame(
     lambda = object$lambda,
@@ -78,18 +78,14 @@ exact_df <- function(object, x) {
 }
 
 df_correction <- function(obj) {
+  # This is based on X being orthogonal. See the proof of corollary 1
+  # in https://arxiv.org/pdf/1212.6478.pdf
   group <- obj$group
   beta <- obj$beta
   lambda <- obj$lambda
-  num <- apply(
-    beta, 2,
-    function(x) pmax(grouped_zero_norm(x, group) - 1, 0),
-    simplify = FALSE)
-  norms <- apply(beta, 2, grouped_two_norm, gr = group, simplify = FALSE)
-  mapply(
-    function(n, d, lam) sum(n / (1 + lam / d)),
-    num, norms, lambda
-  )
+  num <- pmax(apply(beta, 2, grouped_zero_norm, gr = group) - 1, 0)
+  norms <- apply(beta, 2, grouped_two_norm, gr = group)
+  colSums(num / (1 + rep(lambda, each = nrow(norms)) / norms))
 }
 
 
