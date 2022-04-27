@@ -41,6 +41,9 @@
 <li class="nav-item">
   <a class="nav-link" href="../reference/index.html">Reference</a>
 </li>
+<li class="nav-item">
+  <a class="nav-link" href="../news/index.html">Changelog</a>
+</li>
       </ul>
 <form class="form-inline my-2 my-lg-0" role="search">
         <input type="search" class="form-control me-sm-2" aria-label="Toggle navigation" name="search-input" data-search-index="../search.json" id="search-input" placeholder="Search for" autocomplete="off">
@@ -243,9 +246,9 @@
 <li>
 <code>approx_df</code>: indicate if a vector of the approximation to the degree-of-freedom at each penalty parameter <code>lambda</code> is used. Default is FALSE and the program will compute the unbiased estimate of the exact degree-of-freedom.</li>
 </ul>
-<p>FYI: Degree-of-freedom is a tool to assess the complexity of a statistical modeling procedure. <code>object$df</code>, the approximation to the degree-of-freedom is the number of nonzero coefficients of the model. Notice that it would take some time to calculate the unbiased estimate of the exact degreeo-of-freedom if <code>X</code> is complicated. For more details about how to realize this calculation, our method is implemented based on the paper <a href="https://arxiv.org/pdf/1212.6478.pdf" class="external-link uri">https://arxiv.org/pdf/1212.6478.pdf</a>.</p>
+<p>FYI: Degree-of-freedom is a tool to assess the complexity of a statistical modeling procedure. <code>object$df</code>, the approximation to the degree-of-freedom is the number of nonzero coefficients of the model. Notice that it would take some time to calculate the unbiased estimate of the exact degrees-of-freedom if <code>X</code> is complicated. For more details about how to realize this calculation, our method is implemented based on the paper <a href="https://arxiv.org/pdf/1212.6478.pdf" class="external-link uri">https://arxiv.org/pdf/1212.6478.pdf</a>.</p>
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">risk</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/estimate_risk.html">estimate_risk</a></span><span class="op">(</span><span class="va">fit1</span>, <span class="va">X</span>, <span class="va">y</span>, type <span class="op">=</span> <span class="st">"AIC"</span>, approx_df <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span class="va">risk</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/estimate_risk.html">estimate_risk</a></span><span class="op">(</span><span class="va">fit1</span>, <span class="va">X</span>, type <span class="op">=</span> <span class="st">"AIC"</span>, approx_df <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></code></pre></div>
 </div>
   </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>
     </nav></aside>
