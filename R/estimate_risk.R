@@ -77,6 +77,22 @@ exact_df <- function(object, x) {
   return(df)
 }
 
+df_correction <- function(obj) {
+  group <- obj$group
+  beta <- obj$beta
+  lambda <- obj$lambda
+  num <- apply(
+    beta, 2,
+    function(x) pmax(grouped_zero_norm(x, group) - 1, 0),
+    simplify = FALSE)
+  norms <- apply(beta, 2, grouped_two_norm, gr = group, simplify = FALSE)
+  mapply(
+    function(n, d, lam) sum(n / (1 + lam / d)),
+    num, norms, lambda
+  )
+}
+
+
 delP <- function(beta, group) {
   betas <- split(beta, group)
   mats <- lapply(betas, function(x) {
