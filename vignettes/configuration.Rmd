@@ -1,0 +1,136 @@
+---
+title: "Configuration"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Configuration}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(sparsegl)
+```
+
+This vignettes will guide users how to adjust parameter values to apply different types and/or weights of penalties on the objective functions.
+
+Here are the three parameters that we will mainly discuss about:
+
+* `asparse`: a parameter controls the weights between $\ell_2$-norm (group lasso) penalty and $\ell_1$-norm (lasso) penalty, which is equivalent to control the trade of between group sparsity and predictor sparsity. `asparse` = $1$ will give the lasso penalty only. `asparse` = $0$ will give the group lasso penalty only. The default value of `asparse` is 0.05.
+
+* `pf_group`: a penalty vector of the length of the number of groups in total. Default value for each entry is the square-root of the corresponding size of each group.
+
+* `pf_sparse`: a penalty vector of the length of the number of predictors in total. Default value for each entry is 1 and can only be customized to some non-negative number.
+
+By varying the values of the parameters above, the general optimization problem can be regularized by:
+
+* lasso penalty ($\ell_1$-norm).
+
+* group-lasso penalty ($\ell_2$-norm).
+
+* a penalty similar to elastic net penalty (a special case of the general sparse
+group-lasso penalty).
+
+
+respectively.
+
+Now we start by simulating a real-valued matrix $\mathbf{x}$, a true-coefficients vector $\boldsymbol{\beta}^*$ and a real-valued vector $\mathbf{y}$, 
+which will be used for fitting into a penalized linear regression model later.
+Additionally, we specifically design a grouping structure for dividing predictors
+into several groups.
+
+```{r}
+n <- 100
+beta <- c(5,5,5,-5,-5,-5,1,0,1,0,0,0,0,2,0)
+X <- matrix(rnorm(n * length(beta)), n)
+y <- X %*% beta + rnorm(n)
+group <- rep(1:5, each = 3)
+```
+
+### Lasso penalty
+
+To impose lasso penalty on the objective function, you can first vary `asparse`, 
+which controls the weights of lasso penalty and group-lasso penalty. If you set
+`asparse` to $1$, the objective function will be added with a lasso penalty solely. 
+Note the default is $0.05$ for `asparse`.
+
+```{r, fig.width = 8, fig.height = 4}
+# only lasso penalty
+out_lasso <- sparsegl(X, y, group = group, asparse = 1)
+plot(out_lasso)
+```
+
+If you want to impose heavier or lighter penalty on certain predictors, there is
+an option for customizing the penalty targeted on individual predictor, which is
+altering the value of `pf_sparse` such that the predictors are not sharing the same 
+penalties. Since the sum of all entries of the default `pf_sparse` is equal to the number
+of predictors in total, our function will automatically rescale the customized 
+`pf_sparse` and the sum remains unchanged; otherwise it would be equivalent to change 
+`asparse` in the meanwhile.
+
+```{r, fig.width = 8, fig.height = 4}
+# impose a heavier penalty on the first predictor
+pf_sparse <- c(10, rep(1, length(beta) - 1))
+out_lasso_penalty <- sparsegl(X, y, group = group, pf_sparse = pf_sparse, asparse = 1)
+plot(out_lasso_penalty)
+
+```
+By comparing two plots above, the trajectory of the first predictor drastically
+gets changed, which shrinks to zero much faster with a much lower `lambda`. 
+Changing the penalty factor on the first predictor would also indiretly change
+the trajectories of other predictors.
+
+### Group-lasso penalty
+
+Similarly, to impose group-lasso penalty on the objective function, 
+you can first vary `asparse`, which controls the weights of lasso penalty and 
+group-lasso penalty. If you set `asparse` to $0$, the objective function will be
+added with a group-lasso penalty solely. Again, the default is $0.05$ for `asparse`.
+
+```{r, fig.width = 8, fig.height = 4}
+# only group-lasso penalty
+out_group <- sparsegl(X, y, group = group, asparse = 0)
+plot(out_group)
+```
+
+Usually we prefer not changing group-lasso penalty factor as what we did above,
+but it is reasonable to change the entries of the default `pf` which indicates
+the number of predictors in the corresponding groups to some other values if 
+necessary.
+
+### A combined penalty similar to Elastic net penalty
+
+This is a special case to the common convex combinations of lasso penalty and 
+group-lasso penalty: we regard all predictors in one group, which turns `pf` as
+a vector of length $1$. Its optimization
+problem is written as:
+
+$$
+\min_{\boldsymbol{\beta}\in\mathbb{R}^p}\left(\frac{1}{2n} \rVert \mathbf{y} - \mathbf{X}\boldsymbol{\beta}\rVert_2^2 + (1-\alpha)\times \text{pf_group}\times \rVert\boldsymbol{\beta}\rVert_2 + \alpha\sum_{i=1}^p \text{pf_sparse}_i |\beta_i|\right).
+$$
+
+
+It differs from elastic net penalty since the $\ell_2$-norm is not squared and 
+not differentiable at zero. To add this type of combined penalty with our package,
+you will reset the value for `group` to assign all predictors in one group (you
+can also vary `pf_sparse` and `pf_group` but our intention is showing an simple example here):
+
+```{r, fig.width = 8, fig.height = 4}
+group <- rep(1, 15)
+out <- sparsegl(X, y, group = group)
+plot(out)
+```
+
+
+## In the end
+
+There are definitely more ways for varying the default values of the parameters
+and not limited to the cases that are mentioned above.Try our package to investigate 
+more for your designed problems!
+

@@ -125,9 +125,14 @@ initialization.
 * `family`: A character string specifying the likelihood to use, could be either
 linear regression "gaussian" or logistic regression loss "binomial". Default is "gaussian".
 
-* `pf`: a penalty vector of the length of the number of groups in total. Default 
+* `pf_group`: a penalty vector of the length of the number of groups in total. Default 
 value for each entry is the square-root of the corresponding size of each group, 
 which is $\sqrt{\text{bs}}$ in $(*)$ and $(**)$ above.
+
+* `pf_sparse`: a penalty vector of the length of the number of predictors in total. 
+Default value for each entry is 1 such that the sum of the entries of this vector
+is the number of predictors. The customized value of the entry can only be 
+non-negative.
 
 * `asparse`: changes the weight of lasso penalty, referring to $\alpha$ in $(*)$
 and $(**)$ above: `asparse` = $1$ gives the lasso penalty only. `asparse` = $0$ 

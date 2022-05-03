@@ -38,3 +38,9 @@ reference:
 - title: "Data"
 - contents:
     - trust_experts
+    
+articles:
+- title: Get started
+  navbar: ~
+  contents:
+  - configuration
