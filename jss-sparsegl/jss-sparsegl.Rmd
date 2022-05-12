@@ -513,15 +513,18 @@ ggplot(er, aes(lambda, risk, color = name)) +
   theme(legend.title = element_blank())
 ```
 
-In this simulation, the $\lambda$ that minimizes AIC is `r round(err$lambda[1],3)` while the CV minimizer is `r round(cv_fit$lambda.min,3)`.
+In this simulation, the $\lambda$ that minimizes AIC is `r round(err$lambda[1],3)` while the CV minimizer is `r round(cv_fit$lambda.min,3)`. The estimated risk curves are plotted against $\lambda$ in \autoref{fig:re-plot}.
 
 Additional documentation and examples are provided on the package [website](https://dajmcdon.github.io/sparsegl).
 
 # Applications
 
+We examine two applications for which sparse group lasso is a natural estimator. The first uses data regarding COVID-19 and trust, which is included in the package. The second uses a very large though sparse dataset from neuroimaging.
+
+
 ## Geographic distribution of trust in experts {#sec:trust}
 
-Two typical uses for sparse group lasso are (1) additive models where continuous predictors are expanded in a basis and (2) discrete factors as predictors. Here we demonstrate an example using both at the same time. We examine data from The Delphi Group at Carnegie Mellon University U.S. [COVID-19 Trends and Impact Survey (CTIS)](https://cmu-delphi.github.io/delphi-epidata/symptom-survey/contingency-tables.html), in partnership with Facebook. In particular, we examine the publicly available contingency table reports, which breakdown survey responses by age, race/ethnicity, gender, and other demographic variables of interest. The necessary data to reproduce this analysis (a sparse `dgCmatrix` object) is included in \pkg{sparsegl} as `trust_experts`.
+Two typical uses for sparse group lasso are (1) additive models where continuous predictors are expanded in a basis and (2) discrete factors as predictors. Here we demonstrate an example using both at the same time. We examine data from The Delphi Group at Carnegie Mellon University U.S. [COVID-19 Trends and Impact Survey (CTIS)](https://cmu-delphi.github.io/delphi-epidata/symptom-survey/contingency-tables.html), in partnership with Facebook. In particular, we examine the publicly available contingency table reports, which break down survey responses by age, race/ethnicity, gender, and other demographic variables of interest. The necessary data to reproduce this analysis (a sparse `dgCmatrix` object) is included in \pkg{sparsegl} as `trust_experts`.
 
 In particular, we will focus on the "estimated percentage of respondents who trust ... to provide accurate news and information about COVID-19."  This survey item is reported for a variety of different potential sources of information---personal doctors/nurses, scientists, the Centers for Disease Control (CDC), government health officials, politicians, journalists, friends, and religious leaders. In this analysis, we average the first 4, characterize the combination as "experts", and use this as the response variable in a linear model.
 
@@ -545,10 +548,10 @@ plot(fit, y_axis = "group", x_axis = "penalty", add_legend = FALSE)
 
 Here we undertake an analysis similar to that in \cite{aminmansour2019} though with a slightly different dataset. The problem...
 
-In \cite{aminmansour2019}, the authors propose an algorithm based on Orthogonal Matching Pursuit to estimate the group-regularized linear model. The data they use measures 12K voxels on 96 angles and attempts to reconstruct the white matter using the ENCODE method \citep{encode2017} with 1057 orientations and 868 fascicles. Converting this into a linear regression problem (rather than a tensor regression problem) results in a linear model with $n \approx 10^6$ and $p = 868$. 
+In \cite{aminmansour2019}, the authors propose an algorithm based on Orthogonal Matching Pursuit to estimate the group-regularized linear model. The data they use measures $12K$ voxels on 96 angles and attempts to reconstruct the white matter using the ENCODE method \citep{encode2017} with 1057 orientations and 868 fascicles. Converting this into a linear regression problem (rather than a tensor regression problem) results in a linear model with $n \approx 1M$ and $p = 868$. 
 
-In comparison, we use 150K voxels measured on `r meta$nangles` angles with 130K orientations and 26K streamlines. The resulting linear model has $n\approx 9M$ and $p=26K$, about 230$\times$ the size of the previous analysis. The design matrix would occupy nearly 2 PB if it were dense, but since it is only about 0.05% non-zero, it requires 1.2 GB of memory when stored in CSC format.
-Estimating the group lasso using \pkg{sparsegl} with 61 groups based on neuroanatomy and 100 values of $\lambda$ took just under 2 minutes on a 2020 MacBook Air (Apple M1 chip) with 16 GB of RAM. \autoref{fig:brains} shows the group norm of the 61 groups against the magnitude of the group penalty.
+In comparison, we use $150K$ voxels measured on `r meta$nangles` angles with $130K$ orientations and $26K$ streamlines. The resulting linear model has $n\approx 9M$ and $p=26K$, about 230$\times$ the size of the previous analysis. The design matrix would occupy nearly 2 PB if it were dense, but since it is only about 0.05% non-zero, it requires 1.2 GB of memory when stored in CSC format.
+Estimating the sparse group lasso using \pkg{sparsegl} with 61 groups based on neuroanatomy and 100 values of $\lambda$ took just under 2 minutes on a 2020 MacBook Air (Apple M1 chip) with 16 GB of RAM. \autoref{fig:brains} shows the group norm of the 61 groups against the magnitude of the group penalty.
 
 
 # Discussion and future work
