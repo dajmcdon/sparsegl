@@ -50,7 +50,6 @@ keywords:
   formatted: [generalized linear model, reqularized, strong rule, sparse matrix]
   plain:     [generalized linear model, reqularized, strong rule, sparse matrix]
 preamble: >
-  \usepackage{amsmath}
   \input{jss-sparsegl-preamble}
 output: rticles::jss_article
 bibliography: [sparsegl.bib, pkgs.bib]
@@ -181,18 +180,18 @@ For the rest of this section, we describe this majorization algorithm, focusing 
 
 To begin with, we introduce some notation. Let 
 \[
-\vR_{(-k)} = \vY - \sum_{g \neq k} \mX^{(g)} \vbeta^{(g)}
+\vR_{(-g)} = \vY - \sum_{k \neq g} \mX^{(k)} \vbeta^{(k)}
 \]
-be the partial residual without group $k$ where all the group fits besides that of group $k$ are subtracted from $\vY$. With all other groups held fixed, we aim to solve:
+be the partial residual without group $g$ where all the group fits besides that of group $g$ are subtracted from $\vY$. With all other groups held fixed, we aim to solve:
 \begin{equation}
 	\label{eq:sparsegroupk}
-\min_{\vbeta^{(k)}} \frac{1}{2n} \snorm{\vR_{(-k)}-\mX^{(k)}\vbeta^{(k)}}_2^2 + (1-\alpha)\lambda \snorm{\vbeta^{(k)}}_2 + \alpha \lambda \snorm{\vbeta^{(k)}}_1. 
+\min_{\vbeta^{(g)}} \frac{1}{2n} \snorm{\vR_{(-g)}-\mX^{(g)}\vbeta^{(g)}}_2^2 + (1-\alpha)\lambda \snorm{\vbeta^{(g)}}_2 + \alpha \lambda \snorm{\vbeta^{(g)}}_1. 
 \end{equation}
-In what follows, we will suppress the $(k)$ notation, with the understanding that we are really referring to only the $k^\textrm{th}$ group of the coefficient vector and the partial residual $\vR_{(-k)}$. We will also define, the unpenalized loss function
+In what follows, we will suppress the $(g)$ notation, with the understanding that we are really referring to only the $g^\textrm{th}$ group of the coefficient vector and the partial residual $\vR_{(-g)}$. We will also define, the unpenalized loss function
 \[
 \ell (\vbeta) = \frac{1}{2n}\snorm{\vR - \mX\vbeta}_2^2, 
 \]
-so that our objective function for the $k^\textrm{th}$ group becomes $\ell (\vbeta) + (1-\alpha)\lambda\norm{\vbeta}_2 + \alpha \lambda \norm{\vbeta}_1$, and we are interested in finding an optimal value, $\hat{\vbeta}$. This enables the procedure to generalize easily to logistic loss or, in principle, other exponential families.
+so that our objective function for the $g^\textrm{th}$ group becomes $\ell (\vbeta) + (1-\alpha)\lambda\norm{\vbeta}_2 + \alpha \lambda \norm{\vbeta}_1$, and we are interested in finding an optimal value, $\hat{\vbeta}$. This enables the procedure to generalize easily to logistic loss or, in principle, other exponential families.
 
 Any global minimum must satisfy a subgradient equation, similar to a first-derivative test for an optimum, except that $\norm{\cdot}_2$ and $\norm{\cdot}_1$ are non-differentiable at $\mathbf{0}$. For Equation \eqref{eq:sparsegroupk} above, taking the subdifferential and setting equal to zero gives us the following first-order condition: 
 \begin{equation}
@@ -284,16 +283,14 @@ While the procedure described so far solves Equation \eqref{eq:sparsegl} for fix
 
 ## Sequential strong rule and KKT conditions
 
-For any fixed value of $\lambda$, many groups of coefficient estimates will end up being equal to zero. If, somehow, we knew _which_ groups, we could completely avoid visiting them in the blockwise coordinate descent updates, and therefore avoid calculating any portion of Equation \eqref{eq:updateStep}. This would significantly speed up computations. 
+For any fixed value of $\lambda$, many groups of coefficient estimates will end up being equal to zero. If, somehow, we knew _which_ groups, we could completely avoid visiting them in the blockwise coordinate descent updates, and therefore avoid calculating Equation \eqref{eq:updateStep} for those groups. This would significantly speed up computations. 
 
 Re-examining Equation \eqref{eq:subgrad}, we can see that the first order condition implies that, for each group $g$, any solution must satisfy
-
 \begin{equation}
 \label{eq:subgrad-again}
 \snorm{S(\nabla \ell(\vbeta_g),\ \lambda\alpha)}_2 \leq (1-\alpha)\lambda.
 \end{equation}
-
-This is because, as $\mathbf{u}$ is the subgradient of $\snorm{\vbeta_g}_2$, $\snorm{\mathbf{u}}_2\leq 1$. Furthermore, if $\snorm{\mathbf{u}}_2 < 1$, then $\hat{\vbeta}_j = \mathbf{0}$. In the previous section, we used the sufficiency of the first order Karush-Kuhn-Tucker (KKT) stationarity condition to derive a solution, while Equation \eqref{eq:subgrad-again} is the necessary version. So given a potential solution, it is easy to check its validity. Unfortunately, this is not constructive. 
+This is because, as $\mathbf{u}$ is the subgradient of $\snorm{\vbeta_g}_2$, $\snorm{\mathbf{u}}_2\leq 1$. Furthermore, if $\snorm{\mathbf{u}}_2 < 1$, then $\hat{\vbeta}_j = \mathbf{0}$. In the previous section, we used the sufficiency of the Karush-Kuhn-Tucker (KKT) stationarity condition to derive a solution, while Equation \eqref{eq:subgrad-again} is the necessary version. So given a potential solution, it is easy to check its validity. Unfortunately, this is not constructive. 
 
 The sequential strong rule \citep{tibshirani2012strong} begins from Equation \eqref{eq:subgrad-again} and makes use of the fact that we are solving for a sequence of parameters $\{\lambda_1 > \lambda_2 > \dots > \lambda_M\}$ of parameters rather than a single value. At each $\lambda_m$, we rely on the fact that we have solved the problem for the previous $\lambda_{m-1}$, and use this information to quickly discard many groups of predictors. Without loss of generality, for the rest of this section assume that the problem has already been solved for $\lambda_{m-1}$.
 
@@ -324,7 +321,7 @@ Applying this logic to Equation \eqref{eq:Meq} above gives the sequential strong
 \label{eq:sgl-strong}
 \snorm{S\big(\nabla \ell(\vbeta_g),\ t\alpha\lambda_{m-1}\big)}_2 \leq t(1-\alpha)(2\lambda_m - \lambda_{m-1}).
 \end{equation}
-For more details in related settings, see \citep{tibshirani2012strong}.
+For more details in related settings, see \citet{tibshirani2012strong}.
 If Equation \eqref{eq:sgl-strong}
 holds, then we ignore group $g$ when solving the problem at $\lambda_m$. That is to say, when we move from $\lambda_{m-1}$ to $\lambda_m$, we first check this condition on all groups, using the previously computed solution for $\hat{\vbeta}(\lambda_{m-1})$, and then perform blockwise coordinate descent, using only those groups that failed this inequality.
 
@@ -396,7 +393,7 @@ As long as the number of nonzero coefficients $|\mathcal{S}|$ is reasonably smal
 
 # Example usage
 
-This section provides a simple illustration for how to use the \pkg{sparsegl} package \citep{R-sparsegl} for fitting the regularization path for sparse group-lasso penalized learning problems. We first examine the linear regression model when response variable is continuous and then briefly go over the logistic regression case. The package has been submitted to the Comprehensive R Archive Network (CRAN) at https://CRAN.R-project.org/package=sparsegl and can be installed and loaded in the usual manner:[^devel]
+This section provides a simple illustration for how to use the \pkg{sparsegl} package \citep{R-sparsegl} for fitting the regularization path for sparse group-lasso penalized learning problems. We first examine the linear regression model when response variable is continuous and then briefly go over the logistic regression case. The package is available from the Comprehensive R Archive Network (CRAN) at https://CRAN.R-project.org/package=sparsegl and can be installed and loaded in the usual manner:[^devel]
 
 ```{r install, eval=FALSE, echo=TRUE}
 install.packages("sparsegl")
@@ -413,9 +410,11 @@ We first create a small simulated dataset along with a vector indicating the gro
 set.seed(1010)
 n <- 100
 p <- 200
-X <- matrix(data = rnorm(n*p), nrow = n, ncol = p)
-beta <- c(rep(5, 5), c(5, -5, 2, 0, 0), rep(-5, 5), 
-          c(2, -3, 8, 0, 0), rep(0, (p - 20)))
+X <- matrix(rnorm(n*p), nrow = n, ncol = p)
+beta <- c(
+  rep(5, 5), c(5, -5, 2, 0, 0), rep(-5, 5), c(2, -3, 8, 0, 0),
+  rep(0, (p - 20))
+)
 groups <- rep(1:(p / 5), each = 5)
 eps <- rnorm(n, mean = 0, sd = 1)
 y <- X %*% beta + eps
@@ -451,7 +450,7 @@ plot(fit, y_axis = "coef", x_axis = "penalty", add_legend = FALSE)
 plot(fit, y_axis = "group", x_axis = "lambda", add_legend = FALSE)
 ```
 
-The `coef()` and `predict()` methods give the coefficients or predicted values given a matrix $\tilde{\mX}$ at the requested $\lambda$s, potentially allowing for $\lambda$ values different from those used at the fitting stage. 
+The `coef()` and `predict()` methods give the coefficients or predicted values given a new design matrix $\widetilde{\mX}$ at the requested $\lambda$s, potentially allowing for $\lambda$ values different from those used at the fitting stage. 
 
 ```{r, message=FALSE}
 coef(fit, s = c(0.02, 0.03))[c(1,3,25,29),] # display a few
@@ -460,14 +459,14 @@ print(fit)
 ```
 
 The `cv.sparsegl()` function implements $K$-fold cross validation and has a similar signature to `sparsegl()`. It allows the user to choose the number of splits and the loss function for measuring prediction or classification accuracy on the held-out sets.
-Here, the \pkg{S3} `plot()` method displays the cross-validation curve with upper and lower confidence bounds plots calculated as $\pm 1$ standard error across the folds for each $\lambda$ in the regularization path. 
+Here, the \pkg{S3} `plot()` method displays the cross-validation curve with upper and lower confidence bounds calculated as $\pm 1$ standard error across the folds for each $\lambda$ in the regularization path (\autoref{fig:cv-plot}). 
 
 ```{r cv-plot, fig.width = 4, fig.height = 2, fig.cap = "Cross validation error produced by the \\texttt{plot()} method for a \\texttt{cv.sparsegl} object."}
 cv_fit <- cv.sparsegl(X, y, groups, nfolds = 15)
 plot(cv_fit)
 ```
 
-The `coef()` and `predict()` methods work similarly to those above. The only differences are (1) that they can additionally accept the strings `lambda.min` or `lambda.1se`, respectively the $\lambda$ that minimizes the average cross validation error and the largest $\lambda$ such that the prediction error is within 1 standard error or the minimum.
+The `coef()` and `predict()` methods work similarly to those above. The only difference being that they can additionally accept the strings `lambda.min` or `lambda.1se`, respectively the $\lambda$ that minimizes the average cross validation error and the largest $\lambda$ such that the prediction error is within 1 standard error or the minimum.
 
 ```{r}
 coef(cv_fit, s = "lambda.1se")[c(1,3,25,29),]
@@ -475,12 +474,13 @@ predict(cv_fit, newx = tail(X), s = "lambda.min")
 ```
 
 For logistic regression, only a different `family` is required. Cross validation
-can be implemented with misclassification or deviance loss.
+can be implemented with misclassification or deviance loss (\autoref{fig:logitres}).
 
 ```{r logitres, fig.width = 4, fig.height = 2, fig.cap="Cross validation error for logistic regression produced by the \\texttt{plot()} method using misclassification error on the held-out set."}
 fit_logit <- sparsegl(X, y0, groups, family = "binomial")
-cv_fit_logit <- cv.sparsegl(X, y0, groups, family = "binomial", 
-                            pred.loss = "misclass")
+cv_fit_logit <- cv.sparsegl(
+  X, y0, groups, family = "binomial", pred.loss = "misclass"
+)
 plot(cv_fit_logit, log_axis = "none")
 ```
 
