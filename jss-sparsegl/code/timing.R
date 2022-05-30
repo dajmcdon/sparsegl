@@ -45,3 +45,6 @@ for (i in seq_along(p)) {
     print(paste("Done with p = ", p[i], "repl = ", j))
   }
 }
+
+res$p <- rep(p, each = nrepls * 3)
+saveRDS(res, "jss-sparsegl/large-data/sparsegl-timing.rds")
