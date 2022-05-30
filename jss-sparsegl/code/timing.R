@@ -1,5 +1,4 @@
 library(Matrix)
-library(microbenchmark)
 library(tibble)
 library(SGL)
 library(sparsegl)
@@ -27,7 +26,7 @@ y <- mu + rnorm(n*length(p), sd = rep(noise_sd, each = n))
 res <- tibble(method = "a", time = proc.time()["elapsed"], .rows = 0)
 for (i in seq_along(p)) {
   pp <- seq(p[i])
-  dat <- list(y = y[i], x = x[ ,pp])
+  dat <- list(y = y[ ,i], x = x[ ,pp])
   xxsp <- xsp[ ,pp]
   g <- gr[pp]
   for (j in seq(nrepls)) {
