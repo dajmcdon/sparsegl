@@ -534,20 +534,28 @@ g
 
 ## Estimating white matter connectivity
 
-```{r brains, echo=FALSE, eval=TRUE, fig.cap="The group norm of the 61 groups based on neuroanatomical structure against the magnitude of the group penalty. The fit was produced using \\texttt{sparsegl()} to estimate the group lasso ($\\alpha=0$)."}
+```{r dwi-fit, echo=FALSE, eval=TRUE, fig.cap="The group norm of the 61 groups based on neuroanatomical structure against the magnitude of the group penalty. The fit was produced using \\texttt{sparsegl()} to estimate the group lasso ($\\alpha=0$)."}
 # source("code/brains.R") takes 4 GB memory and about 4 minutes
-meta <- readRDS("large-data/brain-meta.rds")
 fit <- readRDS("large-data/brain-fit.rds")
 plot(fit, y_axis = "group", x_axis = "penalty", add_legend = FALSE)
 ```
 
-Here we undertake an analysis similar to that in \citet{aminmansour2019} though with a slightly different dataset. The problem...
+\citep{pestilli2014} formulated an optimization model that takes as input a set of brain connections generated using tractography algorithms and predicts the MRI diffusion signal via optimization (\cite{pestilli2014, daducci2015}).
+The model of Pestilli had no regularization during the optimization. \cite{aminmansour2019} extended the problem to include a group-regularization in the model optimization (this is an approach recently followed up by Schiavi et al.)
+In this study, we implemented the \cite{aminmansour2019} problem, using the sparsegl we show results of feasibility and efficiency of the modeling using the toolbox.
 
-In \citet{aminmansour2019}, the authors propose an algorithm based on Orthogonal Matching Pursuit to estimate the group-regularized linear model. The data they use measures $12K$ voxels on 96 angles and attempts to reconstruct the white matter using the ENCODE method \citep{encode2017} with 1057 orientations and 868 fascicles. Converting this into a linear regression problem (rather than a tensor regression problem) results in a linear model with $n \approx 1M$ and $p = 868$. 
+The model performs DWI signal prediction by using the tractogram as predictors, simulating for each streamline what would be its signal given the voxels they are located at and the applied gradient fields.
+The software optimizes the model using sparse group lasso, allowing custom parametrization for the rate of regularization applied to each group and to each predictor.
+For this specific domain, we penalize groups proportionally by their cardinality and streamlines by their equivalent physical length, in brain space.
+\autoref{fig:dwi-model} depicts a reduced version of the model, for illustration purposes.
+For our study, we used one subject from the Human Connectome Project \cite{vanessen2012}, which contains datasets used for methods benchmarking.
+The full brain tractogram has 3M streamlines, and only the streamlines identified as being part of the Arcuate Fasciculus were selected.
+In comparison, \citep{aminmansour2019} propose an algorithm based on Orthogonal Matching Pursuit to estimate a group-regularized linear model.
+The data used in the study measures diffusion in 11,823 voxels using 96 magnetic field angles and attempts to reconstruct the white matter using the ENCODE method \cite{encode2017}, resulting in 1057 orientations and 868 fascicles. Converting this into a linear regression problem (rather than a tensor regression problem) results in a linear model with $n\approx1M$ and $p = 868$.
+In comparison, 77,630 voxels measured on 90 angles, with a tractography of 10,244 streamlines. The resulting linear model has $n\approx6.9M$ and $p\approx88K$, about $72\times$ the size of the previous analysis. The design matrix would occupy nearly 533 GB if it was dense, but since it is only about 0.0198% non-sparse, it requires 1.2 GB of memory when stored in CSC format.
 
-In comparison, we use $150K$ voxels measured on `r meta$nangles` angles with $130K$ orientations and $26K$ streamlines. The resulting linear model has $n\approx 9M$ and $p=26K$, about 230$\times$ the size of the previous analysis. The design matrix would occupy nearly 2 PB if it were dense, but since it is only about 0.05% non-zero, it requires 1.2 GB of memory when stored in CSC format.
-Estimating the sparse group lasso using \pkg{sparsegl} with 61 groups based on neuroanatomy and 100 values of $\lambda$ took just under 2 minutes on a 2020 MacBook Air (Apple M1 chip) with 16 GB of RAM. \autoref{fig:brains} shows the group norm of the 61 groups against the magnitude of the group penalty.
-
+Estimating the sparse group lasso using sparsegl with 12 groups based on distance and 100 different regularization rates (λ) took 1:10 minutes  on a PC with Intel i7-11700K and 64 GB of RAM, with a peak of 6.15 GB of memory usage.
+\autoref{fig:dwi-fit} shows the group norm of the 12 groups against the magnitude of the group penalty.
 
 # Discussion
 

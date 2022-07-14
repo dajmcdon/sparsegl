@@ -1,33 +1,18 @@
 
 # Load brain data ---------------------------------------------------------
 
-library(here)
 library(sparsegl)
 library(Matrix)
-source(here("..", "Pestilli","brain-tensor-data","tensor-processing.R"))
 
-phi <- readRDS(here("..", "Pestilli", "data", "phi-tensor.rds"))
-dict <- readRDS(here("..","Pestilli", "data", "dictionary.rds"))
-y <- readRDS(here("..","Pestilli", "data", "y-vector.rds"))
-gr <- readRDS(here("..","Pestilli", "data", "groups.rds"))
-meta <- readRDS(here("..","Pestilli", "data", "meta-info.rds"))
-
-
-# Build up the model components -------------------------------------------
-
-ijk <- as.matrix(phi[,1:3])
-val <- dplyr::pull(phi[,4])
-rm(phi)
-dims <- c(ncol(dict), meta$nvoxels, meta$nstreamlines)
-Xunfold <- unfold(ijk, val, dims)
-p <- meta$nstreamlines
-n <- meta$nangles * meta$nvoxels
-X <- dense_sp_mult(dict, Xunfold, n, p)
-rm(Xunfold, dict)
+A <- Matrix::readMM('jss-sparsegl/large-data/A.mtx.gz')
+Y <- readRDS('jss-sparsegl/large-data/Y.rds')
+G <- readRDS('jss-sparsegl/large-data/G.rds')
+gpf <- readRDS('jss-sparsegl/large-data/Gpf.rds')
 
 # Fit and estimate risk ---------------------------------------------------
 
-system.time(fit <- sparsegl(X, y, gr, asparse = 0)) # ~ two minutes
+system.time(fit <- sparsegl(A, Y, group=G, pf_group=gpf, asparse=0.0)) # ~ 1.5 minutes
 
+df <- estimate_risk(fit, A, approx_df=TRUE)
+write.csv(df, "jss-sparsegl/large-data/fit.csv", row.names=FALSE, quote=FALSE)
 saveRDS(fit, file = "jss-sparsegl/large-data/brain-fit.rds")
-saveRDS(meta, file = "jss-sparsegl/large-data/brain-meta.rds")
