@@ -529,9 +529,9 @@ In particular, we will focus on the "estimated percentage of respondents who tru
 
 We regress "trust in experts" on discrete predictors representing (1) month of report, (2) state of residence, (3) age group, (4) race/ethnicity, and (5) self-reported gender identity. This leads to 76 0-1 valued predictors in 5 groups. We also use spline basis expansions with 10 degrees-of-freedom to include continuous variables for "estimated percentage of people with Covid-like illness" and "estimated percentage of people reporting Covid-like illness in their local community, including their household" to control for the amount of exposure that respondents may have been having to the pandemic. 
 
-After omitting both structural and otherwise missing data, the final model is estimated with 3775 observations on 96 predictors. Encoded as a sparse matrix, this takes requires about 500 KB of RAM to store, as opposed to 3 MB if it were dense. We estimated the model using `sparsegl()` and default arguments. Finally, we chose $\lambda$ to minimize BIC. \autoref{fig:trust} displays the estimated coefficients for the state-of-residence terms. Even controlling for age, race, gender, and the amount of circulating Covid-like illness, the United States displays strong geographic disparities when it comes to citizens' trust in scientists and other health authorities. 
+After omitting both structural and otherwise missing data, the final model is estimated with 3775 observations on 96 predictors. Encoded as a sparse matrix, this requires about 500 KB of RAM to store, as opposed to 3 MB if it were dense. We estimated the model using `sparsegl()` and default arguments. Finally, we chose $\lambda$ to minimize BIC. \autoref{fig:trust} displays the estimated coefficients for the state-of-residence terms. Even controlling for age, race, gender, and the amount of circulating Covid-like illness, the United States displays strong geographic disparities when it comes to citizens' trust in scientists and other health authorities. 
 
-```{r trust, echo=FALSE, fig.cap="State-level estimates for the amount of trust in experts about Covid-19.", fig.width=8, fig.height=4, message=FALSE, warning=FALSE, out.width="5in"}
+```{r trust, echo=FALSE, fig.cap="State-level estimates for the amount of trust in experts about Covid-19. The value displayed represents the change relative the US-wide average.", fig.width=8, fig.height=4, message=FALSE, warning=FALSE, out.width="5in"}
 source("code/covid.R")
 g
 ```
@@ -548,7 +548,7 @@ In this study, we re-implemented the \citet{aminmansour2019} formulation using \
 
 The neurological model predicts the DWI signal using the tractogram, apportioning the image signal at each voxel to the streamlines according to the observed gradient field. This preprocessing is shown pictorially \autoref{fig:dwi-model-description}.
 We estimate streamline weights using sparse group lasso, allowing the amount of regularization applied to each group to be proportional to their cardinality.
-For our study, we used one subject from the Human Connectome Project \cite{vanessen2012}.
+For our study, we used one subject from the Human Connectome Project \citep{vanessen2012}.
 The full brain tractogram has 3M streamlines, though we used only the streamlines identified as being part of the Arcuate Fasciculus for illustration.[^brain-data]
 
 \citet{aminmansour2019} used an algorithm based on Orthogonal Matching Pursuit to estimate a related model. The data used in that study measures diffusion in 11,823 voxels using 96 magnetic field angles and attempts to reconstruct the image using the ENCODE method \cite{encode2017}, resulting in 1057 orientations and 868 fascicles.
@@ -556,8 +556,8 @@ This results in a linear regression problem  with $n\approx1M$ and $p = 868$.
 In comparison, our data contains 77,630 voxels measured on 90 angles, with a tractography of 10,244 streamlines. The resulting linear model has $n\approx6.9M$ and $p\approx88K$, around $72\times$ the size of the previous analysis.
 The design matrix would occupy nearly 533 GB if it were dense, but since it is only about 0.02\% non-sparse, it requires 1.2 GB of memory when stored in CSC format.
 
-```{r dwi-fit, echo=FALSE, warning=FALSE, eval=TRUE, fig.cap="The group norm of the 61 groups based on neuroanatomical structure against the magnitude of the group penalty. The fit was produced using \\texttt{sparsegl()} to estimate the group lasso ($\\alpha=0$).", fig.height=3}
-# source("code/brains.R") takes 4 GB memory and about 4 minutes
+```{r dwi-fit, echo=FALSE, warning=FALSE, eval=TRUE, fig.cap="The group norm of the 12 groups based on neuroanatomical structure against the magnitude of the penalty. The fit was produced using \\texttt{sparsegl()} to estimate the group lasso ($\\alpha=0$).", fig.height=3}
+# source("code/brains.R") takes 6 GB memory and about 1 minute, once the data is downloaded
 fit <- readRDS("large-data/brain-fit.rds")
 plot(fit, 
      y_axis = "group", 
@@ -575,7 +575,7 @@ Estimating the group lasso using \pkg{sparsegl} with 12 groups and 100 values of
 
 # Discussion
 
-We developed this package for solving sparse group lasso optimization problems using group $\ell_2$ and $\ell_1$ penalties with an eye toward computational efficiency for very large, potentially sparse design matrices. This efficiency is achieved through a customized \proglang{Fortran} implementation, avoidance of deep copy behaviour, and the use of sequential strong rules for the regularization parameter. We also enable tuning parameter selection without the need for refitting inherent in cross-validation and enable some simple extensions such as differential weights in $\ell_1$ penalty and boundary constraints on the coefficients. 
+We developed this package for solving sparse group lasso optimization problems using group $\ell_2$ and $\ell_1$ penalties with an eye toward computational efficiency for very large, potentially sparse design matrices. This efficiency is achieved through a customized \proglang{Fortran} implementation, avoidance of deep copy behaviour, and the use of sequential strong rules for the regularization parameter. We also provide tuning parameter selection without the need for refitting inherent in cross-validation and enable some simple extensions such as differential weights in the $\ell_1$ penalty and boundary constraints on the coefficients. 
 
 # Acknowledgements {.unnumbered}
 
