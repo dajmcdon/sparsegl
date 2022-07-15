@@ -546,7 +546,7 @@ knitr::include_graphics("fig/model-description.pdf")
 The \citet{pestilli2014} model had no regularization, but \citet{aminmansour2019} extended the problem to include  group-regularization (this is an approach recently followed up by \citealp{Schiavi2020}).
 In this study, we re-implemented the \citet{aminmansour2019} formulation using \pkg{sparsegl} to illustrate the feasibility and efficiency of the DWI modeling.
 
-The neurological model predicts the DWI signal using the tractogram, apportioning the image signal at each voxel to the streamlines according to the observed gradient field. This preprocessing is shown pictorially \autoref{fig:dwi-model-description}.
+The neurological model predicts the DWI signal using the tractogram, apportioning the image signal at each voxel to the streamlines according to the measured gradient field. This preprocessing is shown pictorially \autoref{fig:dwi-model-description}.
 We estimate streamline weights using sparse group lasso, allowing the amount of regularization applied to each group to be proportional to their cardinality.
 For our study, we used one subject from the Human Connectome Project \citep{vanessen2012}.
 The full brain tractogram has 3M streamlines, though we used only the streamlines identified as being part of the Arcuate Fasciculus for illustration.[^brain-data]
