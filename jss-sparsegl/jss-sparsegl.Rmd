@@ -12,11 +12,13 @@ author:
       | Department of Statistics
       | Bloomington, IN USA
   - name: Anibal Solón Heinsfeld
+    orcid: 0000-0002-2050-0614
     affiliation: 'The University of Texas at Austin \AND'
     address: |
       | Department of Computer Science
       | Austin, TX USA
   - name: Franco Pestilli
+    orcid: 0000-0002-2469-0494
     affiliation: 'The University of Texas at Austin'
     address: |
       | Department of Psychology
@@ -77,6 +79,7 @@ knitr::write_bib(c("devtools", "knitr", "testthat", "usethis",
 # Introduction
 
 \nocite{R-gglasso,R-SGL}
+\shortcites{tibshirani2012strong,vaiter2012degrees,R-glmnet,pestilli2014,aminmansour2019,Schiavi2020,vanessen2012,R-ggplot2,R-rticles}
 
 Regularized linear models are now ubiquitous tools for prediction and increasingly inference. When solving such high-dimensional learning problems, adding regularization helps to reduce the chances of overfitting and improve the model performance on unseen data. Sparsity inducing  $\ell_1$-type penalties such as the lasso \citep{tibshirani1996regression} or the Dantzig selector 
 \citep{CandesTao2007} perform both variable selection and shrinkage, resulting in near-optimal
@@ -543,7 +546,7 @@ knitr::include_graphics("fig/model-description.pdf")
 The \citet{pestilli2014} model had no regularization, but \citet{aminmansour2019} extended the problem to include  group-regularization (this is an approach recently followed up by \citealp{Schiavi2020}).
 In this study, we re-implemented the \citet{aminmansour2019} formulation using \pkg{sparsegl} to illustrate the feasibility and efficiency of the DWI modeling.
 
-The neurological predicts the DWI signal using the tractogram, apportioning the image signal at each voxel to the streamlines that according to the observed gradient field. The preprocessing is shown pictorially \autoref{fig:dwi-model-description}.
+The neurological model predicts the DWI signal using the tractogram, apportioning the image signal at each voxel to the streamlines according to the observed gradient field. This preprocessing is shown pictorially \autoref{fig:dwi-model-description}.
 We estimate streamline weights using sparse group lasso, allowing the amount of regularization applied to each group to be proportional to their cardinality.
 For our study, we used one subject from the Human Connectome Project \cite{vanessen2012}.
 The full brain tractogram has 3M streamlines, though we used only the streamlines identified as being part of the Arcuate Fasciculus for illustration.[^brain-data]
@@ -576,7 +579,7 @@ We developed this package for solving sparse group lasso optimization problems u
 
 # Acknowledgements {.unnumbered}
 
-In addition to the \proglang{R} packages described above, this manuscript and \pkg{sparsegl} benefitted from \pkg{devtools} [@R-devtools], \pkg{usethis} [@R-usethis], \pkg{testthat} [@R-testthat], \pkg{knitr} [@R-knitr], \pkg{ggplot2} [Wickham _et al._ -@R-ggplot2], and \pkg{rticles} [Allaire _et al._ -@R-rticles]. 
+In addition to the \proglang{R} packages described above, this manuscript and \pkg{sparsegl} benefitted from \pkg{devtools} [@R-devtools], \pkg{usethis} [@R-usethis], \pkg{testthat} [@R-testthat], \pkg{knitr} [@R-knitr], \pkg{ggplot2} [@R-ggplot2], and \pkg{rticles} [@R-rticles]. 
 
 Franco Pestilli was supported with grants from the National Science Foundation (OAC-1916518, IIS-1912270, IIS-1636893, BCS-1734853), National Institutes of Health (NIMH R01MH126699, NIBIB R01EB030896, NIBIB R01EB029272), a Microsoft Investigator Fellowship, and a gift from the Kavli Foundation. Daniel J. McDonald was partially supported by the National Science Foundation (DMS–1753171) and the National Sciences and Engineering Research Council of Canada (RGPIN-2021-02618).  The analysis in \autoref{sec:trust} is based on survey results from Carnegie Mellon University’s Delphi Group.
 
