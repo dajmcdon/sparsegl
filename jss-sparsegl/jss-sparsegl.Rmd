@@ -540,11 +540,14 @@ fit <- readRDS("large-data/brain-fit.rds")
 plot(fit, y_axis = "group", x_axis = "penalty", add_legend = FALSE)
 ```
 
+```{r dwi-model-description, out.width="85%", fig.cap="Depiction of the model components, showing how the streamlines and voxels are set. Each voxel covers N rows, corresponding to the number of angles measured. Related to the rows covered by a voxel, the streamlines that crosses the voxel have a value, representing the theoretical signal yielded by a streamline. Otherwise, if the streamline does not cross the voxel, the respective rows have value of zero."}
+include_graphics("fig/model-description.pdf")
+
 \citep{pestilli2014} formulated an optimization model that takes as input a set of brain connections generated using tractography algorithms and predicts the MRI diffusion signal via optimization (\cite{pestilli2014, daducci2015}).
 The model of Pestilli had no regularization during the optimization. \cite{aminmansour2019} extended the problem to include a group-regularization in the model optimization (this is an approach recently followed up by Schiavi et al.)
 In this study, we implemented the \cite{aminmansour2019} problem, using the sparsegl we show results of feasibility and efficiency of the modeling using the toolbox.
 
-The model performs DWI signal prediction by using the tractogram as predictors, simulating for each streamline what would be its signal given the voxels they are located at and the applied gradient fields.
+The model performs DWI signal prediction by using the tractogram as predictors, simulating for each streamline what would be its signal given the voxels they are located at and the applied gradient fields, shown in \autoref{fig:dwi-model-description}.
 The software optimizes the model using sparse group lasso, allowing custom parametrization for the rate of regularization applied to each group and to each predictor.
 For this specific domain, we penalize groups proportionally by their cardinality and streamlines by their equivalent physical length, in brain space.
 \autoref{fig:dwi-model} depicts a reduced version of the model, for illustration purposes.

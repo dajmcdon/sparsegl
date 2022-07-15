@@ -3,6 +3,7 @@ fig/
 *.pdf
 *.tex
 deprecated/
+!jss-sparsegl/fig/model-description.pdf
 
 
 ## Core latex/pdflatex auxiliary files:
