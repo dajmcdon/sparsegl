@@ -46,3 +46,10 @@ deprecated/
 *.synctex.gz
 *.synctex.gz(busy)
 *.pdfsync
+
+## Downloaded data:
+large-data/A.mtx.gz
+large-data/Y.rds
+large-data/G.rds
+large-data/Gpf.rds
+large-data/brain-fit.rds

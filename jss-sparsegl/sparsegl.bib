@@ -17,8 +17,6 @@
 	title = {Learning Macroscopic Brain Connectomes via Group-Sparse Factorization},
 	volume = {32},
 	year = {2019}}
-
-
 @inproceedings{encode2017,
 	author = {Caiafa, Cesar F and Sporns, Olaf and Saykin, Andrew and Pestilli, Franco},
 	booktitle = {Advances in Neural Information Processing Systems},
@@ -27,8 +25,51 @@
 	title = {Unified representation of tractography and diffusion-weighted MRI data using sparse multidimensional arrays},
 	volume = {30},
 	year = {2017}}
-
-
+@article{pestilli2014,
+	title = {Evaluation and statistical inference for human connectomes},
+	volume = {11},
+	issn = {1548-7091},
+	url = {http://www.nature.com/articles/nmeth.3098},
+	doi = {10.1038/nmeth.3098},
+	number = {10},
+	journal = {Nature Methods},
+	author = {Pestilli, Franco and Yeatman, Jason D and Rokem, Ariel and Kay, Kendrick N and Wandell, Brian A},
+	month = oct,
+	year = {2014},
+	keywords = {★},
+	pages = {1058--1063},
+}
+@article{daducci2015,
+	title = {{COMMIT}: {Convex} optimization modeling for microstructure informed tractography},
+	volume = {34},
+	issn = {1558254X},
+	doi = {10.1109/TMI.2014.2352414},
+	abstract = {Tractography is a class of algorithms aiming at in vivo mapping the major neuronal pathways in the white matter from diffusion magnetic resonance imaging (MRI) data. These techniques offer a powerful tool to noninvasively investigate at the macroscopic scale the architecture of the neuronal connections of the brain. However, unfortunately, the reconstructions recovered with existing tractography algorithms are not really quantitative even though diffusion MRI is a quantitative modality by nature. As a matter of fact, several techniques have been proposed in recent years to estimate, at the voxel level, intrinsic microstructural features of the tissue, such as axonal density and diameter, by using multicompartment models. In this paper, we present a novel framework to reestablish the link between tractography and tissue microstructure. Starting from an input set of candidate fiber-tracts, which are estimated from the data using standard fiber-tracking techniques, we model the diffusion MRI signal in each voxel of the image as a linear combination of the restricted and hindered contributions generated in every location of the brain by these candidate tracts. Then, we seek for the global weight of each of them, i.e., the effective contribution or volume, such that they globally fit the measured signal at best. We demonstrate that these weights can be easily recovered by solving a global convex optimization problem and using efficient algorithms. The effectiveness of our approach has been evaluated both on a realistic phantom with known ground-truth and in vivo brain data. Results clearly demonstrate the benefits of the proposed formulation, opening new perspectives for a more quantitative and biologically plausible assessment of the structural connectivity of the brain.},
+	number = {1},
+	journal = {IEEE Transactions on Medical Imaging},
+	author = {Daducci, Alessandro and Dal Palù, Alessandro and Lemkaddem, Alia and Thiran, Jean Philippe},
+	year = {2015},
+	pmid = {25167548},
+	keywords = {★, Convex optimization, diffusion magnetic resonance imaging (MRI), global tractography, tissue microstructure},
+	pages = {246--257},
+}
+@article{vanessen2012,
+	title = {The {Human} {Connectome} {Project}: {A} data acquisition perspective},
+	volume = {62},
+	issn = {10538119},
+	shorttitle = {The {Human} {Connectome} {Project}},
+	url = {https://linkinghub.elsevier.com/retrieve/pii/S1053811912001954},
+	doi = {10.1016/j.neuroimage.2012.02.018},
+	abstract = {The Human Connectome Project (HCP) is an ambitious 5-year effort to characterize brain connectivity and function and their variability in healthy adults. This review summarizes the data acquisition plans being implemented by a consortium of HCP investigators who will study a population of 1200 subjects (twins and their non-twin siblings) using multiple imaging modalities along with extensive behavioral and genetic data. The imaging modalities will include diffusion imaging (dMRI), resting-state fMRI (R-fMRI), task-evoked fMRI (T-fMRI), T1- and T2-weighted MRI for structural and myelin mapping, plus combined magnetoencephalography and electroencephalography (MEG/EEG). Given the importance of obtaining the best possible data quality, we discuss the efforts underway during the first two years of the grant (Phase I) to refine and optimize many aspects of HCP data acquisition, including a new 7T scanner, a customized 3T scanner, and improved MR pulse sequences.},
+	language = {en},
+	number = {4},
+	urldate = {2022-07-14},
+	journal = {NeuroImage},
+	author = {Van Essen, D.C. and Ugurbil, K. and Auerbach, E. and Barch, D. and Behrens, T.E.J. and Bucholz, R. and Chang, A. and Chen, L. and Corbetta, M. and Curtiss, S.W. and Della Penna, S. and Feinberg, D. and Glasser, M.F. and Harel, N. and Heath, A.C. and Larson-Prior, L. and Marcus, D. and Michalareas, G. and Moeller, S. and Oostenveld, R. and Petersen, S.E. and Prior, F. and Schlaggar, B.L. and Smith, S.M. and Snyder, A.Z. and Xu, J. and Yacoub, E.},
+	month = oct,
+	year = {2012},
+	pages = {2222--2231},
+}
 
 @article{yang2015fast,
   title={A fast unified algorithm for solving group-lasso penalize learning problems},
