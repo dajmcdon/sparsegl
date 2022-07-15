@@ -23,6 +23,7 @@ author:
       | Center for Perceptual Systems
       | Austin, TX USA
   - name: Daniel J. McDonald
+    orcid: 0000-0002-0443-4282
     affiliation: |
       | University of British Columbia
     address: |
@@ -47,8 +48,8 @@ abstract: >
   in the context of sparse design matrices.
 keywords:
   # at least one keyword must be supplied
-  formatted: [generalized linear model, reqularized, strong rule, sparse matrix]
-  plain:     [generalized linear model, reqularized, strong rule, sparse matrix]
+  formatted: [generalized linear model, regularized, strong rule, sparse matrix]
+  plain:     [generalized linear model, regularized, strong rule, sparse matrix]
 preamble: >
   \input{jss-sparsegl-preamble}
 output: rticles::jss_article
@@ -96,11 +97,11 @@ In \proglang{python}, \pkg{asgl} \citep{civieta2020adaptive} implements adaptive
 Our contribution, then, is to provide a package that performs sparse group lasso, and is faster than existing implementations. In particular, \pkg{sparsegl} has the following benefits:
 \begin{itemize}
 \item Performs Gaussian and logistic regression;
-\item Allows for interval constraints on the coefficients and differential weights on the coefficients;
+\item Allows for interval constraints and differential weights on the coefficients;
 \item Accommodates a sparse design matrix and returns the coefficient estimates in a sparse matrix;
 \item Uses strong rules for fast computation along a sequence of tuning parameters;
 \item Uses \pkg{dotCall64} to interface with low-level \proglang{Fortran} functions and avoid unnecessary copying as well as allow for 64-bit integers \citep[see][]{gerber2017dotcall,gerber2018dotcall};
-\item Provides information criteria as risk estimators (AIC/BIC/GCV);
+\item Provides information criteria as risk estimators (AIC/BIC/GCV) in addition to cross validation;
 \end{itemize}
 A comparison of features of this and related \proglang{R} packages is shown in \autoref{tab:comparison}. \autoref{fig:timing-comparison} compares the speed of the dense and sparse implementations in \pkg{sparsegl} with \pkg{SGL} across a number of different problem sizes, finding speedups of 1.5 to 2.5 orders of magnitude. In \autoref{methodology-estimation-and-prediction}, we describe the algorithmic implementation in detail, paying particular attention to the strong rule. In \autoref{example-usage}, we show how to use the package, running through an example with simulated data. \autoref{applications} demonstrates many of the
 unique features of \pkg{sparsegl} in two applications.
@@ -545,7 +546,7 @@ In this study, we re-implemented the \citet{aminmansour2019} formulation using \
 The neurological predicts the DWI signal using the tractogram, apportioning the image signal at each voxel to the streamlines that according to the observed gradient field. The preprocessing is shown pictorially \autoref{fig:dwi-model-description}.
 We estimate streamline weights using sparse group lasso, allowing the amount of regularization applied to each group to be proportional to their cardinality.
 For our study, we used one subject from the Human Connectome Project \cite{vanessen2012}.
-The full brain tractogram has 3M streamlines, though we used only the streamlines identified as being part of the Arcuate Fasciculus for illustration.
+The full brain tractogram has 3M streamlines, though we used only the streamlines identified as being part of the Arcuate Fasciculus for illustration.[^brain-data]
 
 \citet{aminmansour2019} used an algorithm based on Orthogonal Matching Pursuit to estimate a related model. The data used in that study measures diffusion in 11,823 voxels using 96 magnetic field angles and attempts to reconstruct the image using the ENCODE method \cite{encode2017}, resulting in 1057 orientations and 868 fascicles.
 This results in a linear regression problem  with $n\approx1M$ and $p = 868$.
@@ -566,6 +567,8 @@ plot(fit,
 ```
 
 Estimating the group lasso using \pkg{sparsegl} with 12 groups and 100 values of $\lambda$ required a little over 1 minute and about 6 GB of peak memory usage on an Intel i7-11700K PC with 64 GB of RAM. The previous method required nearly a day for a single value of $\lambda$. \autoref{fig:dwi-fit} displays the group norms of the 12 groups against the magnitude of the penalty.
+
+[^brain-data]: The processed data used to estimate the sparse group lasso is available at https://doi.org/10.6084/m9.figshare.20314917.
 
 # Discussion
 
