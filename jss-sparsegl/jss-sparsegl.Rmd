@@ -541,7 +541,8 @@ plot(fit, y_axis = "group", x_axis = "penalty", add_legend = FALSE)
 ```
 
 ```{r dwi-model-description, out.width="85%", fig.cap="Depiction of the model components, showing how the streamlines and voxels are set. Each voxel covers N rows, corresponding to the number of angles measured. Related to the rows covered by a voxel, the streamlines that crosses the voxel have a value, representing the theoretical signal yielded by a streamline. Otherwise, if the streamline does not cross the voxel, the respective rows have value of zero."}
-include_graphics("fig/model-description.pdf")
+knitr::include_graphics("fig/model-description.pdf")
+```
 
 \citep{pestilli2014} formulated an optimization model that takes as input a set of brain connections generated using tractography algorithms and predicts the MRI diffusion signal via optimization (\cite{pestilli2014, daducci2015}).
 The model of Pestilli had no regularization during the optimization. \cite{aminmansour2019} extended the problem to include a group-regularization in the model optimization (this is an approach recently followed up by Schiavi et al.)

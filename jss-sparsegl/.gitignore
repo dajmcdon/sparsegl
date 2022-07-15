@@ -1,9 +1,9 @@
 *_cache/
-fig/
+fig/*
 *.pdf
+!fig/model-description.pdf
 *.tex
 deprecated/
-!jss-sparsegl/fig/model-description.pdf
 
 
 ## Core latex/pdflatex auxiliary files:
