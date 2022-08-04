@@ -42,16 +42,16 @@ title:
   short: "\\pkg{sparsegl}: Sparse Group Lasso"
 abstract: >
   The sparse group lasso is a high-dimensional regression technique that is
-  useful for problems whose covariates have a naturally grouped structure, and
-  where sparsity is encouraged at both the group and individual covariate
+  useful for problems whose predictors have a naturally grouped structure and
+  where sparsity is encouraged at both the group and individual predictor
   level. In this paper we discuss a new \proglang{R} package for computing
   such regularized models. The intention is to provide highly optimized 
   solution routines enabling analysis of very large datasets, especially
   in the context of sparse design matrices.
 keywords:
   # at least one keyword must be supplied
-  formatted: [generalized linear model, regularized, strong rule, sparse matrix]
-  plain:     [generalized linear model, regularized, strong rule, sparse matrix]
+  formatted: [generalized linear model, regularization, sequential strong rule, sparse matrix]
+  plain:     [generalized linear model, regularization, sequential strong rule, sparse matrix]
 preamble: >
   \input{jss-sparsegl-preamble}
 output: rticles::jss_article
@@ -81,12 +81,12 @@ knitr::write_bib(c("devtools", "knitr", "testthat", "usethis",
 \nocite{R-gglasso,R-SGL}
 \shortcites{tibshirani2012strong,vaiter2012degrees,R-glmnet,pestilli2014,aminmansour2019,Schiavi2020,vanessen2012,R-ggplot2,R-rticles}
 
-Regularized linear models are now ubiquitous tools for prediction and increasingly inference. When solving such high-dimensional learning problems, adding regularization helps to reduce the chances of overfitting and improve the model performance on unseen data. Sparsity inducing  $\ell_1$-type penalties such as the lasso \citep{tibshirani1996regression} or the Dantzig selector 
+Regularized linear models are now ubiquitous tools for prediction and, increasingly, inference. When solving such high-dimensional learning problems, adding regularization helps to reduce the chances of overfitting and improve the model performance on unseen data. Sparsity inducing  $\ell_1$-type penalties such as the lasso \citep{tibshirani1996regression} or the Dantzig selector 
 \citep{CandesTao2007} perform both variable selection and shrinkage, resulting in near-optimal
 statistical properties. The group lasso \citep{yuan2006model} modifies the regularizer, replacing the $\ell_1$ penalty with a groupwise sum of $\ell_2$ norms. When covariates have natural groupings, such as with genomics data or one-hot encoded factors, this group penalty is preferable, because the resulting estimate will include or exclude entire groups of covariates. To simultaneously attain sparsity at both group and individual feature levels, \citet{simon2013sparse} proposed the sparse group-lasso, a convex combination of the $\ell_1$ lasso penalty and the group lasso-penalty. 
 
 While a number of packages exist for solving the sparse group lasso, our \proglang{R} implementation in \pkg{sparsegl} is designed to be fast, especially in the case of large, sparse covariate matrices. This package focuses on finding the optimal solutions to sparse group-lasso penalized learning problems at a sequence of regularization parameters, implements risk estimators in an effort to avoid cross validation if necessary, leverages a fast, compiled \proglang{Fortran} implementation, avoids extraneous data copies, and undertakes a number of additional computational efficiency improvements.
-In \proglang{R}, there are already excellent implementations of sparse group lasso and group lasso, namely \pkg{SGL}, \pkg{gglasso}, and \pkg{biglasso}. Of these, only \pkg{SGL} employs the additional $\ell_1$ sparsity-inducing penalty. However, it has a number of drawbacks that result in much slower performance, even on small data. One major reason is the omission of so-called "strong rules" \citep{tibshirani2012strong} that help coordinate descent algorithms to avoid many of the groups which will turn out to have zero coefficient estimates. The \pkg{gglasso} \citep{R-gglasso,yang2015fast} and \pkg{biglasso} \citep{R-biglasso,zeng2020biglasso} packages are both computationally fast. The former incorporates the strong rule, and the latter involves a hybrid safe-strong rule along with scalable storage and a parallel implementation in \proglang{C++} and \proglang{R} that allows for data that exceeds the size of installed random access memory. Unfortunately, neither allows within-group sparsity (i.e., they performs group lasso, not sparse group lasso). Thus, the estimated coefficients produced by these packages will have some active groups and some inactive groups, but within an active group, generally all the coefficients will be nonzero. 
+In \proglang{R}, there are already excellent implementations of sparse group lasso and group lasso, namely \pkg{SGL}, \pkg{gglasso}, and \pkg{biglasso}. Of these, only \pkg{SGL} employs the additional $\ell_1$ sparsity-inducing penalty. However, it has a number of drawbacks that result in much slower performance, even on small data. One major reason is the omission of so-called "strong rules" \citep{tibshirani2012strong} that help coordinate descent algorithms to avoid many of the groups which will turn out to have zero coefficient estimates. The \pkg{gglasso} \citep{R-gglasso,yang2015fast} and \pkg{biglasso} \citep{R-biglasso,zeng2020biglasso} packages are both computationally fast. The former incorporates the strong rule, and the latter involves a hybrid safe-strong rule along with scalable storage and a parallel implementation in \proglang{C++} and \proglang{R} that allows for data that exceeds the size of installed random access memory. Unfortunately, neither allows within-group sparsity (i.e., they perform group lasso, not sparse group lasso). Thus, the estimated coefficients produced by these packages will have some active groups and some inactive groups, but within an active group, generally all the coefficients will be nonzero. 
 
 
 
@@ -160,7 +160,7 @@ y_i = \mathbf{x}_i^\T \vbeta + \sigma\epsilon_i,\ \ i=1,\ldots,n,
 where $\epsilon_i$ is independent standard Gaussian noise and $\sigma > 0$. While ordinary least squares estimates the coefficient vector $\vbeta$ by solving $\min_{\vbeta} \frac{1}{2n}\sum_{i=1}^n (y_i - \vx_i^\T\vbeta)^2$, this method tends to behave poorly if $p \gg n$. In what follows, we will write $\vy = (y_1,\ldots,y_n)$ and let $\mX$ be the rowwise concatenation of $\vx^\T_1,\ldots,\vx_n^\T$.
 
 
-The lasso addresses this difficulty by adding an $\ell_1$ penalty to the
+The lasso adds an $\ell_1$ penalty to the
 optimization problem:
 \begin{equation}
 \label{eq:lasso}
@@ -169,13 +169,13 @@ optimization problem:
 where $\norm{\cdot}_2$ is the Euclidean ($\ell_2$) norm and $\norm{\cdot}_1$ is the $\ell_1$ norm.
 The benefit of this penalty is that it tends to allow only a subset of coefficient estimates to be nonzero, hence performing variable selection. Here, $\lambda$ is a hyperparameter that trades fidelity to the data---small $\lambda$ emphasizes minimization of the squared-error---with desirable regularization that selects a subset of variables and improves prediction accuracy. 
 
-A variant of this, the group lasso \citep{yuan2006model} is appropriate when there is a natural grouping structure for the features. That is, we assume that both the design matrix $\mX$ and the corresponding vector of coefficients can be partitioned into meaningful groups, and, by analogy with lasso regression, only a few of the groups are active, i.e., have nonzero coefficients. The group lasso thus performs regularization that has the effect of discarding groups of predictors rather than the predictors themselves:
+A variant of this, the group lasso \citep{yuan2006model} is appropriate when there is a natural grouping structure for the features. That is, we assume that both the design matrix $\mX$ and the corresponding vector of coefficients can be partitioned into interpretable non-overlapping groups, and, by analogy with lasso regression, only a few of the groups are active, i.e., have nonzero coefficients. The group lasso thus performs regularization that has the effect of discarding groups of predictors rather than the predictors themselves:
 \begin{equation}
 \min_{\vbeta}\left\{\frac{1}{2n}\big\lVert \vY-\sum_{g=1}^G \mX^{(g)}\vbeta^{(g)}\big\rVert_2^2 + \lambda\sum_{l=1}^m\sqrt{w_g}\snorm{\vbeta^{(g)}}_2\right\}.
 \label{eq:group-lasso}
 \end{equation}
 Grouping may occur naturally---say with the inclusion of many categorical predictors, groups of genes, or brain regions---or may be a design choice using additive models and basis expansions.
-Note that the in Equation \ref{eq:group-lasso} grouping structure is explicitly stated: the vector of coefficients, $\vbeta$, is thought of as a concatenation of the coefficient subvectors of the various groups $\vbeta^{(g)}$, and similarly the data matrix $\mX$ is the concatenation of submatrices, each submatrix $\mX^{(g)}$ being composed of the columns that correspond to the particular group. Thus the first part of the equation, $\vY-\sum_{g=1}^G\mX^{(g)}\vbeta^{(g)}$, is identical to the more simply-written equation $\vY-\mX\vbeta$, but the notation serves to emphasise the partitioning.
+Note that in Equation \eqref{eq:group-lasso}, the grouping structure is explicitly stated: the vector of coefficients, $\vbeta$, is thought of as a concatenation of the coefficient subvectors of the various groups $\vbeta^{(g)}$, and similarly the data matrix $\mX$ is the concatenation of submatrices, each submatrix $\mX^{(g)}$ being composed of the columns that correspond to that particular group. Thus the first part of the equation, $\vY-\sum_{g=1}^G\mX^{(g)}\vbeta^{(g)}$, is identical to the more simply-written equation $\vY-\mX\vbeta$, but the notation serves to emphasise the partitioning.
 
 The penalty however---$\sum_{g=1}^G\sqrt{w_g}\snorm{\vbeta^{(g)}}_2$---is different from the corresponding part in Equation \eqref{eq:lasso}, using instead the sum of the (non-squared) $\ell_2$-norms of the coefficient vectors of the various groups. It is the non-differentiability of this expression at $\mathbf{0}\in\R^{|g|}$ (with $|g|$ meaning the size of group $g$) that accounts for the group-discarding property of the problem, similar to the way that the  non-differentiability the absolute value at $0$ is responsible for discarding individual predictors in the lasso.
 
@@ -194,7 +194,7 @@ There is now a second tuning parameter $\alpha$, which controls the relative emp
 There is no closed-form solution to the optimization problem in Equation \eqref{eq:sparsegl}, so we require a numerical procedure. Because the problem is convex, a variety of methods may be used.
 The general framework for our algorithm is the same as the majorized block-wise coordinate descent algorithm developed in \citep{yang2015fast, simon2013sparse}. What this means is that, for a fixed value of $\lambda$, we loop over the groups and update only those coefficients while holding all other groups constant. In particular, instead of using the exact Hessian to determine the step size and direction in every update step, we update according to a simpler expression that majorizes the objective. 
 
-For the rest of this section, we describe this majorization algorithm, focusing on a particular group $k$ and holding the coefficients for all other groups fixed. We note here that, because the loss function in Equation \eqref{eq:sparsegl} is differentiable and the penalty terms are convex and separable (i.e., they can be decomposed into a sum of functions each only involving a single group), this block coordinate descent algorithm is guaranteed to converge to a global optimum \citep{tseng2001convergence}.
+For the rest of this section, we describe this majorization algorithm, focusing on a particular group $g$ and holding the coefficients for all other groups fixed. We note here that, because the loss function in Equation \eqref{eq:sparsegl} is differentiable and the penalty terms are convex and separable (i.e., they can be decomposed into a sum of functions each only involving a single group), this block coordinate descent algorithm is guaranteed to converge to a global optimum \citep{tseng2001convergence}.
 
 To begin with, we introduce some notation. Let 
 \[
@@ -245,7 +245,7 @@ which no longer involves operations with the Hessian matrix.
 
 As before, the optimal value for Equation \eqref{eq:Meq} is determined by its subgradient equation, similar to that of Equation \eqref{eq:subgrad}:
 \begin{equation}
-\frac{1}{t} (\vbeta - (\vbeta_0 - t\nabla \ell(\vbeta_0))) +(1-\alpha)\lambda \mathbf{u} + \alpha \lambda \mathbf{v} = \mathbf{0},
+\frac{1}{t} \Big(\vbeta - \big(\vbeta_0 - t\nabla \ell(\vbeta_0)\big)\Big) +(1-\alpha)\lambda \mathbf{u} + \alpha \lambda \mathbf{v} = \mathbf{0},
 \end{equation}
 with $\mathbf{u}$ and $\mathbf{v}$ as defined above. Solving this for $\vbeta$ in terms of $\vbeta_0$ results in the following expression:
 \begin{equation}
@@ -260,7 +260,7 @@ where $(z)_+ = \max\{z,\ 0\}$ and $S$ is the coordinate-wise soft threshold oper
 \end{equation}
 i.e., for each coordinate in the vector, it shrinks that coordinate in magnitude by the amount $b$, and sets it to zero if the magnitude of that coordinate was smaller than $b$ to begin with. It is this soft-thresholding operation that encourages within-group sparsity.
 
-An examination of Equation \eqref{eq:updateStep} shows that it is possible for the whole group to be set to zero (made inactive) due to the (hard) threshold operator $(\cdot)_+$ in the first part of the expression. It is also possible for individual components of $\vbeta^{(k)}$ to be zeroed out from the coordinate-wise (soft) threshold operator $S$. Therefore, performing this update step tends to enforce coefficient sparsity at both the group- and individual-level.
+An examination of Equation \eqref{eq:updateStep} shows that it is possible for the whole group to be set to zero (made inactive) due to the (hard) threshold operator $(\cdot)_+$ in the first part of the expression. It is also possible for individual components of $\vbeta^{(k)}$ to be zeroed out by the coordinate-wise (soft) threshold operator $S$. Therefore, performing this update step tends to enforce coefficient sparsity at both the group- and individual-level.
 
 
 
@@ -317,7 +317,7 @@ $$
 \snorm{c_g(\lambda_{m-1})}_2 \leq (1-\alpha)(\lambda_{m-1} - \lambda_m) + \snorm{c_g(\lambda_{m-1})}_2.
 $$
 We want to be able to assert that
-$(1-\alpha)(\lambda_{m-1} - \lambda_m) + \snorm{c_g(\lambda_{m-1})}_2 \leq (1-\alpha)\lambda_m$, allowing us to ignore group $g$, but this assertion holds 
+$(1-\alpha)(\lambda_{m-1} - \lambda_m) + \snorm{c_g(\lambda_{m-1})}_2 \leq (1-\alpha)\lambda_m$, allowing us to ignore group $g$, and this assertion holds 
 precisely when
 \begin{equation}
 \label{eq:strong}
@@ -349,7 +349,7 @@ To minimize gradient computations for groups that will eventually be determined 
   \begin{ALC@g}
   \STATE If there were any violations, \textbf{go to} to Line 5.
   \end{ALC@g}
-  \STATE \textbf{Update} $\mathcal{A} \leftarrow \mathcal{A}\bigcup \left\{g\in\mathcal{S}^c\cap\mathcal{A}^c : \snorm{S(\nabla \ell(\hat\vbeta_g),\ t\alpha\lambda_m)}_2 > t(1-\alpha)\lambda_m\right\}.$
+  \STATE \textbf{Update} $\mathcal{A} \leftarrow \mathcal{A}\bigcup \left\{g\in\mathcal{S}^c\bigcap\mathcal{A}^c : \snorm{S(\nabla \ell(\hat\vbeta_g),\ t\alpha\lambda_m)}_2 > t(1-\alpha)\lambda_m\right\}.$
   \begin{ALC@g}
   \STATE If there were any violations, \textbf{go to} to Line 5.
   \end{ALC@g}
@@ -448,14 +448,16 @@ library(sparsegl)
 fit <- sparsegl(X, y, group = groups)
 ```
 
-We include a number of \pkg{S3} methods for the `sparsegl` typical for linear models: `plot()`, `coef()`, `predict()` and `print()`. The `plot()` function displays either the coefficients or the group norms on the $y$-axis against either $\{\lambda_m\}_{m=1}^M$ or the scaled penalty on the $x$-axis. The resulting figures are shown in \autoref{fig:coef-trace}.
+We include a number of \pkg{S3} methods for `sparsegl` typical for linear models: `plot()`, `coef()`, `predict()` and `print()`. The `plot()` function displays either the coefficients or the group norms on the $y$-axis against either $\{\lambda_m\}_{m=1}^M$ or the scaled penalty on the $x$-axis.[^gg] The resulting figures are shown in \autoref{fig:coef-trace}.
+
+[^gg]: We have chosen to implement plotting throughout the package using \pkg{ggplot2} \citep{R-ggplot2}.
 
 ```{r coef-trace, fig.width = 4, fig.height = 3, fig.cap="Coefficient trace plots produced with the \\texttt{plot()} method.", fig.show='hold', out.width="45%"}
 plot(fit, y_axis = "coef", x_axis = "penalty", add_legend = FALSE)
 plot(fit, y_axis = "group", x_axis = "lambda", add_legend = FALSE)
 ```
 
-The `coef()` and `predict()` methods give the coefficients or predicted values given a new design matrix $\widetilde{\mX}$ at the requested $\lambda$'s, potentially allowing for $\lambda$ values different from those used at the fitting stage. 
+The `coef()` and `predict()` methods give the coefficients or predicted values for a new design matrix $\widetilde{\mX}$ at the requested $\lambda$'s, potentially allowing for $\lambda$ values different from those used at the fitting stage. 
 
 ```{r, message=FALSE}
 coef(fit, s = c(0.02, 0.03))[c(1,3,25,29),] # display a few
@@ -551,9 +553,9 @@ We estimate streamline weights using sparse group lasso, allowing the amount of 
 For our study, we used one subject from the Human Connectome Project \citep{vanessen2012}.
 The full brain tractogram has 3M streamlines, though we used only the streamlines identified as being part of the Arcuate Fasciculus for illustration.[^brain-data]
 
-\citet{aminmansour2019} used an algorithm based on Orthogonal Matching Pursuit to estimate a related model. The data used in that study measures diffusion in 11,823 voxels using 96 magnetic field angles and attempts to reconstruct the image using the ENCODE method \cite{encode2017}, resulting in 1057 orientations and 868 fascicles.
+\citet{aminmansour2019} used an algorithm based on Orthogonal Matching Pursuit to estimate a related model. The data used in that study measures diffusion in 11,823 voxels using 96 magnetic field angles and attempts to reconstruct the image using the ENCODE method \citep{encode2017}, resulting in 1057 orientations and 868 fascicles.
 This results in a linear regression problem  with $n\approx1M$ and $p = 868$.
-In comparison, our data contains 77,630 voxels measured on 90 angles, with a tractography of 10,244 streamlines. The resulting linear model has $n\approx6.9M$ and $p\approx88K$, around $72\times$ the size of the previous analysis.
+In comparison, our data contains 77,630 voxels measured on 90 angles, with a tractography of 10,244 streamlines. The resulting linear model has $n\approx6.9M$ and $p\approx88K$, around $700\times$ the size of the previous analysis.
 The design matrix would occupy nearly 533 GB if it were dense, but since it is only about 0.02\% non-sparse, it requires 1.2 GB of memory when stored in CSC format.
 
 ```{r dwi-fit, echo=FALSE, warning=FALSE, eval=TRUE, fig.cap="The group norm of the 12 groups based on neuroanatomical structure against the magnitude of the penalty. The fit was produced using \\texttt{sparsegl()} to estimate the group lasso ($\\alpha=0$).", fig.height=3}
