@@ -12,7 +12,8 @@ sparsegl(
   nlambda = 100,
   lambda.factor = ifelse(nobs < nvars, 0.01, 1e-04),
   lambda = NULL,
-  pf = sqrt(bs),
+  pf_group = sqrt(bs),
+  pf_sparse = rep(1, nvars),
   intercept = TRUE,
   asparse = 0.05,
   standardize = TRUE,
@@ -68,12 +69,19 @@ decreasing sequence of \code{lambda} values than a single (small) value. If
 supplied, the user-defined \code{lambda} sequence is automatically sorted in
 decreasing order.}
 
-\item{pf}{Penalty factor, a vector of the same length as the total number
-of groups. Separate penalty weights can be applied to each group of
-\eqn{\beta}{beta's}s to allow differential shrinkage. Can be 0 for some
+\item{pf_group}{Penalty factor on the groups, a vector of the same
+length as the total number of groups. Separate penalty weights can be applied
+to each group of \eqn{\beta}{beta's}s to allow differential shrinkage.
+Can be 0 for some
 groups, which implies no shrinkage, and results in that group always being
-included in the model. Default value for each entry is the square-root of
-the corresponding size of each group.}
+included in the model (depending on \code{pf_sparse}). Default value for each
+entry is the square-root of the corresponding size of each group.}
+
+\item{pf_sparse}{Penalty factor on l1-norm, a vector the same length as the
+total number of columns in \code{x}. Each value corresponds to one predictor
+Can be 0 for some predictors, which
+implies that predictor will be receive by the group l2-norm penalty.
+Each entry should be non-negative in this vector.}
 
 \item{intercept}{Whether to include intercept in the model. Default is TRUE.}
 
@@ -118,6 +126,7 @@ An object with S3 class \code{\link[=sparsegl]{sparsegl()}}.
 \item \code{jerr} Error flag, for warnings and errors, 0 if no error.
 \item \code{group} A vector of consecutive integers describing the grouping of the
 coefficients.
+\item \code{nobs} The number of observations used to estimate the model.
 }
 }
 \description{

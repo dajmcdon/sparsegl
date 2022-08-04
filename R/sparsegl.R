@@ -27,12 +27,18 @@
 #'   saturated fit. This argument has no effect if there is user-defined
 #'   `lambda` sequence.
 #' @template param_lambda-template
-#' @param pf Penalty factor, a vector of the same length as the total number
-#'   of groups. Separate penalty weights can be applied to each group of
-#' \eqn{\beta}{beta's}s to allow differential shrinkage. Can be 0 for some
-#' groups, which implies no shrinkage, and results in that group always being
-#' included in the model. Default value for each entry is the square-root of
-#' the corresponding size of each group.
+#' @param pf_group Penalty factor on the groups, a vector of the same
+#'   length as the total number of groups. Separate penalty weights can be applied
+#'   to each group of \eqn{\beta}{beta's}s to allow differential shrinkage.
+#'   Can be 0 for some
+#'   groups, which implies no shrinkage, and results in that group always being
+#'   included in the model (depending on `pf_sparse`). Default value for each
+#'   entry is the square-root of the corresponding size of each group.
+#' @param pf_sparse Penalty factor on l1-norm, a vector the same length as the
+#'   total number of columns in `x`. Each value corresponds to one predictor
+#'   Can be 0 for some predictors, which
+#'   implies that predictor will be receive by the group l2-norm penalty.
+#'   Each entry should be non-negative in this vector.
 #' @param dfmax Limit the maximum number of groups in the model. Default is
 #'   no limit.
 #' @param pmax Limit the maximum number of groups ever to be nonzero. For
@@ -67,6 +73,7 @@
 #' * `jerr` Error flag, for warnings and errors, 0 if no error.
 #' * `group` A vector of consecutive integers describing the grouping of the
 #'     coefficients.
+#' * `nobs` The number of observations used to estimate the model.
 #'
 #'
 #' @seealso [plot.sparsegl()], [coef.sparsegl()], [predict.sparsegl()]
@@ -89,7 +96,7 @@
 sparsegl <- function(
   x, y, group = NULL, family = c("gaussian", "binomial"),
   nlambda = 100, lambda.factor = ifelse(nobs < nvars, 0.01, 1e-04),
-  lambda = NULL, pf = sqrt(bs),
+  lambda = NULL, pf_group = sqrt(bs), pf_sparse = rep(1, nvars),
   intercept = TRUE, asparse = 0.05, standardize = TRUE,
   lower_bnd = -Inf, upper_bnd = Inf,
   dfmax = as.integer(max(group)) + 1L,
@@ -137,7 +144,12 @@ sparsegl <- function(
     asparse <- 0
     warning("asparse must be in [0,1], running ordinary group lasso.")
   }
-
+  if (any(pf_sparse < 0)) stop("`pf_sparse` must be non-negative.")
+  if (any(is.infinite(pf_sparse)))
+    stop("`pf_sparse` may not be infinite. Simply remove the column from `x`.")
+  if (any(pf_group < 0)) stop("`pf_group` must be non-negative.")
+  if (any(is.infinite(pf_group)))
+    stop("`pf_group` may not be infinite. Simply remove the group from `x`.")
 
   iy <- cumsum(bs) # last column of x in each group
   ix <- c(0, iy[-bn]) + 1 # first column of x in each group
@@ -147,12 +159,18 @@ sparsegl <- function(
 
   #parameter setup
   assertthat::assert_that(
-    length(pf) == bn,
-    msg = paste("The length of group-lasso penalty factor must be",
-                "same as the number of groups"))
+    length(pf_group) == bn,
+    msg = paste("The length of group penalty factor must be the",
+                "same as the number of groups."))
+  assertthat::assert_that(
+    length(pf_sparse) == nvars,
+    msg = paste("The length of l1 penalty factor must be the",
+                "same as the number of predictors."))
 
+  pf_sparse <- pf_sparse / sum(pf_sparse) * nvars
   maxit <- as.integer(maxit)
-  pf <- as.double(pf)
+  pf_group <- as.double(pf_group)
+  pf_sparse <- as.double(pf_sparse)
   eps <- as.double(eps)
   dfmax <- as.integer(dfmax)
   pmax <- as.integer(pmax)
@@ -206,20 +224,23 @@ sparsegl <- function(
   # call R sub-function
   fit <- switch(
     family,
-    gaussian = sgl_ls(bn, bs, ix, iy, nobs, nvars, x, y, pf, dfmax, pmax, nlam,
-                flmin, ulam,
-                eps, maxit, vnames, group, intr, as.double(asparse),
-                standardize, lower_bnd, upper_bnd),
-    binomial = sgl_logit(bn, bs, ix, iy, nobs, nvars, x, y, pf, dfmax, pmax,
-                      nlam, flmin, ulam,
-                      eps, maxit, vnames, group, intr, as.double(asparse),
-                      standardize, lower_bnd, upper_bnd)
+    gaussian = sgl_ls(
+      bn, bs, ix, iy, nobs, nvars, x, y, pf_group, pf_sparse,
+      dfmax, pmax, nlam, flmin, ulam, eps, maxit, vnames, group, intr,
+      as.double(asparse), standardize, lower_bnd, upper_bnd),
+    binomial = sgl_logit(
+      bn, bs, ix, iy, nobs, nvars, x, y, pf_group, pf_sparse,
+      dfmax, pmax, nlam, flmin, ulam, eps, maxit, vnames, group, intr,
+      as.double(asparse), standardize, lower_bnd, upper_bnd)
   )
 
   # output
   if (is.null(lambda)) fit$lambda <- lamfix(fit$lambda)
   fit$call <- this.call
   fit$asparse <- asparse
+  fit$nobs <- nobs
+  fit$pf_group <- pf_group
+  fit$pf_sparse <- pf_sparse
   class(fit) <- c("sparsegl", class(fit))
   fit
 }

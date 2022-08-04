@@ -23,10 +23,10 @@ MODULE sgl_subfuns
       RETURN
    END SUBROUTINE strong_rule
 
-   SUBROUTINE kkt_check(is_in_E_set, violation, bn, ix, iy, vl, pf,&
-        lam1ma, bs, lama, ga)
+   SUBROUTINE kkt_check(is_in_E_set, violation, bn, ix, iy, vl, pf,pfl1,&
+        lam1ma, bs, lama, ga, nvars)
       IMPLICIT NONE
-      INTEGER :: g, startix, endix
+      INTEGER :: g, startix, endix, nvars
       INTEGER, INTENT(in) :: bn
       INTEGER, INTENT(in) :: bs(bn)
       INTEGER, INTENT(in) :: ix(bn), iy(bn)
@@ -36,6 +36,7 @@ MODULE sgl_subfuns
       DOUBLE PRECISION, DIMENSION (:), ALLOCATABLE :: s
       DOUBLE PRECISION :: snorm
       DOUBLE PRECISION, INTENT(in) :: pf(bn)
+      DOUBLE PRECISION, INTENT(in) :: pfl1(nvars)
       INTEGER, INTENT(inout) :: violation
       DOUBLE PRECISION, INTENT(in) :: lam1ma, lama
 
@@ -45,7 +46,7 @@ MODULE sgl_subfuns
          endix = iy(g)
          ALLOCATE(s(bs(g)))
          s = vl(startix:endix)
-         CALL softthresh(s, lama, bs(g))
+         CALL softthresh(s, lama * pfl1(startix:endix), bs(g))
          snorm = SQRT(DOT_PRODUCT(s,s))
          ga(g) = snorm
          IF(ga(g) > pf(g) * lam1ma) THEN
@@ -58,7 +59,7 @@ MODULE sgl_subfuns
    END SUBROUTINE kkt_check
 
 
-   SUBROUTINE update_step(bsg, startix, endix, b, lama, t_for_sg, pfg, lam1ma, x,&
+   SUBROUTINE update_step(bsg, startix, endix, b, lama, t_for_sg, pfg, pfl1, lam1ma, x,&
          isDifZero, nobs, r, gamg, maxDif,nvars, lb, ub)
       IMPLICIT NONE
       INTEGER, INTENT(in) :: bsg, nobs, nvars
@@ -69,6 +70,7 @@ MODULE sgl_subfuns
       DOUBLE PRECISION, DIMENSION (:), INTENT(inout) :: b, r
       DOUBLE PRECISION :: snorm, tea
       DOUBLE PRECISION, INTENT(in) :: lama, t_for_sg, pfg, lam1ma, lb, ub
+      DOUBLE PRECISION, INTENT(in) :: pfl1(bsg)
       DOUBLE PRECISION, DIMENSION (:), INTENT(in) :: x(nobs,nvars)
       INTEGER, INTENT(inout) :: isDifZero
       INTEGER :: k
@@ -79,7 +81,7 @@ MODULE sgl_subfuns
       oldb = b(startix:endix)
       s = MATMUL(r, x(:, startix:endix))/nobs
       s = s*t_for_sg + b(startix:endix)
-      CALL softthresh(s, lama*t_for_sg, bsg)
+      CALL softthresh(s, lama*t_for_sg*pfl1, bsg)
       snorm = SQRT(DOT_PRODUCT(s,s))
       tea = snorm - t_for_sg * lam1ma * pfg
       IF (tea > 0.0D0) THEN
@@ -102,7 +104,7 @@ MODULE sgl_subfuns
    END SUBROUTINE update_step
 
 
-   SUBROUTINE strong_kkt_check(is_in_E_set,violation,bn,ix,iy,pf,lam1ma,bs,&
+   SUBROUTINE strong_kkt_check(is_in_E_set,violation,bn,ix,iy,pf,pfl1,lam1ma,bs,&
          lama,ga,is_in_S_set,x,r,nobs,nvars,vl)
       IMPLICIT NONE
       INTEGER, INTENT(in)::nobs
@@ -120,6 +122,7 @@ MODULE sgl_subfuns
       DOUBLE PRECISION, DIMENSION (:), ALLOCATABLE :: s
       DOUBLE PRECISION :: snorm
       DOUBLE PRECISION, INTENT(in) :: pf(bn)
+      DOUBLE PRECISION, INTENT(in) :: pfl1(nvars)
       INTEGER, INTENT(inout) :: violation
       DOUBLE PRECISION, INTENT(in) :: lam1ma, lama
 
@@ -131,7 +134,7 @@ MODULE sgl_subfuns
             ALLOCATE(s(bs(g)))
             s = MATMUL(r, x(:,startix:endix)) / nobs
             vl(startix:endix) = s
-            CALL softthresh(s, lama, bs(g))
+            CALL softthresh(s, lama * pfl1(startix:endix), bs(g))
             snorm = SQRT(dot_PRODUCT(s,s))
             ga(g) = snorm
             DEALLOCATE(s)
@@ -145,7 +148,7 @@ MODULE sgl_subfuns
       RETURN
    END SUBROUTINE strong_kkt_check
 
-   SUBROUTINE sp_update_step(bsg, startix, endix, b, lama, t_for_sg, pfg, lam1ma, x,&
+   SUBROUTINE sp_update_step(bsg, startix, endix, b, lama, t_for_sg, pfg, pfl1, lam1ma, x,&
          xidx, xcptr, nnz, isDifZero, nobs, r, gamg, maxDif, nvars, lb, ub)
 
       IMPLICIT NONE
@@ -159,6 +162,7 @@ MODULE sgl_subfuns
       DOUBLE PRECISION :: snorm, tea
       DOUBLE PRECISION, INTENT(in) :: lama, t_for_sg, pfg, lam1ma, lb, ub
       DOUBLE PRECISION, INTENT(in) :: x(nnz)
+      DOUBLE PRECISION, INTENT(in) :: pfl1(bsg)
       INTEGER, INTENT(in) :: xidx(nnz)
       INTEGER, INTENT(in) :: xcptr(nvars + 1)
       INTEGER, INTENT(inout) :: isDifZero
@@ -173,7 +177,7 @@ MODULE sgl_subfuns
 
       CALL spatx(x, xidx, xcptr, nobs, nvars, nnz, r, s, startix, endix)
       s = s * t_for_sg / nobs + b(startix:endix)
-      CALL softthresh(s, lama * t_for_sg, bsg)
+      CALL softthresh(s, lama * t_for_sg * pfl1, bsg)
       snorm = SQRT(DOT_PRODUCT(s,s))
       tea = snorm - t_for_sg * lam1ma * pfg
       IF (tea > 0.0D0) THEN
@@ -196,7 +200,7 @@ MODULE sgl_subfuns
    END SUBROUTINE sp_update_step
 
 
-   SUBROUTINE sp_strong_kkt_check(is_in_E_set,violation,bn,ix,iy,pf,lam1ma,bs,&
+   SUBROUTINE sp_strong_kkt_check(is_in_E_set,violation,bn,ix,iy,pf,pfl1,lam1ma,bs,&
          lama,ga,is_in_S_set,x,xidx,xcptr,nnz,r,nobs,nvars,vl)
 
       IMPLICIT NONE
@@ -216,6 +220,7 @@ MODULE sgl_subfuns
       DOUBLE PRECISION, DIMENSION (:), ALLOCATABLE :: s
       DOUBLE PRECISION :: snorm
       DOUBLE PRECISION, INTENT(in) :: pf(bn)
+      DOUBLE PRECISION, INTENT(in) :: pfl1(nvars)
       INTEGER, INTENT(inout) :: violation
       DOUBLE PRECISION, INTENT(in) :: lam1ma, lama
 
@@ -228,7 +233,7 @@ MODULE sgl_subfuns
             s = 0.0D0
             CALL spatx(x, xidx, xcptr, nobs, nvars, nnz, r, s, startix, endix)
             vl(startix:endix) = s / nobs
-            CALL softthresh(s, lama, bs(g))
+            CALL softthresh(s, lama * pfl1(startix:endix), bs(g))
             snorm = SQRT(dot_PRODUCT(s,s))
             ! print *, "kkt snorm = ", snorm
             ga(g) = snorm
