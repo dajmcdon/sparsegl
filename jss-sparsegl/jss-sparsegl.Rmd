@@ -35,9 +35,9 @@ author:
     url: \url{https://dajmcdon.github.io/}
 
 title:
-  formatted: "Estimating Sparse Group Lasso with the \\pkg{sparsegl} \\proglang{R} Package"
+  formatted: "\\pkg{sparsegl}: An \\proglang{R} Package for Estimating Sparse Group Lasso"
   # If you use tex in the formatted title, also supply version without
-  plain: "Estimating Sparse Group Lasso with the sparsegl R Package"
+  plain: "sparsegl: An R Package for Estimating Sparse Group Lasso"
   # For running headers, if needed
   short: "\\pkg{sparsegl}: Sparse Group Lasso"
 abstract: >
@@ -128,6 +128,7 @@ We summarize our contributions in \autoref{discussion}.
 \end{table}
 
 ```{r timing-comparison, echo=FALSE, fig.width=6, fig.height=3, fig.cap="This figure shows the time required to compute sparse group lasso solutions across a number of different problem sizes. In all cases, we use $n=500$ observations and 100 values of the tuning parameter $\\lambda$. The median is taken across 5 replications for each method and problem size. Note that both axes are on the log scale." }
+# source("code/timing.R)
 res <- readRDS("large-data/sparsegl-timing.rds")
 res <- res %>%
   group_by(method, p) %>%
