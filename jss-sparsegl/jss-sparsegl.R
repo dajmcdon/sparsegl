@@ -10,13 +10,15 @@
 
 # Necessary packages
 # install.packages(c("knitr", "ggplot2", "tibble", "SGL", "dplyr", "covidcast"))
-# install.packages("scales")
+# install.packages(c("scales", "tidyr))
 #
 
 ## ---- setup, include=FALSE----------------------------------------------------
 ## Used in the Rmd for the pdf submission
 # knitr::opts_chunk$set(echo = TRUE, cache = TRUE, fig.path = "fig/")
 # options(prompt = 'R> ', continue = '+ ')
+library(ggplot2)
+library(tidyr)
 ggplot2::theme_set(ggplot2::theme_bw(base_family = "Palatino"))
 
 
@@ -228,3 +230,5 @@ plot(fit,
   coord_cartesian(c(0,1), c(0,5e-5), clip = "off") +
   annotate("text", x = -.14, y = 5.2e-5, fontface="plain",
            label = quote(phantom(0) %*% 10^{-5}), size = 2.5)
+
+sessionInfo()
