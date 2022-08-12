@@ -117,7 +117,7 @@ predict.sparsegl <- function(object, newx, s = NULL,
   nbeta <- coef(object, s)
   if (type == "coefficients") return(nbeta)
   if (type == "nonzero") return(nonzeroCoef(nbeta[-1, ,drop = FALSE]))
-  if (inherits(newx, "sparseMatrix")) newx <- as(newx,"dgCMatrix")
+  if (inherits(newx, "sparseMatrix")) newx <- as_dgCMatrix(newx)
   dx <- dim(newx)
   p <- object$dim[1]
   if (is.null(dx)) newx <- matrix(newx, 1, byrow = TRUE)
