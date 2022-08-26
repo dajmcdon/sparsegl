@@ -131,6 +131,7 @@ predict.lsspgl <- function(
     object, newx, s = NULL,
     type = c("link","response","coefficients","nonzero"),
     ...) {
+  type <- match.arg(type)
   NextMethod("predict")
 }
 
