@@ -104,39 +104,50 @@ coef.sparsegl <- function(object, s = NULL, ...) {
 #' groups <- rep(1:(p / 5), each = 5)
 #' fit1 <- sparsegl(X, y, group = groups)
 #' predict(fit1, newx = X[10, ], s = fit1$lambda[3:5])
-predict.sparsegl <- function(object, newx, s = NULL,
-                             type = c("link","response","coefficients","nonzero","class"),
-                             ...) {
+predict.sparsegl <- function(
+    object, newx, s = NULL,
+    type = c("link", "response", "coefficients", "nonzero", "class"),
+    ...) {
   type <- match.arg(type)
   if (missing(newx)) {
     if (!match(type, c("coefficients", "nonzero"), FALSE))
       stop("You need to supply a value for 'newx'")
   }
-  if (class(object)[2] == "ls" && type == "class")
-    stop("No class predictions are available for regression.")
   nbeta <- coef(object, s)
   if (type == "coefficients") return(nbeta)
   if (type == "nonzero") return(nonzeroCoef(nbeta[-1, ,drop = FALSE]))
-  if (inherits(newx, "sparseMatrix")) newx <- as(newx,"dgCMatrix")
+  if (inherits(newx, "sparseMatrix")) newx <- as(newx, "CsparseMatrix")
   dx <- dim(newx)
   p <- object$dim[1]
   if (is.null(dx)) newx <- matrix(newx, 1, byrow = TRUE)
   if (ncol(newx) != p)
     stop(paste0("The number of variables in newx must be ", p))
   fit <- as.matrix(cbind2(1, newx) %*% nbeta)
-  if (type == "link") return(fit)
-  if (type == "response" && class(object)[2] == "ls") return(fit)
-  if (type == "response" && class(object)[2] == "logit")
-    return(1 / (1 + exp(-fit)))
-  if (type == "class") {
-    fit <- ifelse(fit > 0, 2, 1)
-    fit <- object$classnames[fit]
-    return(fit)
-  }
+  fit
 }
 
+#' @export
+predict.lsspgl <- function(
+    object, newx, s = NULL,
+    type = c("link","response","coefficients","nonzero"),
+    ...) {
+  NextMethod("predict")
+}
 
-
+#' @export
+predict.logitspgl <- function(
+    object, newx, s = NULL,
+    type = c("link", "response", "coefficients", "nonzero", "class"),
+    ...) {
+  type <- match.arg(type)
+  nfit <- NextMethod("predict")
+  switch(
+    type,
+    response = 1 / (1 + exp(-nfit)),
+    class = object$classnames[ifelse(nfit > 0, 2, 1)],
+    nfit
+  )
+}
 
 #' Print a `sparsegl` object.
 #'

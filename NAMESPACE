@@ -2,9 +2,13 @@
 
 S3method(coef,cv.sparsegl)
 S3method(coef,sparsegl)
+S3method(estimate_risk,default)
+S3method(estimate_risk,lsspgl)
 S3method(plot,cv.sparsegl)
 S3method(plot,sparsegl)
 S3method(predict,cv.sparsegl)
+S3method(predict,logitspgl)
+S3method(predict,lsspgl)
 S3method(predict,sparsegl)
 S3method(print,sparsegl)
 export("%>%")

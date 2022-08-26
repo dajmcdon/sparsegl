@@ -33,7 +33,20 @@
 estimate_risk <- function(object, x,
                           type = c("AIC", "BIC", "GCV"),
                           approx_df = FALSE) {
-  if (! "ls" %in% class(object)) stop("Only linear regression is supported.")
+  UseMethod("estimate_risk")
+}
+
+#' @export
+estimate_risk.default <- function(object, x,
+                                  type = c("AIC", "BIC", "GCV"),
+                                  approx_df = FALSE) {
+  stop("Risk estimation is only available for Gaussian likelihood.")
+}
+
+#' @export
+estimate_risk.lsspgl <- function(object, x,
+                                 type = c("AIC", "BIC", "GCV"),
+                                 approx_df = FALSE) {
   type <- match.arg(type, several.ok = TRUE)
 
   err <- log(object$mse)

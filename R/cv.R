@@ -87,7 +87,7 @@ cv.sparsegl <- function(x, y, group = NULL, family = c("gaussian", "binomial"),
             ...)
     }
     ###What to do depends on the pred.loss and the model fit
-    fun <- paste("cv", class(sparsegl.object)[[2]], sep = ".")
+    fun <- paste("cv", class(sparsegl.object)[[1]], sep = ".")
     cvstuff <- do.call(fun, list(outlist, lambda, x, y, foldid, pred.loss))
     cvm <- cvstuff$cvm
     cvsd <- cvstuff$cvsd
@@ -102,8 +102,8 @@ cv.sparsegl <- function(x, y, group = NULL, family = c("gaussian", "binomial"),
 }
 
 
-cv.ls <- function(outlist, lambda, x, y, foldid,
-                        pred.loss = c("L2","L1")) {
+cv.lsspgl <- function(outlist, lambda, x, y, foldid,
+                      pred.loss = c("L2","L1")) {
     typenames <- c(L2 = "Least-Squares loss", L1 = "Absolute loss")
     pred.loss <- match.arg(pred.loss)
     predmat <- matrix(NA, length(y), length(lambda))
@@ -125,8 +125,8 @@ cv.ls <- function(outlist, lambda, x, y, foldid,
     list(cvm = cvm, cvsd = cvsd, name = typenames[pred.loss])
 }
 
-cv.logit <- function(outlist, lambda, x, y, foldid,
-                        pred.loss = c("binomial", "misclass")) {
+cv.logitspgl <- function(outlist, lambda, x, y, foldid,
+                         pred.loss = c("binomial", "misclass")) {
     typenames <- c(binomial = "Binomial Deviance Loss",
                    misclass = "Misclassification Error")
     pred.loss <- match.arg(pred.loss)
