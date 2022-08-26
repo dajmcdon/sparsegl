@@ -91,3 +91,40 @@ predict.cv.sparsegl <- function(object, newx,
     }
     predict(object$sparsegl.fit, newx, s = lambda, ...)
 }
+
+#' @method summary cv.sparsegl
+#' @export
+summary.cv.sparsegl <- function(object, ...) {
+  optlams <- c(object$lambda.1se, object$lambda.min)
+  optlax <- c(1, match(optlams, object$lambda), length(object$lambda))
+  tab <- with(object, data.frame(
+    lambda = lambda[optlax],
+    index = optlax,
+    cvm = cvm[optlax],
+    cvsd = cvsd[optlax],
+    nnzero = nnzero[optlax])
+  )
+  rownames(tab) <- c("maximum", "cv.1se", "cv.min", "minimum")
+  out <- list(tab = tab)
+  class(out) = "summary.cvsparsegl"
+  out
+
+}
+
+#' @method print summary.cvsparsegl
+#' @export
+print.summary.cvsparsegl <- function(
+    x,
+    digits = max(3, getOption("digits") - 3)) {
+
+  print(x$tab, digits = digits)
+}
+
+#' @method print cv.sparsegl
+#' @export
+print.cv.sparsegl <- function(x, digits = max(3, getOption("digits") - 3),
+                              ...) {
+  cat("\nCall: ", deparse(x$call), "\n\n")
+
+  print(summary(x)$tab, digits = digits)
+}

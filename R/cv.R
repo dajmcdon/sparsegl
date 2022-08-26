@@ -37,11 +37,13 @@
 #'   \item{cvlower}{Lower curve = \code{cvm - cvsd}.}
 #'   \item{name}{A text string indicating type of measure (for plotting
 #'     purposes).}
+#'   \item{nnzero}{The number of non-zero coefficients for each \code{lambda}}
 #'   \item{sparsegl.fit}{A fitted [sparsegl()] object for the full data.}
 #'   \item{lambda.min}{The optimal value of \code{lambda} that gives
 #'     minimum cross validation error \code{cvm}.}
 #'   \item{lambda.1se}{The largest value of \code{lambda} such that error
 #'     is within 1 standard error of the minimum.}
+#'   \item{call}{The function call.}
 #'
 #'
 #' @seealso [sparsegl()], [plot.cv.sparsegl()],
@@ -92,9 +94,12 @@ cv.sparsegl <- function(x, y, group = NULL, family = c("gaussian", "binomial"),
     cvm <- cvstuff$cvm
     cvsd <- cvstuff$cvsd
     cvname <- cvstuff$name
+    nnzero <- sapply(predict(sparsegl.object, type = "nonzero"), length)
     out <- list(lambda = lambda, cvm = cvm, cvsd = cvsd, cvupper = cvm + cvsd,
                 cvlo = cvm - cvsd, name = cvname,
-                sparsegl.fit = sparsegl.object)
+                nnzero = nnzero,
+                sparsegl.fit = sparsegl.object,
+                call = match.call())
     lamin <- getmin(lambda, cvm, cvsd)
     obj <- c(out, as.list(lamin))
     class(obj) <- "cv.sparsegl"
