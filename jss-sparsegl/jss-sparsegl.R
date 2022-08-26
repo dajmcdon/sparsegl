@@ -40,7 +40,6 @@ ggplot2::theme_set(ggplot2::theme_bw(base_family = "Palatino"))
 # x[as.logical(rbinom(n*max(p), 1, 1 - s))] <- 0
 # xsp <- Matrix(x)
 # mu <- sapply(p, function(z) x[ ,1:z] %*% rep(b, length.out = z) / sqrt(z))
-# # prob <- 1 / (1 + exp(-mu))
 #
 # signal <- sqrt(colSums(mu^2))
 # noise_sd <- sqrt(signal)
