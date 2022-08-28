@@ -38,6 +38,7 @@
 #'   \item{name}{A text string indicating type of measure (for plotting
 #'     purposes).}
 #'   \item{nnzero}{The number of non-zero coefficients for each \code{lambda}}
+#'   \item{active_grps}{The number of active groups for each \code{lambda}}
 #'   \item{sparsegl.fit}{A fitted [sparsegl()] object for the full data.}
 #'   \item{lambda.min}{The optimal value of \code{lambda} that gives
 #'     minimum cross validation error \code{cvm}.}
@@ -94,10 +95,12 @@ cv.sparsegl <- function(x, y, group = NULL, family = c("gaussian", "binomial"),
     cvm <- cvstuff$cvm
     cvsd <- cvstuff$cvsd
     cvname <- cvstuff$name
-    nnzero <- sapply(predict(sparsegl.object, type = "nonzero"), length)
+    nz <- predict(sparsegl.object, type = "nonzero")
+    nnzero <- sapply(nz, length)
+    active_grps <- sapply(nz, function(x) length(unique(group[x])))
     out <- list(lambda = lambda, cvm = cvm, cvsd = cvsd, cvupper = cvm + cvsd,
                 cvlo = cvm - cvsd, name = cvname,
-                nnzero = nnzero,
+                nnzero = nnzero, active_grps = active_grps,
                 sparsegl.fit = sparsegl.object,
                 call = match.call())
     lamin <- getmin(lambda, cvm, cvsd)

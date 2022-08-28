@@ -102,11 +102,18 @@ summary.cv.sparsegl <- function(object, ...) {
     index = optlax,
     cvm = cvm[optlax],
     cvsd = cvsd[optlax],
-    nnzero = nnzero[optlax])
+    nnzero = nnzero[optlax],
+    active_grps = active_grps[optlax])
   )
   rownames(tab) <- c("maximum", "cv.1se", "cv.min", "minimum")
-  out <- list(tab = tab)
-  class(out) = "summary.cvsparsegl"
+  out <- structure(
+    list(
+      call = object$call,
+      error_measure = object$name,
+      table = tab
+    ),
+    class = "summary.cvsparsegl"
+  )
   out
 
 }
@@ -115,7 +122,20 @@ summary.cv.sparsegl <- function(object, ...) {
 #' @export
 print.summary.cvsparsegl <- function(
     x,
-    digits = max(3, getOption("digits") - 3)) {
+    digits = max(3, getOption("digits") - 3),...
+) {
+
+  lambda_warning = NULL
+  if (x$table$index[2] == 1) lambda_warning = "smallest"
+  if (x$table$index[3] == x$table$index[4]) lambda_warning = "largest"
+  cat("\nCall: ", deparse(x$call), "\n\n")
+
+  cat("Error measure: ", x$error_measure, "\n\n")
+
+  if (!is.null(lambda_warning)) {
+    cat("Warning: the CV minimum occurred at the", lambda_warning,
+        "lambda in the path.\n\n")
+  }
 
   print(x$tab, digits = digits)
 }
@@ -124,7 +144,6 @@ print.summary.cvsparsegl <- function(
 #' @export
 print.cv.sparsegl <- function(x, digits = max(3, getOption("digits") - 3),
                               ...) {
-  cat("\nCall: ", deparse(x$call), "\n\n")
 
-  print(summary(x)$tab, digits = digits)
+  print(summary(x, digits = digits,...))
 }
