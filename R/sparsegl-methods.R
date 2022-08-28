@@ -193,6 +193,7 @@ print.sparsegl <- function(x, digits = min(3, getOption("digits") - 3), ...) {
   nlams <- length(x$lambda)
   cat("Saturated penalty: ",
       round(sp_group_norm(x$beta[,nlams], x$group, x$asparse), digits))
+  cat("\n")
 }
 
 

@@ -148,6 +148,7 @@ print.summary.cvsparsegl <- function(
   }
 
   print(x$tab, digits = digits)
+  cat("\n")
 }
 
 #' @method print cv.sparsegl
