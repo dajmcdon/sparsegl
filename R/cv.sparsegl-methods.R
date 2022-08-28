@@ -92,6 +92,16 @@ predict.cv.sparsegl <- function(object, newx,
     predict(object$sparsegl.fit, newx, s = lambda, ...)
 }
 
+#' @method fitted cv.sparsegl
+#' @export
+fitted.cv.sparsegl <- function(object, ...) {
+  stop(c(
+    "Because design matrices are typically large, these are not stored ",
+    "in the estimated sparsegl object. Use `predict()` instead, and ",
+    "pass in the original data."))
+}
+
+
 #' @method summary cv.sparsegl
 #' @export
 summary.cv.sparsegl <- function(object, ...) {
@@ -147,3 +157,4 @@ print.cv.sparsegl <- function(x, digits = max(3, getOption("digits") - 3),
 
   print(summary(x, digits = digits,...))
 }
+

@@ -126,6 +126,7 @@ predict.sparsegl <- function(
   fit
 }
 
+
 #' @export
 predict.lsspgl <- function(
     object, newx, s = NULL,
@@ -150,9 +151,18 @@ predict.logitspgl <- function(
   )
 }
 
+#' @export
+fitted.sparsegl <- function(object, ...) {
+  stop(c(
+    "Because design matrices are typically large, these are not stored ",
+    "in the estimated sparsegl object. Use `predict()` instead, and ",
+    "pass in the original data."))
+}
+
+
 #' Print a `sparsegl` object.
 #'
-#' Prints some summary information about the fitted [sparsegl()] object.
+#' Prints some summary information about the estimated [sparsegl()] object.
 #'
 #'
 #' @param x Fitted [sparsegl()] object.

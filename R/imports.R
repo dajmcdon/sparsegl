@@ -1,7 +1,7 @@
 #' @useDynLib sparsegl, .registration = TRUE
 #' @importFrom utils packageDescription
 #' @importFrom methods cbind2 rbind2 as
-#' @importFrom stats approx coef predict
+#' @importFrom stats approx coef predict fitted
 #' @importFrom rlang .data
 #' @importFrom rlang :=
 #' @import dotCall64 Matrix

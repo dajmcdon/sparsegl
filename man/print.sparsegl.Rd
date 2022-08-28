@@ -14,7 +14,7 @@
 \item{...}{not used}
 }
 \description{
-Prints some summary information about the fitted \code{\link[=sparsegl]{sparsegl()}} object.
+Prints some summary information about the estimated \code{\link[=sparsegl]{sparsegl()}} object.
 }
 \examples{
 n <- 100
