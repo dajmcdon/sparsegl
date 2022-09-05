@@ -7,8 +7,7 @@ sgl_ls <- function(
   if (!is.numeric(y)) stop("For family = 'gaussian', y must be numeric.")
   if (inherits(x,"sparseMatrix")) {
     is.sparse <- TRUE
-    x <- methods::as(x,"CsparseMatrix")
-    x <- methods::as(x,"dgCMatrix")
+    x <- as_dgCMatrix(x)
   }
   if (intr) {
     ym <- mean(y)

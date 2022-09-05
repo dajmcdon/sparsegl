@@ -21,8 +21,7 @@ sgl_logit <- function(
   is.sparse <- FALSE
   if (inherits(x, "sparseMatrix")) {
     is.sparse <- TRUE
-    x <- methods::as(x, "CsparseMatrix")
-    x <- methods::as(x, "dgCMatrix")
+    x <- as_dgCMatrix(x)
   }
   if (standardize) {
     sx <- sqrt(Matrix::colSums(x^2))
