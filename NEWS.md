@@ -1,0 +1,13 @@
+# sparsegl (development version)
+
+# sparsegl 0.4.0
+
+* Add the option to weight individual coefficients in the l1 penalty.
+* Remove coercions of the type `as(<matrix>, "dgCMatrix")`. These are deprecated in `{Matrix}`>=1.4-2 and will Warn on CRAN checks.
+* Compute MSE internally in Fortran for `family = "Gaussian"`. Avoids the creation of a potentially large matrix of predicted values for the purposes
+of risk estimation. 
+* Revise `estimate_risk()` signature. Now `x` is optional and `y` is not required.
+
+# sparsegl 0.3.0
+
+* Initial version on CRAN.

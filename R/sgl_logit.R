@@ -1,5 +1,6 @@
 sgl_logit <- function(
-  bn, bs, ix, iy, nobs, nvars, x, y, pf, dfmax, pmax, nlam, flmin, ulam, eps,
+  bn, bs, ix, iy, nobs, nvars, x, y, pf, pfl1,
+  dfmax, pmax, nlam, flmin, ulam, eps,
   maxit, vnames, group, intr, asparse, standardize,
   lower_bnd, upper_bnd) {
   # call Fortran core
@@ -20,8 +21,7 @@ sgl_logit <- function(
   is.sparse <- FALSE
   if (inherits(x, "sparseMatrix")) {
     is.sparse <- TRUE
-    x <- methods::as(x, "CsparseMatrix")
-    x <- methods::as(x, "dgCMatrix")
+    x <- as_dgCMatrix(x)
   }
   if (standardize) {
     sx <- sqrt(Matrix::colSums(x^2))
@@ -42,14 +42,14 @@ sgl_logit <- function(
     fit <- dotCall64::.C64(
       "log_sparse_four",
       SIGNATURE = c("integer", "integer", "integer", "integer", "double",
-                    "integer", "integer", "double", "double", "double",
+                    "integer", "integer", "double", "double", "double", "double",
                     "integer", "integer", "integer", "double", "double",
                     "double", "integer", "integer", "integer", "double",
                     "double", "integer", "integer", "double", "integer",
                     "integer", "double", "double", "double"),
       # Read only
       bn = bn, bs = bs, ix = ix, iy = iy, gam = gamma, nobs = nobs,
-      nvars = nvars, x = as.double(x), y = as.double(y), pf = pf,
+      nvars = nvars, x = as.double(x), y = as.double(y), pf = pf, pfl1 = pfl1,
       # Read / write
       dfmax = dfmax, pmax = pmax, nlam = nlam, flmin = flmin, ulam = ulam,
       eps = eps, maxit = maxit, intr = as.integer(intr),
@@ -60,7 +60,7 @@ sgl_logit <- function(
       jerr = integer_dc(1),
       # read only
       alsparse = asparse, lb = lower_bnd, ub = upper_bnd,
-      INTENT = c(rep("r", 10), rep("rw", 8), rep("w", 8), rep("r", 3)),
+      INTENT = c(rep("r", 11), rep("rw", 8), rep("w", 8), rep("r", 3)),
       NAOK = TRUE,
       PACKAGE = "sparsegl")
   } else {
@@ -68,7 +68,7 @@ sgl_logit <- function(
       "log_spmat_four",
       SIGNATURE = c("integer", "integer", "integer", "integer", "double",
                     "integer", "integer", "double", "integer", "integer",
-                    "integer", "double", "double", "integer", "integer",
+                    "integer", "double", "double", "double", "integer", "integer",
                     "integer", "double", "double", "double", "integer",
                     "integer", "integer", "double", "double", "integer",
                     "integer", "double", "integer", "integer", "double",
@@ -76,7 +76,7 @@ sgl_logit <- function(
       # Read only
       bn = bn, bs = bs, ix = ix, iy = iy, gam = gamma, nobs = nobs,
       nvars = nvars, x = as.double(xval), xidx = xidx, xcptr = xcptr,
-      nnz = nnz, y = as.double(y), pf = pf,
+      nnz = nnz, y = as.double(y), pf = pf, pfl1 = pfl1,
       # Read / write
       dfmax = dfmax, pmax = pmax, nlam = nlam, flmin = flmin,
       ulam = ulam, eps = eps, maxit = maxit, intr = as.integer(intr),
@@ -87,7 +87,7 @@ sgl_logit <- function(
       npass = integer_dc(1), jerr = integer_dc(1),
       # Read only
       alsparse = as.double(asparse), lb = lower_bnd, ub = upper_bnd,
-      INTENT = c(rep("r", 13), rep("rw", 8), rep("w", 8), rep("r", 3)),
+      INTENT = c(rep("r", 14), rep("rw", 8), rep("w", 8), rep("r", 3)),
       NAOK = TRUE,
       PACKAGE = "sparsegl")
   }

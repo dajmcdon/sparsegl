@@ -10,6 +10,13 @@
 ## and hence are not exported into the global environment.
 ## The original comments and header are preserved.
 
+
+#' @importFrom methods as
+as_dgCMatrix <- function(x) {
+  as(as(x, "sparseMatrix"), "CsparseMatrix")
+}
+
+
 err <- function(n, maxit, pmax) {
     if (n == 0) msg <- ""
     if (n > 0) {

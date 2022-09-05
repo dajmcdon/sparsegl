@@ -1,14 +1,13 @@
 sgl_ls <- function(
-  bn, bs, ix, iy, nobs, nvars, x, y, pf, dfmax, pmax, nlam, flmin, ulam, eps,
-  maxit, vnames, group, intr, asparse, standardize,
+  bn, bs, ix, iy, nobs, nvars, x, y, pf, pfl1, dfmax, pmax, nlam,
+  flmin, ulam, eps, maxit, vnames, group, intr, asparse, standardize,
   lower_bnd, upper_bnd) {
   # call Fortran core
   is.sparse <- FALSE
   if (!is.numeric(y)) stop("For family = 'gaussian', y must be numeric.")
   if (inherits(x,"sparseMatrix")) {
     is.sparse <- TRUE
-    x <- methods::as(x,"CsparseMatrix")
-    x <- methods::as(x,"dgCMatrix")
+    x <- as_dgCMatrix(x)
   }
   if (intr) {
     ym <- mean(y)
@@ -37,14 +36,15 @@ sgl_ls <- function(
     fit <- dotCall64::.C64(
       "sparse_four",
       SIGNATURE = c("integer", "integer", "integer", "integer", "double",
-                    "integer", "integer", "double", "double", "double",
+                    "integer", "integer", "double", "double", "double", "double",
                     "integer", "integer", "integer", "double", "double",
                     "double", "integer", "integer", "double", "integer",
                     "integer", "double", "integer", "integer", "double",
-                    "double", "double"),
+                    "double", "double", "double"),
       # Read only
       bn = bn, bs = bs, ix = ix, iy = iy, gam = gamma, nobs = nobs,
       nvars = nvars, x = as.double(x), y = as.double(y), pf = pf,
+      pfl1 = pfl1,
       # Read / write
       dfmax = dfmax, pmax = pmax, nlam = nlam, flmin = flmin, ulam = ulam,
       eps = eps, maxit = maxit,
@@ -52,10 +52,10 @@ sgl_ls <- function(
       nalam = integer_dc(1), beta = numeric_dc(nvars * nlam),
       activeGroup = integer_dc(pmax), nbeta = integer_dc(nlam),
       alam = numeric_dc(nlam), npass = integer_dc(1),
-      jerr = integer_dc(1),
+      jerr = integer_dc(1), mse = numeric_dc(nlam),
       # read only
       alsparse = asparse, lb = lower_bnd, ub = upper_bnd,
-      INTENT = c(rep("r", 10), rep("rw", 7), rep("w", 7), rep("r", 3)),
+      INTENT = c(rep("r", 11), rep("rw", 7), rep("w", 8), rep("r", 3)),
       NAOK = TRUE,
       PACKAGE = "sparsegl")
   } else { # sparse design matrix
@@ -63,15 +63,15 @@ sgl_ls <- function(
       "spmat_four",
       SIGNATURE = c("integer", "integer", "integer", "integer", "double",
                     "integer", "integer", "double", "integer", "integer",
-                    "integer", "double", "double", "integer", "integer",
+                    "integer", "double", "double", "double", "integer", "integer",
                     "integer", "double", "double", "double", "integer",
                     "integer", "integer", "double", "double", "integer",
                     "integer", "double", "integer", "integer", "double",
-                    "double", "double"),
+                    "double", "double", "double"),
       # Read only
       bn = bn, bs = bs, ix = ix, iy = iy, gam = gamma, nobs = nobs,
       nvars = nvars, x = as.double(xval), xidx = xidx, xcptr = xcptr,
-      nnz = nnz, y = as.double(y), pf = pf,
+      nnz = nnz, y = as.double(y), pf = pf, pfl1 = pfl1,
       # Read write
       dfmax = dfmax, pmax = pmax, nlam = nlam, flmin = flmin,
       ulam = ulam, eps = eps, maxit = maxit, intr = as.integer(intr),
@@ -79,10 +79,10 @@ sgl_ls <- function(
       nalam = integer_dc(1), b0 = numeric_dc(nlam),
       beta = numeric_dc(nvars * nlam), activeGroup = integer_dc(pmax),
       nbeta = integer_dc(nlam), alam = numeric_dc(nlam),
-      npass = integer_dc(1), jerr = integer_dc(1),
+      npass = integer_dc(1), jerr = integer_dc(1), mse = numeric_dc(nlam),
       # Read only
       alsparse = as.double(asparse), lb = lower_bnd, ub = upper_bnd,
-      INTENT = c(rep("r", 13), rep("rw", 8), rep("w", 8), rep("r", 3)),
+      INTENT = c(rep("r", 14), rep("rw", 8), rep("w", 9), rep("r", 3)),
       NAOK = TRUE,
       PACKAGE = "sparsegl")
   }
@@ -97,7 +97,8 @@ sgl_ls <- function(
     if (!is.sparse) outlist$b0 <- rep(0, dim(outlist$beta)[2])
   }
   outlist <- c(outlist,
-               list(npasses = fit$npass, jerr = fit$jerr, group = group))
+               list(npasses = fit$npass, jerr = fit$jerr, group = group,
+                    mse = fit$mse[seq(fit$nalam)]))
   class(outlist) <- c("ls")
   outlist
 }
