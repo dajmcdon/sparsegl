@@ -84,10 +84,10 @@ exact_df <- function(object, x) {
     Idx <- Iset[, i]
     if (any(Idx)) {
       gr <- group[Idx]
-      xx_sub <- xx[Idx, Idx]
+      xx_sub <- as(xx[Idx, Idx], "Matrix")
       del <- delP(beta[Idx, i], gr)
       li <- object$lambda[i] * pf[Idx]
-      df[i] <- sum(solve(xx_sub + li * del) * xx_sub)
+      df[i] <- sum(Matrix::solve(xx_sub + li * del) * xx_sub)
     }
   }
   return(df)
