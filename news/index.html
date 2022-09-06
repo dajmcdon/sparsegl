@@ -49,7 +49,7 @@
 
     <div class="section level2"><h2 class="pkg-version" data-toc-text="development version" id="sparsegl-development-version">sparsegl (development version)<a class="anchor" aria-label="anchor" href="#sparsegl-development-version"></a></h2></div>
     <div class="section level2">
-<h2 class="pkg-version" data-toc-text="0.4.0" id="sparsegl-040">sparsegl 0.4.0<a class="anchor" aria-label="anchor" href="#sparsegl-040"></a></h2>
+<h2 class="pkg-version" data-toc-text="0.4.0" id="sparsegl-040">sparsegl 0.4.0<a class="anchor" aria-label="anchor" href="#sparsegl-040"></a></h2><p class="text-muted">CRAN release: 2022-09-05</p>
 <ul><li>Add the option to weight individual coefficients in the l1 penalty.</li>
 <li>Remove coercions of the type <code>as(&lt;matrix&gt;, "dgCMatrix")</code>. These are deprecated in <a href="https://Matrix.R-forge.R-project.org/" class="external-link">Matrix</a>&gt;=1.4-2 and will Warn on CRAN checks.</li>
 <li>Compute MSE internally in Fortran for <code>family = "Gaussian"</code>. Avoids the creation of a potentially large matrix of predicted values for the purposes of risk estimation.</li>
