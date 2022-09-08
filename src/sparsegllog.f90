@@ -60,6 +60,7 @@ SUBROUTINE log_sparse_four (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,pfl1,dfmax,pmax,&
   ENDIF
   ! - - - some initial setup - - -
   is_in_E_set = 0
+  is_in_S_set = 0
   al = 0.0D0
   mnl = MIN(mnlam, nlam)
   r = 0.0D0
@@ -309,6 +310,7 @@ SUBROUTINE log_spmat_four (bn,bs,ix,iy,gam,nobs,nvars,x,xidx,xcptr,nnz,y,pf,pfl1
 
   ! - - - some initial setup - - -
   is_in_E_set = 0
+  is_in_S_set = 0
   al = 0.0D0
   mnl = MIN(mnlam, nlam)
   r = 0.0D0

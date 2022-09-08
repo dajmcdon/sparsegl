@@ -61,6 +61,7 @@ SUBROUTINE sparse_four (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,pfl1,dfmax,pmax,nlam,&
 
   ! - - - some initial setup - - -
   is_in_E_set = 0
+  is_in_S_set = 0
   al = 0.0D0
   mnl = MIN(mnlam, nlam)
   r = y
@@ -289,6 +290,7 @@ SUBROUTINE spmat_four (bn,bs,ix,iy,gam,nobs,nvars,x,xidx,xcptr,nnz,y,pf,pfl1,&
 
   ! - - - some initial setup - - -
   is_in_E_set = 0
+  is_in_S_set = 0
   al = 0.0D0
   mnl = MIN(mnlam, nlam)
   r = y
