@@ -19,7 +19,7 @@ SUBROUTINE sparse_four (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,pfl1,dfmax,pmax,nlam,&
   INTEGER:: nobs, nvars, dfmax, pmax, nlam, nalam, npass, jerr, maxit
   INTEGER:: activeGroup(pmax)
   INTEGER:: nbeta(nlam)
-  DOUBLE PRECISION :: flmin, eps, alsparse, max_gam, maxDif, al, alf, snorm
+  DOUBLE PRECISION :: flmin, eps, alsparse, max_gam, d, maxDif, al, alf, snorm
   DOUBLE PRECISION, INTENT(in) :: x(nobs,nvars)
   DOUBLE PRECISION, INTENT(in) :: y(nobs)
   DOUBLE PRECISION, INTENT(in) :: pf(bn)
@@ -67,6 +67,7 @@ SUBROUTINE sparse_four (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,pfl1,dfmax,pmax,nlam,&
   mnl = MIN(mnlam, nlam)
   r = y
   b = 0.0D0
+  d = 0.0D0
   oldbeta = 0.0D0
   activeGroup = 0
   activeGroupIndex = 0

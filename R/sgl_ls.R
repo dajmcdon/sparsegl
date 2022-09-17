@@ -52,7 +52,7 @@ sgl_ls <- function(
       jerr = integer_dc(1), mse = numeric_dc(nlam),
       # read only
       alsparse = asparse, lb = lower_bnd, ub = upper_bnd,
-      INTENT = c(rep("r", 11), rep("rw", 7), rep("w", 8), rep("r", 3)),
+      INTENT = c(rep("r", 11), rep("rw", 8), rep("w", 9), rep("r", 3)),
       NAOK = TRUE,
       PACKAGE = "sparsegl")
   } else { # sparse design matrix
