@@ -67,7 +67,6 @@ SUBROUTINE sparse_four (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,pfl1,dfmax,pmax,nlam,&
   mnl = MIN(mnlam, nlam)
   r = y
   b = 0.0D0
-  d = 0.0D0
   oldbeta = 0.0D0
   activeGroup = 0
   activeGroupIndex = 0
@@ -124,10 +123,8 @@ SUBROUTINE sparse_four (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,pfl1,dfmax,pmax,nlam,&
      ! --------- outer loop ---------------------------- !
      DO
         CALL rchkusr()
-        ! print *, is_in_E_set
         oldbeta(0) = b(0)
         IF (ni > 0) THEN
-           ! print *, "ni > 0"
            DO j = 1, ni
               g = activeGroup(j)
               oldbeta(ix(g):iy(g)) = b(ix(g):iy(g))
