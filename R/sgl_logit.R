@@ -42,14 +42,15 @@ sgl_logit <- function(
     fit <- dotCall64::.C64(
       "log_sparse_four",
       SIGNATURE = c("integer", "integer", "integer", "integer", "double",
-                    "integer", "integer", "double", "double", "double", "double",
-                    "integer", "integer", "integer", "double", "double",
+                    "integer", "integer", "double", "double", "double",
                     "double", "integer", "integer", "integer", "double",
-                    "double", "integer", "integer", "double", "integer",
-                    "integer", "double", "double", "double"),
+                    "double", "double", "integer", "integer", "integer",
+                    "double", "double", "integer", "integer", "double",
+                    "integer", "integer", "double", "double", "double"),
       # Read only
-      bn = bn, bs = bs, ix = ix, iy = iy, gam = gamma, nobs = nobs,
-      nvars = nvars, x = as.double(x), y = as.double(y), pf = pf, pfl1 = pfl1,
+      bn = bn, bs = bs, ix = ix, iy = iy, gam = gamma,
+      nobs = nobs, nvars = nvars, x = as.double(x), y = as.double(y), pf = pf,
+      pfl1 = pfl1,
       # Read / write
       dfmax = dfmax, pmax = pmax, nlam = nlam, flmin = flmin, ulam = ulam,
       eps = eps, maxit = maxit, intr = as.integer(intr),
@@ -68,15 +69,15 @@ sgl_logit <- function(
       "log_spmat_four",
       SIGNATURE = c("integer", "integer", "integer", "integer", "double",
                     "integer", "integer", "double", "integer", "integer",
-                    "integer", "double", "double", "double", "integer", "integer",
                     "integer", "double", "double", "double", "integer",
-                    "integer", "integer", "double", "double", "integer",
-                    "integer", "double", "integer", "integer", "double",
-                    "double", "double"),
+                    "integer", "integer", "double", "double", "double",
+                    "integer", "integer", "integer", "double", "double",
+                    "integer", "integer", "double", "integer", "integer",
+                    "double", "double", "double"),
       # Read only
-      bn = bn, bs = bs, ix = ix, iy = iy, gam = gamma, nobs = nobs,
-      nvars = nvars, x = as.double(xval), xidx = xidx, xcptr = xcptr,
-      nnz = nnz, y = as.double(y), pf = pf, pfl1 = pfl1,
+      bn = bn, bs = bs, ix = ix, iy = iy, gam = gamma,
+      nobs = nobs, nvars = nvars, x = as.double(xval), xidx = xidx,
+      xcptr = xcptr, nnz = nnz, y = as.double(y), pf = pf, pfl1 = pfl1,
       # Read / write
       dfmax = dfmax, pmax = pmax, nlam = nlam, flmin = flmin,
       ulam = ulam, eps = eps, maxit = maxit, intr = as.integer(intr),
@@ -96,9 +97,13 @@ sgl_logit <- function(
   if (standardize) outlist$beta <- outlist$beta * xs
 
   outlist$b0 <- matrix(outlist$b0, nrow = 1)
-  outlist <- c(outlist,
-               list(npasses = fit$npass, jerr = fit$jerr, group = group,
-                    classnames = lev))
+  outlist <- c(
+    outlist,
+    list(npasses = fit$npass,
+         jerr = fit$jerr,
+         group = group,
+         classnames = lev)
+  )
   class(outlist) <- c("logit")
   outlist
 }
