@@ -1,53 +1,45 @@
-Package: sparsegl
 Type: Package
+Package: sparsegl
 Title: Sparse Group Lasso
-Version: 0.4.0
-Authors@R: 
-    c(person(given = "Daniel J.",
-           family = "McDonald",
-           role = c("aut", "cre"),
-           email = "daniel@stat.ubc.ca"),
-      person(given = "Xiaoxuan",
-            family = "Liang", 
-            role = "aut",
-            email = "xiaoxuan.liang@stat.ubc.ca"),
-      person(given = "Aaron",
-            family = "Cohen", 
-            role = "aut",
-            email = "cohenaa@indiana.edu"))
-Description: Efficient implementation of sparse group lasso with optional bound 
-  constraints on the coefficients. It supports the use of a sparse design matrix 
-  as well as 
-  returning coefficient estimates in a sparse matrix. Furthermore, it correctly
-  calculates the degrees of freedom to allow for information criteria rather
-  than cross-validation with very large data. Finally, the interface to 
-  compiled code avoids unnecessary copies and allows for the use of
-  long integers.
-Encoding: UTF-8
-LazyData: true
-Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.2.1
-Imports: 
-    Matrix,
-    RSpectra,
-    assertthat,
-    methods,
-    tidyr,
-    ggplot2,
-    magrittr,
-    rlang,
-    dotCall64
-Depends: 
-    R (>= 3.5)
+Version: 0.5.0
+Authors@R: c(
+    person("Daniel J.", "McDonald", , "daniel@stat.ubc.ca", role = c("aut", "cre")),
+    person("Xiaoxuan", "Liang", , "xiaoxuan.liang@stat.ubc.ca", role = "aut"),
+    person("Aaron", "Cohen", , "cohenaa@indiana.edu", role = "aut")
+  )
+Description: Efficient implementation of sparse group lasso with optional
+    bound constraints on the coefficients. It supports the use of a sparse
+    design matrix as well as returning coefficient estimates in a sparse
+    matrix. Furthermore, it correctly calculates the degrees of freedom to
+    allow for information criteria rather than cross-validation with very
+    large data. Finally, the interface to compiled code avoids unnecessary
+    copies and allows for the use of long integers.
 License: GPL (>= 2)
 URL: https://github.com/dajmcdon/sparsegl/
 BugReports: https://github.com/dajmcdon/sparsegl/issues/
+Depends: 
+    R (>= 3.5)
+Imports: 
+    assertthat,
+    dotCall64,
+    ggplot2,
+    magrittr,
+    Matrix,
+    methods,
+    rlang,
+    RSpectra,
+    tidyr
 Suggests: 
-    testthat (>= 3.0.0),
+    glmnet,
     knitr,
-    rmarkdown,
     markdown,
-    glmnet
+    rmarkdown,
+    testthat (>= 3.0.0)
+VignetteBuilder: 
+    knitr
 Config/testthat/edition: 3
-VignetteBuilder: knitr
+Encoding: UTF-8
+LazyData: true
 NeedsCompilation: yes
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.2.1
