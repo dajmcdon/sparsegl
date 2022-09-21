@@ -2,7 +2,7 @@
 !---------------------------------------------
 
 SUBROUTINE sparse_four (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,pfl1,dfmax,pmax,nlam,&
-      flmin,ulam,eps,maxit,nalam,beta,activeGroup,nbeta,alam,npass,jerr,mse,&
+      flmin,ulam,eps,maxit,intr,nalam,b0,beta,activeGroup,nbeta,alam,npass,jerr,mse,&
       alsparse,lb,ub)
 
   USE sgl_subfuns
@@ -11,7 +11,7 @@ SUBROUTINE sparse_four (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,pfl1,dfmax,pmax,nlam,&
   DOUBLE PRECISION, PARAMETER :: mfl = 1.0E-6
   INTEGER, PARAMETER :: mnlam = 6
   INTEGER:: isDifZero
-  INTEGER:: mnl
+  INTEGER:: mnl, intr
   INTEGER:: bn
   INTEGER:: bs(bn)
   INTEGER:: ix(bn)
@@ -19,7 +19,7 @@ SUBROUTINE sparse_four (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,pfl1,dfmax,pmax,nlam,&
   INTEGER:: nobs, nvars, dfmax, pmax, nlam, nalam, npass, jerr, maxit
   INTEGER:: activeGroup(pmax)
   INTEGER:: nbeta(nlam)
-  DOUBLE PRECISION :: flmin, eps, alsparse, max_gam, maxDif, al, alf, snorm
+  DOUBLE PRECISION :: flmin, eps, alsparse, max_gam, d, maxDif, al, alf, snorm
   DOUBLE PRECISION, INTENT(in) :: x(nobs,nvars)
   DOUBLE PRECISION, INTENT(in) :: y(nobs)
   DOUBLE PRECISION, INTENT(in) :: pf(bn)
@@ -27,6 +27,7 @@ SUBROUTINE sparse_four (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,pfl1,dfmax,pmax,nlam,&
   DOUBLE PRECISION :: ulam(nlam)
   DOUBLE PRECISION :: gam(bn)
   DOUBLE PRECISION, INTENT(in) :: lb(bn), ub(bn)
+  DOUBLE PRECISION :: b0(nlam)
   DOUBLE PRECISION :: beta(nvars,nlam)
   DOUBLE PRECISION :: alam(nlam), mse(nlam)
 
@@ -48,8 +49,8 @@ SUBROUTINE sparse_four (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,pfl1,dfmax,pmax,nlam,&
   DOUBLE PRECISION:: ga(bn)
   DOUBLE PRECISION:: vl(nvars)
   ! - - - allocate variables - - -
-  ALLOCATE(b(1:nvars))
-  ALLOCATE(oldbeta(1:nvars))
+  ALLOCATE(b(0:nvars))
+  ALLOCATE(oldbeta(0:nvars))
   ALLOCATE(r(1:nobs))
   ALLOCATE(activeGroupIndex(1:bn))
   !    ALLOCATE(al_sparse)
@@ -61,6 +62,7 @@ SUBROUTINE sparse_four (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,pfl1,dfmax,pmax,nlam,&
 
   ! - - - some initial setup - - -
   is_in_E_set = 0
+  is_in_S_set = 0
   al = 0.0D0
   mnl = MIN(mnlam, nlam)
   r = y
@@ -121,9 +123,8 @@ SUBROUTINE sparse_four (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,pfl1,dfmax,pmax,nlam,&
      ! --------- outer loop ---------------------------- !
      DO
         CALL rchkusr()
-        ! print *, is_in_E_set
+        oldbeta(0) = b(0)
         IF (ni > 0) THEN
-           ! print *, "ni > 0"
            DO j = 1, ni
               g = activeGroup(j)
               oldbeta(ix(g):iy(g)) = b(ix(g):iy(g))
@@ -150,6 +151,14 @@ SUBROUTINE sparse_four (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,pfl1,dfmax,pmax,nlam,&
                  activeGroup(ni) = g
               ENDIF
            ENDDO
+           IF (intr .ne. 0) THEN
+            d = sum(r) / nobs
+            IF (d .ne. 0.0D0) THEN
+               b(0) = b(0) + d
+               r = r - d
+               maxDif = max(maxDif, d**2)
+            ENDIF
+           ENDIF
            IF (ni > pmax) EXIT
            IF (maxDif < eps) EXIT
            IF (npass > maxit) THEN
@@ -210,6 +219,7 @@ SUBROUTINE sparse_four (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,pfl1,dfmax,pmax,nlam,&
         ENDDO
      ENDIF
      nbeta(l) = ni
+     b0(l) = b(0)
      alam(l) = al
      mse(l) = DOT_PRODUCT(r/nobs, r)
      nalam = l
@@ -289,6 +299,7 @@ SUBROUTINE spmat_four (bn,bs,ix,iy,gam,nobs,nvars,x,xidx,xcptr,nnz,y,pf,pfl1,&
 
   ! - - - some initial setup - - -
   is_in_E_set = 0
+  is_in_S_set = 0
   al = 0.0D0
   mnl = MIN(mnlam, nlam)
   r = y
