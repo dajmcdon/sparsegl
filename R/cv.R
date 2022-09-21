@@ -9,11 +9,7 @@
 #' over the folds are computed.
 #'
 #' @aliases cv.sparsegl cv.ls
-#' @template param_x-template
-#' @template param_y-template
-#' @template param_group-template
-#' @template param_family-template
-#' @template param_lambda-template
+#' @inheritParams sparsegl
 #' @param pred.loss Loss to use for cross-validation error. Valid options are:
 #'  * `"L2"` for regression, mean square error
 #'  * `"L1"` for regression, mean absolute error

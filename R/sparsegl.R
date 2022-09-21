@@ -11,10 +11,21 @@
 #' consider increasing `eps`, decreasing `nlambda`, or increasing
 #' `lambda.factor` before increasing `maxit`.
 #'
-#' @template param_x-template
-#' @template param_y-template
-#' @template param_group-template
-#' @template param_family-template
+#' @param x Double. A matrix of predictors, of dimension
+#'   \eqn{n \times p}{n * p}; each row
+#'   is a vector of measurements and each column is a feature. Objects of class
+#'   [`Matrix::sparseMatrix`] are supported.
+#' @param y Double/Integer/Factor. The response variable.
+#'   Quantitative for `family="gaussian"`.
+#'   For `family="binomial"` should be either a factor with two levels or
+#'   a vector of integers taking 2 unique values.
+#'   For a factor, the last level in alphabetical order is the target class.
+#' @param group Integer. A vector of consecutive integers describing the
+#'   grouping of the coefficients (see example below).
+#' @param family Character. Specifies the loss function to use, valid
+#'   options are:
+#'   * `"gaussian"` - least squares loss (regression, the default),
+#'   * `"binomial"` - logistic loss (classification)
 #' @param nlambda The number of \code{lambda} values - default is 100.
 #' @param lambda.factor The factor for getting the minimal lambda in the
 #'   `lambda` sequence, where `min(lambda) = lambda.factor * max(lambda)`.
@@ -26,7 +37,14 @@
 #'   A very small value of `lambda.factor` will lead to a
 #'   saturated fit. This argument has no effect if there is user-defined
 #'   `lambda` sequence.
-#' @template param_lambda-template
+#' @param lambda A user supplied `lambda` sequence. The default, `NULL`
+#'   results in an automatic computation based on `nlambda`, the smallest value
+#'   of `lambda` that would give the null model (all coefficient estimates equal
+#'   to zero), and `lambda.factor`. Supplying a value of `lambda` overrides
+#'   this behaviour. It is likely better to supply a
+#'   decreasing sequence of `lambda` values than a single (small) value. If
+#'   supplied, the user-defined `lambda` sequence is automatically sorted in
+#'   decreasing order.
 #' @param pf_group Penalty factor on the groups, a vector of the same
 #'   length as the total number of groups. Separate penalty weights can be applied
 #'   to each group of \eqn{\beta}{beta's}s to allow differential shrinkage.
