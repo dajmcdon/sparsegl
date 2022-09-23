@@ -1,5 +1,12 @@
 # sparsegl (development version)
 
+# sparsegl 0.5.0
+
+* Minor internal updates to pass additional CRAN checks
+* Refactor some documentation
+* Intercept calculation is internal to Fortran source in all cases.
+
+
 # sparsegl 0.4.0
 
 * Add the option to weight individual coefficients in the l1 penalty.
