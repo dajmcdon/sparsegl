@@ -108,6 +108,7 @@ predict.sparsegl <- function(
     object, newx, s = NULL,
     type = c("link", "response", "coefficients", "nonzero", "class"),
     ...) {
+  rlang::check_dots_empty()
   type <- match.arg(type)
   if (missing(newx)) {
     if (!match(type, c("coefficients", "nonzero"), FALSE))
@@ -162,9 +163,10 @@ fitted.sparsegl <- function(object, ...) {
 #' @method summary sparsegl
 #' @export
 summary.sparsegl <- function(object, ...) {
+  rlang::check_dots_empty()
   ns <- length(object$lambda)
   if (ns > 5) {
-    xlam <- round(quantile(1:ns))
+    xlam <- round(stats::quantile(1:ns))
     names(xlam) <- c("Min.", "1st Qu.", "Median", "3rd Qu.", "Max.")
   } else {
     xlam <- seq_len(ns)
@@ -190,6 +192,7 @@ summary.sparsegl <- function(object, ...) {
 print.summary.sparsegl <- function(
     x, digits = max(3, getOption("digits") - 3), ...) {
 
+  rlang::check_dots_empty()
   lambda_warning <- all(x$table$nnzero == 0)
 
   cat("\nCall: ", deparse(x$call), "\n\n")
@@ -230,7 +233,8 @@ print.summary.sparsegl <- function(
 #' fit1 <- sparsegl(X, y, group = groups)
 #' print(fit1)
 print.sparsegl <- function(x, digits = min(3, getOption("digits") - 3), ...) {
-  print(summary(x, digits = digits, ...))
+  rlang::check_dots_empty()
+  print(summary(x), digits = digits)
 }
 
 

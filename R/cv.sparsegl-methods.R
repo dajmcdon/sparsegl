@@ -105,6 +105,7 @@ fitted.cv.sparsegl <- function(object, ...) {
 #' @method summary cv.sparsegl
 #' @export
 summary.cv.sparsegl <- function(object, ...) {
+  rlang::check_dots_empty()
   optlams <- c(object$lambda.1se, object$lambda.min)
   optlax <- c(1, match(optlams, object$lambda), length(object$lambda))
   tab <- with(object, data.frame(
@@ -135,6 +136,7 @@ print.summary.cvsparsegl <- function(
     digits = max(3, getOption("digits") - 3), ...
 ) {
 
+  rlang::check_dots_empty()
   lambda_warning = NULL
   if (x$table$index[2] == 1) lambda_warning = "smallest"
   if (x$table$index[3] == x$table$index[4]) lambda_warning = "largest"
@@ -156,6 +158,7 @@ print.summary.cvsparsegl <- function(
 print.cv.sparsegl <- function(x, digits = max(3, getOption("digits") - 3),
                               ...) {
 
-  print(summary(x, digits = digits, ...))
+  rlang::check_dots_empty()
+  print(summary(x), digits = digits)
 }
 
