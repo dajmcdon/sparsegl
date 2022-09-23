@@ -132,7 +132,7 @@ summary.cv.sparsegl <- function(object, ...) {
 #' @export
 print.summary.cvsparsegl <- function(
     x,
-    digits = max(3, getOption("digits") - 3),...
+    digits = max(3, getOption("digits") - 3), ...
 ) {
 
   lambda_warning = NULL
@@ -156,6 +156,6 @@ print.summary.cvsparsegl <- function(
 print.cv.sparsegl <- function(x, digits = max(3, getOption("digits") - 3),
                               ...) {
 
-  print(summary(x, digits = digits,...))
+  print(summary(x, digits = digits, ...))
 }
 

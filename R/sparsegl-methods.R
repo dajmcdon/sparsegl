@@ -32,7 +32,6 @@
 #' coef(fit1, s = c(0.02, 0.03))
 coef.sparsegl <- function(object, s = NULL, ...) {
   b0 <- matrix(object$b0, nrow = 1)
-  # if conflicts happens and throw an error here, remove t() outside as.matrix()
   rownames(b0) <- "(Intercept)"
   nbeta <- rbind2(b0, object$beta)
   if (!is.null(s)) {
@@ -49,7 +48,8 @@ coef.sparsegl <- function(object, s = NULL, ...) {
         Matrix::Diagonal(ls, lamlist$frac) +
         nbeta[, lamlist$right, drop = FALSE] %*% Matrix::Diagonal(ls, 1 - lamlist$frac)
     }
-    dimnames(nbeta) <- list(vnames, paste(seq(along = s)))
+    namess <- names(s) %||% paste0("s", seq_along(s))
+    dimnames(nbeta) <- list(vnames, namess)
   }
   return(nbeta)
 }
@@ -115,7 +115,7 @@ predict.sparsegl <- function(
   }
   nbeta <- coef(object, s)
   if (type == "coefficients") return(nbeta)
-  if (type == "nonzero") return(nonzeroCoef(nbeta[-1, ,drop = FALSE]))
+  if (type == "nonzero") return(nonzeroCoef(nbeta[-1, , drop = FALSE]))
   if (inherits(newx, "sparseMatrix")) newx <- as_dgCMatrix(newx)
   dx <- dim(newx)
   p <- object$dim[1]
@@ -159,6 +159,51 @@ fitted.sparsegl <- function(object, ...) {
     "pass in the original data."))
 }
 
+#' @method summary sparsegl
+#' @export
+summary.sparsegl <- function(object, ...) {
+  ns <- length(object$lambda)
+  if (ns > 5) {
+    xlam <- round(quantile(1:ns))
+    names(xlam) <- c("Min.", "1st Qu.", "Median", "3rd Qu.", "Max.")
+  } else {
+    xlam <- seq_len(ns)
+    names(xlam) <- paste0("s", seq_len(ns))
+  }
+  nz <- predict(object, type = "nonzero")
+  nnzero <- sapply(nz, length)
+  active_grps <- sapply(nz, function(x) length(unique(object$group[x])))
+  tab <- with(object, data.frame(
+    lambda = lambda[xlam],
+    index = xlam,
+    nnzero = nnzero[xlam],
+    active_grps = active_grps[xlam])
+  )
+  rownames(tab) <- names(xlam)
+  out <- structure(list(call = object$call, table = tab),
+                   class = "summary.sparsegl")
+  out
+}
+
+#' @method print summary.sparsegl
+#' @export
+print.summary.sparsegl <- function(
+    x, digits = max(3, getOption("digits") - 3), ...) {
+
+  lambda_warning <- all(x$table$nnzero == 0)
+
+  cat("\nCall: ", deparse(x$call), "\n\n")
+
+
+  if (lambda_warning) {
+    cat("Warning: all regularization parameters resulted in empty models.\n\n")
+  }
+
+  cat("Summary of Lambda sequence:\n")
+  print(x$tab, digits = digits)
+  cat("\n")
+
+}
 
 #' Print a `sparsegl` object.
 #'
@@ -185,15 +230,7 @@ fitted.sparsegl <- function(object, ...) {
 #' fit1 <- sparsegl(X, y, group = groups)
 #' print(fit1)
 print.sparsegl <- function(x, digits = min(3, getOption("digits") - 3), ...) {
-  cat("\nCall: ", deparse(x$call), "\n\n")
-  cat("Approx. degrees of freedom: ", round(min(x$df), digits),
-      " - ", round(max(x$df), digits), "\n")
-  cat("Range of lambda: ", round(max(x$lambda), digits),
-      " - ", round(min(x$lambda), digits), "\n")
-  nlams <- length(x$lambda)
-  cat("Saturated penalty: ",
-      round(sp_group_norm(x$beta[,nlams], x$group, x$asparse), digits))
-  cat("\n")
+  print(summary(x, digits = digits, ...))
 }
 
 
