@@ -91,7 +91,7 @@ SUBROUTINE sparse_four (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,pfl1,dfmax,pmax,nlam,&
   ENDDO
   CALL rchkusr()
   DO vl_iter = 1, nvars
-     al0 = MAX(al0, ABS(vl(vl_iter))) ! Infty norm of X'y, big overkill for lam_max
+     al0 = MAX(al0, ABS(vl(vl_iter) / pfl1(vl_iter))) ! Infty norm of X'y, big overkill for lam_max
   ENDDO
   ! PRINT *, alsparse
   al = al0 ! this value ensures all betas are 0
@@ -329,7 +329,7 @@ SUBROUTINE spmat_four (bn,bs,ix,iy,gam,nobs,nvars,x,xidx,xcptr,nnz,y,pf,pfl1,&
   ENDDO
   CALL rchkusr()
   DO vl_iter = 1, nvars
-     al0 = MAX(al0, ABS(vl(vl_iter))) ! Infty norm of X'y, big overkill for lam_max
+     al0 = MAX(al0, ABS(vl(vl_iter) / pfl1(vl_iter))) ! Infty norm of X'y, big overkill for lam_max
   ENDDO
   ! PRINT *, alsparse
   al = al0 !  this value ensures all betas are 0
