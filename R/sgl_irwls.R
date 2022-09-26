@@ -3,6 +3,17 @@ sgl_irwls <- function(
   flmin, ulam, eps, maxit, vnames, group, intr, asparse, standardize,
   lower_bnd, upper_bnd, family, weights) {
 
+  # Validate the family object
+  varfun <- family$variance
+  linkinv <- family$linkinv
+  if (!is.function(varfun) || !is.function(linkinv)) {
+    rlang::abort("'family' object is not a valid family object. Try `?family`.")
+  }
+  mu_eta <- family$mu.eta
+  valideta <- family$valideta %||% function(eta) TRUE
+  validmu <- family$validmu %||% function(mu) TRUE
+
+
   is_sparse <- FALSE
   if (!is.numeric(y)) stop("For family = 'gaussian', y must be numeric.")
   if (inherits(x, "sparseMatrix")) {
@@ -24,7 +35,28 @@ sgl_irwls <- function(
 
   if (is.null(weights)) weights <- rep(1, nvars)
 
-  init <- initialized()
+  init <- irls_initilizer(x, y, weights, family, intr, pf, pfl1, asparse)
+  nulldev <- init$nulldev
+  mu <- init$mu
+  eta <- family$linkfun(mu)
+
+  # work out lambda values
+  nlam <- as.integer(nlam)
+  user_lambda <- !((length(ulam) == 1L) & (ulam == 0)) # user provided lambda
+  if (!user_lambda) {
+    lambda_max <- init$lambda_max
+    ulam <- exp(seq(log(lambda_max), log(lambda_max * flmin),
+                        length.out = nlam))
+    cur_lam <- 9.9e30
+  } else {
+    cur_lam <- ulam[1]
+  }
+
+  # Everything set up, enter the lambda loop
+  for (k in 1:nlam) {
+    if (k > 1) cur_lam <- ulam[k]
+
+    
 
 
   gamma <- calc_gamma(x, ix, iy, bn)
