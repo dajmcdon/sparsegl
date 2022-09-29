@@ -169,6 +169,9 @@ sparsegl <- function(
   if (any(is.infinite(pf_group)))
     stop("`pf_group` may not be infinite. Simply remove the group from `x`.")
 
+  ## Note: should add checks to see if any columns are completely unpenalized
+  ## This is not currently expected.
+
   iy <- cumsum(bs) # last column of x in each group
   ix <- c(0, iy[-bn]) + 1 # first column of x in each group
   ix <- as.integer(ix)
