@@ -22,12 +22,12 @@ sgl_irwls <- function(
     bn, bs, ix, iy, nobs, nvars, x, y, pf, pfl1, dfmax, pmax, nlam,
     flmin, ulam, eps, maxit, vnames, group, intr, asparse, standardize,
     lower_bnd, upper_bnd, weights, offset = NULL, family = gaussian(),
-    trace_it = 1) {
+    trace_it = 0) {
 
   validate_family(family)
 
   ## Init the family just to check that it works
-  if (is.null(weights)) weights <- rep(0, nobs)
+  if (is.null(weights)) weights <- rep(1, nobs)
   etastart <- 0
   mustart <- NULL
   start <- NULL
@@ -38,7 +38,7 @@ sgl_irwls <- function(
 
   # standardize x if necessary
   is_sparse <- FALSE
-  if (inherits(x,"sparseMatrix")) {
+  if (inherits(x, "sparseMatrix")) {
     is_sparse <- TRUE
     x <- as_dgCMatrix(x)
   }
@@ -53,12 +53,14 @@ sgl_irwls <- function(
   start_val <- initilizer(x, y, weights, family, inter, has_offset, offset, pfl1)
 
   # work out lambda values
-  no_user_lambda <- (length(ulam) == 1) & (ulam == 0) # user didn't provide lambda
-  if (no_user_lambda) lambda_max <- start_val$lambda_max # this is supposed to be an upper bound
-  if (trace_it == 1) pb <- utils::txtProgressBar(min = 0, max = nlam, style = 3)
+  no_user_lambda <- (length(ulam) == 1) & (ulam == 0)
+  findlambda <- no_user_lambda
+  # this is supposed to be an upper bound
+  lambda_max <- if (no_user_lambda) start_val$lambda_max else ulam[1]
   cur_lambda <- lambda_max / 0.99
+  if (trace_it == 1) pb <- utils::txtProgressBar(min = 0, max = nlam, style = 3)
 
-  b0 <- rep(NA, length = nlam)
+  b0 <- double(nlam)
   beta <- matrix(0, nvars, nlam)
   dev.ratio <- rep(NA, length = nlam)
   fit <- NULL
@@ -66,9 +68,8 @@ sgl_irwls <- function(
 
 
   k <- 0
-  first_pass <- TRUE
   while (k <= nlam) {
-    if (k > 1 || !no_user_lambda) {
+    if (!findlambda) {
       k <- k + 1
       prev_lambda <- cur_lambda
       cur_lambda <- ulam[k]
@@ -78,8 +79,11 @@ sgl_irwls <- function(
       # trying to find lambda max, we started too big
       prev_lambda <- cur_lambda
       cur_lambda <- cur_lambda * 0.99
+      if (trace_it == 2)
+        cat("Trying to find a reasonable starting lambda.", fill = TRUE)
     }
 
+    warmfit <- new_sgl_warmup()
 
     # here we dispatch to wls
     fit <- irwls_fit(
@@ -167,14 +171,11 @@ sgl_irwls <- function(
 }
 
 
-irwls_fit <- function(
-    x, y, weights, lambda, alpha = 1.0,
-    offset = rep(0, nobs), family = gaussian(),
-    intercept = TRUE, thresh = 1e-10, maxit = 100000,
-    penalty.factor = rep(1.0, nvars), exclude = c(), lower.limits = -Inf,
-    upper.limits = Inf, warm = NULL, search_lambda_max = FALSE,
-    save.fit = FALSE, trace.it = 0
-) {
+irwls_fit <- function(object,
+    bn, bs, ix, iy, nobs, nvars, x, y, pf, pfl1, dfmax, pmax, nlam,
+    flmin, ulam, eps, maxit, vnames, group, intr, asparse, standardize,
+    lower_bnd, upper_bnd, weights, offset, family,
+    cur_lambda, prev_lambda, k, findlambda, trace_it, warm = NULL) {
 
   # initialize everything
   variance <- family$variance
@@ -194,7 +195,7 @@ irwls_fit <- function(
     nulldev <- fit$nulldev
     coefold <- fit$warm_fit$beta   # prev value for coefficients
     intold <- fit$warm_fit$b0    # prev value for intercept
-    eta <- get_eta(x, coefold, intold)
+    eta <- get_eta(x, xs, coefold, intold)
     mu <- linkinv(eta <- eta + offset)
   }
 
@@ -217,7 +218,7 @@ irwls_fit <- function(
   conv <- FALSE      # converged?
 
   # IRLS loop
-  for (iter in 1L:maxit_irls) {
+  for (iter in seq_len(maxit_irls)) {
     # some checks for NAs/zeros
     varmu <- variance(mu)
     if (anyNA(varmu)) stop("NAs in V(mu)")
@@ -225,27 +226,40 @@ irwls_fit <- function(
     mu.eta.val <- mu.eta(eta)
     if (anyNA(mu.eta.val)) stop("NAs in d(mu)/d(eta)")
 
-    # d ell / d beta = (y - mu) / mu.eta.val, can use for strong rule / kkt
+    # d ell / d beta = X'W (z - mu) / mu.eta.val (theoretically)
+    #                = t(wx) %*% r,  (code)
+    # can use directly in wls for strong rule / kkt
 
     # compute working response and weights
     z <- (eta - offset) + (y - mu) / mu.eta.val
-    w <- (weights * mu.eta.val^2) / variance(mu)
+    w <- sqrt((weights * mu.eta.val^2) / variance(mu))
+    r <- z * w
+    if (!is.null(fit)) fit$warm_fit$r <- r
 
-    if (!is.null(fit)) fit$warm_fit$r <- w * (z - eta + offset)
-
+    # we updated w, so we need to update gamma
+    wx <- Matrix::Diagonal(w) %*% x
+    gamma <- calc_gamma(wx, ix, iy, bn) # because we use eig(xwx) = svd(w^{1/2}x)
 
     # do WLS with warmstart from previous iteration, dispatch to FORTRAN wls
-    fit <- spgl_wls_fit(x, z, w, lambda, alpha, intercept,
-                        thresh = thresh, maxit = maxit, penalty.factor = vp,
-                        exclude = exclude, lower.limits = lower.limits,
-                        upper.limits = upper.limits, warm = fit,
-                        from.glmnet.fit = TRUE, save.fit = TRUE)
+    # things that need to change:
+    #   wx, r, ulam, b0, beta, activeGroup, activeGroupIndex, ni, npass,
+    #   jerr, sset, b0old, betaold, al0, findlambda, l, me
+    #
+    fit <- spgl_wls_fit(bn, bs, ix, iy, nobs, nvars, wx, r, pf, pfl1, dfmax,
+                        pmax, ulam, eps, maxit, vnames, group, intr, asparse, standardize,
+                        lower_bnd, upper_bnd, weights, offset, family,
+                        cur_lambda, prev_lambda, k, findlambda, trace_it, warm = fit)
+    # fit <- spgl_wls_fit(wx, r, w, lambda, alpha, intercept,
+    #                     thresh = thresh, maxit = maxit, penalty.factor = vp,
+    #                     exclude = exclude, lower.limits = lower.limits,
+    #                     upper.limits = upper.limits, warm = fit,
+    #                     from.glmnet.fit = TRUE, save.fit = TRUE)
     if (fit$jerr != 0) return(list(jerr = fit$jerr))
 
     # update coefficients, eta, mu and obj_val
     start <- fit$warm_fit$beta
     start_int <- fit$warm_fit$b0
-    eta <- drop(x %*% start) + start_int
+    eta <- get_eta(x, xs, start, start_int)
     mu <- linkinv(eta <- eta + offset)
     obj_val <- obj_function(y, mu, weights, family, pf, pfl1, asparse, start, lambda)
     if (trace_it == 2) cat("Iteration", iter, "Objective:", obj_val, fill = TRUE)
@@ -266,7 +280,7 @@ irwls_fit <- function(
         ii <- ii + 1
         start <- (start + coefold) / 2
         start_int <- (start_int + intold) / 2
-        eta <- drop(x %*% start) + start_int
+        eta <- get_eta(x, xs, start, start_int)
         mu <- linkinv(eta <- eta + offset)
         obj_val <- obj_function(y, mu, weights, family, pf, pfl1, asparse, start, lambda)
         if (trace_it == 2)
@@ -289,7 +303,7 @@ irwls_fit <- function(
         ii <- ii + 1
         start <- (start + coefold) / 2
         start_int <- (start_int + intold) / 2
-        eta <- drop(x %*% start) + start_int
+        eta <- get_eta(x, xs, start, start_int)
         mu <- linkinv(eta <- eta + offset)
       }
       boundary <- TRUE
@@ -306,7 +320,7 @@ irwls_fit <- function(
         ii <- ii + 1
         start <- (start + coefold) / 2
         start_int <- (start_int + intold) / 2
-        eta <- drop(x %*% start) + start_int
+        eta <- get_eta(x, xs, start, start_int)
         mu <- linkinv(eta <- eta + offset)
         obj_val <- obj_function(y, mu, weights, family, pf, pfl1, asparse, start, lambda)
         if (trace_it == 2) cat("Iteration", iter, " Halved step 3, Objective:",
@@ -367,264 +381,139 @@ irwls_fit <- function(
   fit
 }
 
-#' Solve weighted least squares (WLS) problem for a single lambda value
-#'
-#' Solves the weighted least squares (WLS) problem for a single lambda value. Internal
-#' function that users should not call directly.
-#'
-#' WARNING: Users should not call \code{elnet.fit} directly. Higher-level functions
-#' in this package call \code{elnet.fit} as a subroutine. If a warm start object
-#' is provided, some of the other arguments in the function may be overriden.
-#'
-#' \code{elnet.fit} is essentially a wrapper around a C++ subroutine which
-#' minimizes
-#'
-#' \deqn{1/2 \sum w_i (y_i - X_i^T \beta)^2 + \sum \lambda \gamma_j
-#' [(1-\alpha)/2 \beta^2+\alpha|\beta|],}
-#'
-#' over \eqn{\beta}, where \eqn{\gamma_j} is the relative penalty factor on the
-#' jth variable. If \code{intercept = TRUE}, then the term in the first sum is
-#' \eqn{w_i (y_i - \beta_0 - X_i^T \beta)^2}, and we are minimizing over both
-#' \eqn{\beta_0} and \eqn{\beta}.
-#'
-#' None of the inputs are standardized except for \code{penalty.factor}, which
-#' is standardized so that they sum up to \code{nvars}.
-#'
-#' @param x Input matrix, of dimension \code{nobs x nvars}; each row is an
-#' observation vector. If it is a sparse matrix, it is assumed to be unstandardized.
-#' It should have attributes \code{xm} and \code{xs}, where \code{xm(j)} and
-#' \code{xs(j)} are the centering and scaling factors for variable j respsectively.
-#' If it is not a sparse matrix, it is assumed that any standardization needed
-#' has already been done.
-#' @param y Quantitative response variable.
-#' @param weights Observation weights. \code{elnet.fit} does NOT standardize
-#' these weights.
-#' @param lambda A single value for the \code{lambda} hyperparameter.
-#' @param alpha The elasticnet mixing parameter, with \eqn{0 \le \alpha \le 1}.
-#' The penalty is defined as \deqn{(1-\alpha)/2||\beta||_2^2+\alpha||\beta||_1.}
-#' \code{alpha=1} is the lasso penalty, and \code{alpha=0} the ridge penalty.
-#' @param intercept Should intercept be fitted (default=TRUE) or set to zero (FALSE)?
-#' @param thresh Convergence threshold for coordinate descent. Each inner
-#' coordinate-descent loop continues until the maximum change in the objective
-#' after any coefficient update is less than thresh times the null deviance.
-#' Default value is \code{1e-7}.
-#' @param maxit Maximum number of passes over the data; default is \code{10^5}.
-#' (If a warm start object is provided, the number of passes the warm start object
-#' performed is included.)
-#' @param penalty.factor Separate penalty factors can be applied to each
-#' coefficient. This is a number that multiplies \code{lambda} to allow differential
-#' shrinkage. Can be 0 for some variables, which implies no shrinkage, and that
-#' variable is always included in the model. Default is 1 for all variables (and
-#' implicitly infinity for variables listed in exclude). Note: the penalty
-#' factors are internally rescaled to sum to \code{nvars}.
-#' @param exclude Indices of variables to be excluded from the model. Default is
-#' none. Equivalent to an infinite penalty factor.
-#' @param lower.limits Vector of lower limits for each coefficient; default
-#' \code{-Inf}. Each of these must be non-positive. Can be presented as a single
-#' value (which will then be replicated), else a vector of length \code{nvars}.
-#' @param upper.limits Vector of upper limits for each coefficient; default
-#' \code{Inf}. See \code{lower.limits}.
-#' @param warm Either a \code{glmnetfit} object or a list (with names \code{beta}
-#' and \code{a0} containing coefficients and intercept respectively) which can
-#' be used as a warm start. Default is \code{NULL}, indicating no warm start.
-#' For internal use only.
-#' @param from.glmnet.fit Was \code{elnet.fit()} called from \code{glmnet.fit()}?
-#' Default is FALSE.This has implications for computation of the penalty factors.
-#' @param save.fit Return the warm start object? Default is FALSE.
-#'
-#' @return An object with class "glmnetfit" and "glmnet". The list returned has
-#' the same keys as that of a \code{glmnet} object, except that it might have an
-#' additional \code{warm_fit} key.
-#' \item{a0}{Intercept value.}
-#' \item{beta}{A \code{nvars x 1} matrix of coefficients, stored in sparse matrix
-#' format.}
-#' \item{df}{The number of nonzero coefficients.}
-#' \item{dim}{Dimension of coefficient matrix.}
-#' \item{lambda}{Lambda value used.}
-#' \item{dev.ratio}{The fraction of (null) deviance explained. The deviance
-#' calculations incorporate weights if present in the model. The deviance is
-#' defined to be 2*(loglike_sat - loglike), where loglike_sat is the log-likelihood
-#' for the saturated model (a model with a free parameter per observation).
-#' Hence dev.ratio=1-dev/nulldev.}
-#' \item{nulldev}{Null deviance (per observation). This is defined to be
-#' 2*(loglike_sat -loglike(Null)). The null model refers to the intercept model.}
-#' \item{npasses}{Total passes over the data.}
-#' \item{jerr}{Error flag, for warnings and errors (largely for internal
-#' debugging).}
-#' \item{offset}{Always FALSE, since offsets do not appear in the WLS problem.
-#' Included for compability with glmnet output.}
-#' \item{call}{The call that produced this object.}
-#' \item{nobs}{Number of observations.}
-#' \item{warm_fit}{If \code{save.fit=TRUE}, output of C++ routine, used for
-#' warm starts. For internal use only.}
-#'
-elnet.fit <- function(x, y, weights, lambda, alpha = 1.0, intercept = TRUE,
-                      thresh = 1e-7, maxit = 100000,
-                      penalty.factor = rep(1.0, nvars), exclude = c(),
-                      lower.limits = -Inf, upper.limits = Inf, warm = NULL,
-                      from.glmnet.fit = FALSE, save.fit = FALSE) {
-  this.call <- match.call()
-  internal.parms <- glmnet.control()
+spgl_warmup <- function(object, ...) {
 
-  # compute null deviance
-  ybar <- weighted.mean(y, weights)
-  nulldev <- sum(weights * (y - ybar)^2)
+}
 
-  # if class "glmnetfit" warmstart object provided, pull whatever we want out of it
-  # else, prepare arguments, then check if coefs provided as warmstart
-  # (if only coefs are given as warmstart, we prepare the other arguments
-  # as if no warmstart was provided)
-  if (!is.null(warm) && "glmnetfit" %in% class(warm)) {
-    warm <- warm$warm_fit
-    if (class(warm) != "warmfit") stop("Invalid warm start object")
 
-    a <- warm$a
-    aint <- warm$aint
-    alm0 <- warm$almc
-    cl <- warm$cl
-    g <- warm$g
-    ia <- warm$ia
-    iy <- warm$iy
-    iz <- warm$iz
-    ju <- warm$ju
-    m <- warm$m
-    mm <- warm$mm
-    nino <- warm$nino
-    nobs <- warm$no
-    nvars <- warm$ni
-    nlp <- warm$nlp
-    nx <- warm$nx
-    r <- warm$r
-    rsqc <- warm$rsqc
-    xv <- warm$xv
-    vp <- warm$vp
+spgl_wlsfit <- function(warmobject, ...) {
+  UseMethod("spgl_wls_fit")
+}
+
+spgl_wlsfit.default <- function(warmobject, ...) {
+  rlang::abort("Fitting methods exist only for class `sgl_warmup`.")
+}
+
+new_sgl_warmup <- function(
+    r, cur_lambda, b0, beta, activeGroup, activeGroupIndex, ni,
+    npass, sset, eset, b0old, betaold, prev_lambda, findlambda, me
+) {
+  stopifnot(is.double(r), is.double(cur_lambda), is.double(b0), is.double(beta),
+            is.integer(activeGroup), is.integer(activeGroupIndex),
+            is.integer(ni), is.integer(npass), is.integer(sset),
+            is.integer(eset), is.double(b0old), is.double(betaold),
+            is.double(prev_lambda), is.integer(findlambda), is.integer(me))
+
+  stopifnot(max(length(cur_lambda), length(b0), length(ni), length(npass),
+                length(b0old), length(prev_lambda), length(findlambda),
+                length(me)) == 1L)
+
+  structure(list(
+    r = r, cur_lambda = cur_lambda, b0 = b0, beta = beta,
+    activeGroup = activeGroup, activeGroupIndex = activeGroupIndex, ni = ni,
+    npass = npass, sset = sset, eset = eset, b0old = b0old,
+    betaold = betaold, prev_lambda = prev_lambda, findlambda = findlambda,
+    me = me
+  ), class = "sgl_warmup")
+}
+
+# things that change over iterations
+#   gam, r, ulam, b0, beta, activeGroup, activeGroupIndex, ni, npass,
+#   jerr, sset, eset, b0old, betaold, al0, findlambda, l, me
+# fortran signature wsgl (bn,bs,ix,iy,gam,nobs,nvars,x,r,pf,pfl1,pmax,&
+#        ulam,eps,maxit,intr,b0,beta,activeGroup,activeGroupIndex,ni,&
+#        npass,jerr,alsparse,lb,ub,sset,eset,b0old,betaold,al0,findlambda,l,me)
+spgl_wlsfit.sgl_warmup <- function(
+    warmobject, bn, bs, ix, iy, gam, nobs, nvars, wx, pf, pfl1, pmax,
+    eps, maxit, intr, asparse, lb, ub, l) {
+  rlang::check_dots_empty()
+
+
+  r <- warmobject$r
+  cur_lambda <- warmobject$cur_lambda
+  b0 <- warmobject$b0
+  beta <- warmobject$beta
+  activeGroup <- warmobject$activeGroup
+  activeGroupIndex <- warmobject$activeGroupIndex
+  ni <- warmobject$ni
+  npass <- warmobject$npass
+  sset <- warmobject$sset
+  eset <- warmobject$eset
+  b0old <- warmobject$b0old
+  betaold <- warmobject$betaold
+  prev_lambda <- warmobject$al0
+  findlambda <- warmobject$findlambda
+  me <- warmobject$me
+
+  if (inherits(wx, "sparseMatrix")) {
+
+    # wls_fit <- spwls_exp(alm0=alm0,almc=almc,alpha=alpha,m=m,no=nobs,ni=nvars,
+    #                      x=x,xm=xm,xs=xs,r=r,xv=xv,v=v,intr=intr,ju=ju,vp=vp,cl=cl,nx=nx,thr=thr,
+    #                      maxit=maxit,a=a.new,aint=aint,g=g,ia=ia,iy=iy,iz=iz,mm=mm,
+    #                      nino=nino,rsqc=rsqc,nlp=nlp,jerr=jerr)
   } else {
-    nobs <- as.integer(nrow(x))
-    nvars <- as.integer(ncol(x))
-
-    # if calling from glmnet.fit(), we do not need to check on exclude
-    # and penalty.factor arguments as they have been prepared by glmnet.fit()
-    # Also exclude will include variance 0 columns
-    if (!from.glmnet.fit) {
-      # check and standardize penalty factors (to sum to nvars)
-      if(any(penalty.factor == Inf)) {
-        exclude = c(exclude, seq(nvars)[penalty.factor == Inf])
-        exclude = sort(unique(exclude))
-      }
-      if(length(exclude) > 0) {
-        jd = match(exclude, seq(nvars), 0)
-        if(!all(jd > 0)) stop ("Some excluded variables out of range")
-        penalty.factor[jd] = 1 # ow can change lambda sequence
-      }
-      vp = pmax(0, penalty.factor)
-      vp = as.double(vp * nvars / sum(vp))
-    } else {
-      vp <- as.double(penalty.factor)
-    }
-    # compute ju
-    # assume that there are no constant variables
-    ju <- rep(1, nvars)
-    ju[exclude] <- 0
-    ju <- as.integer(ju)
-
-    # compute cl from lower.limits and upper.limits
-    lower.limits[lower.limits == -Inf] <- -internal.parms$big
-    upper.limits[upper.limits == Inf] <- internal.parms$big
-    if (length(lower.limits) < nvars)
-      lower.limits = rep(lower.limits, nvars) else
-        lower.limits = lower.limits[seq(nvars)]
-    if (length(upper.limits) < nvars)
-      upper.limits = rep(upper.limits, nvars) else
-        upper.limits = upper.limits[seq(nvars)]
-    cl <- rbind(lower.limits, upper.limits)
-    storage.mode(cl) = "double"
-
-    nx <- as.integer(nvars)
-
-    a <- double(nvars)
-    aint <- double(1)
-    alm0 <- double(1)
-    g <- double(nvars)
-    ia <- integer(nx)
-    iy <- integer(nvars)
-    iz <- integer(1)
-    m <- as.integer(1)
-    mm <- integer(nvars)
-    nino <- integer(1)
-    nlp <- integer(1)
-    r <- weights * y
-    rsqc <- double(1)
-    xv <- double(nvars)
-
-    # check if coefs were provided as warmstart: if so, use them
-    if (!is.null(warm)) {
-      if ("list" %in% class(warm) && "a0" %in% names(warm) &&
-          "beta" %in% names(warm)) {
-        a <- as.double(warm$beta)
-        aint <- as.double(warm$a0)
-        mu <- drop(x %*% a + aint)
-        r <- weights * (y - mu)
-        rsqc <- 1 - sum(weights * (y - mu)^2) / nulldev
-      } else {
-        stop("Invalid warm start object")
-      }
-    }
+    # fortran signature wsgl (bn,bs,ix,iy,gam, nobs,nvars,x,r,pf,pfl1,
+    #        pmax,ulam,eps,maxit,intr, b0,beta,activeGroup,activeGroupIndex,ni,&
+    #        npass,jerr,alsparse,lb,ub, sset,eset,b0old,betaold,al0, findlambda,l,me)
+    wls_fit <- dotCall64::.C64(
+      "wsgl",
+      SIGNATURE = c("integer", "integer", "integer", "integer", "double",
+                    "integer", "integer", "double", "double", "double", "double",
+                    "integer", "double", "double", "integer", "integer",
+                    "double", "double", "integer", "integer", "integer",
+                    "integer", "integer", "double", "double", "double",
+                    "integer", "integer", "double", "double", "double",
+                    "integer", "integer", "integer"),
+      # Read only
+      bn = bn, bs = bs, ix = ix, iy = iy, gam = gamma, nobs = nobs,
+      nvars = nvars, x = as.double(wx), r = as.double(r), pf = pf,
+      pfl1 = pfl1,
+      # Read / write
+      pmax = pmax,
+      # Read only
+      ulam = ulam, eps = eps, maxit = maxit, intr = as.integer(intr),
+      # Read / write
+      b0 = b0,
+      # Write only
+      beta = numeric_dc(nvars),
+      # Read / write
+      activeGroup = activeGroup, activeGroupIndex = activeGroupIndex, ni = ni,
+      npass = npass, jerr = 0L,
+      # read only
+      alsparse = asparse, lb = lower_bnd, ub = upper_bnd,
+      # Read / write
+      sset = sset, eset = eset,
+      # read only
+      b0old = b0old, betaold = betaold,
+      # read / write
+      al0 = al0, findlambda = findlambda, l = l, me = me,
+      INTENT = c(rep("r", 11), "rw", rep("r", 4), "rw", "w", rep("rw", 5),
+                 rep("r", 3), rep("rw", 2), rep("r", 2), rep("rw", 4)),
+      NAOK = TRUE,
+      PACKAGE = "sparsegl")
   }
 
-  # for the parameters here, we are overriding the values provided by the
-  # warmstart object
-  alpha <- as.double(alpha)
-  almc <- as.double(lambda)
-  intr <- as.integer(intercept)
-  jerr <- integer(1)
-  maxit <- as.integer(maxit)
-  thr <- as.double(thresh)
-  v <- as.double(weights)
-
-  a.new <- a
-  a.new[0] <- a.new[0] # induce a copy
-
-  # take out components of x and run C++ subroutine
-  if (inherits(x, "sparseMatrix")) {
-    xm <- as.double(attr(x, "xm"))
-    xs <- as.double(attr(x, "xs"))
-    wls_fit <- spwls_exp(alm0=alm0,almc=almc,alpha=alpha,m=m,no=nobs,ni=nvars,
-                         x=x,xm=xm,xs=xs,r=r,xv=xv,v=v,intr=intr,ju=ju,vp=vp,cl=cl,nx=nx,thr=thr,
-                         maxit=maxit,a=a.new,aint=aint,g=g,ia=ia,iy=iy,iz=iz,mm=mm,
-                         nino=nino,rsqc=rsqc,nlp=nlp,jerr=jerr)
-  } else {
-    wls_fit <- wls_exp(alm0=alm0,almc=almc,alpha=alpha,m=m,no=nobs,ni=nvars,
-                       x=x,r=r,xv=xv,v=v,intr=intr,ju=ju,vp=vp,cl=cl,nx=nx,thr=thr,
-                       maxit=maxit,a=a.new,aint=aint,g=g,ia=ia,iy=iy,iz=iz,mm=mm,
-                       nino=nino,rsqc=rsqc,nlp=nlp,jerr=jerr)
-  }
-
+  jerr <- wls_fit$jerr
   # if error code > 0, fatal error occurred: stop immediately
   # if error code < 0, non-fatal error occurred: return error code
-  if (wls_fit$jerr > 0) {
-    errmsg <- jerr.glmnetfit(wls_fit$jerr, maxit)
-    stop(errmsg$msg, call. = FALSE)
-  } else if (wls_fit$jerr < 0)
-    return(list(jerr = wls_fit$jerr))
-  warm_fit <- wls_fit[c("almc", "r", "xv", "ju", "vp", "cl", "nx",
-                        "a", "aint", "g", "ia", "iy", "iz", "mm", "nino",
-                        "rsqc", "nlp")]
-  warm_fit[['m']] <- m
-  warm_fit[['no']] <- nobs
-  warm_fit[['ni']] <- nvars
-  class(warm_fit) <- "warmfit"
-
-  beta <- Matrix::Matrix(wls_fit$a, sparse = TRUE)
-
-  out <- list(a0 = wls_fit$aint, beta = beta, df = sum(abs(beta) > 0),
-              dim = dim(beta), lambda = lambda, dev.ratio = wls_fit$rsqc,
-              nulldev = nulldev, npasses = wls_fit$nlp, jerr = wls_fit$jerr,
-              offset = FALSE, call = this.call, nobs = nobs, warm_fit = warm_fit)
-  if (save.fit == FALSE) {
-    out$warm_fit <- NULL
+  if (jerr > 0) {
+    if (jerr > 7777) errmsg <- "Unknown error"
+    else errmsg <- "Memory allocation bug; contact pkg maintainer"
+    rlang::abort(errmsg, call = rlang::caller_env())
+  } else if (jerr < 0) {
+    return(list(jerr = jerr))
   }
-  class(out) <- c("glmnetfit", "glmnet")
-  out
+
+  # r, cur_lambda, b0, beta, activeGroup, activeGroupIndex, ni,
+  # npass, sset, eset, b0old, betaold, prev_lambda, findlambda, me
+  warm_fit <- with(
+    wls_fit,
+    new_sgl_warmup(
+      r, cur_lambda = ulam, b0, beta, activeGroup, activeGroupIndex, ni, npass, sset,
+      eset, b0old, betaold, prev_lambda = al0, findlambda, me
+    ))
+
+  return(warm_fit)
 }
 
 #' Get null deviance, starting mu and lambda max
@@ -667,10 +556,10 @@ initilizer <- function(x, y, weights, family, intr, has_offset, offset, pfl1) {
 
   if (intercept) {
     if (has_offset) {
-      suppressWarnings(
+      suppressWarnings({
         tempfit <- glm(y ~ 1, family = family, weights = weights,
                        offset = offset)
-      )
+      })
       mu <- tempfit$fitted.values
     } else {
       mu <- rep(weighted.mean(y, weights), times = nobs)
@@ -680,7 +569,7 @@ initilizer <- function(x, y, weights, family, intr, has_offset, offset, pfl1) {
   }
   nulldev <- dev_function(y, mu, weights, family)
 
-  # compute upper bound for lambda max (assumes some l1 penalty)
+  # compute upper bound for lambda max, can possibly undershoot if pfl1 == 0
   r <- y - mu
   eta <- family$linkfun(mu)
   v <- family$variance(mu)
@@ -777,12 +666,9 @@ predict.glmnetfit <- function(object, newx, s = NULL,
 
 #' Helper function to get etas (linear predictions)
 get_eta <- function(x, xs, beta, b0) {
-  if (inherits(x, "sparseMatrix")) {
-    beta <- drop(beta) / attr(x, "xs")
-    drop(x %*% beta - sum(beta * attr(x, "xm") ) + a0)
-  } else {
-    drop(x %*% beta + a0)
-  }
+  beta <- drop(beta)
+  if (!is.null(xs)) beta <- beta / xs
+  drop(x %*% beta + b0)
 }
 
 #' Helper function to compute weighted mean and standard deviation

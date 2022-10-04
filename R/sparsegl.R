@@ -168,6 +168,14 @@ sparsegl <- function(
   if (any(pf_group < 0)) stop("`pf_group` must be non-negative.")
   if (any(is.infinite(pf_group)))
     stop("`pf_group` may not be infinite. Simply remove the group from `x`.")
+  if (all(pf_sparse == 0)) {
+    if (asparse > 0) {
+      stop("`pf_sparse` is identically 0 but `asparse` suggests some L1 penalty is desired.")
+    } else {
+      warning("`pf_sparse` set to 1 since `asparse == 0`.")
+      pf_sparse = rep(0, nvars)
+    }
+  }
 
   ## Note: should add checks to see if any columns are completely unpenalized
   ## This is not currently expected.

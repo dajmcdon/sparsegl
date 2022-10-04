@@ -1,9 +1,6 @@
-
-!---------------------------------------------
-
-SUBROUTINE wsgl (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,pfl1,dfmax,pmax,&
-   ulam,eps,maxit,intr,b0,beta,activeGroup,activeGroupIndex,ni,nbeta,&
-   npass,jerr,mse,alsparse,lb,ub,sset,eset,b0old,betaold,al0,findlambda)
+SUBROUTINE wsgl (bn,bs,ix,iy,gam,nobs,nvars,x,r,pf,pfl1,pmax,&
+   ulam,eps,maxit,intr,b0,beta,activeGroup,activeGroupIndex,ni,&
+   npass,jerr,alsparse,lb,ub,sset,eset,b0old,betaold,al0,findlambda,l,me)
 
    USE sgl_subfuns
    IMPLICIT NONE
@@ -11,36 +8,35 @@ SUBROUTINE wsgl (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,pfl1,dfmax,pmax,&
    DOUBLE PRECISION, PARAMETER :: mfl = 1.0E-6
    INTEGER:: isDifZero
    INTEGER:: intr
-   INTEGER:: bn
+   INTEGER:: bn, findlambda
    INTEGER:: bs(bn)
    INTEGER:: ix(bn)
    INTEGER:: iy(bn)
-   INTEGER:: nobs, nvars, dfmax, pmax, npass, jerr, maxit
+   INTEGER:: nobs, nvars, pmax, npass, jerr, maxit
    INTEGER:: activeGroup(pmax)
-   INTEGER:: nbeta
-   DOUBLE PRECISION :: flmin, eps, alsparse, max_gam, d, maxDif, al, alf, snorm
+   DOUBLE PRECISION :: eps, alsparse, max_gam, d, maxDif, al, alf, snorm
    DOUBLE PRECISION, INTENT(in) :: x(nobs,nvars)
-   DOUBLE PRECISION, INTENT(in) :: y(nobs)
+   ! DOUBLE PRECISION, INTENT(in) :: y(nobs)
    DOUBLE PRECISION, INTENT(in) :: pf(bn)
    DOUBLE PRECISION, INTENT(in) :: pfl1(nvars)
-   DOUBLE PRECISION :: ulam, prevlam
+   DOUBLE PRECISION :: ulam, al0
    DOUBLE PRECISION :: gam(bn)
    DOUBLE PRECISION, INTENT(in) :: lb(bn), ub(bn)
    DOUBLE PRECISION :: b0, b0old
    DOUBLE PRECISION, INTENT(out) :: beta(nvars) ! our result
    DOUBLE PRECISION, INTENT(in) :: betaold(nvars) ! warm start
+   DOUBLE PRECISION, intent(inout) :: r(nobs)
 
    DOUBLE PRECISION, DIMENSION (:), ALLOCATABLE :: s 
    DOUBLE PRECISION, DIMENSION (:), ALLOCATABLE :: b
    DOUBLE PRECISION, DIMENSION (:), ALLOCATABLE :: oldbeta ! local, not warm start
-   DOUBLE PRECISION, DIMENSION (:), ALLOCATABLE :: r ! Residual
-   DOUBLE PRECISION, DIMENSION (:), ALLOCATABLE :: u ! No longer using this for update step, but still need for other parts
+   DOUBLE PRECISION, DIMENSION (:), ALLOCATABLE :: u 
    INTEGER :: activeGroupIndex(bn)
-   INTEGER:: g, j, ni, me, startix, endix, vl_iter
+   INTEGER:: g, j, l, ni, me, startix, endix
    DOUBLE PRECISION::t_for_s(bn) ! this is for now just 1/gamma
 
    ! - - - begin local declarations - - -
-   DOUBLE PRECISION:: tlam, lama, lam1ma, al0
+   DOUBLE PRECISION:: tlam, lama, lam1ma
    INTEGER:: violation
    INTEGER :: sset(bn)
    INTEGER :: eset(bn) ! this is for 4-step alg
@@ -49,7 +45,6 @@ SUBROUTINE wsgl (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,pfl1,dfmax,pmax,&
    ! - - - allocate variables - - -
    ALLOCATE(b(0:nvars))
    ALLOCATE(oldbeta(0:nvars))
-   ALLOCATE(r(1:nobs))
    ! - - - checking pf - ! pf is the relative penalties for each group
    IF (MAXVAL(pf) <= 0.0D0) THEN
       jerr = 10000
@@ -57,7 +52,6 @@ SUBROUTINE wsgl (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,pfl1,dfmax,pmax,&
    ENDIF
 
    ! - - - some initial setup - - -
-   r = y
    DO j = 1, nvars
       b(j) = betaold(j)
    ENDDO
@@ -78,7 +72,7 @@ SUBROUTINE wsgl (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,pfl1,dfmax,pmax,&
    CALL rchkusr()
 
    ! PRINT *, alsparse
-   al = ulam ! this value ensures all betas are 0
+   al = ulam
    tlam = MAX((2.0 * al - al0), 0.0D0)
    lama = al * alsparse
    lam1ma = al * (1 - alsparse)
@@ -102,7 +96,7 @@ SUBROUTINE wsgl (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,pfl1,dfmax,pmax,&
          maxDif = 0.0D0
          isDifZero = 0 !Boolean to check if b-oldb nonzero. Unnec, in fn.
          DO g = 1, bn
-            IF (is_in_E_set(g) == 0) CYCLE
+            IF (eset(g) == 0) CYCLE
             startix = ix(g)
             endix = iy(g)
             CALL update_step(bs(g), startix, endix, b, lama, t_for_s(g),&
@@ -116,12 +110,12 @@ SUBROUTINE wsgl (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,pfl1,dfmax,pmax,&
             ENDIF
          ENDDO
          IF (intr .ne. 0) THEN
-         d = sum(r) / nobs
-         IF (d .ne. 0.0D0) THEN
-            b(0) = b(0) + d
-            r = r - d
-            maxDif = max(maxDif, d**2)
-         ENDIF
+            d = sum(r) / nobs
+            IF (d .ne. 0.0D0) THEN
+               b(0) = b(0) + d
+               r = r - d
+               maxDif = max(maxDif, d**2)
+            ENDIF
          ENDIF
          IF (ni > pmax) EXIT
          IF (maxDif < eps) EXIT
@@ -172,28 +166,26 @@ SUBROUTINE wsgl (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,pfl1,dfmax,pmax,&
    !---------- final update variable and save results------------
    CALL rchkusr()
    ! PRINT *, "Here is where the final update starts"
-   IF(ni > pmax) THEN
+   IF (ni > pmax) THEN
       jerr = -10000 - l
-      EXIT
    ENDIF
    IF (ni > 0) THEN
       DO j = 1, ni
          g = activeGroup(j)
-         beta(ix(g):iy(g),l) = b(ix(g):iy(g))
+         beta(ix(g):iy(g)) = b(ix(g):iy(g))
       ENDDO
    ENDIF
-   nbeta = ni
    b0 = b(0)
    me = 0
    al0 = al
    DO j = 1, ni
       g = activeGroup(j)
-      IF (ANY(beta(ix(g):iy(g),l) .ne. 0.0D0)) me=me+1
+      IF (ANY(beta(ix(g):iy(g)) .ne. 0.0D0)) me = me+1
    ENDDO
-   IF (me > dfmax) EXIT
-   DEALLOCATE(b, oldbeta, r, activeGroupIndex)
+   ! IF (me > dfmax) EXIT
+   DEALLOCATE(b, oldbeta)
    RETURN
-END SUBROUTINE sparse_four
+END SUBROUTINE wsgl
 
 
 ! --------------------------------------------------
