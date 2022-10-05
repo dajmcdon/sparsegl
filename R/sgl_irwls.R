@@ -22,7 +22,7 @@ sgl_irwls <- function(
     bn, bs, ix, iy, nobs, nvars, x, y, pf, pfl1, dfmax, pmax, nlam,
     flmin, ulam, eps, maxit, vnames, group, intr, asparse, standardize,
     lower_bnd, upper_bnd, weights, offset = NULL, family = gaussian(),
-    trace_it = 0) {
+    trace_it = 0, warm = NULL) {
 
   validate_family(family)
 
@@ -49,17 +49,22 @@ sgl_irwls <- function(
     xs <- 1 / sx
     x <- x %*% Matrix::Diagonal(x = xs)
   }
-  # get null deviance and lambda max
-  start_val <- initilizer(x, y, weights, family, inter, has_offset, offset, pfl1)
 
+
+  # get null deviance and lambda max, work out lambda values
+  init <- initilizer(x, y, weights, family, intr, has_offset, offset, pfl1, ulam)
+  cur_lambda <- init$cur_lambda
   # work out lambda values
-  no_user_lambda <- (length(ulam) == 1) & (ulam == 0)
-  findlambda <- no_user_lambda
+  findlambda <- init$findlambda
+  no_user_lambda <- init$findlambda
   # this is supposed to be an upper bound
-  lambda_max <- if (no_user_lambda) start_val$lambda_max else ulam[1]
-  cur_lambda <- lambda_max / 0.99
+  lambda_max <- init$lambda_max
+  cur_lambda <- init$cur_lambda
+  nulldev <- init$nulldev
+
   if (trace_it == 1) pb <- utils::txtProgressBar(min = 0, max = nlam, style = 3)
 
+  # preallocate space
   b0 <- double(nlam)
   beta <- matrix(0, nvars, nlam)
   dev.ratio <- rep(NA, length = nlam)
@@ -69,21 +74,23 @@ sgl_irwls <- function(
 
   k <- 0
   while (k <= nlam) {
+    init$findlambda <- findlambda
     if (!findlambda) {
       k <- k + 1
-      prev_lambda <- cur_lambda
-      cur_lambda <- ulam[k]
+      init$prev_lambda <- cur_lambda
+      init$cur_lambda <- ulam[k]
       if (trace_it == 2)
         cat("Fitting lambda index", k, ":", ulam[k], fill = TRUE)
     } else {
       # trying to find lambda max, we started too big
-      prev_lambda <- cur_lambda
-      cur_lambda <- cur_lambda * 0.99
+      init$prev_lambda <- cur_lambda
+      init$cur_lambda <- cur_lambda * 0.99
       if (trace_it == 2)
         cat("Trying to find a reasonable starting lambda.", fill = TRUE)
     }
+    init$k <- k
 
-    warmfit <- new_sgl_warmup()
+
 
     # here we dispatch to wls
     fit <- irwls_fit(
@@ -171,16 +178,37 @@ sgl_irwls <- function(
 }
 
 
-irwls_fit <- function(object,
+irwls_fit <- function(init,
     bn, bs, ix, iy, nobs, nvars, x, y, pf, pfl1, dfmax, pmax, nlam,
-    flmin, ulam, eps, maxit, vnames, group, intr, asparse, standardize,
-    lower_bnd, upper_bnd, weights, offset, family,
-    cur_lambda, prev_lambda, k, findlambda, trace_it, warm = NULL) {
+    flmin, eps, maxit, vnames, group, intr, asparse, standardize,
+    lower_bnd, upper_bnd, weights, offset, family, trace_it, warm = NULL) {
 
   # initialize everything
   variance <- family$variance
   linkinv <- family$linkinv
   mu.eta <- family$mu.eta
+
+  irls_warmup <- function(warm, ...) {
+    UseMethod("irls_warmup")
+  }
+  irls_warmup.default <- function(warm, init, nvars, ...) {
+    mu <- init$mu
+    beta <- rep(0, nvars)
+    b0 <- init$b0
+    r <- init$r
+    eta <- init$eta
+    structure(list(beta = beta, b0 = b0, r = r, eta = eta, mu = mu),
+              class = "irls_warm")
+  }
+  irls_warmup.irls_warm <- function(warm, init, ...) {
+    NextMethod()
+    beta <- warm$beta
+    b0 <- warm$b0
+    r <- warm$r
+    structure(list(beta = beta, b0 = b0, r = r, eta = eta, mu = mu),
+              class = "irls_warm")
+  }
+
 
   if (is.null(warm)) {
     start_val <- initilizer(x, y, weights, family, intr, has_offset, offset, pfl1)
@@ -370,7 +398,7 @@ irwls_fit <- function(object,
   if (save.fit == FALSE) fit$warm_fit <- NULL
   fit$call <- this.call
   fit$offset <- has_offset
-  fit$nulldev <- nulldev
+  fit$nulldev <- init$nulldev
   fit$dev.ratio <- 1 - dev_function(y, mu, weights, family) / nulldev
   fit$family <- family
   fit$converged <- conv
@@ -381,7 +409,7 @@ irwls_fit <- function(object,
   fit
 }
 
-spgl_warmup <- function(object, ...) {
+sgl_warmup <- function(object, ...) {
 
 }
 
@@ -430,7 +458,7 @@ spgl_wlsfit.sgl_warmup <- function(
 
 
   r <- warmobject$r
-  cur_lambda <- warmobject$cur_lambda
+  ulam <- warmobject$cur_lambda
   b0 <- warmobject$b0
   beta <- warmobject$beta
   activeGroup <- warmobject$activeGroup
@@ -441,7 +469,7 @@ spgl_wlsfit.sgl_warmup <- function(
   eset <- warmobject$eset
   b0old <- warmobject$b0old
   betaold <- warmobject$betaold
-  prev_lambda <- warmobject$al0
+  al0 <- warmobject$al0
   findlambda <- warmobject$findlambda
   me <- warmobject$me
 
@@ -480,7 +508,7 @@ spgl_wlsfit.sgl_warmup <- function(
       activeGroup = activeGroup, activeGroupIndex = activeGroupIndex, ni = ni,
       npass = npass, jerr = 0L,
       # read only
-      alsparse = asparse, lb = lower_bnd, ub = upper_bnd,
+      alsparse = asparse, lb = lb, ub = ub,
       # Read / write
       sset = sset, eset = eset,
       # read only
@@ -550,22 +578,27 @@ spgl_wlsfit.sgl_warmup <- function(
 #' @param exclude Indices of variables to be excluded from the model.
 #' @param vp Separate penalty factors can be applied to each coefficient.
 #' @param alpha The elasticnet mixing parameter, with \eqn{0 \le \alpha \le 1}.
-initilizer <- function(x, y, weights, family, intr, has_offset, offset, pfl1) {
+
+initilizer <- function(x, y, weights, family, intr, has_offset, offset, pfl1,
+                       ulam) {
   nobs <- nrow(x)
   nvars <- ncol(x)
 
-  if (intercept) {
+  if (intr) {
     if (has_offset) {
       suppressWarnings({
         tempfit <- glm(y ~ 1, family = family, weights = weights,
                        offset = offset)
       })
+      b0 <- coef(tempfit)[1]
       mu <- tempfit$fitted.values
     } else {
       mu <- rep(weighted.mean(y, weights), times = nobs)
+      b0 <- mu[1]
     }
   } else {
     mu <- family$linkinv(offset)
+    b0 <- 0
   }
   nulldev <- dev_function(y, mu, weights, family)
 
@@ -578,7 +611,15 @@ initilizer <- function(x, y, weights, family, intr, has_offset, offset, pfl1) {
   rv <- r / v * m.e * weights
   g <- abs(drop(crossprod(rv, x)))
   lambda_max <- max(g / pmax(pfl1, 1e-6))
-  list(nulldev = nulldev, mu = mu, lambda_max = lambda_max)
+
+  no_user_lambda <- (length(ulam) == 1) & (ulam == 0)
+  findlambda <- no_user_lambda
+  lambda_max <- if (no_user_lambda) lambda_max else ulam[1]
+  cur_lambda <- lambda_max / 0.99
+
+  list(r = r, mu = mu, findlambda = findlambda,
+       lambda_max = lambda_max, nulldev = nulldev,
+       cur_lambda = cur_lambda, b0 = b0, eta = eta)
 }
 
 #' Sparse group lasso objective function value
