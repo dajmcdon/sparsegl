@@ -52,14 +52,14 @@ sgl_irwls <- function(
 
 
   # get null deviance and lambda max, work out lambda values
-  init <- initilizer(x, y, weights, family, intr, has_offset, offset, pfl1, ulam)
+  # we ALWAYS fit the intercept inside wsgl, so start it at zero
+  init <- initilizer(x, y, weights, family, intr = FALSE,
+                     has_offset, offset, pfl1, ulam)
+  # this is supposed to be an upper bound
+  # work out lambda values, cur_lambda is lambda_max / 0.99 when appropriate.
   cur_lambda <- init$cur_lambda
-  # work out lambda values
   findlambda <- init$findlambda
   no_user_lambda <- init$findlambda
-  # this is supposed to be an upper bound
-  lambda_max <- init$lambda_max
-  cur_lambda <- init$cur_lambda
   nulldev <- init$nulldev
 
   if (trace_it == 1) pb <- utils::txtProgressBar(min = 0, max = nlam, style = 3)
@@ -77,7 +77,7 @@ sgl_irwls <- function(
     pfl1 = pfl1, dfmax = dfmax, pmax = pmax, flmin = flmin, epx = eps,
     maxit = maxit, vnames = vnames, group = group, intr = intr,
     asparse = asparse, lower_bnd = lower_bnd, upper_bnd = upper_bnd,
-    weights = weights, offset = offset, family = family)
+    weights = weights, offset = offset, family = family, trace_it = trace_it)
 
   if (is.null(warm))
     warm <- make_irls_warmup(nobs, nvars, b0 = init$b0, r = init$r)
@@ -95,35 +95,50 @@ sgl_irwls <- function(
     warm$activeGroupIndex[zn] <- seq_along(zn)
     warm$sset[zn] <- 1L
   }
-  warm <- c(warm, ni = 0L, npass = 0L, me = 0L)
+  warm <- c(warm, ni = 0L, npass = 0L, me = 0L, findlambda = findlambda)
 
   l <- 0
   while (l <= nlam) {
-    warm_fit$findlambda <- findlambda
     if (!findlambda) {
       l <- l + 1
-      warm_fit$al0 <- cur_lambda
-      warm_fit$ulam <- ulam[l]
+      warm$al0 <- cur_lambda
+      warm$ulam <- ulam[l]
       if (trace_it == 2)
         cat("Fitting lambda index", l, ":", ulam[l], fill = TRUE)
     } else {
       # trying to find lambda max, we started too big
-      warm_fit$al0 <- cur_lambda
-      warm_fit$ulam <- cur_lambda * 0.99
+      warm$al0 <- cur_lambda
+      warm$ulam <- cur_lambda * 0.99
       if (trace_it == 2)
         cat("Trying to find a reasonable starting lambda.", fill = TRUE)
     }
-    warm_fit$k <- k
+    warm$l <- l
 
     # here we dispatch to wls
-    fit <- irwls_fit(warm_fit, static_args)
-    if (trace.it == 1) utils::setTxtProgressBar(pb, l)
+    fit <- irwls_fit(warm, static_args)
+    if (trace_it == 1) utils::setTxtProgressBar(pb, l)
     if (fit$jerr != 0) {
-      cli::cli_warn(
-        "Convergence for {k}th lambda value not reached after maxit =
+      if (l > 1) {
+        cli::cli_warn(
+          "Convergence for {l}th lambda value not reached after maxit =
           {maxit} iterations; solutions for larger lambdas returned.")
-      l <- l - 1
-      break
+        l <- l - 1
+        break
+      } else {
+        cli::cli_abort(
+          "Convergence for initial lambda value not reached after maxit =
+          {maxit} iterations; no solutions available.")
+      }
+    }
+
+    if (findlambda) { # we searched inside the FORTRAN code, now we found it
+      ulam <- double(nlam)
+      ulam[2:nlam] <- exp(seq(log(fit$ulam), log(fit$ulam * flmin),
+                              length.out = nlam - 1))
+      umult <- if (nlam > 2) ulam[2] / ulam[3] else 1 / flmin
+      ulam[1] <- ulam[2] * umult
+      l <- 2
+      findlambda <- FALSE
     }
 
     b0[l] <- fit$a0
@@ -166,7 +181,7 @@ sgl_irwls <- function(
                              dimnames = list(vnames, stepnames))
   out$lambda <- ulam
   out$dev.ratio <- dev.ratio
-  out$nulldev <- start_val$nulldev
+  out$nulldev <- nulldev
   out$npasses <- fit$npasses
   out$jerr <- fit$jerr
   out$offset <- has_offset
@@ -193,13 +208,14 @@ irwls_fit <- function(warm, static) {
   variance <- static$family$variance
   linkinv <- static$family$linkinv
   mu.eta <- static$family$mu.eta
+  trace_it <- static$trace_it
 
   fit <- warm
   nulldev <- static$nulldev
   coefold <- fit$beta   # prev value for coefficients
   intold <- fit$b0    # prev value for intercept
   lambda <- fit$ulam
-  eta <- get_eta(static_args$x, static$xs, coefold, intold)
+  eta <- get_eta(static$x, static$xs, coefold, intold)
   mu <- linkinv(eta <- eta + static$offset)
 
   valideta <- static$family$valideta %||% function(eta) TRUE
@@ -253,7 +269,7 @@ irwls_fit <- function(warm, static) {
     #   wx, r, ulam, b0, beta, activeGroup, activeGroupIndex, ni, npass,
     #   jerr, sset, b0old, betaold, al0, findlambda, l, me
     #
-    fit <- spgl_wls_fit(fit, wx, gamma, static)
+    fit <- spgl_wlsfit(fit, wx, gamma, static)
     # fit <- spgl_wls_fit(wx, r, w, lambda, alpha, intercept,
     #                     thresh = thresh, maxit = maxit, penalty.factor = vp,
     #                     exclude = exclude, lower.limits = lower.limits,
@@ -383,7 +399,7 @@ irwls_fit <- function(warm, static) {
   # prepare output object
   if (save.fit == FALSE) fit$warm_fit <- NULL
   fit$offset <- has_offset
-  fit$nulldev <- static$nulldev
+  fit$nulldev <- nulldev
   fit$dev.ratio <- 1 - dev_function(static$y, mu, static$weights,
                                     static$family) / fit$nulldev
   fit$family <- family

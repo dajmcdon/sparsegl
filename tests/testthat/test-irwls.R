@@ -36,3 +36,31 @@ test_that("deviance works", {
                              coefs, lambda))
 
 })
+
+
+test_that("initializer works", {
+  function(x, y, weights, family, intr, has_offset, offset, pfl1,
+           ulam)
+  n <- 100
+  p <- 20
+  gr <- rep(1:4, each = 5)
+  y <- rbinom(n, 1, rbeta(100, 2, 2))
+  x <- matrix(rnorm(n*p), n, p)
+  xsp <- x
+  xsp[abs(xsp) < 1] <- 0
+  xsp <- Matrix::Matrix(xsp, sparse = TRUE)
+
+  weights <- rnorm(n)^2
+  weights <- weights / sum(weights)
+  offset <- rep(1, n)
+  pfl1 <- rep(1, p)
+  pfl2 <- rnorm(p)^2
+  pfl2 <- pfl2 / sum(pfl2)
+  ulam <- 0.5
+
+  usr_lambda <- initilizer(x, y, weights, gaussian(), TRUE, FALSE, NULL,
+                           pfl1, ulam)
+  expect_identical(usr_lambda$)
+
+
+})
