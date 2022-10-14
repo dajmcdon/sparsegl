@@ -60,7 +60,28 @@ test_that("initializer works", {
 
   usr_lambda <- initilizer(x, y, weights, gaussian(), TRUE, FALSE, NULL,
                            pfl1, ulam)
-  expect_identical(usr_lambda$)
+  expect_false(usr_lambda$findlambda)
+  expect_equal(usr_lambda$cur_lambda * 0.99, usr_lambda$lambda_max)
+  usr_lambda_offset <- initilizer(x, y, weights, gaussian(), TRUE, TRUE, offset,
+                           pfl1, ulam)
+  expect_false(usr_lambda$findlambda)
+  expect_equal(usr_lambda$cur_lambda * 0.99, usr_lambda$lambda_max)
+  usr_lambda_offset_noint <- initilizer(x, y, weights, gaussian(), FALSE,
+                                        TRUE, offset, pfl1, ulam)
+  expect_false(usr_lambda$findlambda)
+  expect_equal(usr_lambda$cur_lambda * 0.99, usr_lambda$lambda_max)
 
 
+  usr_lambda <- initilizer(x, y, weights, gaussian(), TRUE, FALSE, NULL,
+                           pfl1, 0)
+  expect_true(usr_lambda$findlambda)
+  expect_equal(usr_lambda$cur_lambda * 0.99, usr_lambda$lambda_max)
+  usr_lambda_offset <- initilizer(x, y, weights, gaussian(), TRUE, TRUE, offset,
+                                  pfl1, 0)
+  expect_true(usr_lambda$findlambda)
+  expect_equal(usr_lambda$cur_lambda * 0.99, usr_lambda$lambda_max)
+  usr_lambda_offset_noint <- initilizer(x, y, weights, gaussian(), FALSE,
+                                        TRUE, offset, pfl1, 0)
+  expect_true(usr_lambda$findlambda)
+  expect_equal(usr_lambda$cur_lambda * 0.99, usr_lambda$lambda_max)
 })

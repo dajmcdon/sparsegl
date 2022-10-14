@@ -550,28 +550,33 @@ initilizer <- function(x, y, weights, family, intr, has_offset, offset, pfl1,
       mu <- tempfit$fitted.values
     } else {
       mu <- rep(weighted.mean(y, weights), times = nobs)
-      b0 <- mu[1]
+      b0 <- as.double(mu[1])
     }
   } else {
     mu <- family$linkinv(offset)
-    b0 <- 0
+    b0 <- as.double(0)
   }
   nulldev <- dev_function(y, mu, weights, family)
 
   # compute upper bound for lambda max
   # can possibly undershoot if any pfl1 < 1e-6, should warn.
   r <- y - mu
-  eta <- family$linkfun(mu)
-  v <- family$variance(mu)
-  m.e <- family$mu.eta(eta)
-  weights <- weights / sum(weights)
-  rv <- r / v * m.e * weights
-  g <- abs(drop(crossprod(rv, x)))
-  lambda_max <- max(g / pmax(pfl1, 1e-6))
 
   no_user_lambda <- (length(ulam) == 1) & (ulam == 0)
   findlambda <- no_user_lambda
-  lambda_max <- if (no_user_lambda) lambda_max else ulam[1]
+  eta <- family$linkfun(mu)
+
+  if (no_user_lambda) {
+    v <- family$variance(mu)
+    m.e <- family$mu.eta(eta)
+    weights <- weights / sum(weights)
+    rv <- r / v * m.e * weights
+    g <- abs(drop(crossprod(rv, x)))
+    lambda_max <- max(g / pmax(pfl1, 1e-6))
+  } else {
+    lambda_max <- ulam[1]
+  }
+
   cur_lambda <- lambda_max / 0.99
 
   list(r = r, mu = mu, findlambda = findlambda,
