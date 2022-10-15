@@ -84,4 +84,10 @@ test_that("initializer works", {
                                         TRUE, offset, pfl1, 0)
   expect_true(usr_lambda$findlambda)
   expect_equal(usr_lambda$cur_lambda * 0.99, usr_lambda$lambda_max)
+
+  # try sparse
+  usr_lambda <- initilizer(xsp, y, weights, binomial(), TRUE, FALSE, NULL,
+                           pfl1, 0)
+  expect_true(usr_lambda$findlambda)
+  expect_equal(usr_lambda$cur_lambda * 0.99, usr_lambda$lambda_max)
 })
