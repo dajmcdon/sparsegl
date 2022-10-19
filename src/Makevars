@@ -1,5 +1,5 @@
 C_OBJS = sparsegl_init.o
-F_OBJS = sparsegl.o log_sgl_subfuns.o spmatmul.o sgl_subfuns.o sparsegllog.o
+F_OBJS = sparsegl.o log_sgl_subfuns.o spmatmul.o sgl_subfuns.o sparsegllog.o wsgl.o
 
 all: $(SHLIB) clean
 
@@ -15,9 +15,10 @@ log_sgl_subfuns.mod: log_sgl_subfuns.f90 log_sgl_subfuns.o spmatmul.mod\
 sparsegl.o: sparsegl.f90 spmatmul.mod sgl_subfuns.mod sgl_subfuns.o\
 						spmatmul.o
 sparsegllog.o: sparsegllog.f90 log_sgl_subfuns.mod sgl_subfuns.mod spmatmul.mod
+wsgl.o: wsgl.f90 spmatmul.mod sgl_subfuns.mod sgl_subfuns.o spmatmul.o
 sparsegl_init.o: sparsegl.o sparsegllog.o spmatmul.o sgl_subfuns.o\
 								 log_sgl_subfuns.o spmatmul.mod sgl_subfuns.mod\
-								 log_sgl_subfuns.mod
+								 log_sgl_subfuns.mod wsgl.o
 
 clean:
 	@rm -rf *.mod *.o

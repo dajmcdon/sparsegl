@@ -39,8 +39,6 @@ test_that("deviance works", {
 
 
 test_that("initializer works", {
-  function(x, y, weights, family, intr, has_offset, offset, pfl1,
-           ulam)
   n <- 100
   p <- 20
   gr <- rep(1:4, each = 5)
@@ -90,4 +88,14 @@ test_that("initializer works", {
                            pfl1, 0)
   expect_true(usr_lambda$findlambda)
   expect_equal(usr_lambda$cur_lambda * 0.99, usr_lambda$lambda_max)
+})
+
+test_that("call to wls FORTRAN subfun works", {
+  n <- 100
+  p <- 20
+  gr <- rep(1:4, each = 5)
+  y <- rbinom(n, 1, rbeta(100, 2, 2))
+  x <- matrix(rnorm(n*p), n, p)
+
+
 })
