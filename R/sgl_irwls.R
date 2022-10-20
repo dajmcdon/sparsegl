@@ -99,7 +99,7 @@ sgl_irwls <- function(
     offset = as.double(offset),
     bn = as.integer(bn),
     bs = as.integer(bs),
-    x = as.double(x),
+    x = x,
     ix = as.integer(ix),
     iy = as.integer(iy),
     xs = as.double(xs),
@@ -137,7 +137,8 @@ sgl_irwls <- function(
     warm$activeGroupIndex[zn] <- seq_along(zn)
     warm$sset[zn] <- 1L
   }
-  warm <- c(warm, ni = 0L, npass = 0L, me = 0L, findlambda = findlambda)
+  warm <- c(warm, ni = 0L, npass = 0L, me = 0L, findlambda = findlambda,
+            eset = list(warm$sset))
 
   l <- 0L
   while (l <= nlam) {
@@ -150,7 +151,7 @@ sgl_irwls <- function(
     } else {
       # trying to find lambda max, we started too big
       warm$al0 <- as.double(cur_lambda)
-      warm$ulam <- as.double(cur_lambda * 0.99)
+      warm$ulam <- as.double(init$lambda_max)
       if (trace_it == 2)
         cat("Trying to find a reasonable starting lambda.", fill = TRUE)
     }
@@ -500,9 +501,15 @@ spgl_wlsfit <- function(warm, wx, gamma, static) {
                     "integer", "integer", "integer"),
       # Read only
       bn = bn, bs = bs, ix = ix, iy = iy, gam = gamma, nobs = nobs,
-      nvars = nvars, x = as.double(wx), r = as.double(r), pf = pf,
-      pfl1 = pfl1, pmax = pmax,
-      ulam = ulam, eps = eps, maxit = maxit, intr = as.integer(intr),
+      nvars = nvars, x = as.double(wx),
+      # Read / write
+      r = as.double(r),
+      # Read only
+      pf = pf, pfl1 = pfl1, pmax = pmax,
+      # Read write
+      ulam = ulam,
+      # Read only
+      eps = eps, maxit = maxit, intr = as.integer(intr),
       # Read / write
       b0 = double(1),
       # Write only
@@ -518,8 +525,9 @@ spgl_wlsfit <- function(warm, wx, gamma, static) {
       b0old = b0old, betaold = betaold,
       # read / write
       al0 = al0, findlambda = findlambda, l = l, me = me,
-      INTENT = c(rep("r", 16), "rw", "w", rep("rw", 5),
-                 rep("r", 3), rep("rw", 2), rep("r", 2), rep("rw", 4)),
+      INTENT = c(rep("r", 8), "rw", rep("r", 3), "rw", rep("r", 3), "rw", "w",
+                 rep("rw", 5), rep("r", 3), rep("rw", 2), rep("r", 2),
+                 rep("rw", 4)),
       NAOK = TRUE,
       PACKAGE = "sparsegl")
   }
@@ -535,6 +543,7 @@ spgl_wlsfit <- function(warm, wx, gamma, static) {
     return(list(jerr = jerr))
   }
 
+  # wls_fit
   wls_fit[c("r", "ulam", "b0", "beta", "activeGroup", "activeGroupIndex",
             "ni", "npass", "sset", "eset", "al0", "findlambda", "l", "me")]
 }

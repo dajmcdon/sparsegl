@@ -285,6 +285,8 @@ static R_NativePrimitiveArgType log_spmat_four_t[] = {
   REALSXP,
   REALSXP
 };
+
+
 void F77_NAME(wsgl)(
   int *bn,
   int *bs,
@@ -368,6 +370,7 @@ static R_FortranMethodDef fMethods[] = {
   FDEF(spmat_four) ,
   FDEF(log_sparse_four) ,
   FDEF(log_spmat_four) ,
+  FDEF(wsgl) ,
   {NULL, NULL, 0}
 };
 

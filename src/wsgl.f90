@@ -25,15 +25,16 @@ SUBROUTINE wsgl (bn,bs,ix,iy,gam,nobs,nvars,x,r,pf,pfl1,pmax,&
    DOUBLE PRECISION :: b0, b0old
    DOUBLE PRECISION, INTENT(out) :: beta(nvars) ! our result
    DOUBLE PRECISION, INTENT(in) :: betaold(nvars) ! warm start
-   DOUBLE PRECISION, intent(inout) :: r(nobs)
+   DOUBLE PRECISION, INTENT(inout) :: r(nobs)
 
    DOUBLE PRECISION, DIMENSION (:), ALLOCATABLE :: s
    DOUBLE PRECISION, DIMENSION (:), ALLOCATABLE :: b
    DOUBLE PRECISION, DIMENSION (:), ALLOCATABLE :: oldbeta ! local, not warm start
    DOUBLE PRECISION, DIMENSION (:), ALLOCATABLE :: u
    INTEGER :: activeGroupIndex(bn)
-   INTEGER:: g, j, l, ni, me, startix, endix
+   INTEGER:: g, j, l, ni, me, startix, endix, i
    DOUBLE PRECISION::t_for_s(bn) ! this is for now just 1/gamma
+   DOUBLE PRECISION:: rpr(nvars + 1)
 
    ! - - - begin local declarations - - -
    DOUBLE PRECISION:: tlam, lama, lam1ma
@@ -56,11 +57,12 @@ SUBROUTINE wsgl (bn,bs,ix,iy,gam,nobs,nvars,x,r,pf,pfl1,pmax,&
       b(j) = betaold(j)
    ENDDO
    b(0) = b0old
-   oldbeta = betaold
+   oldbeta = b
    npass = 0
    alf = 0.0D0
    max_gam = MAXVAL(gam)
    t_for_s = 1 / gam
+   i = 1
 
    vl = MATMUL(r, x) / nobs
    DO g = 1, bn ! For each group...
@@ -80,6 +82,7 @@ SUBROUTINE wsgl (bn,bs,ix,iy,gam,nobs,nvars,x,r,pf,pfl1,pmax,&
    CALL strong_rule(sset, ga, pf, tlam, alsparse) !uses s_set instead of e_set...
    ! --------- outer loop ---------------------------- !
    DO
+      ! PRINT *, al
       CALL rchkusr()
       oldbeta(0) = b(0)
       IF (ni > 0) THEN
@@ -88,6 +91,12 @@ SUBROUTINE wsgl (bn,bs,ix,iy,gam,nobs,nvars,x,r,pf,pfl1,pmax,&
             oldbeta(ix(g):iy(g)) = b(ix(g):iy(g))
          ENDDO
       ENDIF
+      PRINT *, i
+      ! PRINT *, b(0)
+      ! PRINT *, b(1)
+      ! PRINT *, oldbeta(0)
+      ! PRINT *, oldbeta(1)
+
       ! --inner loop-------------------------------------
       DO
          CALL rchkusr()
@@ -129,8 +138,11 @@ SUBROUTINE wsgl (bn,bs,ix,iy,gam,nobs,nvars,x,r,pf,pfl1,pmax,&
       ! PRINT *, "Here is where the final check starts"
       ! print *, i ! Just to check how many final checks...
       ! i = i+1
+      ! IF (i > 10) RETURN
       violation = 0
-      IF (ANY((max_gam * (b - oldbeta) / (1 + ABS(b)))**2 >= eps)) violation = 1 !has beta moved globally
+      rpr = (max_gam * (b - oldbeta) / (1 + ABS(b)))**2
+      ! print*, rpr
+      IF (ANY(rpr >= eps)) violation = 1 !has beta moved globally
       IF (violation == 1) CYCLE
       CALL strong_kkt_check(eset, violation, bn, ix, iy, pf, pfl1, lam1ma,&
             bs, lama, ga, sset, x, r, nobs, nvars, vl) ! Step 3
@@ -150,7 +162,7 @@ SUBROUTINE wsgl (bn,bs,ix,iy,gam,nobs,nvars,x,r,pf,pfl1,pmax,&
             DEALLOCATE(s)
          ENDIF
       ENDDO
-      CALL kkt_check(eset, violation, bn, ix, iy, vl, pf, pfl1,lam1ma, bs, lama, ga, nvars) ! Step 4
+      CALL kkt_check(eset, violation, bn, ix, iy, vl, pf, pfl1,lam1ma, bs, lama, ga, nvars)
       IF (violation == 1) CYCLE
       IF (findlambda == 1 .AND. ni == 0) THEN
          al0 = al
@@ -166,7 +178,7 @@ SUBROUTINE wsgl (bn,bs,ix,iy,gam,nobs,nvars,x,r,pf,pfl1,pmax,&
    ulam = al
    !---------- final update variable and save results------------
    CALL rchkusr()
-   ! PRINT *, "Here is where the final update starts"
+   PRINT *, "Here is where the final update starts"
    IF (ni > pmax) THEN
       jerr = -10000 - l
    ENDIF
