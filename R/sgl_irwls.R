@@ -28,18 +28,18 @@
 
 
 
-#' Fit a GLM with sparse group regularization for a path of lambda values
-#'
-#' Fit a generalized linear model via penalized maximum likelihood for a path of
-#' lambda values. Can deal with any GLM family.
-#'
-#' This organization is based largely off [stats::glm.fit()] with some extras
-#' to handle the path.
-#'
-#' Sometimes the sequence is truncated before \code{nlambda} values of lambda
-#' have been used. This happens when \code{glmnet.path} detects that the
-#' decrease in deviance is marginal (i.e. we are near a saturated fit).
-#'
+# Fit a GLM with sparse group regularization for a path of lambda values
+#
+# Fit a generalized linear model via penalized maximum likelihood for a path of
+# lambda values. Can deal with any GLM family.
+#
+# This organization is based largely off [stats::glm.fit()] with some extras
+# to handle the path.
+#
+# Sometimes the sequence is truncated before \code{nlam} values of lambda
+# have been used. This happens when the
+# decrease in deviance is marginal (i.e. we are near a saturated fit).
+#
 sgl_irwls <- function(
     bn, bs, ix, iy, nobs, nvars, x, y, pf, pfl1, dfmax, pmax, nlam,
     flmin, ulam, eps, maxit, vnames, group, intr, asparse, standardize,
@@ -609,7 +609,7 @@ dev_function <- function(y, mu, weights, family) {
 }
 
 
-#' Helper function to get etas (linear predictions) on the original scale
+# Helper function to get etas (linear predictions) on the original scale
 get_eta <- function(x, xs, beta, b0) {
   beta <- drop(beta)
   if (!is.null(xs)) beta <- beta / xs
