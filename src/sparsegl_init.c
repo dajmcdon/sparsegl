@@ -450,7 +450,7 @@ static R_FortranMethodDef fMethods[] = {
   FDEF(log_sparse_four) ,
   FDEF(log_spmat_four) ,
   FDEF(wsgl) ,
-  FDEF(spmat_wsgl)
+  FDEF(spmat_wsgl) ,
   {NULL, NULL, 0}
 };
 
