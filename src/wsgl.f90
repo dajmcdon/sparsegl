@@ -91,7 +91,7 @@ SUBROUTINE wsgl (bn,bs,ix,iy,gam,nobs,nvars,x,r,pf,pfl1,pmax,&
             oldbeta(ix(g):iy(g)) = b(ix(g):iy(g))
          ENDDO
       ENDIF
-      PRINT *, i
+      ! PRINT *, i
       ! PRINT *, b(0)
       ! PRINT *, b(1)
       ! PRINT *, oldbeta(0)
@@ -178,7 +178,7 @@ SUBROUTINE wsgl (bn,bs,ix,iy,gam,nobs,nvars,x,r,pf,pfl1,pmax,&
    ulam = al
    !---------- final update variable and save results------------
    CALL rchkusr()
-   PRINT *, "Here is where the final update starts"
+   ! PRINT *, "Here is where the final update starts"
    IF (ni > pmax) THEN
       jerr = -10000 - l
    ENDIF

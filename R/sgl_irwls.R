@@ -235,8 +235,9 @@ sgl_irwls <- function(
   return(out)
 }
 
-
+#' @importFrom rlang `%||%`
 irwls_fit <- function(warm, static) {
+  maxit_irls <- 50
 
   # initialize everything
   variance <- static$family$variance
@@ -269,13 +270,14 @@ irwls_fit <- function(warm, static) {
     coefold, fit$ulam
   )
 
-  if (static$trace.it == 2) {
+  if (static$trace_it == 2) {
     cat("Warm Start Objective:", obj_val_old, fill = TRUE)
   }
   conv <- FALSE      # converged?
+  iter <- fit$npass
 
   # IRLS loop
-  for (iter in seq_len(static$maxit)) {
+  while (iter < static$maxit && !conv) {
     # some checks for NAs/zeros
     varmu <- variance(mu)
     if (anyNA(varmu)) rlang::abort("NAs in V(mu)")
@@ -294,21 +296,13 @@ irwls_fit <- function(warm, static) {
     fit$r <- r
 
     # we updated w, so we need to update gamma
-    wx <- Matrix::Diagonal(w) %*% static$x
+    wx <- Matrix::Diagonal(x = w) %*% static$x
     # because we use eig(xwx) = svd(w^{1/2}x)
     gamma <- calc_gamma(wx, static$ix, static$iy, static$bn)
 
     # do WLS with warmstart from previous iteration, dispatch to FORTRAN wls
-    # things that need to change:
-    #   wx, r, ulam, b0, beta, activeGroup, activeGroupIndex, ni, npass,
-    #   jerr, sset, b0old, betaold, al0, findlambda, l, me
-    #
     fit <- spgl_wlsfit(fit, wx, gamma, static)
-    # fit <- spgl_wls_fit(wx, r, w, lambda, alpha, intercept,
-    #                     thresh = thresh, maxit = maxit, penalty.factor = vp,
-    #                     exclude = exclude, lower.limits = lower.limits,
-    #                     upper.limits = upper.limits, warm = fit,
-    #                     from.glmnet.fit = TRUE, save.fit = TRUE)
+
     if (fit$jerr != 0) return(list(jerr = fit$jerr))
 
     # update coefficients, eta, mu and obj_val
@@ -320,6 +314,7 @@ irwls_fit <- function(warm, static) {
     obj_val <- obj_function(
       static$y, mu, static$group, static$weights, static$family, static$pf,
       static$pfl1, static$asparse, start, lambda)
+    iter <- iter + fit$npass
     if (trace_it == 2) cat("Iteration", iter, "Objective:", obj_val, fill = TRUE)
 
     boundary <- FALSE
@@ -333,7 +328,7 @@ irwls_fit <- function(warm, static) {
       rlang::warn("step size truncated due to divergence")
       ii <- 1
       while (!is.finite(obj_val) || obj_val > 9.9e30) {
-        if (ii > maxit)
+        if (ii > maxit_irls)
           rlang::abort("inner loop 1; cannot correct step size")
         ii <- ii + 1
         start <- (start + coefold) / 2
@@ -358,7 +353,7 @@ irwls_fit <- function(warm, static) {
       rlang::warn("step size truncated: out of bounds")
       ii <- 1
       while (!(valideta(eta) && validmu(mu))) {
-        if (ii > maxit)
+        if (ii > maxit_irls)
           rlang::abort("inner loop 2; cannot correct step size.")
         ii <- ii + 1
         start <- (start + coefold) / 2
@@ -423,14 +418,16 @@ irwls_fit <- function(warm, static) {
   # some extra warnings, printed only if trace_it == 2
   if (trace_it == 2) {
     tiny <- 10 * .Machine$double.eps
-    if ((family$family == "binomial") && (any(mu > 1 - tiny) || any(mu < tiny)))
+    if (static$family$family == "binomial" &&
+        (any(mu > 1 - tiny) || any(mu < tiny))) {
       rlang::warn("sparsgl_irls: fitted probabilities numerically 0 or 1 occurred")
-    if ((family$family == "poisson") && (any(mu < eps)))
+    }
+    if (static$family$family == "poisson" && any(mu < eps))
       rlang::warn("sparsegl_irls: fitted rates numerically 0 occurred")
   }
 
   # prepare output object
-  if (save.fit == FALSE) fit$warm_fit <- NULL
+  # if (save.fit == FALSE) fit$warm_fit <- NULL
   fit$offset <- has_offset
   fit$nulldev <- nulldev
   fit$dev.ratio <- 1 - dev_function(static$y, mu, static$weights,
@@ -545,7 +542,8 @@ spgl_wlsfit <- function(warm, wx, gamma, static) {
 
   # wls_fit
   wls_fit[c("r", "ulam", "b0", "beta", "activeGroup", "activeGroupIndex",
-            "ni", "npass", "sset", "eset", "al0", "findlambda", "l", "me")]
+            "ni", "npass", "sset", "eset", "al0", "findlambda", "l", "me",
+            "jerr")]
 }
 
 
