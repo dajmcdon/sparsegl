@@ -40,6 +40,7 @@
 # have been used. This happens when the
 # decrease in deviance is marginal (i.e. we are near a saturated fit).
 #
+#' @importFrom stats gaussian
 sgl_irwls <- function(
     bn, bs, ix, iy, nobs, nvars, x, y, pf, pfl1, dfmax, pmax, nlam,
     flmin, ulam, eps, maxit, vnames, group, intr, asparse, standardize,
@@ -162,13 +163,13 @@ sgl_irwls <- function(
     if (trace_it == 1) utils::setTxtProgressBar(pb, l)
     if (fit$jerr != 0) {
       if (l > 1L) {
-        cli::cli_warn(
+        rlang::warn(
           "Convergence for {l}th lambda value not reached after maxit =
           {maxit} iterations; solutions for larger lambdas returned.")
         l <- l - 1L
         break
       } else {
-        cli::cli_abort(
+        rlang::warn(
           "Convergence for initial lambda value not reached after maxit =
           {maxit} iterations; no solutions available.")
       }
@@ -227,7 +228,7 @@ sgl_irwls <- function(
   out$nulldev <- nulldev
   out$npasses <- fit$npasses
   out$jerr <- fit$jerr
-  out$offset <- has_offset
+  out$offset <- offset
   out$family <- family
   out$nobs <- nobs
   class(out) <- "irwlsspgl"
@@ -398,7 +399,7 @@ irwls_fit <- function(warm, static) {
     }
 
     # test for convergence
-    if (abs(obj_val - obj_val_old) / (0.1 + abs(obj_val)) < eps) {
+    if (abs(obj_val - obj_val_old) / (0.1 + abs(obj_val)) < static$eps) {
       conv <- TRUE
       break
     } else {
@@ -422,17 +423,17 @@ irwls_fit <- function(warm, static) {
         (any(mu > 1 - tiny) || any(mu < tiny))) {
       rlang::warn("sparsgl_irls: fitted probabilities numerically 0 or 1 occurred")
     }
-    if (static$family$family == "poisson" && any(mu < eps))
+    if (static$family$family == "poisson" && any(mu < static$eps))
       rlang::warn("sparsegl_irls: fitted rates numerically 0 occurred")
   }
 
   # prepare output object
   # if (save.fit == FALSE) fit$warm_fit <- NULL
-  fit$offset <- has_offset
+  fit$offset <- static$offset
   fit$nulldev <- nulldev
   fit$dev.ratio <- 1 - dev_function(static$y, mu, static$weights,
                                     static$family) / fit$nulldev
-  fit$family <- family
+  fit$family <- static$family
   fit$converged <- conv
   fit$boundary <- boundary
   fit$obj_function <- obj_val
@@ -591,12 +592,12 @@ initilizer <- function(x, y, weights, family, intr, has_offset, offset, pfl1,
   if (intr) {
     if (has_offset) {
       suppressWarnings({
-        tempfit <- glm(y ~ 1, family = family, weights = weights,
+        tempfit <- stats::glm(y ~ 1, family = family, weights = weights,
                        offset = offset)})
       b0 <- coef(tempfit)[1]
       mu <- tempfit$fitted.values
     } else {
-      mu <- rep(weighted.mean(y, weights), times = nobs)
+      mu <- rep(stats::weighted.mean(y, weights), times = nobs)
       b0 <- as.double(mu[1])
     }
   } else {
