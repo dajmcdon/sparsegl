@@ -471,22 +471,59 @@ spgl_wlsfit <- function(warm, wx, gamma, static) {
   eps <- static$eps
   maxit <- static$maxit
   intr <- static$intr
-  alsparse <- static$alsparse
+  alsparse <- static$asparse
   lb <- static$lb
   ub <- static$ub
 
 
   if (inherits(wx, "sparseMatrix")) {
-    rlang::abort("not currently implemented")
-    # Need to pull out components of wx, as in
-    # xidx <- as.integer(x@i + 1)
-    # xcptr <- as.integer(x@p + 1)
-    # xval <- as.double(x@x)
-    # nnz <- as.integer(utils::tail(x@p, 1))
+    xidx <- as.integer(wx@i + 1)
+    xcptr <- as.integer(wx@p + 1)
+    xval <- as.double(wx@x)
+    nnz <- as.integer(utils::tail(wx@p, 1))
+
+    wls_fit <- dotCall64::.C64(
+      "wsgl",
+      SIGNATURE = c("integer", "integer", "integer", "integer", "double",
+                    "integer", "integer", "double", "integer", "integer",
+                    "integer", "double", "double", "double",
+                    "integer", "double", "double", "integer", "integer",
+                    "double", "double", "integer", "integer", "integer",
+                    "integer", "integer", "double", "double", "double",
+                    "integer", "integer", "double", "double", "double",
+                    "integer", "integer", "integer"),
+      # Read only
+      bn = bn, bs = bs, ix = ix, iy = iy, gam = gamma, nobs = nobs,
+      nvars = nvars, x = xval, xidx = xidx, xcptr = xcptr, nnz = nnz,
+      # Read / write
+      r = as.double(r),
+      # Read only
+      pf = pf, pfl1 = pfl1, pmax = pmax,
+      # Read write
+      ulam = ulam,
+      # Read only
+      eps = eps, maxit = maxit, intr = as.integer(intr),
+      # Read / write
+      b0 = double(1),
+      # Write only
+      beta = numeric_dc(nvars),
+      # Read / write
+      activeGroup = activeGroup, activeGroupIndex = activeGroupIndex, ni = ni,
+      npass = npass, jerr = 0L,
+      # read only
+      alsparse = alsparse, lb = lb, ub = ub,
+      # Read / write
+      sset = sset, eset = eset,
+      # read only
+      b0old = b0old, betaold = betaold,
+      # read / write
+      al0 = al0, findlambda = findlambda, l = l, me = me,
+      INTENT = c(rep("r", 11), "rw", rep("r", 3), "rw", rep("r", 3), "rw", "w",
+                 rep("rw", 5), rep("r", 3), rep("rw", 2), rep("r", 2),
+                 rep("rw", 4)),
+      NAOK = TRUE,
+      PACKAGE = "sparsegl")
   } else {
-    # fortran signature wsgl (bn,bs,ix,iy,gam, nobs,nvars,x,r,pf,pfl1,
-    #        pmax,ulam,eps,maxit,intr, b0,beta,activeGroup,activeGroupIndex,ni,&
-    #        npass,jerr,alsparse,lb,ub, sset,eset,b0old,betaold,al0, findlambda,l,me)
     wls_fit <- dotCall64::.C64(
       "wsgl",
       SIGNATURE = c("integer", "integer", "integer", "integer", "double",
@@ -515,7 +552,7 @@ spgl_wlsfit <- function(warm, wx, gamma, static) {
       activeGroup = activeGroup, activeGroupIndex = activeGroupIndex, ni = ni,
       npass = npass, jerr = 0L,
       # read only
-      alsparse = asparse, lb = lb, ub = ub,
+      alsparse = alsparse, lb = lb, ub = ub,
       # Read / write
       sset = sset, eset = eset,
       # read only

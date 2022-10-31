@@ -361,6 +361,85 @@ static R_NativePrimitiveArgType wsgl_t[] = {
   INTSXP
 };
 
+void F77_NAME(spmat_wsgl)(
+  int *bn,
+  int *bs,
+  int *ix,
+  int *iy,
+  double *gam,
+  int *nobs,
+  int *nvars,
+  double *x,
+  int *xidx,
+  int *xcptr,
+  int *nnz,
+  double *r,
+  double *pf,
+  double *pfl1,
+  int *pmax,
+  double *ulam,
+  double *eps,
+  int *maxit,
+  int *intr,
+  double *b0,
+  double *beta,
+  int *activeGroup,
+  int *activeGroupIndex,
+  int *ni,
+  int *npass,
+  int *jerr,
+  double *alsparse,
+  double *lb,
+  double *ub,
+  int *sset,
+  int *eset,
+  double *b0old,
+  double *betaold,
+  double *al0,
+  int *findlambda,
+  int *l,
+  int *me
+);
+
+static R_NativePrimitiveArgType spmat_wsgl_t[] = {
+  INTSXP,
+  INTSXP,
+  INTSXP,
+  INTSXP,
+  REALSXP,
+  INTSXP,
+  INTSXP,
+  REALSXP,
+  INTSXP,
+  INTSXP,
+  INTSXP,
+  REALSXP,
+  REALSXP,
+  REALSXP,
+  INTSXP,
+  REALSXP,
+  REALSXP,
+  INTSXP,
+  INTSXP,
+  REALSXP,
+  REALSXP,
+  INTSXP,
+  INTSXP,
+  INTSXP,
+  INTSXP,
+  INTSXP,
+  REALSXP,
+  REALSXP,
+  REALSXP,
+  INTSXP,
+  INTSXP,
+  REALSXP,
+  REALSXP,
+  REALSXP,
+  INTSXP,
+  INTSXP,
+  INTSXP
+};
 
 
 
@@ -371,6 +450,7 @@ static R_FortranMethodDef fMethods[] = {
   FDEF(log_sparse_four) ,
   FDEF(log_spmat_four) ,
   FDEF(wsgl) ,
+  FDEF(spmat_wsgl)
   {NULL, NULL, 0}
 };
 
