@@ -50,7 +50,7 @@ sx[sx < sqrt(.Machine$double.eps)] <- 1 # Don't divide by zero!]
 xs <- 1 / sx
 x <- x %*% Matrix::Diagonal(x = xs)
 
-init <- initilizer(x, y, weights, family, intr = FALSE,
+init <- initializer(x, y, weights, family, intr = FALSE,
                    has_offset, offset, pfl1, ulam)
 cur_lambda <- init$cur_lambda
 findlambda <- init$findlambda

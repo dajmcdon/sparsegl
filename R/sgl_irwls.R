@@ -76,7 +76,7 @@ sgl_irwls <- function(
 
   # get null deviance and lambda max, work out lambda values
   # we ALWAYS fit the intercept inside wsgl, so start it at zero
-  init <- initilizer(x, y, weights, family, intr = FALSE,
+  init <- initializer(x, y, weights, family, intr = FALSE,
                      has_offset, offset, pfl1, ulam)
   # this is supposed to be an upper bound
   # work out lambda values, cur_lambda is lambda_max / 0.99 when appropriate.
@@ -585,7 +585,7 @@ spgl_wlsfit <- function(warm, wx, gamma, static) {
 }
 
 
-initilizer <- function(x, y, weights, family, intr, has_offset, offset, pfl1,
+initializer <- function(x, y, weights, family, intr, has_offset, offset, pfl1,
                        ulam) {
   nobs <- nrow(x)
   nvars <- ncol(x)
