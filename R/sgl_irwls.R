@@ -44,7 +44,7 @@
 sgl_irwls <- function(
     bn, bs, ix, iy, nobs, nvars, x, y, pf, pfl1, dfmax, pmax, nlam,
     flmin, ulam, eps, maxit, vnames, group, intr, asparse, standardize,
-    lower_bnd, upper_bnd, weights, offset = NULL, family = gaussian(),
+    lower_bnd, upper_bnd, weights = NULL, offset = NULL, family = gaussian(),
     trace_it = 0, warm = NULL) {
 
   validate_family(family)
