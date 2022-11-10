@@ -91,7 +91,7 @@ predict.cv.sparsegl <- function(object, newx,
 #' @method fitted cv.sparsegl
 #' @export
 fitted.cv.sparsegl <- function(object, ...) {
-  stop(c(
+  abort(c(
     "Because design matrices are typically large, these are not stored ",
     "in the estimated sparsegl object. Use `predict()` instead, and ",
     "pass in the original data."))
