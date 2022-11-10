@@ -33,11 +33,14 @@
 #'   \item{cvlower}{Lower curve = \code{cvm - cvsd}.}
 #'   \item{name}{A text string indicating type of measure (for plotting
 #'     purposes).}
+#'   \item{nnzero}{The number of non-zero coefficients for each \code{lambda}}
+#'   \item{active_grps}{The number of active groups for each \code{lambda}}
 #'   \item{sparsegl.fit}{A fitted [sparsegl()] object for the full data.}
 #'   \item{lambda.min}{The optimal value of \code{lambda} that gives
 #'     minimum cross validation error \code{cvm}.}
 #'   \item{lambda.1se}{The largest value of \code{lambda} such that error
 #'     is within 1 standard error of the minimum.}
+#'   \item{call}{The function call.}
 #'
 #'
 #' @seealso [sparsegl()], [plot.cv.sparsegl()],
@@ -83,14 +86,19 @@ cv.sparsegl <- function(x, y, group = NULL, family = c("gaussian", "binomial"),
             ...)
     }
     ###What to do depends on the pred.loss and the model fit
-    fun <- paste("cv", class(sparsegl.object)[[2]], sep = ".")
+    fun <- paste("cv", class(sparsegl.object)[[1]], sep = ".")
     cvstuff <- do.call(fun, list(outlist, lambda, x, y, foldid, pred.loss))
     cvm <- cvstuff$cvm
     cvsd <- cvstuff$cvsd
     cvname <- cvstuff$name
+    nz <- predict(sparsegl.object, type = "nonzero")
+    nnzero <- sapply(nz, length)
+    active_grps <- sapply(nz, function(x) length(unique(group[x])))
     out <- list(lambda = lambda, cvm = cvm, cvsd = cvsd, cvupper = cvm + cvsd,
                 cvlo = cvm - cvsd, name = cvname,
-                sparsegl.fit = sparsegl.object)
+                nnzero = nnzero, active_grps = active_grps,
+                sparsegl.fit = sparsegl.object,
+                call = match.call())
     lamin <- getmin(lambda, cvm, cvsd)
     obj <- c(out, as.list(lamin))
     class(obj) <- "cv.sparsegl"
@@ -98,8 +106,8 @@ cv.sparsegl <- function(x, y, group = NULL, family = c("gaussian", "binomial"),
 }
 
 
-cv.ls <- function(outlist, lambda, x, y, foldid,
-                        pred.loss = c("L2","L1")) {
+cv.lsspgl <- function(outlist, lambda, x, y, foldid,
+                      pred.loss = c("L2","L1")) {
     typenames <- c(L2 = "Least-Squares loss", L1 = "Absolute loss")
     pred.loss <- match.arg(pred.loss)
     predmat <- matrix(NA, length(y), length(lambda))
@@ -121,8 +129,8 @@ cv.ls <- function(outlist, lambda, x, y, foldid,
     list(cvm = cvm, cvsd = cvsd, name = typenames[pred.loss])
 }
 
-cv.logit <- function(outlist, lambda, x, y, foldid,
-                        pred.loss = c("binomial", "misclass")) {
+cv.logitspgl <- function(outlist, lambda, x, y, foldid,
+                         pred.loss = c("binomial", "misclass")) {
     typenames <- c(binomial = "Binomial Deviance Loss",
                    misclass = "Misclassification Error")
     pred.loss <- match.arg(pred.loss)

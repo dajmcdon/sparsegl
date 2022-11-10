@@ -95,6 +95,6 @@ sgl_ls <- function(
   outlist <- c(outlist,
                list(npasses = fit$npass, jerr = fit$jerr, group = group,
                     mse = fit$mse[seq(fit$nalam)]))
-  class(outlist) <- c("ls")
+  class(outlist) <- c("lsspgl")
   outlist
 }

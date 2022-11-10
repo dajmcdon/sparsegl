@@ -77,11 +77,14 @@ length \code{length(lambda)}.}
 \item{cvlower}{Lower curve = \code{cvm - cvsd}.}
 \item{name}{A text string indicating type of measure (for plotting
 purposes).}
+\item{nnzero}{The number of non-zero coefficients for each \code{lambda}}
+\item{active_grps}{The number of active groups for each \code{lambda}}
 \item{sparsegl.fit}{A fitted \code{\link[=sparsegl]{sparsegl()}} object for the full data.}
 \item{lambda.min}{The optimal value of \code{lambda} that gives
 minimum cross validation error \code{cvm}.}
 \item{lambda.1se}{The largest value of \code{lambda} such that error
 is within 1 standard error of the minimum.}
+\item{call}{The function call.}
 }
 \description{
 Does k-fold cross-validation for \code{\link[=sparsegl]{sparsegl()}}.

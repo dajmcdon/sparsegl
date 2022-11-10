@@ -259,7 +259,7 @@ sparsegl <- function(
   fit$nobs <- nobs
   fit$pf_group <- pf_group
   fit$pf_sparse <- pf_sparse
-  class(fit) <- c("sparsegl", class(fit))
+  class(fit) <- c(class(fit), "sparsegl")
   fit
 }
 
