@@ -108,28 +108,28 @@ are interpolated using a fraction of coefficients from both left and right
 <span class="r-in"><span><span class="va">fit1</span> <span class="op">&lt;-</span> <span class="fu"><a href="sparsegl.html">sparsegl</a></span><span class="op">(</span><span class="va">X</span>, <span class="va">y</span>, group <span class="op">=</span> <span class="va">groups</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/stats/coef.html" class="external-link">coef</a></span><span class="op">(</span><span class="va">fit1</span>, s <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.02</span>, <span class="fl">0.03</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 21 x 2 sparse Matrix of class "dgCMatrix"</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                       1            2</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> (Intercept) -0.15946593 -0.186113425</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> V1           4.72825092  4.638864529</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> V2           4.78162773  4.691349609</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> V3           4.89185834  4.798676796</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> V4           4.41809722  4.252068979</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> V5           4.89824391  4.775577815</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> V6           4.65280458  4.498021584</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> V7          -4.84504070 -4.694316959</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> V8           1.92138892  1.918665241</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> V9           0.01706539  0.002608672</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> V10         -0.03416159 -0.006898010</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> V11         -4.86315888 -4.743558737</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> V12         -4.82580853 -4.709284149</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> V13         -4.74056059 -4.701183725</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> V14         -4.87431295 -4.808493454</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> V15         -4.73227835 -4.638028178</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> V16          .           .          </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> V17          .           .          </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> V18          .           .          </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> V19          .           .          </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> V20          .           .          </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                      s1          s2</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> (Intercept)  0.03760380  0.04703713</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> V1           4.72018654  4.58791895</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> V2           4.56228844  4.41523115</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> V3           4.55223814  4.40833236</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> V4           4.75753686  4.62469059</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> V5           4.56825367  4.36814134</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> V6           4.83093183  4.70380950</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> V7          -4.64988264 -4.50590302</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> V8           1.72334621  1.60438534</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> V9           0.11045885  0.14442373</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> V10         -0.03265468 -0.04519721</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> V11         -4.74305226 -4.62733755</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> V12         -4.35658616 -4.22178939</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> V13         -4.58718612 -4.42630135</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> V14         -4.78898165 -4.64191400</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> V15         -4.80695911 -4.68596611</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> V16          .           .         </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> V17          .           .         </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> V18          .           .         </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> V19          .           .         </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> V20          .           .         </span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>
