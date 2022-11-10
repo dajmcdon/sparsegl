@@ -484,7 +484,7 @@ spgl_wlsfit <- function(warm, wx, gamma, static) {
     nnz <- as.integer(utils::tail(wx@p, 1))
 
     wls_fit <- dotCall64::.C64(
-      "wsgl",
+      "spmat_wsgl",
       SIGNATURE = c("integer", "integer", "integer", "integer", "double",
                     "integer", "integer", "double", "integer", "integer",
                     "integer", "double", "double", "double",
