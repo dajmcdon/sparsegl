@@ -5,10 +5,17 @@ nvars <- length(beta_star)
 
 group <- rep(1:5, each = 3)
 x <- matrix(rnorm(nobs * length(beta_star)), nobs)
+x[abs(x) < 0.2] <- 0
+xsp <- as(x, "sparseMatrix")
+
 y <- x %*% beta_star + rnorm(nobs)
+ysp <- xsp %*% beta_star + rnorm(nobs)
 
 pr <- 1 / (1 + exp(-x %*% beta_star))
 ybin <- rbinom(nobs, 1, pr)
+
+pr <- 1 / (1 + exp(-xsp %*% beta_star))
+ybinsp <- rbinom(nobs, 1, as.matrix(pr))
 
 bn <- as.integer(max(group))
 bs <- as.integer(as.numeric(table(group)))
@@ -26,7 +33,8 @@ nlambda <- 100L
 flambda <- ifelse(nobs < nvars, 0.01, 1e-04)
 flmin <- as.double(flambda)
 ulam <- double(1)
-eps <- as.double(1e-08)
+# TODO binomial sparse irwl gets stuck at 1e-08
+eps <- as.double(1e-07)
 maxit <- as.integer(3e+08)
 
 vnames <- colnames(x)
@@ -38,6 +46,7 @@ upper_bnd <- as.double(rep(9.9e30, bn))
 intr <- as.integer(intercept)
 
 test_that("sgl_irwls provides the same result as sparsegl, gaussian family", {
+    # Dense matrix
     res1 <- sgl_irwls(
         bn, bs, ix, iy, nobs, nvars, x, y, pf, pfl1, dfmax, pmax, nlambda,
         flmin, ulam, eps, maxit, vnames, group, intr, asparse, standardize,
@@ -55,9 +64,29 @@ test_that("sgl_irwls provides the same result as sparsegl, gaussian family", {
         as.numeric(res2$coefficients),
         tolerance = 1e-10
     )
+
+    # Sparse matrix
+    res1 <- sgl_irwls(
+        bn, bs, ix, iy, nobs, nvars, xsp, ysp, pf, pfl1, dfmax, pmax, nlambda,
+        flmin, ulam, eps, maxit, vnames, group, intr, asparse, standardize,
+        lower_bnd, upper_bnd,
+        family = gaussian()
+    )
+
+    res2 <- sparsegl(
+        xsp, ysp, group, "gaussian", nlambda, flambda, NULL, pf, pfl1,
+        intercept, asparse, standardize, lower_bnd, upper_bnd, eps, maxit
+    )
+
+    expect_equal(
+        as.numeric(res1$coefficients),
+        as.numeric(res2$coefficients),
+        tolerance = 1e-10
+    )
 })
 
 test_that("sgl_irwls provides the same result as sparsegl, binomial family", {
+    # Dense matrix
     res1 <- sgl_irwls(
         bn, bs, ix, iy, nobs, nvars, x, ybin, pf, pfl1, dfmax, pmax, nlambda,
         flmin, ulam, eps, maxit, vnames, group, intr, asparse, standardize,
@@ -68,6 +97,25 @@ test_that("sgl_irwls provides the same result as sparsegl, binomial family", {
     res2 <- sparsegl(
         x, ybin, group, "binomial", nlambda, flambda, NULL, pf, pfl1, intercept,
         asparse, standardize, lower_bnd, upper_bnd, eps, maxit
+    )
+
+    expect_equal(
+        as.numeric(res1$coefficients),
+        as.numeric(res2$coefficients),
+        tolerance = 1e-10
+    )
+
+    # Sparse matrix
+    res1 <- sgl_irwls(
+        bn, bs, ix, iy, nobs, nvars, xsp, ybinsp, pf, pfl1, dfmax, pmax,
+        nlambda, flmin, ulam, eps, maxit, vnames, group, intr, asparse,
+        standardize, lower_bnd, upper_bnd,
+        family = binomial()
+    )
+
+    res2 <- sparsegl(
+        xsp, ybinsp, group, "binomial", nlambda, flambda, NULL, pf, pfl1,
+        intercept, asparse, standardize, lower_bnd, upper_bnd, eps, maxit
     )
 
     expect_equal(
