@@ -124,7 +124,7 @@ sgl_irwls <- function(
 
   if (is.null(warm))
     warm <- make_irls_warmup(nobs, nvars, b0 = init$b0, r = init$r)
-  if (!inherits(warm, "irwlsspgl_warmup")) {
+  if (!inherits(warm, "irlsspgl_warmup")) {
     rlang::abort(
       "the `warm` object should be created with `make_irls_warmup()`."
     )
@@ -660,11 +660,38 @@ validate_family <- function(family) {
       "'family' argument seems not to be a valid family object. See `?family`.")
 }
 
+
+#' Create starting values for iterative reweighted least squares
+#'
+#' This function may be used to create potentially valid starting
+#' values for calling [sparsegl()] with a [stats::family()] object.
+#' It is not typically necessary to call this function (as it is used
+#' internally to create some), but in some cases, especially with custom
+#' generalized linear models, it may improve performance.
+#'
+#' Occasionally, the irls fitting routine may fail with an admonition to
+#' create valid starting values.
+#'
+#' @param nobs Number of observations in the response (or rows in `x`).
+#' @param nvars Number of columns in `x`
+#' @param b0 Scalar. Initial value for the intercept.
+#' @param beta Vector. Initial values for the coefficients. Must be length
+#'   `nvars` (or a scalar).
+#' @param r Vector. Initial values for the deviance residuals. Must be length
+#'   `nobs` (or a scalar).
+#'
+#' @return List of class `irlsspgl_warmup`
+#' @export
+#' @importFrom rlang abort
 make_irls_warmup <- function(nobs, nvars, b0 = 0, beta = double(nvars),
                              r = double(nobs)) {
 
-  stopifnot(is.double(b0), is.double(beta), is.double(r))
-  stopifnot(length(b0) == 1, length(beta) == nvars, length(r) == nobs)
+  if (any(length(nobs) != 1, length(nvars) != 1, length(b0) != 1))
+    abort("All of `nobs`, `nvars`, and `b0` must be scalars.")
+  if ((length(r) > 1 && length(r) != nobs) || length(r) == 0)
+    abort("`r` must have length 1 or `nobs` but has length {length(r)}.")
+  if ((length(beta) > 1 && length(beta) != nvars) || length(beta) == 0)
+    abort("`beta` must have length 1 or `nvars` but has length {length(beta)}.")
 
-  structure(list(b0 = b0, beta = beta, r = r), class = "irwlsspgl_warmup")
+  structure(list(b0 = b0, beta = beta, r = r), class = "irlsspgl_warmup")
 }

@@ -32,11 +32,16 @@ For a factor, the last level in alphabetical order is the target class.}
 \item{group}{Integer. A vector of consecutive integers describing the
 grouping of the coefficients (see example below).}
 
-\item{family}{Character. Specifies the loss function to use, valid
-options are:
+\item{family}{Character or function. Specifies the generalized linear model
+to use. Valid options are:
 \itemize{
 \item \code{"gaussian"} - least squares loss (regression, the default),
 \item \code{"binomial"} - logistic loss (classification)
+For any other type, a valid \code{\link[stats:family]{stats::family()}} object may be passed. Note
+that these will generally be much slower to estimate than the built-in
+options passed as strings. So for example, \code{family = "gaussian"} and
+\code{family = gaussian()} will produce the same results, but the first
+will be much faster.
 }}
 
 \item{lambda}{A user supplied \code{lambda} sequence. The default, \code{NULL}

@@ -34,8 +34,8 @@ flambda <- ifelse(nobs < nvars, 0.01, 1e-04)
 flmin <- as.double(flambda)
 ulam <- double(1)
 # TODO binomial sparse irwl gets stuck at 1e-08
-eps <- as.double(1e-07)
-maxit <- as.integer(3e+08)
+eps <- as.double(1e-06)
+maxit <- as.integer(3e+04)
 
 vnames <- colnames(x)
 intercept <- as.integer(TRUE)
@@ -81,7 +81,7 @@ test_that("sgl_irwls provides the same result as sparsegl, gaussian family", {
     expect_equal(
         as.numeric(res1$coefficients),
         as.numeric(res2$coefficients),
-        tolerance = 1e-10
+        tolerance = 1e-6
     )
 })
 
@@ -102,7 +102,7 @@ test_that("sgl_irwls provides the same result as sparsegl, binomial family", {
     expect_equal(
         as.numeric(res1$coefficients),
         as.numeric(res2$coefficients),
-        tolerance = 1e-10
+        tolerance = 1e-6
     )
 
     # Sparse matrix
@@ -121,6 +121,6 @@ test_that("sgl_irwls provides the same result as sparsegl, binomial family", {
     expect_equal(
         as.numeric(res1$coefficients),
         as.numeric(res2$coefficients),
-        tolerance = 1e-10
+        tolerance = 1e-6
     )
 })

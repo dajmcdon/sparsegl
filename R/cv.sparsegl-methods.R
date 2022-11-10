@@ -31,9 +31,7 @@
 #' cv_fit <- cv.sparsegl(X, y, groups)
 #' coef(cv_fit, s = c(0.02, 0.03))
 coef.cv.sparsegl <- function(object, s = c("lambda.1se", "lambda.min"), ...) {
-    assertthat::assert_that(
-        is.numeric(s) || is.character(s),
-        msg = "Invalid form for s.")
+    if (!is.numeric(s) || !is.character(s)) abort("Invalid form for `s`.")
     if (is.numeric(s)) lambda <- s
     else {
         s <- match.arg(s)
@@ -81,13 +79,11 @@ coef.cv.sparsegl <- function(object, s = c("lambda.1se", "lambda.min"), ...) {
 #'
 predict.cv.sparsegl <- function(object, newx,
                                 s = c("lambda.1se", "lambda.min"), ...) {
-    assertthat::assert_that(
-        is.numeric(s) || is.character(s),
-        msg = "Invalid form for s.")
-    if (is.numeric(s)) lambda <- s
-    else {
-        s <- match.arg(s)
-        lambda <- object[[s]]
-    }
-    predict(object$sparsegl.fit, newx, s = lambda, ...)
+  if (!is.numeric(s) || !is.character(s)) abort("Invalid form for `s`.")
+  if (is.numeric(s)) lambda <- s
+  else {
+    s <- match.arg(s)
+    lambda <- object[[s]]
+  }
+  predict(object$sparsegl.fit, newx, s = lambda, ...)
 }

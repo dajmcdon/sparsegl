@@ -19,10 +19,14 @@ sparsegl(
   standardize = TRUE,
   lower_bnd = -Inf,
   upper_bnd = Inf,
+  weights = NULL,
+  offset = NULL,
+  warm = NULL,
+  trace_it = 0,
   dfmax = as.integer(max(group)) + 1L,
   pmax = min(dfmax * 1.2, as.integer(max(group))),
-  eps = 1e-08,
-  maxit = 3e+08
+  eps = 1e-06,
+  maxit = 3e+06
 )
 }
 \arguments{
@@ -40,11 +44,16 @@ For a factor, the last level in alphabetical order is the target class.}
 \item{group}{Integer. A vector of consecutive integers describing the
 grouping of the coefficients (see example below).}
 
-\item{family}{Character. Specifies the loss function to use, valid
-options are:
+\item{family}{Character or function. Specifies the generalized linear model
+to use. Valid options are:
 \itemize{
 \item \code{"gaussian"} - least squares loss (regression, the default),
 \item \code{"binomial"} - logistic loss (classification)
+For any other type, a valid \code{\link[stats:family]{stats::family()}} object may be passed. Note
+that these will generally be much slower to estimate than the built-in
+options passed as strings. So for example, \code{family = "gaussian"} and
+\code{family = gaussian()} will produce the same results, but the first
+will be much faster.
 }}
 
 \item{nlambda}{The number of \code{lambda} values - default is 100.}
@@ -99,6 +108,21 @@ Default value for each entry is \code{-Inf}.}
 or of length the number of groups. Must be non-negative numbers only.
 Default value for each entry is \code{Inf}.}
 
+\item{weights}{Double vector. Optional observation weights. These can
+only be used with a \code{\link[stats:family]{stats::family()}} object.}
+
+\item{offset}{Double vector. Optional offset (constant predictor without a
+corresponding coefficient). These can only be used with a
+\code{\link[stats:family]{stats::family()}} object.}
+
+\item{warm}{List created with \code{\link[=make_irls_warmup]{make_irls_warmup()}}. These can only be used
+with a \code{\link[stats:family]{stats::family()}} object, and is not typically necessary even then.}
+
+\item{trace_it}{Scalar integer. Larger values print more output during
+the irls loop. Typical values are \code{0} (no printing), \code{1} (some printing
+and a progress bar), and \code{2} (more printing and a progress bar).
+These can only be used with a \code{\link[stats:family]{stats::family()}} object.}
+
 \item{dfmax}{Limit the maximum number of groups in the model. Default is
 no limit.}
 
@@ -127,6 +151,7 @@ An object with S3 class \code{\link[=sparsegl]{sparsegl()}}.
 \item \code{group} A vector of consecutive integers describing the grouping of the
 coefficients.
 \item \code{nobs} The number of observations used to estimate the model.
+If \code{sparsegl()} was called with a \code{\link[stats:family]{stats::family()}} method
 }
 }
 \description{
