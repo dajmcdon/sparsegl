@@ -87,3 +87,74 @@ predict.cv.sparsegl <- function(object, newx,
   }
   predict(object$sparsegl.fit, newx, s = lambda, ...)
 }
+
+#' @method fitted cv.sparsegl
+#' @export
+fitted.cv.sparsegl <- function(object, ...) {
+  stop(c(
+    "Because design matrices are typically large, these are not stored ",
+    "in the estimated sparsegl object. Use `predict()` instead, and ",
+    "pass in the original data."))
+}
+
+
+#' @method summary cv.sparsegl
+#' @export
+summary.cv.sparsegl <- function(object, ...) {
+  rlang::check_dots_empty()
+  optlams <- c(object$lambda.1se, object$lambda.min)
+  optlax <- c(1, match(optlams, object$lambda), length(object$lambda))
+  tab <- with(object, data.frame(
+    lambda = lambda[optlax],
+    index = optlax,
+    cvm = cvm[optlax],
+    cvsd = cvsd[optlax],
+    nnzero = nnzero[optlax],
+    active_grps = active_grps[optlax])
+  )
+  rownames(tab) <- c("maximum", "cv.1se", "cv.min", "minimum")
+  out <- structure(
+    list(
+      call = object$call,
+      error_measure = object$name,
+      table = tab
+    ),
+    class = "summary.cvsparsegl"
+  )
+  out
+
+}
+
+#' @method print summary.cvsparsegl
+#' @export
+print.summary.cvsparsegl <- function(
+    x,
+    digits = max(3, getOption("digits") - 3), ...
+) {
+
+  rlang::check_dots_empty()
+  lambda_warning = NULL
+  if (x$table$index[2] == 1) lambda_warning = "smallest"
+  if (x$table$index[3] == x$table$index[4]) lambda_warning = "largest"
+  cat("\nCall: ", deparse(x$call), "\n\n")
+
+  cat("Error measure: ", x$error_measure, "\n\n")
+
+  if (!is.null(lambda_warning)) {
+    cat("Warning: the CV minimum occurred at the", lambda_warning,
+        "lambda in the path.\n\n")
+  }
+
+  print(x$tab, digits = digits)
+  cat("\n")
+}
+
+#' @method print cv.sparsegl
+#' @export
+print.cv.sparsegl <- function(x, digits = max(3, getOption("digits") - 3),
+                              ...) {
+
+  rlang::check_dots_empty()
+  print(summary(x), digits = digits)
+}
+

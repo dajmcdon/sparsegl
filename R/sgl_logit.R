@@ -104,6 +104,6 @@ sgl_logit <- function(
          group = group,
          classnames = lev)
   )
-  class(outlist) <- c("logit")
+  class(outlist) <- c("logitspgl")
   outlist
 }
