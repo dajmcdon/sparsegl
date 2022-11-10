@@ -44,7 +44,7 @@
 sgl_irwls <- function(
     bn, bs, ix, iy, nobs, nvars, x, y, pf, pfl1, dfmax, pmax, nlam,
     flmin, ulam, eps, maxit, vnames, group, intr, asparse, standardize,
-    lower_bnd, upper_bnd, weights, offset = NULL, family = gaussian(),
+    lower_bnd, upper_bnd, weights = NULL, offset = NULL, family = gaussian(),
     trace_it = 0, warm = NULL) {
 
   validate_family(family)
@@ -76,7 +76,7 @@ sgl_irwls <- function(
 
   # get null deviance and lambda max, work out lambda values
   # we ALWAYS fit the intercept inside wsgl, so start it at zero
-  init <- initilizer(x, y, weights, family, intr = FALSE,
+  init <- initializer(x, y, weights, family, intr = FALSE,
                      has_offset, offset, pfl1, ulam)
   # this is supposed to be an upper bound
   # work out lambda values, cur_lambda is lambda_max / 0.99 when appropriate.
@@ -484,7 +484,7 @@ spgl_wlsfit <- function(warm, wx, gamma, static) {
     nnz <- as.integer(utils::tail(wx@p, 1))
 
     wls_fit <- dotCall64::.C64(
-      "wsgl",
+      "spmat_wsgl",
       SIGNATURE = c("integer", "integer", "integer", "integer", "double",
                     "integer", "integer", "double", "integer", "integer",
                     "integer", "double", "double", "double",
@@ -585,7 +585,7 @@ spgl_wlsfit <- function(warm, wx, gamma, static) {
 }
 
 
-initilizer <- function(x, y, weights, family, intr, has_offset, offset, pfl1,
+initializer <- function(x, y, weights, family, intr, has_offset, offset, pfl1,
                        ulam) {
   nobs <- nrow(x)
   nvars <- ncol(x)
