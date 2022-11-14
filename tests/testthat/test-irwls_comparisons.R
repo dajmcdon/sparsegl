@@ -17,33 +17,29 @@ ybin <- rbinom(nobs, 1, pr)
 pr <- 1 / (1 + exp(-xsp %*% beta_star))
 ybinsp <- rbinom(nobs, 1, as.matrix(pr))
 
-bn <- as.integer(max(group))
-bs <- as.integer(as.numeric(table(group)))
-iy <- cumsum(bs)
-ix <- c(0, iy[-bn]) + 1
-ix <- as.integer(ix)
-iy <- as.integer(iy)
 
-pf <- as.double(sqrt(bs))
-pfl1 <- rep(as.double(pf / sum(pf) * nvars), 3)
-dfmax <- as.integer(max(group)) + 1L
-pmax <- as.integer(min(dfmax * 1.2, as.integer(max(group))))
+test_that("sgl_irwls provides the same result as sparsegl, gaussian family", {
+  res1 <- sparsegl(x, y, group, lambda = .1)
+  res2 <- sparsegl(x, y, group, family = gaussian(), lambda = .1)
 
-nlambda <- 100L
-flambda <- ifelse(nobs < nvars, 0.01, 1e-04)
-flmin <- as.double(flambda)
-ulam <- double(1)
-# TODO binomial sparse irwl gets stuck at 1e-08
-eps <- as.double(1e-06)
-maxit <- as.integer(3e+04)
+  expect_equal(as.numeric(coef(res1)), as.numeric(coef(res2)), tolerance = 1e-4)
 
-vnames <- colnames(x)
-intercept <- as.integer(TRUE)
-asparse <- as.double(0.05)
-standardize <- TRUE
-lower_bnd <- as.double(rep(-9.9e30, bn))
-upper_bnd <- as.double(rep(9.9e30, bn))
-intr <- as.integer(intercept)
+  res1 <- sparsegl(x, y, group, lambda = .025)
+  res2 <- sparsegl(x, y, group, family = gaussian(), lambda = .025)
+
+  expect_equal(as.numeric(coef(res1)), as.numeric(coef(res2)), tolerance = 1e-4)
+
+  res1_lam <- sparsegl(x, y, group)
+  res2_lam <- sparsegl(x, y, group, family = gaussian())
+  nlam <- length(res2_lam$lambda)
+  expect_equal(res1_lam$lambda[1:nlam], res2_lam$lambda, tolerance = 1e-4)
+
+  expect_equal(as.numeric(coef(res1_lam)[,1:nlam]),
+               as.numeric(coef(res2_lam)),
+               tolerance = 1e-3)
+
+
+})
 
 test_that("sgl_irwls provides the same result as sparsegl, gaussian family", {
     # Dense matrix

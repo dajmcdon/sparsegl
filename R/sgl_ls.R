@@ -92,9 +92,10 @@ sgl_ls <- function(
   } else {
     outlist$b0 <- rep(0, dim(outlist$beta)[2])
   }
-  outlist <- c(outlist,
-               list(npasses = fit$npass, jerr = fit$jerr, group = group,
-                    mse = fit$mse[seq(fit$nalam)]))
+  outlist$npasses <- fit$npass
+  outlist$jerr <- fit$jerr
+  outlist$group <- group
+  outlist$mse <- fit$mse[seq(fit$nalam)]
   class(outlist) <- c("lsspgl")
   outlist
 }

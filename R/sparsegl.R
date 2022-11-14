@@ -126,7 +126,8 @@
 #' groups <- rep(1:(p / 5), each = 5)
 #' fit <- sparsegl(X, y, group = groups)
 #'
-#'
+#' yp <- rpois(n, abs(X %*% beta_star))
+#' fit_pois <- sparsegl(X, yp, group = groups, family = poisson())
 sparsegl <- function(
   x, y, group = NULL, family = c("gaussian", "binomial"),
   nlambda = 100, lambda.factor = ifelse(nobs < nvars, 0.01, 1e-04),

@@ -14,7 +14,7 @@ SUBROUTINE wsgl (bn,bs,ix,iy,gam,nobs,nvars,x,r,pf,pfl1,pmax,&
    INTEGER:: iy(bn)
    INTEGER:: nobs, nvars, pmax, npass, jerr, maxit
    INTEGER:: activeGroup(pmax)
-   DOUBLE PRECISION :: eps, alsparse, max_gam, d, maxDif, al, alf, snorm
+   DOUBLE PRECISION :: eps, alsparse, max_gam, d, maxDif, al, snorm
    DOUBLE PRECISION, INTENT(in) :: x(nobs,nvars)
    ! DOUBLE PRECISION, INTENT(in) :: y(nobs)
    DOUBLE PRECISION, INTENT(in) :: pf(bn)
@@ -59,7 +59,6 @@ SUBROUTINE wsgl (bn,bs,ix,iy,gam,nobs,nvars,x,r,pf,pfl1,pmax,&
    b(0) = b0old
    oldbeta = b
    npass = 0
-   alf = 0.0D0
    max_gam = MAXVAL(gam)
    t_for_s = 1 / gam
    i = 1
