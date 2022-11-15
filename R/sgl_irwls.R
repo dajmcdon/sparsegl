@@ -177,6 +177,7 @@ sgl_irwls <- function(
       }
     }
 
+    # browser()
     if (findlambda) { # we searched inside the FORTRAN code, now we found it
       ulam <- double(nlam)
       alf <- flmin^(1/(nlam - 1))
@@ -594,16 +595,11 @@ initializer <- function(x, y, weights, family, intr, has_offset, offset,
   nobs <- nrow(x)
   nvars <- ncol(x)
   if (intr) {
-    if (has_offset) {
-      suppressWarnings({
-        tempfit <- stats::glm(y ~ 1, family = family, weights = weights,
-                       offset = offset)})
-      b0 <- coef(tempfit)[1]
-      mu <- tempfit$fitted.values
-    } else {
-      mu <- rep(stats::weighted.mean(y, weights), times = nobs)
-      b0 <- as.double(mu[1])
-    }
+    suppressWarnings({
+      tempfit <- stats::glm(y ~ 1, family = family, weights = weights,
+                            offset = offset)})
+    b0 <- coef(tempfit)[1]
+    mu <- tempfit$fitted.values
   } else {
     mu <- family$linkinv(offset)
     b0 <- as.double(0)
