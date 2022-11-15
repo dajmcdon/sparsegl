@@ -57,35 +57,35 @@ test_that("initializer works", {
   ulam <- 0.5
 
   usr_lambda <- initializer(x, y, weights, gaussian(), TRUE, FALSE, NULL,
-                           pfl1, ulam)
+                            ulam, flmin = 1)
   expect_false(usr_lambda$findlambda)
   expect_equal(usr_lambda$cur_lambda * 0.99, usr_lambda$lambda_max)
-  usr_lambda_offset <- initializer(x, y, weights, gaussian(), TRUE, TRUE, offset,
-                           pfl1, ulam)
+  usr_lambda_offset <- initializer(x, y, weights, gaussian(), TRUE, TRUE,
+                                   offset, ulam, flmin = 1)
   expect_false(usr_lambda$findlambda)
   expect_equal(usr_lambda$cur_lambda * 0.99, usr_lambda$lambda_max)
   usr_lambda_offset_noint <- initializer(x, y, weights, gaussian(), FALSE,
-                                        TRUE, offset, pfl1, ulam)
+                                        TRUE, offset, ulam, flmin = 1)
   expect_false(usr_lambda$findlambda)
   expect_equal(usr_lambda$cur_lambda * 0.99, usr_lambda$lambda_max)
 
 
   usr_lambda <- initializer(x, y, weights, gaussian(), TRUE, FALSE, NULL,
-                           pfl1, 0)
+                            ulam = 0, flmin = 1e-4)
   expect_true(usr_lambda$findlambda)
   expect_equal(usr_lambda$cur_lambda * 0.99, usr_lambda$lambda_max)
   usr_lambda_offset <- initializer(x, y, weights, gaussian(), TRUE, TRUE, offset,
-                                  pfl1, 0)
+                                   ulam = 0, flmin = 1e-4)
   expect_true(usr_lambda$findlambda)
   expect_equal(usr_lambda$cur_lambda * 0.99, usr_lambda$lambda_max)
   usr_lambda_offset_noint <- initializer(x, y, weights, gaussian(), FALSE,
-                                        TRUE, offset, pfl1, 0)
+                                        TRUE, offset, 0, 1e-4)
   expect_true(usr_lambda$findlambda)
   expect_equal(usr_lambda$cur_lambda * 0.99, usr_lambda$lambda_max)
 
   # try sparse
   usr_lambda <- initializer(xsp, y, weights, binomial(), TRUE, FALSE, NULL,
-                           pfl1, 0)
+                            0, 1e-4)
   expect_true(usr_lambda$findlambda)
   expect_equal(usr_lambda$cur_lambda * 0.99, usr_lambda$lambda_max)
 })

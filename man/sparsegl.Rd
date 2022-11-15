@@ -25,7 +25,7 @@ sparsegl(
   trace_it = 0,
   dfmax = as.integer(max(group)) + 1L,
   pmax = min(dfmax * 1.2, as.integer(max(group))),
-  eps = 1e-06,
+  eps = 1e-08,
   maxit = 3e+06
 )
 }
@@ -177,7 +177,8 @@ y <- X \%*\% beta_star + eps
 groups <- rep(1:(p / 5), each = 5)
 fit <- sparsegl(X, y, group = groups)
 
-
+yp <- rpois(n, abs(X \%*\% beta_star))
+fit_pois <- sparsegl(X, yp, group = groups, family = poisson())
 }
 \seealso{
 \code{\link[=plot.sparsegl]{plot.sparsegl()}}, \code{\link[=coef.sparsegl]{coef.sparsegl()}}, \code{\link[=predict.sparsegl]{predict.sparsegl()}}
