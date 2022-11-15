@@ -138,7 +138,7 @@ sparsegl <- function(
   trace_it = 0,
   dfmax = as.integer(max(group)) + 1L,
   pmax = min(dfmax * 1.2, as.integer(max(group))),
-  eps = 1e-06, maxit = 3e+06) {
+  eps = 1e-08, maxit = 3e+06) {
 
   this.call <- match.call()
   if (!is.matrix(x) && !inherits(x, "sparseMatrix"))
