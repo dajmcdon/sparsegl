@@ -14,113 +14,100 @@ ysp <- xsp %*% beta_star + rnorm(nobs)
 pr <- 1 / (1 + exp(-x %*% beta_star))
 ybin <- rbinom(nobs, 1, pr)
 
-pr <- 1 / (1 + exp(-xsp %*% beta_star))
+pr <- as.double(1 / (1 + exp(-xsp %*% beta_star)))
 ybinsp <- rbinom(nobs, 1, as.matrix(pr))
 
-bn <- as.integer(max(group))
-bs <- as.integer(as.numeric(table(group)))
-iy <- cumsum(bs)
-ix <- c(0, iy[-bn]) + 1
-ix <- as.integer(ix)
-iy <- as.integer(iy)
 
-pf <- as.double(sqrt(bs))
-pfl1 <- rep(as.double(pf / sum(pf) * nvars), 3)
-dfmax <- as.integer(max(group)) + 1L
-pmax <- as.integer(min(dfmax * 1.2, as.integer(max(group))))
+test_that("wls provides the same result as sparsegl, Gaussian family", {
+  res1 <- sparsegl(x, y, group, lambda = .1)
+  res2 <- sparsegl(x, y, group, family = gaussian(), lambda = .1)
 
-nlambda <- 100L
-flambda <- ifelse(nobs < nvars, 0.01, 1e-04)
-flmin <- as.double(flambda)
-ulam <- double(1)
-# TODO binomial sparse irwl gets stuck at 1e-08
-eps <- as.double(1e-06)
-maxit <- as.integer(3e+04)
+  expect_equal(as.numeric(coef(res1)), as.numeric(coef(res2)), tolerance = 1e-4)
 
-vnames <- colnames(x)
-intercept <- as.integer(TRUE)
-asparse <- as.double(0.05)
-standardize <- TRUE
-lower_bnd <- as.double(rep(-9.9e30, bn))
-upper_bnd <- as.double(rep(9.9e30, bn))
-intr <- as.integer(intercept)
+  res1 <- sparsegl(x, y, group, lambda = .025)
+  res2 <- sparsegl(x, y, group, family = gaussian(), lambda = .025)
 
-test_that("sgl_irwls provides the same result as sparsegl, gaussian family", {
-    # Dense matrix
-    res1 <- sgl_irwls(
-        bn, bs, ix, iy, nobs, nvars, x, y, pf, pfl1, dfmax, pmax, nlambda,
-        flmin, ulam, eps, maxit, vnames, group, intr, asparse, standardize,
-        lower_bnd, upper_bnd,
-        family = gaussian()
-    )
+  expect_equal(as.numeric(coef(res1)), as.numeric(coef(res2)), tolerance = 1e-4)
 
-    res2 <- sparsegl(
-        x, y, group, "gaussian", nlambda, flambda, NULL, pf, pfl1, intercept,
-        asparse, standardize, lower_bnd, upper_bnd, eps, maxit
-    )
+  res1_lam <- sparsegl(x, y, group)
+  res2_lam <- sparsegl(x, y, group, family = gaussian())
+  nlam <- length(res2_lam$lambda)
+  expect_equal(res1_lam$lambda[1:nlam], res2_lam$lambda, tolerance = 1e-4)
 
-    expect_equal(
-        as.numeric(res1$coefficients),
-        as.numeric(res2$coefficients),
-        tolerance = 1e-10
-    )
+  expect_equal(as.numeric(coef(res1_lam)[,1:nlam]),
+               as.numeric(coef(res2_lam)),
+               tolerance = 1e-3)
 
-    # Sparse matrix
-    res1 <- sgl_irwls(
-        bn, bs, ix, iy, nobs, nvars, xsp, ysp, pf, pfl1, dfmax, pmax, nlambda,
-        flmin, ulam, eps, maxit, vnames, group, intr, asparse, standardize,
-        lower_bnd, upper_bnd,
-        family = gaussian()
-    )
+  ## sparse case
+  res1 <- sparsegl(xsp, ysp, group, lambda = .1)
+  res2 <- sparsegl(xsp, ysp, group, family = gaussian(), lambda = .1)
 
-    res2 <- sparsegl(
-        xsp, ysp, group, "gaussian", nlambda, flambda, NULL, pf, pfl1,
-        intercept, asparse, standardize, lower_bnd, upper_bnd, eps, maxit
-    )
+  expect_equal(as.numeric(coef(res1)), as.numeric(coef(res2)), tolerance = 1e-4)
 
-    expect_equal(
-        as.numeric(res1$coefficients),
-        as.numeric(res2$coefficients),
-        tolerance = 1e-6
-    )
+  res1 <- sparsegl(xsp, ysp, group, lambda = .025)
+  res2 <- sparsegl(xsp, ysp, group, family = gaussian(), lambda = .025)
+
+  expect_equal(as.numeric(coef(res1)), as.numeric(coef(res2)), tolerance = 1e-4)
+
+  nlam <- 1:60
+  res1_lam <- sparsegl(xsp, ysp, group)
+  res2_lam <- sparsegl(xsp, ysp, group, family = gaussian(),
+                       lambda = res1_lam$lambda[nlam])
+  tt <- abs(coef(res1_lam)[,nlam] - coef(res2_lam)) /
+    (1 + abs(coef(res1_lam)[,nlam]))
+  expect_lt(max(tt), 1e-4)
 })
 
-test_that("sgl_irwls provides the same result as sparsegl, binomial family", {
-    # Dense matrix
-    res1 <- sgl_irwls(
-        bn, bs, ix, iy, nobs, nvars, x, ybin, pf, pfl1, dfmax, pmax, nlambda,
-        flmin, ulam, eps, maxit, vnames, group, intr, asparse, standardize,
-        lower_bnd, upper_bnd,
-        family = binomial()
-    )
+test_that("wls provides the same result as sparsegl, binomial family", {
+  res1 <- sparsegl(x, ybin, group, family = "binomial", lambda = .01)
+  res2 <- sparsegl(x, ybin, group, family = binomial(), lambda = .01, eps = 1e-10)
+  tt <- abs(coef(res1)[-1] - coef(res2)[-1]) / (1 + abs(coef(res1)[-1]))
+  expect_true(all(tt < 1e-3))
 
-    res2 <- sparsegl(
-        x, ybin, group, "binomial", nlambda, flambda, NULL, pf, pfl1, intercept,
-        asparse, standardize, lower_bnd, upper_bnd, eps, maxit
-    )
+  res1 <- sparsegl(x, ybin, group, family = "binomial", lambda = .0025)
+  res2 <- sparsegl(x, ybin, group, family = binomial(), lambda = .0025, eps = 1e-10)
+  tt <- abs(coef(res1) - coef(res2)) / (1 + abs(coef(res1)))
+  expect_true(mean(tt) < 1e-3)
 
-    expect_equal(
-        as.numeric(res1$coefficients),
-        as.numeric(res2$coefficients),
-        tolerance = 1e-6
-    )
+  nlam <- 1:20
+  res1_lam <- sparsegl(x, ybin, group, family = "binomial")
+  res2_lam <- sparsegl(x, ybin, group, family = binomial(),
+                       lambda = res1_lam$lambda[nlam], eps = 1e-8)
+  tt <- abs(coef(res1_lam)[,nlam] - coef(res2_lam)) /
+    (1 + abs(coef(res1_lam)[,nlam]))
+  expect_true(all(colMeans(tt) < 1e-3))
 
-    # Sparse matrix
-    res1 <- sgl_irwls(
-        bn, bs, ix, iy, nobs, nvars, xsp, ybinsp, pf, pfl1, dfmax, pmax,
-        nlambda, flmin, ulam, eps, maxit, vnames, group, intr, asparse,
-        standardize, lower_bnd, upper_bnd,
-        family = binomial()
-    )
 
-    res2 <- sparsegl(
-        xsp, ybinsp, group, "binomial", nlambda, flambda, NULL, pf, pfl1,
-        intercept, asparse, standardize, lower_bnd, upper_bnd, eps, maxit
-    )
+  ## sparse case
+  res1 <- sparsegl(xsp, ybinsp, group, family = "binomial", lambda = .01)
+  res2 <- sparsegl(xsp, ybinsp, group, family = binomial(), lambda = .01, eps = 1e-9)
+  tt <- abs(coef(res1)[-1] - coef(res2)[-1]) / (1 + abs(coef(res1)[-1]))
+  expect_true(mean(tt) < 1e-3)
 
-    expect_equal(
-        as.numeric(res1$coefficients),
-        as.numeric(res2$coefficients),
-        tolerance = 1e-6
-    )
+  res1 <- sparsegl(x, ybin, group, family = "binomial", lambda = .0025)
+  res2 <- sparsegl(x, ybin, group, family = binomial(), lambda = .0025, eps = 1e-10)
+  tt <- abs(coef(res1) - coef(res2)) / (1 + abs(coef(res1)))
+  expect_true(mean(tt) < 1e-3)
+
+  nlam <- 1:20
+  res1_lam <- sparsegl(x, ybin, group, family = "binomial")
+  res2_lam <- sparsegl(x, ybin, group, family = binomial(),
+                       lambda = res1_lam$lambda[nlam], eps = 1e-8)
+  tt <- abs(coef(res1_lam)[,nlam] - coef(res2_lam)) /
+    (1 + abs(coef(res1_lam)[,nlam]))
+  expect_true(all(colMeans(tt) < 1e-3))
+
+})
+
+test_that("wls sparse and dense cases give the same results, Gaussian", {
+  xsp1 <- x
+  xsp1[abs(xsp1) < 0.2] <- 0
+  xsp2 <- as(xsp1, "sparseMatrix")
+  y <- rnorm(nobs)
+
+  res1 <- sparsegl(xsp1, y, group, family = gaussian())
+  res2 <- sparsegl(xsp2, y, group, family = gaussian())
+
+  tt <- abs(coef(res1) - coef(res2)) / (1 + abs(coef(res1)))
+  expect_lt(max(tt), 1e-6)
 })

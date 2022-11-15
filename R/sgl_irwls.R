@@ -76,8 +76,8 @@ sgl_irwls <- function(
 
   # get null deviance and lambda max, work out lambda values
   # we ALWAYS fit the intercept inside wsgl, so start it at zero
-  init <- initializer(x, y, weights, family, intr = FALSE,
-                     has_offset, offset, pfl1, ulam)
+  init <- initializer(x, y, weights, family, intr = intr,
+                      has_offset, offset, ulam, flmin)
   # this is supposed to be an upper bound
   # work out lambda values, cur_lambda is lambda_max / 0.99 when appropriate.
   cur_lambda <- init$cur_lambda
@@ -92,6 +92,7 @@ sgl_irwls <- function(
   beta <- matrix(0, nvars, nlam)
   dev.ratio <- rep(NA, length = nlam)
   mnl <- min(nlam, 6L)
+  flmin <- max(flmin, 1e-6) # threshold above zero
 
   static_args <- list(
     nulldev = as.double(nulldev),
@@ -142,7 +143,7 @@ sgl_irwls <- function(
             eset = list(warm$sset))
 
   l <- 0L
-  while (l <= nlam) {
+  while (l < nlam) {
     if (!findlambda) {
       l <- l + 1L
       warm$al0 <- as.double(cur_lambda)
@@ -158,6 +159,7 @@ sgl_irwls <- function(
     }
     warm$l <- as.integer(l)
 
+    # browser()
     # here we dispatch to wls
     fit <- irwls_fit(warm, static_args)
     if (trace_it == 1) utils::setTxtProgressBar(pb, l)
@@ -177,12 +179,12 @@ sgl_irwls <- function(
 
     if (findlambda) { # we searched inside the FORTRAN code, now we found it
       ulam <- double(nlam)
-      ulam[2:nlam] <- exp(seq(log(fit$ulam), log(fit$ulam * flmin),
-                              length.out = nlam - 1))
-      umult <- if (nlam > 2) ulam[2] / ulam[3] else 1 / flmin
-      ulam[1] <- ulam[2] * umult
+      alf <- flmin^(1/(nlam - 1))
+      ulam[1:nlam] <- exp(log(fit$ulam) + -1:(nlam - 2) * log(alf))
       l <- 2L
       findlambda <- FALSE
+      dev.ratio[1] <- 0
+      b0[1] <- init$b0
     }
 
     b0[l] <- fit$b0
@@ -214,8 +216,6 @@ sgl_irwls <- function(
     ulam <- ulam[1:l]
   }
 
-  if (standardize) beta <- beta / xs
-
   # output
   stepnames <- paste0("s", 0:(length(ulam) - 1))
   out <- list()
@@ -223,15 +223,18 @@ sgl_irwls <- function(
   names(out$b0) <- stepnames
   out$beta <- Matrix::Matrix(beta, sparse = TRUE,
                              dimnames = list(vnames, stepnames))
+  if (standardize) out$beta <- out$beta * xs
+  out$df <- apply(abs(out$beta) > 0, 2, sum)
+  out$dim <- dim(out$beta)
   out$lambda <- ulam
-  out$dev.ratio <- dev.ratio
-  out$nulldev <- nulldev
   out$npasses <- fit$npasses
   out$jerr <- fit$jerr
+  out$group <- group
+  out$dev.ratio <- dev.ratio
+  out$nulldev <- nulldev
   out$offset <- offset
   out$family <- family
-  out$nobs <- nobs
-  class(out) <- "irwlsspgl"
+  class(out) <- "irlsspgl"
 
   return(out)
 }
@@ -293,7 +296,7 @@ irwls_fit <- function(warm, static) {
     # compute working response and weights
     z <- (eta - static$offset) + (static$y - mu) / mu.eta.val
     w <- sqrt((static$weights * mu.eta.val^2) / variance(mu))
-    r <- w * z
+    r <- w * (z - eta + static$offset)
     fit$r <- r
 
     # we updated w, so we need to update gamma
@@ -316,6 +319,7 @@ irwls_fit <- function(warm, static) {
       static$y, mu, static$group, static$weights, static$family, static$pf,
       static$pfl1, static$asparse, start, lambda)
     iter <- iter + fit$npass
+    fit$npass <- iter
     if (trace_it == 2) cat("Iteration", iter, "Objective:", obj_val, fill = TRUE)
 
     boundary <- FALSE
@@ -437,8 +441,8 @@ irwls_fit <- function(warm, static) {
   fit$converged <- conv
   fit$boundary <- boundary
   fit$obj_function <- obj_val
+  fit$npass <- iter
 
-  class(fit) <- c("irwls_fit", "sparsegl")
   fit
 }
 
@@ -585,8 +589,8 @@ spgl_wlsfit <- function(warm, wx, gamma, static) {
 }
 
 
-initializer <- function(x, y, weights, family, intr, has_offset, offset, pfl1,
-                       ulam) {
+initializer <- function(x, y, weights, family, intr, has_offset, offset,
+                        ulam, flmin) {
   nobs <- nrow(x)
   nvars <- ncol(x)
   if (intr) {
@@ -607,10 +611,9 @@ initializer <- function(x, y, weights, family, intr, has_offset, offset, pfl1,
   nulldev <- dev_function(y, mu, weights, family)
 
   # compute upper bound for lambda max
-  # can possibly undershoot if any pfl1 < 1e-6, should warn.
   r <- y - mu
 
-  no_user_lambda <- (length(ulam) == 1) & (ulam == 0)
+  no_user_lambda <- flmin < 1
   findlambda <- no_user_lambda
   eta <- family$linkfun(mu)
 
@@ -620,12 +623,12 @@ initializer <- function(x, y, weights, family, intr, has_offset, offset, pfl1,
     weights <- weights / sum(weights)
     rv <- r / v * m.e * weights
     g <- abs(drop(crossprod(rv, x)))
-    lambda_max <- max(g / pmax(pfl1, 1e-6))
+    lambda_max <- max(g)
   } else {
     lambda_max <- ulam[1]
   }
 
-  cur_lambda <- lambda_max / 0.99
+  cur_lambda <- max(lambda_max / 0.99, 1e-6)
 
   list(r = r, mu = mu, findlambda = findlambda,
        lambda_max = lambda_max, nulldev = nulldev,
@@ -650,14 +653,13 @@ dev_function <- function(y, mu, weights, family) {
 # Helper function to get etas (linear predictions) on the original scale
 get_eta <- function(x, xs, beta, b0) {
   beta <- drop(beta)
-  if (!is.null(xs)) beta <- beta / xs
+  # if (length(xs) > 0) beta <- beta / xs
   drop(x %*% beta + b0)
 }
 
 validate_family <- function(family) {
   if (!is.function(family$variance) || !is.function(family$linkinv))
-    rlang::abort(
-      "'family' argument seems not to be a valid family object. See `?family`.")
+    abort("`family` seems not to be a valid family object. See `?family`.")
 }
 
 

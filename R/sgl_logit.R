@@ -1,3 +1,4 @@
+#' @importFrom stats glm binomial gaussian
 sgl_logit <- function(
   bn, bs, ix, iy, nobs, nvars, x, y, pf, pfl1,
   dfmax, pmax, nlam, flmin, ulam, eps,
@@ -16,6 +17,9 @@ sgl_logit <- function(
     warning(paste0("Binomial regression: one class has fewer than 8\n",
                    "observations; dangerous ground"))
   # TODO, enable prediction with class labels if factor is passed
+  if (intr == 1L && flmin < 1) {
+    b0_first <- coef(glm(y ~ 1, family = binomial()))
+  }
   y <- 2 * (as.integer(y) - 1) - 1 # convert to -1 / 1
 
   is.sparse <- FALSE
@@ -97,6 +101,7 @@ sgl_logit <- function(
   if (standardize) outlist$beta <- outlist$beta * xs
 
   outlist$b0 <- matrix(outlist$b0, nrow = 1)
+  if (intr == 1L && flmin < 1) outlist$b0[1] <- b0_first
   outlist <- c(
     outlist,
     list(npasses = fit$npass,
