@@ -31,9 +31,7 @@
 #' cv_fit <- cv.sparsegl(X, y, groups)
 #' coef(cv_fit, s = c(0.02, 0.03))
 coef.cv.sparsegl <- function(object, s = c("lambda.1se", "lambda.min"), ...) {
-    assertthat::assert_that(
-        is.numeric(s) || is.character(s),
-        msg = "Invalid form for s.")
+    if (!(is.numeric(s) || is.character(s))) abort("Invalid form for `s`.")
     if (is.numeric(s)) lambda <- s
     else {
         s <- match.arg(s)
@@ -47,7 +45,7 @@ coef.cv.sparsegl <- function(object, s = c("lambda.1se", "lambda.min"), ...) {
 #' Make predictions from a `cv.sparsegl` object.
 #'
 #' This function makes predictions from a cross-validated [cv.sparsegl()] object,
-#' using the stored `"sparsegl.fit"` object, and the value chosen for `lambda`.
+#' using the stored `sparsegl.fit` object, and the value chosen for `lambda`.
 #'
 #'
 #' @param object Fitted [cv.sparsegl()] object.
@@ -60,7 +58,7 @@ coef.cv.sparsegl <- function(object, s = c("lambda.1se", "lambda.min"), ...) {
 #'   standard error of the minimum). Alternatively `s = "lambda.min"` can be
 #'   used (corresponding to the minimum of cross validation error estimate).
 #'   If `s` is numeric, it is taken as the value(s) of `lambda` to be used.
-#' @param ... Not used. Other arguments to [predict()].
+#' @param ... Other arguments passed along to [predict.sparsegl()].
 #'
 #' @return A matrix or vector of predicted values.
 #' @seealso [cv.sparsegl()], and [coef.cv.sparsegl()] methods.
@@ -81,21 +79,19 @@ coef.cv.sparsegl <- function(object, s = c("lambda.1se", "lambda.min"), ...) {
 #'
 predict.cv.sparsegl <- function(object, newx,
                                 s = c("lambda.1se", "lambda.min"), ...) {
-    assertthat::assert_that(
-        is.numeric(s) || is.character(s),
-        msg = "Invalid form for s.")
-    if (is.numeric(s)) lambda <- s
-    else {
-        s <- match.arg(s)
-        lambda <- object[[s]]
-    }
-    predict(object$sparsegl.fit, newx, s = lambda, ...)
+  if (!(is.numeric(s) || is.character(s))) abort("Invalid form for `s`.")
+  if (is.numeric(s)) lambda <- s
+  else {
+    s <- match.arg(s)
+    lambda <- object[[s]]
+  }
+  predict(object$sparsegl.fit, newx, s = lambda, ...)
 }
 
 #' @method fitted cv.sparsegl
 #' @export
 fitted.cv.sparsegl <- function(object, ...) {
-  stop(c(
+  abort(c(
     "Because design matrices are typically large, these are not stored ",
     "in the estimated sparsegl object. Use `predict()` instead, and ",
     "pass in the original data."))

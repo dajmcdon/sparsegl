@@ -1,21 +1,23 @@
+#' @importFrom stats glm binomial gaussian
 sgl_logit <- function(
   bn, bs, ix, iy, nobs, nvars, x, y, pf, pfl1,
   dfmax, pmax, nlam, flmin, ulam, eps,
   maxit, vnames, group, intr, asparse, standardize,
   lower_bnd, upper_bnd) {
-  # call Fortran core
+
   y <- as.factor(y)
   lev <- levels(y)
   ntab <- table(y)
   minclass <- min(ntab)
   if (minclass <= 1)
-    stop("Binomial regression: one class has 1 or 0 observations; not allowed")
+    rlang::abort("Binomial regression: one class has 1 or 0 observations; not allowed")
   if (length(ntab) != 2)
-    stop("Binomial regression: more than one class is not supported")
+    rlang::abort("Binomial regression: more than one class is not supported")
   if (minclass < 8)
-    warning(paste0("Binomial regression: one class has fewer than 8\n",
-                   "observations; dangerous ground"))
+    rlang::warn(c("Binomial regression: one class has fewer than 8",
+                  "observations; dangerous ground"))
   # TODO, enable prediction with class labels if factor is passed
+  if (intr == 1L && flmin < 1) b0_first <- coef(glm(y ~ 1, family = binomial()))
   y <- 2 * (as.integer(y) - 1) - 1 # convert to -1 / 1
 
   is.sparse <- FALSE
@@ -97,6 +99,7 @@ sgl_logit <- function(
   if (standardize) outlist$beta <- outlist$beta * xs
 
   outlist$b0 <- matrix(outlist$b0, nrow = 1)
+  if (intr == 1L && flmin < 1) outlist$b0[1] <- b0_first
   outlist <- c(
     outlist,
     list(npasses = fit$npass,

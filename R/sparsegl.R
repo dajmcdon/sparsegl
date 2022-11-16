@@ -22,10 +22,15 @@
 #'   For a factor, the last level in alphabetical order is the target class.
 #' @param group Integer. A vector of consecutive integers describing the
 #'   grouping of the coefficients (see example below).
-#' @param family Character. Specifies the loss function to use, valid
-#'   options are:
+#' @param family Character or function. Specifies the generalized linear model
+#'   to use. Valid options are:
 #'   * `"gaussian"` - least squares loss (regression, the default),
 #'   * `"binomial"` - logistic loss (classification)
+#'   For any other type, a valid [stats::family()] object may be passed. Note
+#'   that these will generally be much slower to estimate than the built-in
+#'   options passed as strings. So for example, `family = "gaussian"` and
+#'   `family = gaussian()` will produce the same results, but the first
+#'   will be much faster.
 #' @param nlambda The number of \code{lambda} values - default is 100.
 #' @param lambda.factor The factor for getting the minimal lambda in the
 #'   `lambda` sequence, where `min(lambda) = lambda.factor * max(lambda)`.
@@ -77,7 +82,17 @@
 #' @param upper_bnd Upper for coefficient values, a vector in length of 1
 #'   or of length the number of groups. Must be non-negative numbers only.
 #'   Default value for each entry is `Inf`.
-#'
+#' @param weights Double vector. Optional observation weights. These can
+#'   only be used with a [stats::family()] object.
+#' @param offset Double vector. Optional offset (constant predictor without a
+#'   corresponding coefficient). These can only be used with a
+#'   [stats::family()] object.
+#' @param warm List created with [make_irls_warmup()]. These can only be used
+#'   with a [stats::family()] object, and is not typically necessary even then.
+#' @param trace_it Scalar integer. Larger values print more output during
+#'   the irls loop. Typical values are `0` (no printing), `1` (some printing
+#'   and a progress bar), and `2` (more printing and a progress bar).
+#'   These can only be used with a [stats::family()] object.
 #'
 #' @return An object with S3 class [sparsegl()].
 #' * `call` The call that produced this object.
@@ -92,6 +107,7 @@
 #' * `group` A vector of consecutive integers describing the grouping of the
 #'     coefficients.
 #' * `nobs` The number of observations used to estimate the model.
+#' If `sparsegl()` was called with a [stats::family()] method
 #'
 #'
 #' @seealso [plot.sparsegl()], [coef.sparsegl()], [predict.sparsegl()]
@@ -110,26 +126,28 @@
 #' groups <- rep(1:(p / 5), each = 5)
 #' fit <- sparsegl(X, y, group = groups)
 #'
-#'
+#' yp <- rpois(n, abs(X %*% beta_star))
+#' fit_pois <- sparsegl(X, yp, group = groups, family = poisson())
 sparsegl <- function(
   x, y, group = NULL, family = c("gaussian", "binomial"),
   nlambda = 100, lambda.factor = ifelse(nobs < nvars, 0.01, 1e-04),
   lambda = NULL, pf_group = sqrt(bs), pf_sparse = rep(1, nvars),
   intercept = TRUE, asparse = 0.05, standardize = TRUE,
   lower_bnd = -Inf, upper_bnd = Inf,
+  weights = NULL, offset = NULL, warm = NULL,
+  trace_it = 0,
   dfmax = as.integer(max(group)) + 1L,
   pmax = min(dfmax * 1.2, as.integer(max(group))),
-  eps = 1e-08, maxit = 3e+08) {
+  eps = 1e-08, maxit = 3e+06) {
 
   this.call <- match.call()
-  family <- match.arg(family)
   if (!is.matrix(x) && !inherits(x, "sparseMatrix"))
-    stop("x must be a matrix")
+    abort("`x` must be a matrix.")
 
-  if (any(is.na(x))) stop("Missing values in x not allowed!")
+  if (any(is.na(x))) abort("Missing values in `x` are not allowed!")
 
   y <- drop(y)
-  if (!is.null(dim(y))) stop("y must be a vector or 1-column matrix.")
+  if (!is.null(dim(y))) abort("`y` must be a vector or 1-column matrix.")
   np <- dim(x)
   nobs <- as.integer(np[1])
   nvars <- as.integer(np[2])
@@ -137,37 +155,50 @@ sparsegl <- function(
 
   if (is.null(vnames)) vnames <- paste("V", seq(nvars), sep = "")
 
-  if (length(y) != nobs) stop("x and y have different numbers of observations.")
+  if (length(y) != nobs) {
+    abort(c("`x` has {nobs} rows while `y` has {length(y)}.",
+            "Both should be the same."))}
 
   #    group setup
   if (is.null(group)) {
     group <- 1:nvars
   } else {
-    assertthat::assert_that(
-      length(group) == nvars,
-      msg = "group length does not match the number of predictors in x")
+    if (length(group) != nvars) {
+      abort(c("The length of group is {length(group)}.",
+              "It must match the number of columns in `x`: {nvars}"))}
   }
 
   bn <- as.integer(max(group))  # number of groups
   bs <- as.integer(as.numeric(table(group)))  # number of elements in each group
 
   if (!identical(as.integer(sort(unique(group))), as.integer(1:bn)))
-    stop("Groups must be consecutively numbered 1, 2, 3, ...")
+    abort("Groups must be consecutively numbered 1, 2, 3, ...")
 
-  assertthat::assert_that(
-    asparse <= 1,
-    msg = "asparse must be less than or equal to 1, you may want glmnet::glmnet()")
+  if (asparse > 1) {
+    abort(c("`asparse` must be less than or equal to 1",
+            i = "You may want glmnet::glmnet() instead."))}
 
   if (asparse < 0) {
     asparse <- 0
-    warning("asparse must be in [0,1], running ordinary group lasso.")
+    rlang::warn("asparse must be in [0,1], running ordinary group lasso.")
   }
-  if (any(pf_sparse < 0)) stop("`pf_sparse` must be non-negative.")
+  if (any(pf_sparse < 0)) abort("`pf_sparse` must be non-negative.")
   if (any(is.infinite(pf_sparse)))
-    stop("`pf_sparse` may not be infinite. Simply remove the column from `x`.")
-  if (any(pf_group < 0)) stop("`pf_group` must be non-negative.")
+    abort("`pf_sparse` may not be infinite. Simply remove the column from `x`.")
+  if (any(pf_group < 0)) abort("`pf_group` must be non-negative.")
   if (any(is.infinite(pf_group)))
-    stop("`pf_group` may not be infinite. Simply remove the group from `x`.")
+    abort("`pf_group` may not be infinite. Simply remove the group from `x`.")
+  if (all(pf_sparse == 0)) {
+    if (asparse > 0) {
+      abort("`pf_sparse` is identically 0 but `asparse` suggests some L1 penalty is desired.")
+    } else {
+      rlang::warn("`pf_sparse` was set to 1 since `asparse == 0`.")
+      pf_sparse = rep(1, nvars)
+    }
+  }
+
+  ## Note: should add checks to see if any columns are completely unpenalized
+  ## This is not currently expected.
 
   iy <- cumsum(bs) # last column of x in each group
   ix <- c(0, iy[-bn]) + 1 # first column of x in each group
@@ -176,14 +207,10 @@ sparsegl <- function(
   group <- as.integer(group)
 
   #parameter setup
-  assertthat::assert_that(
-    length(pf_group) == bn,
-    msg = paste("The length of group penalty factor must be the",
-                "same as the number of groups."))
-  assertthat::assert_that(
-    length(pf_sparse) == nvars,
-    msg = paste("The length of l1 penalty factor must be the",
-                "same as the number of predictors."))
+  if (length(pf_group) != bn)
+    abort("The length of `pf_group` must be the same as the number of groups {bn}.")
+  if (length(pf_sparse) != nvars)
+    abort("The length of `pf_sparse` must be equal to the number of predictors {nvars}.")
 
   pf_sparse <- pf_sparse / sum(pf_sparse) * nvars
   maxit <- as.integer(maxit)
@@ -196,61 +223,60 @@ sparsegl <- function(
   #lambda setup
   nlam <- as.integer(nlambda)
   if (is.null(lambda)) {
-    assertthat::assert_that(lambda.factor < 1,
-                            msg = "lambda.factor should be less than 1")
+    if (lambda.factor >= 1) abort("`lambda.factor` must be less than 1.")
     flmin <- as.double(lambda.factor)
     ulam <- double(1)
   } else {
     #flmin = 1 if user define lambda
     flmin <- as.double(1)
-    assertthat::assert_that(all(lambda >= 0),
-                            msg = "lambdas must be non-negative")
+    if (any(lambda < 0)) abort("`lambda` must be non-negative.")
     ulam <- as.double(rev(sort(lambda)))
     nlam <- as.integer(length(lambda))
   }
   intr <- as.integer(intercept)
 
   ### check on upper/lower bounds
-  assertthat::assert_that(all(lower_bnd <= 0),
-                          msg = "Lower bounds should be non-positive")
-  assertthat::assert_that(all(upper_bnd >= 0),
-                          msg = "Upper bounds should be non-negative")
+  if (any(lower_bnd > 0)) abort("`lower_bnd` should be non-positive")
+  if (any(upper_bnd < 0)) abort("`upper_bnd` should be non-negative")
   lower_bnd[lower_bnd == -Inf] <- -9.9e30
   upper_bnd[upper_bnd == Inf] <- 9.9e30
   if (length(lower_bnd) < bn) {
-    if (length(lower_bnd) == 1) {
-      lower_bnd <- rep(lower_bnd, bn)
-    } else {
-      stop("Lower bounds must be length 1 or length the number of groups")
-    }
+    if (length(lower_bnd) == 1) lower_bnd <- rep(lower_bnd, bn)
+    else abort("`lower_bnd` must be length 1 or length {bn}.")
   } else {
     lower_bnd <- lower_bnd[seq_len(bn)]
   }
   if (length(upper_bnd) < bn) {
-    if (length(upper_bnd) == 1) {
-      upper_bnd <- rep(upper_bnd, bn)
-    } else {
-      stop("Upper bounds must be length 1 or length the number of groups")
-    }
+    if (length(upper_bnd) == 1) upper_bnd <- rep(upper_bnd, bn)
+    else abort("`upper_bnd` must be length 1 or length {bn}")
   } else {
     upper_bnd <- upper_bnd[seq_len(bn)]
   }
   storage.mode(upper_bnd) <- "double"
   storage.mode(lower_bnd) <- "double"
-  ### end check on limits
 
   # call R sub-function
-  fit <- switch(
-    family,
-    gaussian = sgl_ls(
+  if (is.character(family)) {
+    family <- match.arg(family)
+    fit <- switch(
+      family,
+      gaussian = sgl_ls(
+        bn, bs, ix, iy, nobs, nvars, x, y, pf_group, pf_sparse,
+        dfmax, pmax, nlam, flmin, ulam, eps, maxit, vnames, group, intr,
+        as.double(asparse), standardize, lower_bnd, upper_bnd),
+      binomial = sgl_logit(
+        bn, bs, ix, iy, nobs, nvars, x, y, pf_group, pf_sparse,
+        dfmax, pmax, nlam, flmin, ulam, eps, maxit, vnames, group, intr,
+        as.double(asparse), standardize, lower_bnd, upper_bnd)
+    )
+  } else {
+    fit <- sgl_irwls(
       bn, bs, ix, iy, nobs, nvars, x, y, pf_group, pf_sparse,
       dfmax, pmax, nlam, flmin, ulam, eps, maxit, vnames, group, intr,
-      as.double(asparse), standardize, lower_bnd, upper_bnd),
-    binomial = sgl_logit(
-      bn, bs, ix, iy, nobs, nvars, x, y, pf_group, pf_sparse,
-      dfmax, pmax, nlam, flmin, ulam, eps, maxit, vnames, group, intr,
-      as.double(asparse), standardize, lower_bnd, upper_bnd)
-  )
+      as.double(asparse), standardize, lower_bnd, upper_bnd, weights,
+      offset, family, trace_it, warm
+    )
+  }
 
   # output
   if (is.null(lambda)) fit$lambda <- lamfix(fit$lambda)

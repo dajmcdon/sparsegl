@@ -3,8 +3,8 @@
 #' Computes the coefficients at the requested value(s) for `lambda` from a
 #' [sparsegl()] object.
 #'
-#' `s` is the new vector at which predictions are requested. If `s`
-#' is not in the lambda sequence used for fitting the model, the `coef`
+#' `s` is the new vector of `lambda` values at which predictions are requested.
+#' If `s` is not in the lambda sequence used for fitting the model, the `coef`
 #' function will use linear interpolation to make predictions. The new values
 #' are interpolated using a fraction of coefficients from both left and right
 #' `lambda` indices.
@@ -46,7 +46,8 @@ coef.sparsegl <- function(object, s = NULL, ...) {
     } else {
       nbeta = nbeta[, lamlist$left, drop = FALSE] %*%
         Matrix::Diagonal(ls, lamlist$frac) +
-        nbeta[, lamlist$right, drop = FALSE] %*% Matrix::Diagonal(ls, 1 - lamlist$frac)
+        nbeta[, lamlist$right, drop = FALSE] %*%
+        Matrix::Diagonal(ls, 1 - lamlist$frac)
     }
     namess <- names(s) %||% paste0("s", seq_along(s))
     dimnames(nbeta) <- list(vnames, namess)
@@ -62,26 +63,26 @@ coef.sparsegl <- function(object, s = NULL, ...) {
 #' Similar to other predict methods, this function produces fitted values and
 #' class labels from a fitted [`sparsegl`] object.
 #'
-#' `s` is new vector at which predictions are requested. If `s`
-#' is not in the lambda sequence used for fitting the model, the
+#' `s` is the new vector of `lambda` values at which predictions are requested.
+#' If `s` is not in the lambda sequence used for fitting the model, the `coef`
 #' function will use linear interpolation to make predictions. The new values
-#' are interpolated using a fraction of predicted values from both left and
-#' right `lambda` indices.
+#' are interpolated using a fraction of coefficients from both left and right
+#' `lambda` indices.
+#'
 #'
 #' @param object Fitted [sparsegl()] model object.
 #' @param newx Matrix of new values for `x` at which predictions are to be
-#'   made. Must be a matrix.
+#'   made. Must be a matrix. This argument is mandatory.
 #' @param s Value(s) of the penalty parameter `lambda` at which
 #'   predictions are required. Default is the entire sequence used to create the
 #'   model.
 #' @param type Type of prediction required. Type `"link"` gives the linear
 #'   predictors for `"binomial"`; for `"gaussian"` models it gives the fitted
-#'   values. Type `"response"` gives the fitted probabilities for
-#'   `"binomial"`; for `"gaussian"` type
+#'   values. Type `"response"` gives predictions on the scale of the response
+#'   (for example, fitted probabilities for `"binomial"`); for `"gaussian"` type
 #'   `"response"` is equivalent to type `"link"`. Type
 #'   `"coefficients"` computes the coefficients at the requested values for
-#'   `s`.  Note that for `"binomial"` models, results are returned only
-#'   for the class corresponding to the second level of the factor response.
+#'   `s`.
 #'   Type `"class"` applies only to `"binomial"` models, and produces the
 #'   class label corresponding to
 #'   the maximum probability. Type `"nonzero"` returns a list of the indices
@@ -131,7 +132,7 @@ predict.sparsegl <- function(
 #' @export
 predict.lsspgl <- function(
     object, newx, s = NULL,
-    type = c("link","response","coefficients","nonzero"),
+    type = c("link", "response", "coefficients", "nonzero"),
     ...) {
   type <- match.arg(type)
   NextMethod("predict")
@@ -153,8 +154,20 @@ predict.logitspgl <- function(
 }
 
 #' @export
+predict.irlsspgl <- function(
+    object, newx, s = NULL,
+    type = c("link", "response", "coefficients", "nonzero"),
+    ...) {
+  type <- match.arg(type)
+  nfit <- NextMethod("predict")
+  if (type == "response") return(object$family$linkinv(nfit))
+  else return(nfit)
+}
+
+
+#' @export
 fitted.sparsegl <- function(object, ...) {
-  stop(c(
+  abort(c(
     "Because design matrices are typically large, these are not stored ",
     "in the estimated sparsegl object. Use `predict()` instead, and ",
     "pass in the original data."))

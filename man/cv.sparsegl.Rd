@@ -11,7 +11,7 @@ cv.sparsegl(
   group = NULL,
   family = c("gaussian", "binomial"),
   lambda = NULL,
-  pred.loss = c("L2", "L1", "binomial", "misclass"),
+  pred.loss = c("default", "mse", "deviance", "mae", "misclass"),
   nfolds = 10,
   foldid = NULL,
   ...
@@ -32,11 +32,16 @@ For a factor, the last level in alphabetical order is the target class.}
 \item{group}{Integer. A vector of consecutive integers describing the
 grouping of the coefficients (see example below).}
 
-\item{family}{Character. Specifies the loss function to use, valid
-options are:
+\item{family}{Character or function. Specifies the generalized linear model
+to use. Valid options are:
 \itemize{
 \item \code{"gaussian"} - least squares loss (regression, the default),
 \item \code{"binomial"} - logistic loss (classification)
+For any other type, a valid \code{\link[stats:family]{stats::family()}} object may be passed. Note
+that these will generally be much slower to estimate than the built-in
+options passed as strings. So for example, \code{family = "gaussian"} and
+\code{family = gaussian()} will produce the same results, but the first
+will be much faster.
 }}
 
 \item{lambda}{A user supplied \code{lambda} sequence. The default, \code{NULL}
@@ -50,10 +55,12 @@ decreasing order.}
 
 \item{pred.loss}{Loss to use for cross-validation error. Valid options are:
 \itemize{
-\item \code{"L2"} for regression, mean square error
-\item \code{"L1"} for regression, mean absolute error
-\item \code{"binomial"} for classification, binomial deviance loss
-\item \code{"misclass"} for classification, misclassification error.
+\item \code{"default"} the same as deviance (mse for regression and deviance otherwise)
+\item \code{"mse"} for regression, mean square error
+\item \code{"deviance"} the default (mse for Gaussian regression, and negative
+log-likelihood otherwise)
+\item \code{"mae"} mean absolute error, can apply to any family
+\item \code{"misclass"} for classification only, misclassification error.
 }}
 
 \item{nfolds}{Number of folds - default is 10. Although \code{nfolds} can be
