@@ -75,7 +75,7 @@ class labels from a fitted <code><a href="sparsegl.html">sparsegl</a></code> obj
 
 <dt>newx</dt>
 <dd><p>Matrix of new values for <code>x</code> at which predictions are to be
-made. Must be a matrix.</p></dd>
+made. Must be a matrix. This argument is mandatory.</p></dd>
 
 
 <dt>s</dt>
@@ -87,12 +87,11 @@ model.</p></dd>
 <dt>type</dt>
 <dd><p>Type of prediction required. Type <code>"link"</code> gives the linear
 predictors for <code>"binomial"</code>; for <code>"gaussian"</code> models it gives the fitted
-values. Type <code>"response"</code> gives the fitted probabilities for
-<code>"binomial"</code>; for <code>"gaussian"</code> type
+values. Type <code>"response"</code> gives predictions on the scale of the response
+(for example, fitted probabilities for <code>"binomial"</code>); for <code>"gaussian"</code> type
 <code>"response"</code> is equivalent to type <code>"link"</code>. Type
 <code>"coefficients"</code> computes the coefficients at the requested values for
-<code>s</code>.  Note that for <code>"binomial"</code> models, results are returned only
-for the class corresponding to the second level of the factor response.
+<code>s</code>.
 Type <code>"class"</code> applies only to <code>"binomial"</code> models, and produces the
 class label corresponding to
 the maximum probability. Type <code>"nonzero"</code> returns a list of the indices
@@ -111,11 +110,11 @@ of the nonzero coefficients for each value of <code>s</code>.</p></dd>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
-    <p><code>s</code> is new vector at which predictions are requested. If <code>s</code>
-is not in the lambda sequence used for fitting the model, the
+    <p><code>s</code> is the new vector of <code>lambda</code> values at which predictions are requested.
+If <code>s</code> is not in the lambda sequence used for fitting the model, the <code>coef</code>
 function will use linear interpolation to make predictions. The new values
-are interpolated using a fraction of predicted values from both left and
-right <code>lambda</code> indices.</p>
+are interpolated using a fraction of coefficients from both left and right
+<code>lambda</code> indices.</p>
     </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
@@ -134,8 +133,8 @@ right <code>lambda</code> indices.</p>
 <span class="r-in"><span><span class="va">groups</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="op">(</span><span class="va">p</span> <span class="op">/</span> <span class="fl">5</span><span class="op">)</span>, each <span class="op">=</span> <span class="fl">5</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">fit1</span> <span class="op">&lt;-</span> <span class="fu"><a href="sparsegl.html">sparsegl</a></span><span class="op">(</span><span class="va">X</span>, <span class="va">y</span>, group <span class="op">=</span> <span class="va">groups</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict</a></span><span class="op">(</span><span class="va">fit1</span>, newx <span class="op">=</span> <span class="va">X</span><span class="op">[</span><span class="fl">10</span>, <span class="op">]</span>, s <span class="op">=</span> <span class="va">fit1</span><span class="op">$</span><span class="va">lambda</span><span class="op">[</span><span class="fl">3</span><span class="op">:</span><span class="fl">5</span><span class="op">]</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>            s1        s2       s3</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1,] -2.47025 -4.574184 -6.44225</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>            s1       s2       s3</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1,] 1.326597 2.452557 3.465019</span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>
@@ -143,7 +142,7 @@ right <code>lambda</code> indices.</p>
 
 
     <footer><div class="pkgdown-footer-left">
-  <p></p><p>Developed by Daniel J. McDonald, Xiaoxuan Liang, Aaron Cohen.</p>
+  <p></p><p>Developed by Daniel J. McDonald, Xiaoxuan Liang, Anibal Solón Heinsfeld, Aaron Cohen.</p>
 </div>
 
 <div class="pkgdown-footer-right">

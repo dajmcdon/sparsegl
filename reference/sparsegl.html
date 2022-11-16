@@ -72,10 +72,14 @@ sequence of regularization parameters <code>lambda</code>.</p>
 <span>  standardize <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  lower_bnd <span class="op">=</span> <span class="op">-</span><span class="cn">Inf</span>,</span>
 <span>  upper_bnd <span class="op">=</span> <span class="cn">Inf</span>,</span>
+<span>  weights <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  offset <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  warm <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  trace_it <span class="op">=</span> <span class="fl">0</span>,</span>
 <span>  dfmax <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/integer.html" class="external-link">as.integer</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">max</a></span><span class="op">(</span><span class="va">group</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span> <span class="fl">1L</span>,</span>
 <span>  pmax <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">min</a></span><span class="op">(</span><span class="va">dfmax</span> <span class="op">*</span> <span class="fl">1.2</span>, <span class="fu"><a href="https://rdrr.io/r/base/integer.html" class="external-link">as.integer</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">max</a></span><span class="op">(</span><span class="va">group</span><span class="op">)</span><span class="op">)</span><span class="op">)</span>,</span>
 <span>  eps <span class="op">=</span> <span class="fl">1e-08</span>,</span>
-<span>  maxit <span class="op">=</span> <span class="fl">3e+08</span></span>
+<span>  maxit <span class="op">=</span> <span class="fl">3e+06</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -102,9 +106,14 @@ grouping of the coefficients (see example below).</p></dd>
 
 
 <dt>family</dt>
-<dd><p>Character. Specifies the loss function to use, valid
-options are:</p><ul><li><p><code>"gaussian"</code> - least squares loss (regression, the default),</p></li>
-<li><p><code>"binomial"</code> - logistic loss (classification)</p></li>
+<dd><p>Character or function. Specifies the generalized linear model
+to use. Valid options are:</p><ul><li><p><code>"gaussian"</code> - least squares loss (regression, the default),</p></li>
+<li><p><code>"binomial"</code> - logistic loss (classification)
+For any other type, a valid <code><a href="https://rdrr.io/r/stats/family.html" class="external-link">stats::family()</a></code> object may be passed. Note
+that these will generally be much slower to estimate than the built-in
+options passed as strings. So for example, <code>family = "gaussian"</code> and
+<code>family = gaussian()</code> will produce the same results, but the first
+will be much faster.</p></li>
 </ul></dd>
 
 
@@ -180,6 +189,29 @@ or of length the number of groups. Must be non-negative numbers only.
 Default value for each entry is <code>Inf</code>.</p></dd>
 
 
+<dt>weights</dt>
+<dd><p>Double vector. Optional observation weights. These can
+only be used with a <code><a href="https://rdrr.io/r/stats/family.html" class="external-link">stats::family()</a></code> object.</p></dd>
+
+
+<dt>offset</dt>
+<dd><p>Double vector. Optional offset (constant predictor without a
+corresponding coefficient). These can only be used with a
+<code><a href="https://rdrr.io/r/stats/family.html" class="external-link">stats::family()</a></code> object.</p></dd>
+
+
+<dt>warm</dt>
+<dd><p>List created with <code><a href="make_irls_warmup.html">make_irls_warmup()</a></code>. These can only be used
+with a <code><a href="https://rdrr.io/r/stats/family.html" class="external-link">stats::family()</a></code> object, and is not typically necessary even then.</p></dd>
+
+
+<dt>trace_it</dt>
+<dd><p>Scalar integer. Larger values print more output during
+the irls loop. Typical values are <code>0</code> (no printing), <code>1</code> (some printing
+and a progress bar), and <code>2</code> (more printing and a progress bar).
+These can only be used with a <code><a href="https://rdrr.io/r/stats/family.html" class="external-link">stats::family()</a></code> object.</p></dd>
+
+
 <dt>dfmax</dt>
 <dd><p>Limit the maximum number of groups in the model. Default is
 no limit.</p></dd>
@@ -216,7 +248,8 @@ value. Default is <code>3e8</code>. If models do not converge, consider increasi
 <li><p><code>jerr</code> Error flag, for warnings and errors, 0 if no error.</p></li>
 <li><p><code>group</code> A vector of consecutive integers describing the grouping of the
 coefficients.</p></li>
-<li><p><code>nobs</code> The number of observations used to estimate the model.</p></li>
+<li><p><code>nobs</code> The number of observations used to estimate the model.
+If <code>sparsegl()</code> was called with a <code><a href="https://rdrr.io/r/stats/family.html" class="external-link">stats::family()</a></code> method</p></li>
 </ul></div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
@@ -244,7 +277,8 @@ and <code><a href="print.sparsegl.html">print.sparsegl()</a></code> methods.</p>
 <span class="r-in"><span><span class="va">groups</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="op">(</span><span class="va">p</span> <span class="op">/</span> <span class="fl">5</span><span class="op">)</span>, each <span class="op">=</span> <span class="fl">5</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu">sparsegl</span><span class="op">(</span><span class="va">X</span>, <span class="va">y</span>, group <span class="op">=</span> <span class="va">groups</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="va">yp</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/Poisson.html" class="external-link">rpois</a></span><span class="op">(</span><span class="va">n</span>, <span class="fu"><a href="https://rdrr.io/r/base/MathFun.html" class="external-link">abs</a></span><span class="op">(</span><span class="va">X</span> <span class="op"><a href="https://rdrr.io/r/base/matmult.html" class="external-link">%*%</a></span> <span class="va">beta_star</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">fit_pois</span> <span class="op">&lt;-</span> <span class="fu">sparsegl</span><span class="op">(</span><span class="va">X</span>, <span class="va">yp</span>, group <span class="op">=</span> <span class="va">groups</span>, family <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/family.html" class="external-link">poisson</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span></span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>
@@ -252,7 +286,7 @@ and <code><a href="print.sparsegl.html">print.sparsegl()</a></code> methods.</p>
 
 
     <footer><div class="pkgdown-footer-left">
-  <p></p><p>Developed by Daniel J. McDonald, Xiaoxuan Liang, Aaron Cohen.</p>
+  <p></p><p>Developed by Daniel J. McDonald, Xiaoxuan Liang, Anibal Solón Heinsfeld, Aaron Cohen.</p>
 </div>
 
 <div class="pkgdown-footer-right">

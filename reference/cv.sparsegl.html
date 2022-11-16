@@ -63,7 +63,7 @@ This function is largely similar <code><a href="https://glmnet.stanford.edu/refe
 <span>  group <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  family <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"gaussian"</span>, <span class="st">"binomial"</span><span class="op">)</span>,</span>
 <span>  lambda <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  pred.loss <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"L2"</span>, <span class="st">"L1"</span>, <span class="st">"binomial"</span>, <span class="st">"misclass"</span><span class="op">)</span>,</span>
+<span>  pred.loss <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"default"</span>, <span class="st">"mse"</span>, <span class="st">"deviance"</span>, <span class="st">"mae"</span>, <span class="st">"misclass"</span><span class="op">)</span>,</span>
 <span>  nfolds <span class="op">=</span> <span class="fl">10</span>,</span>
 <span>  foldid <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  <span class="va">...</span></span>
@@ -93,9 +93,14 @@ grouping of the coefficients (see example below).</p></dd>
 
 
 <dt>family</dt>
-<dd><p>Character. Specifies the loss function to use, valid
-options are:</p><ul><li><p><code>"gaussian"</code> - least squares loss (regression, the default),</p></li>
-<li><p><code>"binomial"</code> - logistic loss (classification)</p></li>
+<dd><p>Character or function. Specifies the generalized linear model
+to use. Valid options are:</p><ul><li><p><code>"gaussian"</code> - least squares loss (regression, the default),</p></li>
+<li><p><code>"binomial"</code> - logistic loss (classification)
+For any other type, a valid <code><a href="https://rdrr.io/r/stats/family.html" class="external-link">stats::family()</a></code> object may be passed. Note
+that these will generally be much slower to estimate than the built-in
+options passed as strings. So for example, <code>family = "gaussian"</code> and
+<code>family = gaussian()</code> will produce the same results, but the first
+will be much faster.</p></li>
 </ul></dd>
 
 
@@ -111,10 +116,12 @@ decreasing order.</p></dd>
 
 
 <dt>pred.loss</dt>
-<dd><p>Loss to use for cross-validation error. Valid options are:</p><ul><li><p><code>"L2"</code> for regression, mean square error</p></li>
-<li><p><code>"L1"</code> for regression, mean absolute error</p></li>
-<li><p><code>"binomial"</code> for classification, binomial deviance loss</p></li>
-<li><p><code>"misclass"</code> for classification, misclassification error.</p></li>
+<dd><p>Loss to use for cross-validation error. Valid options are:</p><ul><li><p><code>"default"</code> the same as deviance (mse for regression and deviance otherwise)</p></li>
+<li><p><code>"mse"</code> mean square error</p></li>
+<li><p><code>"deviance"</code> the default (mse for Gaussian regression, and negative
+log-likelihood otherwise)</p></li>
+<li><p><code>"mae"</code> mean absolute error, can apply to any family</p></li>
+<li><p><code>"misclass"</code> for classification only, misclassification error.</p></li>
 </ul></dd>
 
 
@@ -185,7 +192,7 @@ is within 1 standard error of the minimum.</p></dd>
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
     <p>The function runs <code><a href="sparsegl.html">sparsegl()</a></code> <code>nfolds + 1</code> times; the first to
 get the <code>lambda</code> sequence, and then the remainder to compute the fit
-with each of the folds omitted. The average error and standard deviation
+with each of the folds omitted. The average error and standard error
 over the folds are computed.</p>
     </div>
     <div class="section level2">
@@ -212,7 +219,7 @@ over the folds are computed.</p>
 
 
     <footer><div class="pkgdown-footer-left">
-  <p></p><p>Developed by Daniel J. McDonald, Xiaoxuan Liang, Aaron Cohen.</p>
+  <p></p><p>Developed by Daniel J. McDonald, Xiaoxuan Liang, Anibal Solón Heinsfeld, Aaron Cohen.</p>
 </div>
 
 <div class="pkgdown-footer-right">
