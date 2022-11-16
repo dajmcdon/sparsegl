@@ -12,7 +12,7 @@ using the stored sparsegl.fit object, and the value chosen for lambda."><!-- mat
     
     <a class="navbar-brand me-2" href="../index.html">sparsegl</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.5.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.0</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -58,7 +58,13 @@ using the stored <code>sparsegl.fit</code> object, and the value chosen for <cod
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="co"># S3 method for cv.sparsegl</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict</a></span><span class="op">(</span><span class="va">object</span>, <span class="va">newx</span>, s <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"lambda.1se"</span>, <span class="st">"lambda.min"</span><span class="op">)</span>, <span class="va">...</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu"><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict</a></span><span class="op">(</span></span>
+<span>  <span class="va">object</span>,</span>
+<span>  <span class="va">newx</span>,</span>
+<span>  s <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"lambda.1se"</span>, <span class="st">"lambda.min"</span><span class="op">)</span>,</span>
+<span>  type <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"link"</span>, <span class="st">"response"</span>, <span class="st">"coefficients"</span>, <span class="st">"nonzero"</span>, <span class="st">"class"</span><span class="op">)</span>,</span>
+<span>  <span class="va">...</span></span>
+<span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
@@ -69,21 +75,35 @@ using the stored <code>sparsegl.fit</code> object, and the value chosen for <cod
 
 <dt>newx</dt>
 <dd><p>Matrix of new values for <code>x</code> at which predictions are to be
-made. Must be a matrix. See documentation for <code><a href="predict.sparsegl.html">predict.sparsegl()</a></code>.</p></dd>
+made. Must be a matrix. This argument is mandatory.</p></dd>
 
 
 <dt>s</dt>
 <dd><p>Value(s) of the penalty parameter <code>lambda</code> at which
 coefficients are desired. Default is the single
-value <code>s = "lambda.1se"</code> stored on the CV <code>object</code> (corresponding to
+value <code>s = "lambda.1se"</code> stored in the CV object (corresponding to
 the largest value of <code>lambda</code> such that CV error estimate is within 1
 standard error of the minimum). Alternatively <code>s = "lambda.min"</code> can be
 used (corresponding to the minimum of cross validation error estimate).
 If <code>s</code> is numeric, it is taken as the value(s) of <code>lambda</code> to be used.</p></dd>
 
 
+<dt>type</dt>
+<dd><p>Type of prediction required. Type <code>"link"</code> gives the linear
+predictors for <code>"binomial"</code>; for <code>"gaussian"</code> models it gives the fitted
+values. Type <code>"response"</code> gives predictions on the scale of the response
+(for example, fitted probabilities for <code>"binomial"</code>); for <code>"gaussian"</code> type
+<code>"response"</code> is equivalent to type <code>"link"</code>. Type
+<code>"coefficients"</code> computes the coefficients at the requested values for
+<code>s</code>.
+Type <code>"class"</code> applies only to <code>"binomial"</code> models, and produces the
+class label corresponding to
+the maximum probability. Type <code>"nonzero"</code> returns a list of the indices
+of the nonzero coefficients for each value of <code>s</code>.</p></dd>
+
+
 <dt>...</dt>
-<dd><p>Other arguments passed along to <code><a href="predict.sparsegl.html">predict.sparsegl()</a></code>.</p></dd>
+<dd><p>Not used.</p></dd>
 
 </dl></div>
     <div class="section level2">
@@ -109,18 +129,18 @@ If <code>s</code> is numeric, it is taken as the value(s) of <code>lambda</code>
 <span class="r-in"><span><span class="va">fit1</span> <span class="op">&lt;-</span> <span class="fu"><a href="sparsegl.html">sparsegl</a></span><span class="op">(</span><span class="va">X</span>, <span class="va">y</span>, group <span class="op">=</span> <span class="va">groups</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">cv_fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="cv.sparsegl.html">cv.sparsegl</a></span><span class="op">(</span><span class="va">X</span>, <span class="va">y</span>, <span class="va">groups</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict</a></span><span class="op">(</span><span class="va">cv_fit</span>, newx <span class="op">=</span> <span class="va">X</span><span class="op">[</span><span class="fl">50</span><span class="op">:</span><span class="fl">60</span>, <span class="op">]</span>, s <span class="op">=</span> <span class="st">"lambda.min"</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>               s1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [1,]  21.003355</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [2,]  -2.502533</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [3,]  25.562865</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [4,] -18.805057</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [5,] -17.164575</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [6,] -13.328504</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [7,]  15.580227</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [8,]  -4.854327</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [9,] -12.005412</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [10,] -24.151831</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [11,]  -0.161698</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                 s1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [1,]  14.34092782</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [2,]  -4.62115794</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [3,] -39.50559586</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [4,]   8.72339991</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [5,]  -6.81007525</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [6,]  14.72806011</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [7,]  -0.03317876</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [8,]   6.88310016</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [9,]  18.22133069</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [10,]  -1.04746342</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [11,] -28.28061364</span>
 <span class="r-in"><span></span></span>
 </code></pre></div>
     </div>

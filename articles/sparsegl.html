@@ -26,7 +26,7 @@
     
     <a class="navbar-brand me-2" href="../index.html">sparsegl</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.5.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.0</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -79,42 +79,39 @@
     
 <p>This package provides tools for fitting regularization paths for
 sparse group-lasso penalized learning problems. The model is fit for a
-sequence of the regularization parameter lambda.</p>
-<p>The strengths and improvements that this package achieved compared to
+sequence of the regularization parameters.</p>
+<p>The strengths and improvements that this package offers relative to
 other sparse group-lasso packages are as follows:</p>
 <ul>
-<li><p>Fortran significantly speeds up the sparse group-lasso model
-building process.</p></li>
-<li><p>“Strong rule” is implemented during coordinate descent step,
-screening out zero-coefficient variables which might not be detected by
-some conservative criteria.</p></li>
-<li><p><code>X</code> can be a sparse input matrix passed as an argument
-in <code><a href="../reference/sparsegl.html">sparsegl()</a></code>, and it does not have to be a regular
-matrix.</p></li>
-<li><p>Plots are made with functions package <code>ggplot2</code>
-instead of function <code>plot</code> from <code>base</code>, which
-provide better appearances and experience for visualization.</p></li>
-<li><p>An extra function <code><a href="../reference/estimate_risk.html">estimate_risk()</a></code> evaluates the
-quality of fitted models in terms of different information criteria and
-provides a means for model selection. It is also an alternative for
-model selection if cross-validation is too costly.</p></li>
+<li><p>Compiled Fortran code significantly speeds up the sparse
+group-lasso model building process.</p></li>
+<li><p>So-called “strong rules” are implemented during group wise
+coordinate descent steps to screen out groups which are likely to be 0
+at the solution.</p></li>
+<li><p>The design matrix <code>X</code> can be a sparse.</p></li>
+<li><p>An <code><a href="../reference/estimate_risk.html">estimate_risk()</a></code> function may be used to evaluate
+the quality of fitted models via information criteria, providing a means
+for model selection if cross-validation is too computationally
+costly.</p></li>
+<li><p>Additional glm families may be fit (though this is typically
+slower).</p></li>
 </ul>
 <div class="section level2">
 <h2 id="installing">Installing<a class="anchor" aria-label="anchor" href="#installing"></a>
 </h2>
-<p>This package is not on CRAN yet, so it can be installed using the
-[<code>devtools</code>] (<a href="https://cran.r-project.org/package=devtools" class="external-link uri">https://cran.r-project.org/package=devtools</a>)
-package:</p>
+<p>You can install the released version of sparsegl from <a href="https://CRAN.R-project.org" class="external-link">CRAN</a> with:</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu">devtools</span><span class="fu">::</span><span class="fu">install_github</span><span class="op">(</span><span class="st">"dajmcdon/sparsegl"</span>, ref <span class="op">=</span> <span class="st">"main"</span><span class="op">)</span></span></code></pre></div>
-<p>Building the vignettes, such as this getting started guide, takes a
-significant amount of time. They are not included in the package by
-default. If you want to include vignettes, then use this modified
-command:</p>
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"sparsegl"</span><span class="op">)</span></span></code></pre></div>
+<p>You can install the development version from <a href="https://github.com/" class="external-link">Github</a> with:</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu">devtools</span><span class="fu">::</span><span class="fu">install_github</span><span class="op">(</span><span class="st">"dajmcdon/sparsegl"</span>, ref <span class="op">=</span> <span class="st">"main"</span>,</span>
-<span>                          build_vignettes <span class="op">=</span> <span class="cn">TRUE</span>, dependencies <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
-<p>For this getting-started vignette, firstly, we will randomly generate
+<code class="sourceCode R"><span><span class="co"># install.packages("remotes")</span></span>
+<span><span class="fu">remotes</span><span class="fu">::</span><span class="fu">install_github</span><span class="op">(</span><span class="st">"dajmcdon/sparsegl"</span><span class="op">)</span></span></code></pre></div>
+<p>Vignettes are not included in the package by default. If you want to
+include vignettes, then use this modified command:</p>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu">remotes</span><span class="fu">::</span><span class="fu">install_github</span><span class="op">(</span><span class="st">"dajmcdon/sparsegl"</span>, </span>
+<span>                        build_vignettes <span class="op">=</span> <span class="cn">TRUE</span>, dependencies <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
+<p>For this getting-started vignette, first, we will randomly generate
 <code>X</code>, an input matrix of predictors of dimension
 <code>n</code>-obs by <code>p</code>-feature. To initiate
 <code>y</code>, a real-valued vector (make it a vector rather a
@@ -165,7 +162,7 @@ of penalty imposed on the model to control the number of nonzero
 coefficients of features, and furthermore, to avoid
 overfitting.</p></li>
 </ul>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/dajmcdon/sparsegl/" class="external-link">sparsegl</a></span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">1010</span><span class="op">)</span></span>
 <span><span class="va">n</span> <span class="op">&lt;-</span> <span class="fl">100</span></span>
@@ -223,7 +220,7 @@ value. This only represents an approximation to the exact
 degree-of-freedom. Detailed explanation can be checked under function
 <code><a href="../reference/estimate_risk.html">estimate_risk()</a></code> below.</li>
 </ul>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">fit1</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/sparsegl.html">sparsegl</a></span><span class="op">(</span><span class="va">X</span>, <span class="va">y</span>, group <span class="op">=</span> <span class="va">groups</span><span class="op">)</span></span></code></pre></div>
 <div class="section level3">
 <h3 id="plotting-function-plot-for-sparsegl-object">Plotting function <code>plot()</code> for <code>sparsegl</code>
@@ -268,12 +265,12 @@ element in this vector is defined by: <span class="math display">\[
 \beta^{(g)}\rVert_2\right)}
 \]</span></p></li>
 </ul>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">fit1</span>, y_axis <span class="op">=</span> <span class="st">"group"</span>, x_axis <span class="op">=</span> <span class="st">"lambda"</span><span class="op">)</span></span></code></pre></div>
-<p><img src="sparsegl_files/figure-html/unnamed-chunk-6-1.png" width="768"></p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">fit1</span>, y_axis <span class="op">=</span> <span class="st">"group"</span>, x_axis <span class="op">=</span> <span class="st">"lambda"</span><span class="op">)</span></span></code></pre></div>
+<p><img src="sparsegl_files/figure-html/unnamed-chunk-7-1.png" width="768"></p>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">fit1</span>, y_axis <span class="op">=</span> <span class="st">"coef"</span>, x_axis <span class="op">=</span> <span class="st">"penalty"</span>, add_legend <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
-<p><img src="sparsegl_files/figure-html/unnamed-chunk-6-2.png" width="768"></p>
+<p><img src="sparsegl_files/figure-html/unnamed-chunk-7-2.png" width="768"></p>
 </div>
 <div class="section level3">
 <h3 id="coef-predict-and-print-sparsegl-object">
@@ -291,7 +288,7 @@ necessarily) the original <code>lambda</code> sequence.</p></li>
 <li><p><code><a href="https://rdrr.io/r/base/print.html" class="external-link">print()</a></code> returns the number of nonzero features with
 nonzero coefficients at each <code>lambda</code>.</p></li>
 </ul>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">coef</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/coef.html" class="external-link">coef</a></span><span class="op">(</span><span class="va">fit1</span>, s <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.02</span>, <span class="fl">0.03</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">pred</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict</a></span><span class="op">(</span><span class="va">fit1</span>, newx <span class="op">=</span> <span class="va">X</span><span class="op">[</span><span class="fl">100</span>,<span class="op">]</span>, s <span class="op">=</span> <span class="va">fit1</span><span class="op">$</span><span class="va">lambda</span><span class="op">[</span><span class="fl">2</span><span class="op">:</span><span class="fl">3</span><span class="op">]</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">fit1</span><span class="op">)</span></span></code></pre></div>
@@ -308,7 +305,7 @@ additional argument <code>pred.loss</code>. It can be set with either
 “L2” or “L1” for linear regression model, “loss” or “misclass” for
 logistic regression model indicating the loss to use for cv error. This
 will return a <code>cv.sparsegl</code> object.</p>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">fit_l1</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/cv.sparsegl.html">cv.sparsegl</a></span><span class="op">(</span><span class="va">X</span>, <span class="va">y</span>, group <span class="op">=</span> <span class="va">groups</span>, pred.loss <span class="op">=</span> <span class="st">"mae"</span><span class="op">)</span></span></code></pre></div>
 <div class="section level3">
 <h3 id="plot-coef-and-predict-for-cv-sparsegl-object">
@@ -324,9 +321,9 @@ generated plot, the red points represent the <code>cvm</code> values at
 each <code>lambda</code>, and the attached gray vertical error bars
 indicate the uncertainty of <code>cvm</code>.</li>
 </ul>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">fit_l1</span><span class="op">)</span></span></code></pre></div>
-<p><img src="sparsegl_files/figure-html/unnamed-chunk-9-1.png" width="768"></p>
+<p><img src="sparsegl_files/figure-html/unnamed-chunk-10-1.png" width="768"></p>
 <ul>
 <li>
 <code><a href="https://rdrr.io/r/stats/coef.html" class="external-link">coef()</a></code> and <code><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict()</a></code> for
@@ -336,7 +333,7 @@ passes a fitted <code>cv.sparsegl</code> object, and <code>s</code> can
 also be set with <code>lambda.1se</code>, <code>lambda.min</code> in
 addition.</li>
 </ul>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">coef</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/coef.html" class="external-link">coef</a></span><span class="op">(</span><span class="va">fit_l1</span>, s <span class="op">=</span> <span class="st">"lambda.1se"</span><span class="op">)</span></span>
 <span><span class="va">pred</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict</a></span><span class="op">(</span><span class="va">fit_l1</span>, newx <span class="op">=</span> <span class="va">X</span><span class="op">[</span><span class="fl">50</span><span class="op">:</span><span class="fl">80</span>, <span class="op">]</span>, s <span class="op">=</span> <span class="st">"lambda.min"</span><span class="op">)</span></span></code></pre></div>
 </div>
@@ -381,7 +378,7 @@ coefficients of the model. Notice that it would take some time to
 calculate the unbiased estimate of the exact degrees-of-freedom if
 <code>X</code> is complicated. For more details about how to realize
 this calculation, our method is implemented based on the paper <a href="https://arxiv.org/pdf/1212.6478.pdf" class="external-link uri">https://arxiv.org/pdf/1212.6478.pdf</a>.</p>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">risk</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/estimate_risk.html">estimate_risk</a></span><span class="op">(</span><span class="va">fit1</span>, <span class="va">X</span>, type <span class="op">=</span> <span class="st">"AIC"</span>, approx_df <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
 </div>
   </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>
