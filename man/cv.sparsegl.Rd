@@ -56,7 +56,7 @@ decreasing order.}
 \item{pred.loss}{Loss to use for cross-validation error. Valid options are:
 \itemize{
 \item \code{"default"} the same as deviance (mse for regression and deviance otherwise)
-\item \code{"mse"} for regression, mean square error
+\item \code{"mse"} mean square error
 \item \code{"deviance"} the default (mse for Gaussian regression, and negative
 log-likelihood otherwise)
 \item \code{"mae"} mean absolute error, can apply to any family
@@ -100,7 +100,7 @@ This function is largely similar \code{\link[glmnet:cv.glmnet]{glmnet::cv.glmnet
 \details{
 The function runs \code{\link[=sparsegl]{sparsegl()}} \code{nfolds + 1} times; the first to
 get the \code{lambda} sequence, and then the remainder to compute the fit
-with each of the folds omitted. The average error and standard deviation
+with each of the folds omitted. The average error and standard error
 over the folds are computed.
 }
 \examples{
