@@ -217,10 +217,10 @@ This function does a k-fold cross-validation (cv) on `sparsegl`. It takes the sa
 arguments `X`, `y`, `group`, which are specified above, with additional
 argument `pred.loss`. It can be set with either "L2" or "L1" for linear regression
 model, "loss" or "misclass"  for logistic regression model indicating the loss to
-use for cv error. This will return a `cv.sparseg` object.
+use for cv error. This will return a `cv.sparsegl` object.
 
 ```{r}
-fit_l1 <- cv.sparsegl(X, y, group = groups, pred.loss = "L1")
+fit_l1 <- cv.sparsegl(X, y, group = groups, pred.loss = "mae")
 ```
 
 ### `plot()`, `coef()` and `predict()` for `cv.sparsegl` object
