@@ -1,4 +1,8 @@
-# sparsegl (development version)
+# sparsegl 1.0.0
+
+* Improved documentation
+* Added functionality to implement arbitrary `stats::family()` fitting.
+* Enhanced (and corrected) S3 interface for `predict` and `coef` methods.
 
 # sparsegl 0.5.0
 
