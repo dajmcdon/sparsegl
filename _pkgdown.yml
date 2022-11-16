@@ -13,15 +13,11 @@ navbar:
   bg: primary
 
 reference:
-- title: "Fit data"
-  desc: >
-    Creating sparsegl objects or cv.sparsegl objects from Cross-validation.
+- title: "Estimate sparse group lasso"
 - contents:
     - sparsegl
     - cv.sparsegl
-- title: "Plot and predict functions"
-  desc: >
-    Methods for sparsegl or cv.sparsegl objects.
+- title: "Methods for sparsegl or cv.sparsegl objects."
 - contents:
     - starts_with("plot")
     - starts_with("coef")
@@ -32,7 +28,7 @@ reference:
     Calculate information criteria for model evaluation and model selection.
 - contents:
     - estimate_risk
-- title: "Norm calculation"
+- title: "Norm calculations"
 - contents:
     - ends_with("norm")
 - title: "Data"

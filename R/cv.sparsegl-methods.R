@@ -1,18 +1,18 @@
-#' Get coefficients from a `cv.sparsegl` object.
+#' Extract coefficients from a `cv.sparsegl` object.
 #'
-#' This function gets coefficients from a
+#' This function etracts coefficients from a
 #' cross-validated [sparsegl()] model, using the stored `"sparsegl.fit"`
 #' object, and the optimal value chosen for `lambda`.
 #'
 #' @param object Fitted [cv.sparsegl()] object.
 #' @param s Value(s) of the penalty parameter `lambda` at which
 #'   coefficients are desired. Default is the single
-#'   value `s = "lambda.1se"` stored on the CV `object` (corresponding to
+#'   value `s = "lambda.1se"` stored in the CV object (corresponding to
 #'   the largest value of `lambda` such that CV error estimate is within 1
 #'   standard error of the minimum). Alternatively `s = "lambda.min"` can be
 #'   used (corresponding to the minimum of cross validation error estimate).
 #'   If `s` is numeric, it is taken as the value(s) of `lambda` to be used.
-#' @param ... Not used. Other arguments to [predict()].
+#' @param ... Not used.
 #'
 #'
 #' @return The coefficients at the requested value(s) for `lambda`.
@@ -31,13 +31,14 @@
 #' cv_fit <- cv.sparsegl(X, y, groups)
 #' coef(cv_fit, s = c(0.02, 0.03))
 coef.cv.sparsegl <- function(object, s = c("lambda.1se", "lambda.min"), ...) {
-    if (!(is.numeric(s) || is.character(s))) abort("Invalid form for `s`.")
-    if (is.numeric(s)) lambda <- s
-    else {
-        s <- match.arg(s)
-        lambda <- object[[s]]
-    }
-    coef(object$sparsegl.fit, s = lambda, ...)
+  rlang::check_dots_empty()
+  if (!(is.numeric(s) || is.character(s))) abort("Invalid form for `s`.")
+  if (is.numeric(s)) lambda <- s
+  else {
+    s <- match.arg(s)
+    lambda <- object[[s]]
+  }
+  coef(object$sparsegl.fit, s = lambda)
 }
 
 
@@ -47,18 +48,15 @@ coef.cv.sparsegl <- function(object, s = c("lambda.1se", "lambda.min"), ...) {
 #' This function makes predictions from a cross-validated [cv.sparsegl()] object,
 #' using the stored `sparsegl.fit` object, and the value chosen for `lambda`.
 #'
-#'
+#' @inheritParams predict.sparsegl
 #' @param object Fitted [cv.sparsegl()] object.
-#' @param newx Matrix of new values for `x` at which predictions are to be
-#'   made. Must be a matrix. See documentation for [predict.sparsegl()].
 #' @param s Value(s) of the penalty parameter `lambda` at which
 #'   coefficients are desired. Default is the single
-#'   value `s = "lambda.1se"` stored on the CV `object` (corresponding to
+#'   value `s = "lambda.1se"` stored in the CV object (corresponding to
 #'   the largest value of `lambda` such that CV error estimate is within 1
 #'   standard error of the minimum). Alternatively `s = "lambda.min"` can be
 #'   used (corresponding to the minimum of cross validation error estimate).
 #'   If `s` is numeric, it is taken as the value(s) of `lambda` to be used.
-#' @param ... Other arguments passed along to [predict.sparsegl()].
 #'
 #' @return A matrix or vector of predicted values.
 #' @seealso [cv.sparsegl()], and [coef.cv.sparsegl()] methods.
@@ -77,15 +75,19 @@ coef.cv.sparsegl <- function(object, s = c("lambda.1se", "lambda.min"), ...) {
 #' cv_fit <- cv.sparsegl(X, y, groups)
 #' predict(cv_fit, newx = X[50:60, ], s = "lambda.min")
 #'
-predict.cv.sparsegl <- function(object, newx,
-                                s = c("lambda.1se", "lambda.min"), ...) {
+predict.cv.sparsegl <- function(
+    object, newx,
+    s = c("lambda.1se", "lambda.min"),
+    type = c("link", "response", "coefficients", "nonzero", "class"), ...) {
+  rlang::check_dots_empty()
+  type <- match.arg(type)
   if (!(is.numeric(s) || is.character(s))) abort("Invalid form for `s`.")
   if (is.numeric(s)) lambda <- s
   else {
     s <- match.arg(s)
     lambda <- object[[s]]
   }
-  predict(object$sparsegl.fit, newx, s = lambda, ...)
+  predict(object$sparsegl.fit, newx, s = lambda, type = type)
 }
 
 #' @method fitted cv.sparsegl

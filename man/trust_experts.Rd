@@ -5,7 +5,7 @@
 \alias{trust_experts}
 \title{Trust in scientific experts during the Covid-19 pandemic}
 \format{
-A sparse \code{\link[Matrix:sparseMatrix]{Matrix::sparseMatrix()}} with 3775 rows, 96 columns, and
+A named \code{\link[Matrix:sparseMatrix]{Matrix::sparseMatrix()}} with 3775 rows, 96 columns, and
 51738 non-zero entries
 \describe{
 \item{\code{y}}{Real-valued response. This is the average of \verb{pct_trust_covid_info_*}
@@ -45,7 +45,8 @@ trust_experts
 A dataset containing a measurement of "trust" in experts along with other
 metrics collected through the Delphi Group at Carnegie Mellon University
 U.S. COVID-19 Trends and Impact Survey, in partnership with Facebook. This
-particular dataset is created from one of the public \href{https://www.cmu.edu/delphi-web/surveys/monthly-rollup/}{contingency tables},
+particular dataset is created from one of the public
+\href{https://www.cmu.edu/delphi-web/surveys/monthly-rollup/}{contingency tables},
 specifically, the breakdown by state, age, gender, and race/ethnicity published
 on 05 February 2022.
 }

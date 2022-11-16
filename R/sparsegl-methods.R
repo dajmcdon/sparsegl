@@ -31,6 +31,7 @@
 #' fit1 <- sparsegl(X, y, group = groups)
 #' coef(fit1, s = c(0.02, 0.03))
 coef.sparsegl <- function(object, s = NULL, ...) {
+  rlang::check_dots_empty()
   b0 <- matrix(object$b0, nrow = 1)
   rownames(b0) <- "(Intercept)"
   nbeta <- rbind2(b0, object$beta)

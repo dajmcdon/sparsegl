@@ -24,10 +24,10 @@ is a vector of measurements and each column is a feature. Objects of class
 \code{\link[Matrix:sparseMatrix]{Matrix::sparseMatrix}} are supported.}
 
 \item{y}{Double/Integer/Factor. The response variable.
-Quantitative for \code{family="gaussian"}.
-For \code{family="binomial"} should be either a factor with two levels or
-a vector of integers taking 2 unique values.
-For a factor, the last level in alphabetical order is the target class.}
+Quantitative for \code{family="gaussian"} and for other exponential families.
+If \code{family="binomial"} should be either a factor with two levels or
+a vector of integers taking 2 unique values. For a factor, the last level
+in alphabetical order is the target class.}
 
 \item{group}{Integer. A vector of consecutive integers describing the
 grouping of the coefficients (see example below).}
@@ -37,12 +37,13 @@ to use. Valid options are:
 \itemize{
 \item \code{"gaussian"} - least squares loss (regression, the default),
 \item \code{"binomial"} - logistic loss (classification)
+}
+
 For any other type, a valid \code{\link[stats:family]{stats::family()}} object may be passed. Note
 that these will generally be much slower to estimate than the built-in
 options passed as strings. So for example, \code{family = "gaussian"} and
 \code{family = gaussian()} will produce the same results, but the first
-will be much faster.
-}}
+will be much faster.}
 
 \item{lambda}{A user supplied \code{lambda} sequence. The default, \code{NULL}
 results in an automatic computation based on \code{nlambda}, the smallest value
@@ -71,11 +72,11 @@ large datasets. Smallest value allowable is \code{nfolds = 3}.}
 identifying which fold each observation is in. If supplied, \code{nfolds} can
 be missing.}
 
-\item{...}{Other arguments that can be passed to sparsegl.}
+\item{...}{Additional arguments to \code{\link[=sparsegl]{sparsegl()}}.}
 }
 \value{
 An object of class \code{\link[=cv.sparsegl]{cv.sparsegl()}} is returned, which is a
-list with the ingredients of the cross-validation fit.
+list with the components describing the cross-validation error.
 \item{lambda}{The values of \code{lambda} used in the fits.}
 \item{cvm}{The mean cross-validated error - a vector of
 length \code{length(lambda)}.}
@@ -94,7 +95,7 @@ is within 1 standard error of the minimum.}
 \item{call}{The function call.}
 }
 \description{
-Does k-fold cross-validation for \code{\link[=sparsegl]{sparsegl()}}.
+Performs k-fold cross-validation for \code{\link[=sparsegl]{sparsegl()}}.
 This function is largely similar \code{\link[glmnet:cv.glmnet]{glmnet::cv.glmnet()}}.
 }
 \details{

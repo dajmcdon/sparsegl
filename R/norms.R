@@ -26,14 +26,14 @@ grouped_two_norm <- function(x, gr) as.vector(tapply(x, gr, two_norm))
 
 
 
-#' Calculate common group norms
+#' Calculate common norms
 #'
-#' Norm calculation
+#' Calculate different norms of vectors with or without grouping structures.
 #'
 #' @param x A numeric vector.
-#' @param gr A numeric vector of the same length as x.
-#' @param asparse The weight to put on the l1 norm when calculating the group
-#'   norm.
+#' @param gr An integer (or factor) vector of the same length as x.
+#' @param asparse Scalar. The weight to put on the l1 norm when calculating the
+#'   group norm.
 #'
 #' @return A numeric scalar or vector
 #' @export

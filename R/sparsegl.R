@@ -1,38 +1,36 @@
 #' Regularization paths for sparse group-lasso models
 #'
+#' @description
 #' Fits regularization paths for sparse group-lasso penalized learning problems at a
 #' sequence of regularization parameters `lambda`.
-#'
 #' Note that the objective function for least squares is
 #' \deqn{RSS/(2n) + \lambda penalty}
 #' Users can also tweak the penalty by choosing a different penalty factor.
 #'
-#' For computing speed reason, if models are not converging or running slowly,
-#' consider increasing `eps`, decreasing `nlambda`, or increasing
-#' `lambda.factor` before increasing `maxit`.
 #'
 #' @param x Double. A matrix of predictors, of dimension
 #'   \eqn{n \times p}{n * p}; each row
 #'   is a vector of measurements and each column is a feature. Objects of class
 #'   [`Matrix::sparseMatrix`] are supported.
 #' @param y Double/Integer/Factor. The response variable.
-#'   Quantitative for `family="gaussian"`.
-#'   For `family="binomial"` should be either a factor with two levels or
-#'   a vector of integers taking 2 unique values.
-#'   For a factor, the last level in alphabetical order is the target class.
+#'   Quantitative for `family="gaussian"` and for other exponential families.
+#'   If `family="binomial"` should be either a factor with two levels or
+#'   a vector of integers taking 2 unique values. For a factor, the last level
+#'   in alphabetical order is the target class.
 #' @param group Integer. A vector of consecutive integers describing the
 #'   grouping of the coefficients (see example below).
 #' @param family Character or function. Specifies the generalized linear model
 #'   to use. Valid options are:
 #'   * `"gaussian"` - least squares loss (regression, the default),
 #'   * `"binomial"` - logistic loss (classification)
+#'
 #'   For any other type, a valid [stats::family()] object may be passed. Note
 #'   that these will generally be much slower to estimate than the built-in
 #'   options passed as strings. So for example, `family = "gaussian"` and
 #'   `family = gaussian()` will produce the same results, but the first
 #'   will be much faster.
 #' @param nlambda The number of \code{lambda} values - default is 100.
-#' @param lambda.factor The factor for getting the minimal lambda in the
+#' @param lambda.factor A multiplicative factor for the minimal lambda in the
 #'   `lambda` sequence, where `min(lambda) = lambda.factor * max(lambda)`.
 #'   `max(lambda)` is the smallest value of `lambda` for which all coefficients
 #'   are zero. The default depends on the relationship between \eqn{n}
@@ -60,8 +58,7 @@
 #' @param pf_sparse Penalty factor on l1-norm, a vector the same length as the
 #'   total number of columns in `x`. Each value corresponds to one predictor
 #'   Can be 0 for some predictors, which
-#'   implies that predictor will be receive by the group l2-norm penalty.
-#'   Each entry should be non-negative in this vector.
+#'   implies that predictor will be receive only the group penalty.
 #' @param dfmax Limit the maximum number of groups in the model. Default is
 #'   no limit.
 #' @param pmax Limit the maximum number of groups ever to be nonzero. For
@@ -72,8 +69,9 @@
 #'   value. Default is `3e8`. If models do not converge, consider increasing
 #'   `maxit`.
 #' @param intercept Whether to include intercept in the model. Default is TRUE.
-#' @param asparse The weight to put on the \eqn{\ell_1}-norm in sparse group
-#'   lasso. Default is `0.05`.
+#' @param asparse The relative weight to put on the \eqn{\ell_1}-norm in
+#'   sparse group lasso. Default is `0.05` (resulting in `0.95` on the
+#'   \eqn{\ell_2}-norm).
 #' @param standardize Logical flag for variable standardization (scaling) prior
 #'   to fitting the model. Default is TRUE.
 #' @param lower_bnd Lower bound for coefficient values, a vector in length of 1
@@ -91,10 +89,10 @@
 #'   with a [stats::family()] object, and is not typically necessary even then.
 #' @param trace_it Scalar integer. Larger values print more output during
 #'   the irls loop. Typical values are `0` (no printing), `1` (some printing
-#'   and a progress bar), and `2` (more printing and a progress bar).
+#'   and a progress bar), and `2` (more detailed printing).
 #'   These can only be used with a [stats::family()] object.
 #'
-#' @return An object with S3 class [sparsegl()].
+#' @return An object with S3 class [sparsegl()]. Among the list components:
 #' * `call` The call that produced this object.
 #' * `b0` Intercept sequence of length `length(lambda)`.
 #' * `beta` A `p` x `length(lambda)` sparse matrix of coefficients.
@@ -107,7 +105,9 @@
 #' * `group` A vector of consecutive integers describing the grouping of the
 #'     coefficients.
 #' * `nobs` The number of observations used to estimate the model.
-#' If `sparsegl()` was called with a [stats::family()] method
+#'
+#' If `sparsegl()` was called with a [stats::family()] method, this may also
+#' contain information about the deviance and the family used in fitting.
 #'
 #'
 #' @seealso [plot.sparsegl()], [coef.sparsegl()], [predict.sparsegl()]

@@ -1,6 +1,6 @@
 #' Cross-validation for a `sparsegl` object.
 #'
-#' Does k-fold cross-validation for [sparsegl()].
+#' Performs k-fold cross-validation for [sparsegl()].
 #' This function is largely similar [glmnet::cv.glmnet()].
 #'
 #' The function runs [sparsegl()] `nfolds + 1` times; the first to
@@ -23,10 +23,10 @@
 #' @param foldid An optional vector of values between 1 and `nfolds`
 #'   identifying which fold each observation is in. If supplied, `nfolds` can
 #'   be missing.
-#' @param ... Other arguments that can be passed to sparsegl.
+#' @param ... Additional arguments to [sparsegl()].
 #'
 #' @return An object of class [cv.sparsegl()] is returned, which is a
-#'   list with the ingredients of the cross-validation fit.
+#'   list with the components describing the cross-validation error.
 #'   \item{lambda}{The values of \code{lambda} used in the fits.}
 #'   \item{cvm}{The mean cross-validated error - a vector of
 #'     length \code{length(lambda)}.}

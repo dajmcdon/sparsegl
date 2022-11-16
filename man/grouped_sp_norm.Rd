@@ -11,7 +11,7 @@
 \alias{gr_one_norm}
 \alias{gr_two_norm}
 \alias{sp_group_norm}
-\title{Calculate common group norms}
+\title{Calculate common norms}
 \usage{
 zero_norm(x)
 
@@ -36,16 +36,16 @@ sp_group_norm(x, gr, asparse = 0.05)
 \arguments{
 \item{x}{A numeric vector.}
 
-\item{gr}{A numeric vector of the same length as x.}
+\item{gr}{An integer (or factor) vector of the same length as x.}
 
-\item{asparse}{The weight to put on the l1 norm when calculating the group
-norm.}
+\item{asparse}{Scalar. The weight to put on the l1 norm when calculating the
+group norm.}
 }
 \value{
 A numeric scalar or vector
 }
 \description{
-Norm calculation
+Calculate different norms of vectors with or without grouping structures.
 }
 \section{Functions}{
 \itemize{

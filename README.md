@@ -9,8 +9,8 @@ status](https://www.r-pkg.org/badges/version/sparsegl)](https://CRAN.R-project.o
 # R-package `sparsegl`
 
 The goal of sparsegl is to fit regularization paths for sparse
-group-lasso penalized learning problems. The model is fit for a sequence
-of the regularization parameter lambda.
+group-lasso penalized learning problems. The model is typically fit for
+a sequence of regularization parameters `lambda`.
 
 ## Installation
 
