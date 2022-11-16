@@ -5,14 +5,14 @@
 #'
 #' The function runs [sparsegl()] `nfolds + 1` times; the first to
 #' get the `lambda` sequence, and then the remainder to compute the fit
-#' with each of the folds omitted. The average error and standard deviation
+#' with each of the folds omitted. The average error and standard error
 #' over the folds are computed.
 #'
 #' @aliases cv.sparsegl cv.ls
 #' @inheritParams sparsegl
 #' @param pred.loss Loss to use for cross-validation error. Valid options are:
 #'  * `"default"` the same as deviance (mse for regression and deviance otherwise)
-#'  * `"mse"` for regression, mean square error
+#'  * `"mse"` mean square error
 #'  * `"deviance"` the default (mse for Gaussian regression, and negative
 #'    log-likelihood otherwise)
 #'  * `"mae"` mean absolute error, can apply to any family

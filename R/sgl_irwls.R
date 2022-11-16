@@ -241,7 +241,6 @@ sgl_irwls <- function(
   return(out)
 }
 
-#' @importFrom rlang `%||%`
 irwls_fit <- function(warm, static) {
   maxit_irls <- 50
 
