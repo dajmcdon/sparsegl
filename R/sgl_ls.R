@@ -9,9 +9,12 @@ sgl_ls <- function(
     is.sparse <- TRUE
     x <- as_dgCMatrix(x)
   }
+  ym <- mean(y)
   if (intr) {
-    ym <- mean(y)
     y <- y - ym
+    nulldev <- mean(y^2)
+  } else {
+    nulldev <- mean((y - ym)^2)
   }
   if (standardize) {
     sx <- sqrt(Matrix::colSums(x^2))
@@ -96,6 +99,8 @@ sgl_ls <- function(
   outlist$jerr <- fit$jerr
   outlist$group <- group
   outlist$mse <- fit$mse[seq(fit$nalam)]
+  outlist$dev.ratio <- 1 - outlist$mse / nulldev
+  outlist$nulldev <- nulldev
   class(outlist) <- c("lsspgl")
   outlist
 }

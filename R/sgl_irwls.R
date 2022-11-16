@@ -161,9 +161,9 @@ sgl_irwls <- function(
 
     # browser()
     # here we dispatch to wls
-    fit <- irwls_fit(warm, static_args)
+    warm <- irwls_fit(warm, static_args)
     if (trace_it == 1) utils::setTxtProgressBar(pb, l)
-    if (fit$jerr != 0) {
+    if (warm$jerr != 0) {
       if (l > 1L) {
         rlang::warn(
           "Convergence for {l}th lambda value not reached after maxit =
@@ -181,16 +181,16 @@ sgl_irwls <- function(
     if (findlambda) { # we searched inside the FORTRAN code, now we found it
       ulam <- double(nlam)
       alf <- flmin^(1/(nlam - 1))
-      ulam[1:nlam] <- exp(log(fit$ulam) + -1:(nlam - 2) * log(alf))
+      ulam[1:nlam] <- exp(log(warm$ulam) + -1:(nlam - 2) * log(alf))
       l <- 2L
       findlambda <- FALSE
       dev.ratio[1] <- 0
       b0[1] <- init$b0
     }
 
-    b0[l] <- fit$b0
-    beta[, l] <- as.matrix(fit$beta)
-    dev.ratio[l] <- fit$dev.ratio
+    b0[l] <- warm$b0
+    beta[, l] <- as.matrix(warm$beta)
+    dev.ratio[l] <- warm$dev.ratio
 
     # early stopping if dev.ratio almost 1 or no improvement
     if (l >= mnl && no_user_lambda) {
@@ -228,11 +228,12 @@ sgl_irwls <- function(
   out$df <- apply(abs(out$beta) > 0, 2, sum)
   out$dim <- dim(out$beta)
   out$lambda <- ulam
-  out$npasses <- fit$npasses
-  out$jerr <- fit$jerr
+  out$npasses <- warm$npass
+  out$jerr <- warm$jerr
   out$group <- group
+  out$deviance <- (1 - dev.ratio) * nulldev / nobs
   out$dev.ratio <- dev.ratio
-  out$nulldev <- nulldev
+  out$nulldev <- nulldev / nobs
   out$offset <- offset
   out$family <- family
   class(out) <- "irlsspgl"

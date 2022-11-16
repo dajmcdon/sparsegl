@@ -45,7 +45,7 @@ coef.cv.sparsegl <- function(object, s = c("lambda.1se", "lambda.min"), ...) {
 #' Make predictions from a `cv.sparsegl` object.
 #'
 #' This function makes predictions from a cross-validated [cv.sparsegl()] object,
-#' using the stored `"sparsegl.fit"` object, and the value chosen for `lambda`.
+#' using the stored `sparsegl.fit` object, and the value chosen for `lambda`.
 #'
 #'
 #' @param object Fitted [cv.sparsegl()] object.
@@ -58,7 +58,7 @@ coef.cv.sparsegl <- function(object, s = c("lambda.1se", "lambda.min"), ...) {
 #'   standard error of the minimum). Alternatively `s = "lambda.min"` can be
 #'   used (corresponding to the minimum of cross validation error estimate).
 #'   If `s` is numeric, it is taken as the value(s) of `lambda` to be used.
-#' @param ... Not used. Other arguments to [predict()].
+#' @param ... Other arguments passed along to [predict.sparsegl()].
 #'
 #' @return A matrix or vector of predicted values.
 #' @seealso [cv.sparsegl()], and [coef.cv.sparsegl()] methods.

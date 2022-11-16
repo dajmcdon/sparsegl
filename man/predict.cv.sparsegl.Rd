@@ -20,14 +20,14 @@ standard error of the minimum). Alternatively \code{s = "lambda.min"} can be
 used (corresponding to the minimum of cross validation error estimate).
 If \code{s} is numeric, it is taken as the value(s) of \code{lambda} to be used.}
 
-\item{...}{Not used. Other arguments to \code{\link[=predict]{predict()}}.}
+\item{...}{Other arguments passed along to \code{\link[=predict.sparsegl]{predict.sparsegl()}}.}
 }
 \value{
 A matrix or vector of predicted values.
 }
 \description{
 This function makes predictions from a cross-validated \code{\link[=cv.sparsegl]{cv.sparsegl()}} object,
-using the stored \code{"sparsegl.fit"} object, and the value chosen for \code{lambda}.
+using the stored \code{sparsegl.fit} object, and the value chosen for \code{lambda}.
 }
 \examples{
 n <- 100

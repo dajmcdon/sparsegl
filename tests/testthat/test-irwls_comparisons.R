@@ -101,7 +101,7 @@ test_that("wls sparse and dense cases give the same results, Gaussian", {
   res2 <- sparsegl(xsp, y, group, family = gaussian())
 
   tt <- abs(coef(res1) - coef(res2)) / (1 + abs(coef(res1)))
-  expect_lt(max(tt), 1e-10)
+  expect_lt(max(tt), 1e-7)
 
   res1 <- sparsegl(x, ybin, group, family = binomial(), nlambda = 10,
                    lambda.factor = .01)
