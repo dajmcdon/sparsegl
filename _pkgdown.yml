@@ -21,7 +21,7 @@ reference:
     - cv.sparsegl
 - title: "Plot and predict functions"
   desc: >
-    Plot and predict for sparsegl or cv.sparsegl objects.
+    Methods for sparsegl or cv.sparsegl objects.
 - contents:
     - starts_with("plot")
     - starts_with("coef")
@@ -38,3 +38,6 @@ reference:
 - title: "Data"
 - contents:
     - trust_experts
+- title: "Other functions"
+- contents:
+    - make_irls_warmup
