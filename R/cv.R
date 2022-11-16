@@ -166,8 +166,8 @@ cverror.logitspgl <- function(
     binom_deviance <- function(m) stats::binomial()$dev.resids(y, m, 1)
     cvraw <- switch(
         pred.loss,
-        mse = (y - preds)^2,
-        mae = abs(y - preds),
+        mse = (y - predmat)^2,
+        mae = abs(y - predmat),
         misclass = y != ifelse(predmat > 0.5, 1, 0),
         apply(predmat, 2, binom_deviance)
     )
@@ -176,4 +176,38 @@ cverror.logitspgl <- function(
     cvsd <- sqrt(apply(scale(cvraw, cvm, FALSE)^2, 2, mean, NA.RM = TRUE) /
                      (N - 1))
     list(cvm = cvm, cvsd = cvsd, name = typenames[pred.loss])
+}
+
+#' @export
+cverror.irlsspgl <- function(
+    fullfit, outlist, lambda, x, y, foldid,
+    pred.loss = c("default", "mse", "deviance", "mae")) {
+  typenames <- c(default = "Deviance", mse = "Mean squared error",
+                 deviance = "Deviance", mae = "Mean absolute error")
+  pred.loss <- match.arg(pred.loss)
+
+  nfolds <- max(foldid)
+  predmat <- matrix(NA, length(y), length(lambda))
+  nlams <- double(nfolds)
+  for (i in seq(nfolds)) {
+    test_fold <- foldid == i
+    fitobj <- outlist[[i]]
+    preds <- predict(fitobj, x[test_fold, , drop = FALSE], type = "response")
+    nlami <- length(outlist[[i]]$lambda)
+    predmat[test_fold, seq(nlami)] <- preds
+    nlams[i] <- nlami
+  }
+
+  dev_fun <- function(m) fullfit$family$dev.resids(y, m, 1)
+  cvraw <- switch(
+    pred.loss,
+    mse = (y - predmat)^2,
+    mae = abs(y - predmat),
+    apply(predmat, 2, dev_fun)
+  )
+  N <- length(y) - apply(is.na(predmat), 2, sum)
+  cvm <- apply(cvraw, 2, mean, na.rm = TRUE)
+  cvsd <- sqrt(apply(scale(cvraw, cvm, FALSE)^2, 2, mean, NA.RM = TRUE) /
+                 (N - 1))
+  list(cvm = cvm, cvsd = cvsd, name = typenames[pred.loss])
 }
