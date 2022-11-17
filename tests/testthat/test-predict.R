@@ -9,7 +9,7 @@ test_that("tests for linear regression model", {
   beta_star <- c(rep(5, 5), c(5, -5, 2, 0, 0), rep(-5, 5), rep(0, (p - 15)))
   y <- X %*% beta_star + eps
   groups <- rep(1:(p / 5), each = 5)
-  fit1 <- sparsegl(X, y, group = groups)
+  fit1 <- sparsegl(X, y, group = groups, eps = 1e-8, maxit = 3e8)
 
   # expect error if type is not nonzero or coefficients
   expect_error(predict(fit1, type = "response"))
@@ -29,7 +29,7 @@ test_that("tests for linear regression model", {
   X <- matrix(c(rnorm(6)), nrow = 3)
   beta <- c(2, 1)
   y <- X %*% beta + rnorm(3, sd = .1)
-  res1 <- sparsegl(X, y, lambda = 0)
+  res1 <- sparsegl(X, y, lambda = 0, eps = 1e-8, maxit = 3e8)
   res2 <- summary(lm(y~X))
 
   expect_equal(as.numeric(predict(res1, type = "coefficients")),
@@ -51,7 +51,7 @@ test_that("tests for logistic regression model", {
   y0 <- rbinom(n, 1, pr)
   y1 <- y0
   y1[which(y1 == 0)] <- -1
-  fit2 <- sparsegl(X, y1, group = groups, family = "binomial")
+  fit2 <- sparsegl(X, y1, group = groups, family = "binomial", eps = 1e-8)
 
   # expect error if type is not nonzero or coefficients
   expect_error(predict(fit2, type = "response"))
@@ -66,15 +66,15 @@ test_that("tests for logistic regression model", {
   y0 <- rbinom(25, 1, pr)
   y1 <- y0
   y1[which(y1 == 0)] <- -1
-  res1 <- sparsegl(X, y1, lambda = 0, family = "binomial")
+  res1 <- sparsegl(X, y1, lambda = 0, family = "binomial", eps = 1e-8)
   res2 <- glmnet(X, y1, family = "binomial", lambda = 0)
 
   # check whether y can be corrected if y is a numeric vector
-  res3 <- sparsegl(X, y0, lambda = 0, family = "binomial")
+  res3 <- sparsegl(X, y0, lambda = 0, family = "binomial", eps = 1e-8)
   chars <- y0
   chars[chars == 0] <- 'a'
   chars[chars == 1] <- 'b'
-  res4 <- sparsegl(X, chars, lambda = 0, family = "binomial")
+  res4 <- sparsegl(X, chars, lambda = 0, family = "binomial", eps = 1e-8)
 
   expect_equal(as.numeric(predict(res1, type = "coefficients")[, 1]),
                as.numeric(c(res2$a0, res2$beta[, 1])), tolerance = 1e-3)

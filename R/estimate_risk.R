@@ -33,7 +33,20 @@
 estimate_risk <- function(object, x,
                           type = c("AIC", "BIC", "GCV"),
                           approx_df = FALSE) {
-  if (! "ls" %in% class(object)) stop("Only linear regression is supported.")
+  UseMethod("estimate_risk")
+}
+
+#' @export
+estimate_risk.default <- function(object, x,
+                                  type = c("AIC", "BIC", "GCV"),
+                                  approx_df = FALSE) {
+  stop("Risk estimation is only available for Gaussian likelihood.")
+}
+
+#' @export
+estimate_risk.lsspgl <- function(object, x,
+                                 type = c("AIC", "BIC", "GCV"),
+                                 approx_df = FALSE) {
   type <- match.arg(type, several.ok = TRUE)
 
   err <- log(object$mse)
@@ -84,10 +97,10 @@ exact_df <- function(object, x) {
     Idx <- Iset[, i]
     if (any(Idx)) {
       gr <- group[Idx]
-      xx_sub <- xx[Idx, Idx]
+      xx_sub <- as(xx[Idx, Idx], "Matrix")
       del <- delP(beta[Idx, i], gr)
       li <- object$lambda[i] * pf[Idx]
-      df[i] <- sum(solve(xx_sub + li * del) * xx_sub)
+      df[i] <- sum(Matrix::solve(xx_sub + li * del) * xx_sub)
     }
   }
   return(df)

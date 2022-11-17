@@ -1,11 +1,22 @@
 Type: Package
 Package: sparsegl
 Title: Sparse Group Lasso
-Version: 0.3.0
+Version: 1.0.0
 Authors@R: c(
     person("Daniel J.", "McDonald", , "daniel@stat.ubc.ca", role = c("aut", "cre")),
     person("Xiaoxuan", "Liang", , "xiaoxuan.liang@stat.ubc.ca", role = "aut"),
-    person("Aaron", "Cohen", , "cohenaa@indiana.edu", role = "aut")
+    person("Anibal", "Solón Heinsfeld", , "anibalsolon@gmail.com", role = "aut"),
+    person("Aaron", "Cohen", , "cohenaa@indiana.edu", role = "aut"),
+    person("Yi", "Yang", , "yi.yang6@mcgill.ca", role = "ctb"),
+    person("Hui", "Zou", role = "ctb"),
+    person("Jerome", "Friedman", role = "ctb"),
+    person("Trevor", "Hastie", role = "ctb"),
+    person("Rob", "Tibshirani", role = "ctb"),
+    person("Balasubramanian", "Narasimhan", role = "ctb"),
+    person("Kenneth", "Tay", role = "ctb"),
+    person("Noah", "Simon", role = "ctb"),
+    person("Junyang", "Qian", role = "ctb"),
+    person("James", "Yang", role = "ctb")
   )
 Description: Efficient implementation of sparse group lasso with optional
     bound constraints on the coefficients. It supports the use of a sparse
@@ -20,7 +31,6 @@ BugReports: https://github.com/dajmcdon/sparsegl/issues/
 Depends: 
     R (>= 3.5)
 Imports: 
-    assertthat,
     dotCall64,
     ggplot2,
     magrittr,
@@ -42,4 +52,4 @@ Encoding: UTF-8
 LazyData: true
 NeedsCompilation: yes
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.2.0
+RoxygenNote: 7.2.2

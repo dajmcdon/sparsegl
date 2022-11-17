@@ -7,16 +7,14 @@ sgl_ls <- function(
   if (!is.numeric(y)) stop("For family = 'gaussian', y must be numeric.")
   if (inherits(x,"sparseMatrix")) {
     is.sparse <- TRUE
-    x <- methods::as(x,"CsparseMatrix")
-    x <- methods::as(x,"dgCMatrix")
+    x <- as_dgCMatrix(x)
   }
+  ym <- mean(y)
   if (intr) {
-    ym <- mean(y)
     y <- y - ym
-    if (!is.sparse) {
-      xm <- colMeans(x)
-      x <- sweep(x,2,xm)
-    }
+    nulldev <- mean(y^2)
+  } else {
+    nulldev <- mean((y - ym)^2)
   }
   if (standardize) {
     sx <- sqrt(Matrix::colSums(x^2))
@@ -39,7 +37,7 @@ sgl_ls <- function(
       SIGNATURE = c("integer", "integer", "integer", "integer", "double",
                     "integer", "integer", "double", "double", "double", "double",
                     "integer", "integer", "integer", "double", "double",
-                    "double", "integer", "integer", "double", "integer",
+                    "double", "integer", "integer", "integer", "double", "double", "integer",
                     "integer", "double", "integer", "integer", "double",
                     "double", "double", "double"),
       # Read only
@@ -48,15 +46,16 @@ sgl_ls <- function(
       pfl1 = pfl1,
       # Read / write
       dfmax = dfmax, pmax = pmax, nlam = nlam, flmin = flmin, ulam = ulam,
-      eps = eps, maxit = maxit,
+      eps = eps, maxit = maxit, intr = as.integer(intr),
       # Write only
-      nalam = integer_dc(1), beta = numeric_dc(nvars * nlam),
+      nalam = integer_dc(1), b0 = numeric_dc(nlam),
+      beta = numeric_dc(nvars * nlam),
       activeGroup = integer_dc(pmax), nbeta = integer_dc(nlam),
       alam = numeric_dc(nlam), npass = integer_dc(1),
       jerr = integer_dc(1), mse = numeric_dc(nlam),
       # read only
       alsparse = asparse, lb = lower_bnd, ub = upper_bnd,
-      INTENT = c(rep("r", 11), rep("rw", 7), rep("w", 8), rep("r", 3)),
+      INTENT = c(rep("r", 11), rep("rw", 8), rep("w", 9), rep("r", 3)),
       NAOK = TRUE,
       PACKAGE = "sparsegl")
   } else { # sparse design matrix
@@ -92,14 +91,16 @@ sgl_ls <- function(
   outlist <- getoutput(x, group, fit, maxit, pmax, nvars, vnames, eps)
   if (standardize) outlist$beta <- outlist$beta * xs
   if (intr) {
-    if (is.sparse) outlist$b0 <- outlist$b0 + ym
-    else outlist$b0 <- ym - xm %*% outlist$beta
+    outlist$b0 <- outlist$b0 + ym
   } else {
-    if (!is.sparse) outlist$b0 <- rep(0, dim(outlist$beta)[2])
+    outlist$b0 <- rep(0, dim(outlist$beta)[2])
   }
-  outlist <- c(outlist,
-               list(npasses = fit$npass, jerr = fit$jerr, group = group,
-                    mse = fit$mse[seq(fit$nalam)]))
-  class(outlist) <- c("ls")
+  outlist$npasses <- fit$npass
+  outlist$jerr <- fit$jerr
+  outlist$group <- group
+  outlist$mse <- fit$mse[seq(fit$nalam)]
+  outlist$dev.ratio <- 1 - outlist$mse / nulldev
+  outlist$nulldev <- nulldev
+  class(outlist) <- c("lsspgl")
   outlist
 }

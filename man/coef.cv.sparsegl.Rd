@@ -2,7 +2,7 @@
 % Please edit documentation in R/cv.sparsegl-methods.R
 \name{coef.cv.sparsegl}
 \alias{coef.cv.sparsegl}
-\title{Get coefficients from a \code{cv.sparsegl} object.}
+\title{Extract coefficients from a \code{cv.sparsegl} object.}
 \usage{
 \method{coef}{cv.sparsegl}(object, s = c("lambda.1se", "lambda.min"), ...)
 }
@@ -11,19 +11,19 @@
 
 \item{s}{Value(s) of the penalty parameter \code{lambda} at which
 coefficients are desired. Default is the single
-value \code{s = "lambda.1se"} stored on the CV \code{object} (corresponding to
+value \code{s = "lambda.1se"} stored in the CV object (corresponding to
 the largest value of \code{lambda} such that CV error estimate is within 1
 standard error of the minimum). Alternatively \code{s = "lambda.min"} can be
 used (corresponding to the minimum of cross validation error estimate).
 If \code{s} is numeric, it is taken as the value(s) of \code{lambda} to be used.}
 
-\item{...}{Not used. Other arguments to \code{\link[=predict]{predict()}}.}
+\item{...}{Not used.}
 }
 \value{
 The coefficients at the requested value(s) for \code{lambda}.
 }
 \description{
-This function gets coefficients from a
+This function etracts coefficients from a
 cross-validated \code{\link[=sparsegl]{sparsegl()}} model, using the stored \code{"sparsegl.fit"}
 object, and the optimal value chosen for \code{lambda}.
 }

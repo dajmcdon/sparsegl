@@ -10,6 +10,13 @@
 ## and hence are not exported into the global environment.
 ## The original comments and header are preserved.
 
+
+#' @importFrom methods as
+as_dgCMatrix <- function(x) {
+  as(as(x, "sparseMatrix"), "CsparseMatrix")
+}
+
+
 err <- function(n, maxit, pmax) {
     if (n == 0) msg <- ""
     if (n > 0) {
@@ -70,7 +77,8 @@ getoutput <- function(x, group, fit, maxit, pmax, nvars, vnames, eps) {
             tol = eps^2)
         df <- apply(abs(beta) > 0, 2, sum) ## this is wrong, but fast
     } else {
-        beta <- Matrix::Matrix(0, nvars, nalam)
+        beta <- Matrix::Matrix(0, nvars, nalam,
+                               dimnames = list(vnames, stepnames))
         df <- rep(0, nalam)
     }
     b0 <- fit$b0

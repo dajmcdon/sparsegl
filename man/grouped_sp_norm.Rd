@@ -11,7 +11,7 @@
 \alias{gr_one_norm}
 \alias{gr_two_norm}
 \alias{sp_group_norm}
-\title{Calculate common group norms}
+\title{Calculate common norms}
 \usage{
 zero_norm(x)
 
@@ -36,43 +36,43 @@ sp_group_norm(x, gr, asparse = 0.05)
 \arguments{
 \item{x}{A numeric vector.}
 
-\item{gr}{A numeric vector of the same length as x.}
+\item{gr}{An integer (or factor) vector of the same length as x.}
 
-\item{asparse}{The weight to put on the l1 norm when calculating the group
-norm.}
+\item{asparse}{Scalar. The weight to put on the l1 norm when calculating the
+group norm.}
 }
 \value{
 A numeric scalar or vector
 }
 \description{
-Norm calculation
+Calculate different norms of vectors with or without grouping structures.
 }
 \section{Functions}{
 \itemize{
-\item \code{zero_norm}: l0-norm (number of nonzero entries).
+\item \code{zero_norm()}: l0-norm (number of nonzero entries).
 
-\item \code{one_norm}: l1-norm (Absolute-value norm).
+\item \code{one_norm()}: l1-norm (Absolute-value norm).
 
-\item \code{two_norm}: l2-norm (Euclidean norm).
+\item \code{two_norm()}: l2-norm (Euclidean norm).
 
-\item \code{grouped_zero_norm}: A vector of group-wise l0-norms.
+\item \code{grouped_zero_norm()}: A vector of group-wise l0-norms.
 
-\item \code{grouped_one_norm}: A vector of group-wise l1-norms.
+\item \code{grouped_one_norm()}: A vector of group-wise l1-norms.
 
-\item \code{grouped_two_norm}: A vector of group-wise l2-norms.
+\item \code{grouped_two_norm()}: A vector of group-wise l2-norms.
 
-\item \code{grouped_sp_norm}: A vector of length \code{unique(gr)} consisting of
+\item \code{grouped_sp_norm()}: A vector of length \code{unique(gr)} consisting of
 the \code{asparse} convex combination of the l1 and l2-norm for each group.
 
-\item \code{gr_one_norm}: The l1-norm norm of a vector (a scalar).
+\item \code{gr_one_norm()}: The l1-norm norm of a vector (a scalar).
 
-\item \code{gr_two_norm}: The sum of the group-wise l2-norms of a vector
+\item \code{gr_two_norm()}: The sum of the group-wise l2-norms of a vector
 (a scalar).
 
-\item \code{sp_group_norm}: The sum of the \code{asparse} convex combination of
+\item \code{sp_group_norm()}: The sum of the \code{asparse} convex combination of
 group l1 and l2-norms vectors (a scalar).
-}}
 
+}}
 \examples{
 x <- c(rep(-1, 5), rep(0, 5), rep(1,5))
 gr <- c(rep(1,5), rep(2,5), rep(3,5))

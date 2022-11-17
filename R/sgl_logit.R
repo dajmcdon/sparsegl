@@ -1,28 +1,29 @@
+#' @importFrom stats glm binomial gaussian
 sgl_logit <- function(
   bn, bs, ix, iy, nobs, nvars, x, y, pf, pfl1,
   dfmax, pmax, nlam, flmin, ulam, eps,
   maxit, vnames, group, intr, asparse, standardize,
   lower_bnd, upper_bnd) {
-  # call Fortran core
+
   y <- as.factor(y)
   lev <- levels(y)
   ntab <- table(y)
   minclass <- min(ntab)
   if (minclass <= 1)
-    stop("Binomial regression: one class has 1 or 0 observations; not allowed")
+    rlang::abort("Binomial regression: one class has 1 or 0 observations; not allowed")
   if (length(ntab) != 2)
-    stop("Binomial regression: more than one class is not supported")
+    rlang::abort("Binomial regression: more than one class is not supported")
   if (minclass < 8)
-    warning(paste0("Binomial regression: one class has fewer than 8\n",
-                   "observations; dangerous ground"))
+    rlang::warn(c("Binomial regression: one class has fewer than 8",
+                  "observations; dangerous ground"))
   # TODO, enable prediction with class labels if factor is passed
+  if (intr == 1L && flmin < 1) b0_first <- coef(glm(y ~ 1, family = binomial()))
   y <- 2 * (as.integer(y) - 1) - 1 # convert to -1 / 1
 
   is.sparse <- FALSE
   if (inherits(x, "sparseMatrix")) {
     is.sparse <- TRUE
-    x <- methods::as(x, "CsparseMatrix")
-    x <- methods::as(x, "dgCMatrix")
+    x <- as_dgCMatrix(x)
   }
   if (standardize) {
     sx <- sqrt(Matrix::colSums(x^2))
@@ -43,14 +44,15 @@ sgl_logit <- function(
     fit <- dotCall64::.C64(
       "log_sparse_four",
       SIGNATURE = c("integer", "integer", "integer", "integer", "double",
-                    "integer", "integer", "double", "double", "double", "double",
-                    "integer", "integer", "integer", "double", "double",
+                    "integer", "integer", "double", "double", "double",
                     "double", "integer", "integer", "integer", "double",
-                    "double", "integer", "integer", "double", "integer",
-                    "integer", "double", "double", "double"),
+                    "double", "double", "integer", "integer", "integer",
+                    "double", "double", "integer", "integer", "double",
+                    "integer", "integer", "double", "double", "double"),
       # Read only
-      bn = bn, bs = bs, ix = ix, iy = iy, gam = gamma, nobs = nobs,
-      nvars = nvars, x = as.double(x), y = as.double(y), pf = pf, pfl1 = pfl1,
+      bn = bn, bs = bs, ix = ix, iy = iy, gam = gamma,
+      nobs = nobs, nvars = nvars, x = as.double(x), y = as.double(y), pf = pf,
+      pfl1 = pfl1,
       # Read / write
       dfmax = dfmax, pmax = pmax, nlam = nlam, flmin = flmin, ulam = ulam,
       eps = eps, maxit = maxit, intr = as.integer(intr),
@@ -69,15 +71,15 @@ sgl_logit <- function(
       "log_spmat_four",
       SIGNATURE = c("integer", "integer", "integer", "integer", "double",
                     "integer", "integer", "double", "integer", "integer",
-                    "integer", "double", "double", "double", "integer", "integer",
                     "integer", "double", "double", "double", "integer",
-                    "integer", "integer", "double", "double", "integer",
-                    "integer", "double", "integer", "integer", "double",
-                    "double", "double"),
+                    "integer", "integer", "double", "double", "double",
+                    "integer", "integer", "integer", "double", "double",
+                    "integer", "integer", "double", "integer", "integer",
+                    "double", "double", "double"),
       # Read only
-      bn = bn, bs = bs, ix = ix, iy = iy, gam = gamma, nobs = nobs,
-      nvars = nvars, x = as.double(xval), xidx = xidx, xcptr = xcptr,
-      nnz = nnz, y = as.double(y), pf = pf, pfl1 = pfl1,
+      bn = bn, bs = bs, ix = ix, iy = iy, gam = gamma,
+      nobs = nobs, nvars = nvars, x = as.double(xval), xidx = xidx,
+      xcptr = xcptr, nnz = nnz, y = as.double(y), pf = pf, pfl1 = pfl1,
       # Read / write
       dfmax = dfmax, pmax = pmax, nlam = nlam, flmin = flmin,
       ulam = ulam, eps = eps, maxit = maxit, intr = as.integer(intr),
@@ -97,9 +99,14 @@ sgl_logit <- function(
   if (standardize) outlist$beta <- outlist$beta * xs
 
   outlist$b0 <- matrix(outlist$b0, nrow = 1)
-  outlist <- c(outlist,
-               list(npasses = fit$npass, jerr = fit$jerr, group = group,
-                    classnames = lev))
-  class(outlist) <- c("logit")
+  if (intr == 1L && flmin < 1) outlist$b0[1] <- b0_first
+  outlist <- c(
+    outlist,
+    list(npasses = fit$npass,
+         jerr = fit$jerr,
+         group = group,
+         classnames = lev)
+  )
+  class(outlist) <- c("logitspgl")
   outlist
 }
