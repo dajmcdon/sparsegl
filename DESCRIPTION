@@ -2,6 +2,7 @@ Type: Package
 Package: sparsegl
 Title: Sparse Group Lasso
 Version: 1.0.0
+Date: 2022-11-17
 Authors@R: c(
     person("Daniel J.", "McDonald", , "daniel@stat.ubc.ca", role = c("aut", "cre")),
     person("Xiaoxuan", "Liang", , "xiaoxuan.liang@stat.ubc.ca", role = "aut"),

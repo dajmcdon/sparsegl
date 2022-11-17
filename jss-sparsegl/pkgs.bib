@@ -1,24 +1,41 @@
+@Manual{R-base,
+  title = {R: A Language and Environment for Statistical Computing},
+  author = {{R Core Team}},
+  organization = {R Foundation for Statistical Computing},
+  address = {Vienna, Austria},
+  year = {2022},
+  url = {https://www.R-project.org/},
+}
+
 @Manual{R-biglasso,
   title = {biglasso: Extending Lasso Model Fitting to Big Data},
   author = {Yaohui Zeng and Chuyi Wang and Patrick Breheny},
   year = {2022},
-  note = {R package version 1.5.1},
+  note = {R package version 1.5.2},
   url = {https://CRAN.R-project.org/package=biglasso},
+}
+
+@Manual{R-CVXR,
+  title = {CVXR: Disciplined Convex Optimization},
+  author = {Anqi Fu and Balasubramanian Narasimhan and David W Kang and Steven Diamond and John Miller},
+  year = {2022},
+  note = {R package version 1.0-11},
+  url = {https://CRAN.R-project.org/package=CVXR},
 }
 
 @Manual{R-devtools,
   title = {devtools: Tools to Make Developing R Packages Easier},
   author = {Hadley Wickham and Jim Hester and Winston Chang and Jennifer Bryan},
-  year = {2021},
-  note = {R package version 2.4.3},
+  year = {2022},
+  note = {R package version 2.4.5},
   url = {https://CRAN.R-project.org/package=devtools},
 }
 
 @Manual{R-dotCall64,
   title = {dotCall64: Enhanced Foreign Function Interface Supporting Long Vectors},
   author = {Kaspar Moesinger and Florian Gerber},
-  year = {2021},
-  note = {R package version 1.0-1},
+  year = {2022},
+  note = {R package version 1.0-2},
   url = {https://git.math.uzh.ch/reinhard.furrer/dotCall64},
 }
 
@@ -34,7 +51,7 @@
   title = {ggplot2: Create Elegant Data Visualisations Using the Grammar of Graphics},
   author = {Hadley Wickham and Winston Chang and Lionel Henry and Thomas Lin Pedersen and Kohske Takahashi and Claus Wilke and Kara Woo and Hiroaki Yutani and Dewey Dunnington},
   year = {2022},
-  note = {R package version 3.3.6},
+  note = {R package version 3.4.0},
   url = {https://CRAN.R-project.org/package=ggplot2},
 }
 
@@ -50,8 +67,16 @@
   title = {knitr: A General-Purpose Package for Dynamic Report Generation in R},
   author = {Yihui Xie},
   year = {2022},
-  note = {R package version 1.39},
+  note = {R package version 1.40},
   url = {https://yihui.org/knitr/},
+}
+
+@Manual{R-msgl,
+  title = {msgl: Multinomial Sparse Group Lasso},
+  author = {Martin Vincent},
+  year = {2019},
+  note = {R package version 2.3.9},
+  url = {https://CRAN.R-project.org/package=msgl},
 }
 
 @Manual{R-RSpectra,
@@ -66,7 +91,7 @@
   title = {rticles: Article Formats for R Markdown},
   author = {JJ Allaire and Yihui Xie and Christophe Dervieux and {R Foundation} and Hadley Wickham and {Journal of Statistical Software} and Ramnath  Vaidyanathan and {Association for Computing Machinery} and Carl Boettiger and {Elsevier} and Karl Broman and Kirill Mueller and Bastiaan Quast and Randall  Pruim and Ben Marwick and Charlotte Wickham and Oliver Keyes and Miao Yu and Daniel Emaasit and Thierry Onkelinx and Alessandro Gasparini and Marc-Andre Desautels and Dominik Leutnant and {MDPI} and {Taylor and Francis} and Oğuzhan Öğreden and Dalton Hance and Daniel Nüst and Petter Uvesten and Elio Campitelli and John Muschelli and Alex Hayes and Zhian N. Kamvar and Noam Ross and Robrecht Cannoodt and Duncan Luguern and David M. Kaplan and Sebastian Kreutzer and Shixiang Wang and Jay Hesselberth and Rob Hyndman},
   year = {2022},
-  note = {R package version 0.23},
+  note = {R package version 0.24},
   url = {https://github.com/rstudio/rticles},
 }
 
@@ -81,9 +106,9 @@ Lasso Regularization},
 
 @Manual{R-sparsegl,
   title = {sparsegl: Sparse Group Lasso},
-  author = {Daniel J. McDonald and Xiaoxuan Liang and Aaron Cohen},
+  author = {Daniel J. McDonald and Xiaoxuan Liang and Anibal {Solón Heinsfeld} and Aaron Cohen},
   year = {2022},
-  note = {R package version 0.3.0},
+  note = {R package version 1.0.0},
   url = {https://github.com/dajmcdon/sparsegl/},
 }
 
@@ -91,25 +116,39 @@ Lasso Regularization},
   title = {testthat: Unit Testing for R},
   author = {Hadley Wickham},
   year = {2022},
-  note = {R package version 3.1.4},
+  note = {R package version 3.1.5},
   url = {https://CRAN.R-project.org/package=testthat},
 }
 
 @Manual{R-usethis,
   title = {usethis: Automate Package and Project Setup},
   author = {Hadley Wickham and Jennifer Bryan and Malcolm Barrett},
-  year = {2021},
-  note = {R package version 2.1.5},
+  year = {2022},
+  note = {R package version 2.1.6},
   url = {https://CRAN.R-project.org/package=usethis},
 }
 
-@Article{biglasso2017,
+@Article{biglasso2021,
   author = {Yaohui Zeng and Patrick Breheny},
   title = {The biglasso Package: A Memory- and Computation-Efficient Solver for Lasso Model Fitting with Big Data in R},
-  journal = {ArXiv e-prints},
+  journal = {R Journal},
   eprint = {1701.05936},
-  year = {2017},
-  url = {https://arxiv.org/abs/1701.05936},
+  year = {2021},
+  number = {2},
+  pages = {6--19},
+  volume = {12},
+  url = {https://doi.org/10.32614/RJ-2021-001},
+}
+
+@Article{CVXR2020,
+  title = {{CVXR}: An {R} Package for Disciplined Convex Optimization},
+  author = {Anqi Fu and Balasubramanian Narasimhan and Stephen Boyd},
+  journal = {Journal of Statistical Software},
+  year = {2020},
+  volume = {94},
+  number = {14},
+  pages = {1--34},
+  doi = {10.18637/jss.v094.i14},
 }
 
 @Article{dotCall642018,
@@ -187,6 +226,17 @@ Lasso Regularization},
   year = {2014},
   note = {ISBN 978-1466561595},
   url = {http://www.crcpress.com/product/isbn/9781466561595},
+}
+
+@Article{msgl2014,
+  title = {Sparse group lasso and high dimensional multinomial classification},
+  author = {{Vincent} and {M.} and {Hansen} and N. R.},
+  year = {2014},
+  journal = {Computational Statistics & Data Analysis},
+  volume = {71},
+  pages = {771--786},
+  doi = {10.1016/j.csda.2013.06.004},
+  url = {http://www.sciencedirect.com/science/article/pii/S0167947313002168},
 }
 
 @Article{testthat2011,
