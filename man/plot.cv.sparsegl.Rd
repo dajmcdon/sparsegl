@@ -22,8 +22,8 @@ curves, as a function of the \code{lambda} values used. This function is
 modified based on \code{\link[glmnet:plot.cv.glmnet]{glmnet::plot.cv.glmnet()}}.
 }
 \details{
-A plot is produced, a \code{\link[ggplot2:ggplot]{ggplot2::ggplot()}} object. Additional user
-modifications can be added as desired.
+A \code{\link[ggplot2:ggplot]{ggplot2::ggplot()}} plot is produced. Additional user
+modifications may be added as desired.
 }
 \examples{
 n <- 100

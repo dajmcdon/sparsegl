@@ -16,7 +16,7 @@
 \item{object}{Fitted \code{\link[=sparsegl]{sparsegl()}} model object.}
 
 \item{newx}{Matrix of new values for \code{x} at which predictions are to be
-made. Must be a matrix.}
+made. Must be a matrix. This argument is mandatory.}
 
 \item{s}{Value(s) of the penalty parameter \code{lambda} at which
 predictions are required. Default is the entire sequence used to create the
@@ -24,12 +24,11 @@ model.}
 
 \item{type}{Type of prediction required. Type \code{"link"} gives the linear
 predictors for \code{"binomial"}; for \code{"gaussian"} models it gives the fitted
-values. Type \code{"response"} gives the fitted probabilities for
-\code{"binomial"}; for \code{"gaussian"} type
+values. Type \code{"response"} gives predictions on the scale of the response
+(for example, fitted probabilities for \code{"binomial"}); for \code{"gaussian"} type
 \code{"response"} is equivalent to type \code{"link"}. Type
 \code{"coefficients"} computes the coefficients at the requested values for
-\code{s}.  Note that for \code{"binomial"} models, results are returned only
-for the class corresponding to the second level of the factor response.
+\code{s}.
 Type \code{"class"} applies only to \code{"binomial"} models, and produces the
 class label corresponding to
 the maximum probability. Type \code{"nonzero"} returns a list of the indices
@@ -45,11 +44,11 @@ Similar to other predict methods, this function produces fitted values and
 class labels from a fitted \code{\link{sparsegl}} object.
 }
 \details{
-\code{s} is new vector at which predictions are requested. If \code{s}
-is not in the lambda sequence used for fitting the model, the
+\code{s} is the new vector of \code{lambda} values at which predictions are requested.
+If \code{s} is not in the lambda sequence used for fitting the model, the \code{coef}
 function will use linear interpolation to make predictions. The new values
-are interpolated using a fraction of predicted values from both left and
-right \code{lambda} indices.
+are interpolated using a fraction of coefficients from both left and right
+\code{lambda} indices.
 }
 \examples{
 n <- 100

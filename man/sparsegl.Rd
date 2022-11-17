@@ -19,10 +19,14 @@ sparsegl(
   standardize = TRUE,
   lower_bnd = -Inf,
   upper_bnd = Inf,
+  weights = NULL,
+  offset = NULL,
+  warm = NULL,
+  trace_it = 0,
   dfmax = as.integer(max(group)) + 1L,
   pmax = min(dfmax * 1.2, as.integer(max(group))),
   eps = 1e-08,
-  maxit = 3e+08
+  maxit = 3e+06
 )
 }
 \arguments{
@@ -32,24 +36,30 @@ is a vector of measurements and each column is a feature. Objects of class
 \code{\link[Matrix:sparseMatrix]{Matrix::sparseMatrix}} are supported.}
 
 \item{y}{Double/Integer/Factor. The response variable.
-Quantitative for \code{family="gaussian"}.
-For \code{family="binomial"} should be either a factor with two levels or
-a vector of integers taking 2 unique values.
-For a factor, the last level in alphabetical order is the target class.}
+Quantitative for \code{family="gaussian"} and for other exponential families.
+If \code{family="binomial"} should be either a factor with two levels or
+a vector of integers taking 2 unique values. For a factor, the last level
+in alphabetical order is the target class.}
 
 \item{group}{Integer. A vector of consecutive integers describing the
 grouping of the coefficients (see example below).}
 
-\item{family}{Character. Specifies the loss function to use, valid
-options are:
+\item{family}{Character or function. Specifies the generalized linear model
+to use. Valid options are:
 \itemize{
 \item \code{"gaussian"} - least squares loss (regression, the default),
 \item \code{"binomial"} - logistic loss (classification)
-}}
+}
+
+For any other type, a valid \code{\link[stats:family]{stats::family()}} object may be passed. Note
+that these will generally be much slower to estimate than the built-in
+options passed as strings. So for example, \code{family = "gaussian"} and
+\code{family = gaussian()} will produce the same results, but the first
+will be much faster.}
 
 \item{nlambda}{The number of \code{lambda} values - default is 100.}
 
-\item{lambda.factor}{The factor for getting the minimal lambda in the
+\item{lambda.factor}{A multiplicative factor for the minimal lambda in the
 \code{lambda} sequence, where \code{min(lambda) = lambda.factor * max(lambda)}.
 \code{max(lambda)} is the smallest value of \code{lambda} for which all coefficients
 are zero. The default depends on the relationship between \eqn{n}
@@ -80,13 +90,13 @@ entry is the square-root of the corresponding size of each group.}
 \item{pf_sparse}{Penalty factor on l1-norm, a vector the same length as the
 total number of columns in \code{x}. Each value corresponds to one predictor
 Can be 0 for some predictors, which
-implies that predictor will be receive by the group l2-norm penalty.
-Each entry should be non-negative in this vector.}
+implies that predictor will be receive only the group penalty.}
 
 \item{intercept}{Whether to include intercept in the model. Default is TRUE.}
 
-\item{asparse}{The weight to put on the \eqn{\ell_1}-norm in sparse group
-lasso. Default is \code{0.05}.}
+\item{asparse}{The relative weight to put on the \eqn{\ell_1}-norm in
+sparse group lasso. Default is \code{0.05} (resulting in \code{0.95} on the
+\eqn{\ell_2}-norm).}
 
 \item{standardize}{Logical flag for variable standardization (scaling) prior
 to fitting the model. Default is TRUE.}
@@ -98,6 +108,21 @@ Default value for each entry is \code{-Inf}.}
 \item{upper_bnd}{Upper for coefficient values, a vector in length of 1
 or of length the number of groups. Must be non-negative numbers only.
 Default value for each entry is \code{Inf}.}
+
+\item{weights}{Double vector. Optional observation weights. These can
+only be used with a \code{\link[stats:family]{stats::family()}} object.}
+
+\item{offset}{Double vector. Optional offset (constant predictor without a
+corresponding coefficient). These can only be used with a
+\code{\link[stats:family]{stats::family()}} object.}
+
+\item{warm}{List created with \code{\link[=make_irls_warmup]{make_irls_warmup()}}. These can only be used
+with a \code{\link[stats:family]{stats::family()}} object, and is not typically necessary even then.}
+
+\item{trace_it}{Scalar integer. Larger values print more output during
+the irls loop. Typical values are \code{0} (no printing), \code{1} (some printing
+and a progress bar), and \code{2} (more detailed printing).
+These can only be used with a \code{\link[stats:family]{stats::family()}} object.}
 
 \item{dfmax}{Limit the maximum number of groups in the model. Default is
 no limit.}
@@ -113,7 +138,7 @@ value. Default is \code{3e8}. If models do not converge, consider increasing
 \code{maxit}.}
 }
 \value{
-An object with S3 class \code{\link[=sparsegl]{sparsegl()}}.
+An object with S3 class \code{\link[=sparsegl]{sparsegl()}}. Among the list components:
 \itemize{
 \item \code{call} The call that produced this object.
 \item \code{b0} Intercept sequence of length \code{length(lambda)}.
@@ -128,19 +153,16 @@ An object with S3 class \code{\link[=sparsegl]{sparsegl()}}.
 coefficients.
 \item \code{nobs} The number of observations used to estimate the model.
 }
+
+If \code{sparsegl()} was called with a \code{\link[stats:family]{stats::family()}} method, this may also
+contain information about the deviance and the family used in fitting.
 }
 \description{
 Fits regularization paths for sparse group-lasso penalized learning problems at a
 sequence of regularization parameters \code{lambda}.
-}
-\details{
 Note that the objective function for least squares is
 \deqn{RSS/(2n) + \lambda penalty}
 Users can also tweak the penalty by choosing a different penalty factor.
-
-For computing speed reason, if models are not converging or running slowly,
-consider increasing \code{eps}, decreasing \code{nlambda}, or increasing
-\code{lambda.factor} before increasing \code{maxit}.
 }
 \examples{
 n <- 100
@@ -152,7 +174,8 @@ y <- X \%*\% beta_star + eps
 groups <- rep(1:(p / 5), each = 5)
 fit <- sparsegl(X, y, group = groups)
 
-
+yp <- rpois(n, abs(X \%*\% beta_star))
+fit_pois <- sparsegl(X, yp, group = groups, family = poisson())
 }
 \seealso{
 \code{\link[=plot.sparsegl]{plot.sparsegl()}}, \code{\link[=coef.sparsegl]{coef.sparsegl()}}, \code{\link[=predict.sparsegl]{predict.sparsegl()}}

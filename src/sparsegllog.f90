@@ -18,7 +18,7 @@ SUBROUTINE log_sparse_four (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,pfl1,dfmax,pmax,&
   INTEGER:: nobs, nvars, dfmax, pmax, nlam, nalam, npass, jerr, maxit, intr
   INTEGER:: activeGroup(pmax)
   INTEGER:: nbeta(nlam)
-  DOUBLE PRECISION :: flmin, eps, alsparse, max_gam, maxDif, al, alf, snorm, d, acc
+  DOUBLE PRECISION :: flmin, eps, alsparse, max_gam, maxDif, al, alf, snorm, d
   DOUBLE PRECISION, INTENT(in) :: x(nobs,nvars)
   DOUBLE PRECISION, INTENT(in) :: y(nobs)
   DOUBLE PRECISION, INTENT(in) :: pf(bn)
@@ -48,8 +48,8 @@ SUBROUTINE log_sparse_four (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,pfl1,dfmax,pmax,&
   DOUBLE PRECISION:: ga(bn)
   DOUBLE PRECISION:: vl(nvars)
   ! - - - allocate variables - - -
-  ALLOCATE(b(1:nvars))
-  ALLOCATE(oldbeta(1:nvars))
+  ALLOCATE(b(0:nvars))
+  ALLOCATE(oldbeta(0:nvars))
   ALLOCATE(r(1:nobs))
   ALLOCATE(activeGroupIndex(1:bn))
   !    ALLOCATE(al_sparse)
@@ -60,6 +60,7 @@ SUBROUTINE log_sparse_four (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,pfl1,dfmax,pmax,&
   ENDIF
   ! - - - some initial setup - - -
   is_in_E_set = 0
+  is_in_S_set = 0
   al = 0.0D0
   mnl = MIN(mnlam, nlam)
   r = 0.0D0
@@ -72,10 +73,9 @@ SUBROUTINE log_sparse_four (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,pfl1,dfmax,pmax,&
   alf = 0.0D0
   max_gam = MAXVAL(gam)
   t_for_s = 1 / gam
-  acc = 0.0D0
   IF (intr .ne. 0) THEN
-     acc = 4 * sum(y/2) / nobs
-     r = r + y * acc
+     b(0) = 4 * sum(y/2) / nobs
+     r = r + y * b(0)
   ENDIF
   ! --------- lambda loop ----------------------------
   IF (flmin < 1.0D0) THEN ! THIS is the default...
@@ -126,6 +126,7 @@ SUBROUTINE log_sparse_four (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,pfl1,dfmax,pmax,&
      ! --------- outer loop ---------------------------- !
      DO
         CALL rchkusr()
+        oldbeta(0) = b(0)
         IF (ni > 0) THEN
            DO j = 1, ni
               g = activeGroup(j)
@@ -157,7 +158,7 @@ SUBROUTINE log_sparse_four (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,pfl1,dfmax,pmax,&
               d = sum(y/(1.0D0+exp(r)))
               d = 4.0D0*d/nobs
               IF (d /= 0.0D0) THEN
-                 acc = acc + d
+                 b(0) = b(0) + d
                  r=r+y*d
                  maxDif=MAX(maxDif,d**2)
               ENDIF
@@ -225,7 +226,7 @@ SUBROUTINE log_sparse_four (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,pfl1,dfmax,pmax,&
            beta(ix(g):iy(g),l) = b(ix(g):iy(g))
         ENDDO
      ENDIF
-     b0(l) = acc
+     b0(l) = b(0)
      nbeta(l) = ni
      alam(l) = al
      nalam = l
@@ -265,7 +266,7 @@ SUBROUTINE log_spmat_four (bn,bs,ix,iy,gam,nobs,nvars,x,xidx,xcptr,nnz,y,pf,pfl1
   INTEGER :: iy(bn)
   INTEGER :: activeGroup(pmax)
   INTEGER :: nbeta(nlam)
-  DOUBLE PRECISION :: flmin, eps, max_gam, d, maxDif, al, alf, alsparse, snorm, acc
+  DOUBLE PRECISION :: flmin, eps, max_gam, d, maxDif, al, alf, alsparse, snorm
   DOUBLE PRECISION, INTENT(in) :: x(nnz)
   INTEGER, INTENT(in) :: xidx(nnz)
   INTEGER, INTENT(in) :: xcptr(nvars+1)
@@ -296,8 +297,8 @@ SUBROUTINE log_spmat_four (bn,bs,ix,iy,gam,nobs,nvars,x,xidx,xcptr,nnz,y,pf,pfl1
   DOUBLE PRECISION :: ga(bn)
   DOUBLE PRECISION :: vl(nvars)
   ! - - - allocate variables - - -
-  ALLOCATE(b(1:nvars))
-  ALLOCATE(oldbeta(1:nvars))
+  ALLOCATE(b(0:nvars))
+  ALLOCATE(oldbeta(0:nvars))
   ALLOCATE(r(1:nobs))
   ALLOCATE(activeGroupIndex(1:bn))
   !    ALLOCATE(al_sparse)
@@ -309,6 +310,7 @@ SUBROUTINE log_spmat_four (bn,bs,ix,iy,gam,nobs,nvars,x,xidx,xcptr,nnz,y,pf,pfl1
 
   ! - - - some initial setup - - -
   is_in_E_set = 0
+  is_in_S_set = 0
   al = 0.0D0
   mnl = MIN(mnlam, nlam)
   r = 0.0D0
@@ -321,10 +323,9 @@ SUBROUTINE log_spmat_four (bn,bs,ix,iy,gam,nobs,nvars,x,xidx,xcptr,nnz,y,pf,pfl1
   alf = 0.0D0
   max_gam = MAXVAL(gam)
   t_for_s = 1/gam
-  acc = 0.0D0
   IF (intr .ne. 0) THEN
-     acc = 4 * sum(y/2) / nobs
-     r = r + y * acc
+     b(0) = 4 * sum(y/2) / nobs
+     r = r + y * b(0)
   ENDIF
   ! --------- lambda loop ----------------------------
   IF (flmin < 1.0D0) THEN ! THIS is the default...
@@ -377,7 +378,7 @@ SUBROUTINE log_spmat_four (bn,bs,ix,iy,gam,nobs,nvars,x,xidx,xcptr,nnz,y,pf,pfl1
      ! --------- outer loop ---------------------------- !
      DO
         CALL rchkusr()
-        ! oldbeta(0) = b(0)
+        oldbeta(0) = b(0)
         IF (ni > 0) THEN
            DO j = 1, ni
               g = activeGroup(j)
@@ -408,7 +409,7 @@ SUBROUTINE log_spmat_four (bn,bs,ix,iy,gam,nobs,nvars,x,xidx,xcptr,nnz,y,pf,pfl1
               d = sum(y/(1.0D0+exp(r)))
               d = 4.0D0*d/nobs
               IF (d /= 0.0D0) THEN
-                 acc = acc + d
+                 b(0) = b(0) + d
                  r=r+y*d
                  maxDif=max(maxDif,d**2)
               ENDIF
@@ -476,7 +477,7 @@ SUBROUTINE log_spmat_four (bn,bs,ix,iy,gam,nobs,nvars,x,xidx,xcptr,nnz,y,pf,pfl1
         ENDDO
      ENDIF
      nbeta(l) = ni
-     b0(l) = acc
+     b0(l) = b(0)
      alam(l) = al
      nalam = l
      IF (l < mnl) CYCLE

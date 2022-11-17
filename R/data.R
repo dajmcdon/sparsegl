@@ -3,11 +3,12 @@
 #' A dataset containing a measurement of "trust" in experts along with other
 #' metrics collected through the Delphi Group at Carnegie Mellon University
 #' U.S. COVID-19 Trends and Impact Survey, in partnership with Facebook. This
-#' particular dataset is created from one of the public [contingency tables](https://www.cmu.edu/delphi-web/surveys/monthly-rollup/),
+#' particular dataset is created from one of the public
+#' [contingency tables](https://www.cmu.edu/delphi-web/surveys/monthly-rollup/),
 #' specifically, the breakdown by state, age, gender, and race/ethnicity published
 #' on 05 February 2022.
 #'
-#' @format A sparse [Matrix::sparseMatrix()] with 3775 rows, 96 columns, and
+#' @format A named [Matrix::sparseMatrix()] with 3775 rows, 96 columns, and
 #'   51738 non-zero entries
 #' \describe{
 #'   \item{`y`}{Real-valued response. This is the average of `pct_trust_covid_info_*`

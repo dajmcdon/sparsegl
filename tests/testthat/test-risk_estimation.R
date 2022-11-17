@@ -59,7 +59,7 @@ test_that("risk estimation functions reasonably", {
   expect_identical(estimate_risk(out, approx_df = TRUE),
                    estimate_risk(out, X, approx_df = TRUE))
   X[abs(X) < 1] = 0
-  X <- as(X, "sparseMatrix")
+  X <- as_dgCMatrix(X)
   out_sparse <- sparsegl(X, y, gr)
   expect_named(estimate_risk(out_sparse, approx_df = TRUE),
                c("lambda", "df", "AIC", "BIC", "GCV"))
