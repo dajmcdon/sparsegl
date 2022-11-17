@@ -74,6 +74,8 @@ knitr::write_bib(c("base", "devtools", "knitr", "testthat", "usethis",
                    "RSpectra",
                    "ggplot2", "dotCall64","CVXR"),
                  file = "pkgs.bib")
+library(dplyr)
+library(ggplot2)
 ```
 
 # Introduction
@@ -100,7 +102,8 @@ In \proglang{python} \citep{python}, \pkg{asgl} \citep{civieta2020adaptive} impl
 
 Our contribution, then, is to provide a package that performs sparse group lasso, and is faster than existing implementations. In particular, \pkg{sparsegl} has the following benefits:
 \begin{itemize}
-\item Performs Gaussian and logistic regression;
+\item Performs Gaussian and logistic regression using fast, compiled code;
+\item Allows arbitrary generalized linear models with slightly less efficiency;
 \item Allows for interval constraints and differential weights on the coefficients;
 \item Accommodates a sparse design matrix and returns the coefficient estimates in a sparse matrix;
 \item Uses strong rules for fast computation along a sequence of tuning parameters;
