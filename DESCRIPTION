@@ -45,6 +45,7 @@ Suggests:
     knitr,
     markdown,
     rmarkdown,
+    splines,
     testthat (>= 3.0.0)
 VignetteBuilder: 
     knitr

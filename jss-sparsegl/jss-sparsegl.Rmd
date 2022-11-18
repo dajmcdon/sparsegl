@@ -572,7 +572,7 @@ plot(fit,
      add_legend = FALSE) +
   scale_y_continuous(labels = scales::label_number(scale = 1e5)) +
   coord_cartesian(c(0,1), c(0,5e-5), clip = "off") +
-  annotate("text", x = -.14, y = 5.2e-5, fontface="plain",
+  annotate("text", x = -.14, y = 5.2e-5, fontface = "plain",
            label = quote(phantom(0) %*% 10^{-5}), size = 2.5)
 ```
 
@@ -588,6 +588,6 @@ We developed this package for solving sparse group lasso optimization problems u
 
 In addition to the \proglang{R} packages described above, this manuscript and \pkg{sparsegl} benefitted from \pkg{devtools} [@R-devtools], \pkg{usethis} [@R-usethis], \pkg{testthat} [@R-testthat], \pkg{knitr} [@R-knitr], \pkg{ggplot2} [@R-ggplot2], and \pkg{rticles} [@R-rticles]. 
 
-Franco Pestilli was supported with grants from the National Science Foundation (OAC-1916518, IIS-1912270, IIS-1636893, BCS-1734853), National Institutes of Health (NIMH R01MH126699, NIBIB R01EB030896, NIBIB R01EB029272), a Microsoft Investigator Fellowship, and a gift from the Kavli Foundation. Daniel J. McDonald was partially supported by the National Science Foundation (DMS–1753171) and the National Sciences and Engineering Research Council of Canada (RGPIN-2021-02618).  The analysis in \autoref{sec:trust} is based on survey results from Carnegie Mellon University’s Delphi Group.
+Franco Pestilli was supported with grants from the National Science Foundation (OAC-1916518, IIS-1912270, IIS-1636893, BCS-1734853), National Institutes of Health (NIMH R01MH126699, NIBIB R01EB030896, NIBIB R01EB029272), a Microsoft Investigator Fellowship, and a gift from the Kavli Foundation. Daniel J. McDonald was partially supported by the National Science Foundation (DMS–1753171) and the National Sciences and Engineering Research Council of Canada (RGPIN-2021-02618). The analysis in \autoref{sec:trust} is based on survey results from Carnegie Mellon University’s Delphi Group.
 
 

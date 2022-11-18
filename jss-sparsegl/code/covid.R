@@ -1,16 +1,27 @@
-library(sparsegl)
-library(tidyverse)
+library(magrittr)
+library(splines)
+df <- 10
 
-data("trust_experts")
+trust_experts <- trust_experts %>%
+  mutate(across(
+    where(is.factor),
+    ~ set_attr(.x, "contrasts", contr.sum(nlevels(.x), FALSE, TRUE))
+  ))
 
-y <- trust_experts[,"y"]
-x <- trust_experts[,-1]
-gr <- c(rep(1:7, times = c(8, 51, 5, 4, 8, 10, 10)))
-fit <- sparsegl(x, y, gr)
-er <- estimate_risk(fit, x, approx_df = FALSE)
-cc <- coef(fit, s = er$lambda[which.min(er$BIC)])
-states <- tibble(state = rownames(cc)[10:60], coef = cc[10:60]) %>%
-  mutate(state_name = tolower(covidcast::abbr_to_name(state, TRUE)))
+x <- Matrix::sparse.model.matrix(
+  ~ 0 + region + age + gender + raceethnicity + period +
+    bs(cli, df = df) + bs(hh_cmnty_cli, df = df),
+  data = trust_experts, drop.unused.levels = TRUE)
+
+gr <- sapply(trust_experts, function(x) ifelse(is.factor(x), nlevels(x), NA))
+gr <- rep(seq(ncol(trust_experts) - 1), times = c(gr[!is.na(gr)], df, df))
+fit <- cv.sparsegl(x, trust_experts$trust_experts, gr)
+
+cc <- coef(fit, s = "lambda.1se")
+reg <- which(str_detect(rownames(cc), "region"))
+states <- tibble(state = rownames(cc)[reg], coef = cc[reg]) %>%
+  mutate(state = str_remove(state, "region"),
+         state_name = tolower(covidcast::abbr_to_name(state, TRUE)))
 states_map <- map_data("state")
 g <- ggplot(states, aes(map_id = state_name)) +
   geom_map(aes(fill = coef), map = states_map) +
