@@ -2,7 +2,7 @@ url: https://dajmcdon.github.io/sparsegl/
 
 template:
   bootstrap: 5
-  bootswatch: lux
+  bootswatch: cosmo
   bslib:
     pkgdown-nav-height: 100px
     primary: "#041E42"
