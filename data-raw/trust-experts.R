@@ -24,10 +24,12 @@ trust_experts <- symp %>%
 
 trust_experts <- trust_experts %>%
   select(!(trust_covid_info_politicians:trust_covid_info_religious)) %>%
-  mutate(age = as.factor(age),
-         gender = as.factor(gender),
-         raceethnicity = as.factor(raceethnicity),
-         period = as.factor(period)) %>%
+  mutate(
+    region = as.factor(region),
+    age = as.factor(age),
+    gender = as.factor(gender),
+    raceethnicity = as.factor(raceethnicity),
+    period = as.factor(period)) %>%
   rowwise() %>%
   mutate(
     trust_experts = mean(c_across(starts_with("trust_covid")), na.rm = TRUE),

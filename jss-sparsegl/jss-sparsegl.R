@@ -2,15 +2,11 @@
 #
 # This file will reproduce all results, but downloading the large brain data
 # and running the timing simulation at the beginning takes some time/memory.
-# For this reason, we have provided the results of these experiments in
-# `large-data.zip`. The reproduction code is commented out, while the
-# `large-data.zip` file is expected to be extracted in the same directory as
-# this script.
 
 
 # Necessary packages
 # install.packages(c("knitr", "ggplot2", "tibble", "SGL", "dplyr", "covidcast"))
-# install.packages(c("scales", "tidyr))
+# install.packages(c("scales", "tidyr", "stringr"))
 #
 
 ## ---- setup, include=FALSE----------------------------------------------------
@@ -19,54 +15,56 @@
 # options(prompt = 'R> ', continue = '+ ')
 library(ggplot2)
 library(tidyr)
-ggplot2::theme_set(ggplot2::theme_bw(base_family = "Palatino"))
+theme_set(theme_bw(base_family = "Palatino"))
 
 
 
 ## ----timing-comparison, echo=FALSE, fig.width=6, fig.height=3, fig.cap="This figure shows the time required to compute sparse group lasso solutions across a number of different problem sizes. In all cases, we use $n=500$ observations and 100 values of the tuning parameter $\\lambda$. The median is taken across 5 replications for each method and problem size. Note that both axes are on the log scale."----
-# library(Matrix)
-# library(tibble)
-# library(SGL)
-# library(sparsegl)
-#
-# nrepls <- 5
-# n <- 500
-# p <- c(100, 250, 500, 1000, 2500)
-# b <- c(rep(1, 5), rep(-1, 5), c(-1,-1,0,0,0), c(1,1,0,0,0), rep(1, 5),
-#        rep(0, 75)) * 10
-# s <- .1
-# gr <- rep(1:(max(p) / 5), each = 5)
-# x <- matrix(rnorm(n*max(p)), nrow = n)
-# x[as.logical(rbinom(n*max(p), 1, 1 - s))] <- 0
-# xsp <- Matrix(x)
-# mu <- sapply(p, function(z) x[ ,1:z] %*% rep(b, length.out = z) / sqrt(z))
-#
-# signal <- sqrt(colSums(mu^2))
-# noise_sd <- sqrt(signal)
-#
-# y <- mu + rnorm(n*length(p), sd = rep(noise_sd, each = n))
-# res <- tibble(method = "a", time = proc.time()["elapsed"], .rows = 0)
-# for (i in seq_along(p)) {
-#   pp <- seq(p[i])
-#   dat <- list(y = y[ ,i], x = x[ ,pp])
-#   xxsp <- xsp[ ,pp]
-#   g <- gr[pp]
-#   for (j in seq(nrepls)) {
-#     s1 <- system.time(
-#       SGL(dat, nlam = 100, alpha = 0.05, index = g, standardize = FALSE))
-#     res <- add_row(res, method = "SGL", time = s1["elapsed"])
-#     s2 <- system.time(sparsegl(dat$x, dat$y, g, standardize = FALSE))
-#     res <- add_row(res, method = "sparsegl", time = s2["elapsed"])
-#     s3 <- system.time(sparsegl(xxsp, dat$y, g, standardize = FALSE))
-#     res <- add_row(res, method = "sparsegl_sp", time = s3["elapsed"])
-#     print(paste("Done with p = ", p[i], "repl = ", j))
-#   }
-# }
-#
-# res$p <- rep(p, each = nrepls * 3)
-# saveRDS(res, "large-data/sparsegl-timing.rds")
+library(Matrix)
+library(tibble)
+library(SGL)
+library(sparsegl)
 library(dplyr)
-res <- readRDS("large-data/sparsegl-timing.rds")
+
+nrepls <- 5
+n <- 500
+p <- c(100, 250, 500, 1000, 2500)
+b <- c(rep(1, 5), rep(-1, 5), c(-1,-1,0,0,0), c(1,1,0,0,0), rep(1, 5),
+       rep(0, 75)) * 10
+s <- .1
+gr <- rep(1:(max(p) / 5), each = 5)
+x <- matrix(rnorm(n*max(p)), nrow = n)
+x[as.logical(rbinom(n*max(p), 1, 1 - s))] <- 0
+xsp <- Matrix(x)
+mu <- sapply(p, function(z) x[ ,1:z] %*% rep(b, length.out = z) / sqrt(z))
+
+signal <- sqrt(colSums(mu^2))
+noise_sd <- sqrt(signal)
+
+y <- mu + rnorm(n*length(p), sd = rep(noise_sd, each = n))
+res <- tibble(method = "a", time = proc.time()["elapsed"], .rows = 0)
+# takes ~15 minutes on a 2020 Macbook Air M1, OS 12.6, R 4.2.2
+for (i in seq_along(p)) {
+  pp <- seq(p[i])
+  dat <- list(y = y[ ,i], x = x[ ,pp])
+  xxsp <- xsp[ ,pp]
+  g <- gr[pp]
+  for (j in seq(nrepls)) {
+    s1 <- system.time(
+      SGL(dat, nlam = 100, alpha = 0.05, index = g, standardize = FALSE))
+    res <- add_row(res, method = "SGL", time = s1["elapsed"])
+    s2 <- system.time(sparsegl(dat$x, dat$y, g, standardize = FALSE))
+    res <- add_row(res, method = "sparsegl", time = s2["elapsed"])
+    s3 <- system.time(sparsegl(xxsp, dat$y, g, standardize = FALSE))
+    res <- add_row(res, method = "sparsegl_sp", time = s3["elapsed"])
+    # print(paste("Done with p = ", p[i], "repl = ", j))
+  }
+}
+
+res$p <- rep(p, each = nrepls * 3)
+# saveRDS(res, "large-data/sparsegl-timing.rds")
+
+# res <- readRDS("large-data/sparsegl-timing.rds")
 res <- res %>%
   group_by(method, p) %>%
   summarise(time = median(time), .groups = "drop")
@@ -78,7 +76,9 @@ better_labs <- c(
 ggplot(res, aes(p, time, colour = method)) +
   geom_point() +
   geom_line() +
-  scale_y_log10(name = "Median time (seconds)") +
+  scale_y_log10(name = "Median time (seconds)",
+                breaks = c(0.01, .1, 1, 10, 100),
+                labels = c(0.01, .1, 1, 10, 100)) +
   scale_x_log10(name = "Number of predictors (p)",
                 breaks = p) +
   scale_colour_viridis_d(
@@ -133,7 +133,7 @@ plot(cv_fit)
 
 ## ----------------------------------------------------------------------------------
 coef(cv_fit, s = "lambda.1se")[c(1,3,25,29),]
-predict(cv_fit, newx = tail(X), s = "lambda.min")
+predict(cv_fit, newx = tail(X), s = "lambda.min") %>% c()
 
 
 ## ----logitres, fig.width = 4, fig.height = 2, fig.cap="Cross validation error for logistic regression produced by the \\texttt{plot()} method using misclassification error on the held-out set."----
@@ -164,16 +164,33 @@ ggplot(er, aes(lambda, risk, color = name)) +
 
 
 ## ----trust, echo=FALSE, fig.cap="State-level estimates for the amount of trust in experts about Covid-19. The value displayed represents the change relative the US-wide average.", fig.width=8, fig.height=4, message=FALSE, warning=FALSE, out.width="5in"----
+library(magrittr)
+library(splines)
+library(dplyr)
+df <- 10
 data("trust_experts")
 
-y <- trust_experts[,"y"]
-x <- trust_experts[,-1]
-gr <- c(rep(1:7, times = c(8, 51, 5, 4, 8, 10, 10)))
-fit <- sparsegl(x, y, gr)
-er <- estimate_risk(fit, x, approx_df = FALSE)
-cc <- coef(fit, s = er$lambda[which.min(er$BIC)])
-states <- tibble(state = rownames(cc)[10:60], coef = cc[10:60]) %>%
-  mutate(state_name = tolower(covidcast::abbr_to_name(state, TRUE)))
+trust_experts <- trust_experts %>%
+  mutate(across(
+    where(is.factor),
+    ~ set_attr(.x, "contrasts", contr.sum(nlevels(.x), FALSE, TRUE))
+  ))
+
+x <- Matrix::sparse.model.matrix(
+  ~ 0 + region + age + gender + raceethnicity + period +
+    bs(cli, df = df) + bs(hh_cmnty_cli, df = df),
+  data = trust_experts, drop.unused.levels = TRUE)
+
+gr <- sapply(trust_experts, function(x) ifelse(is.factor(x), nlevels(x), NA))
+gr <- rep(seq(ncol(trust_experts) - 1), times = c(gr[!is.na(gr)], df, df))
+# ~2 minutes of runtime
+fit <- cv.sparsegl(x, trust_experts$trust_experts, gr)
+
+cc <- coef(fit, s = "lambda.1se")
+reg <- which(stringr::str_detect(rownames(cc), "region"))
+states <- tibble(state = rownames(cc)[reg], coef = cc[reg]) %>%
+  mutate(state = stringr::str_remove(state, "region"),
+         state_name = tolower(covidcast::abbr_to_name(state, TRUE)))
 states_map <- map_data("state")
 g <- ggplot(states, aes(map_id = state_name)) +
   geom_map(aes(fill = coef), map = states_map) +
@@ -195,39 +212,41 @@ g
 
 
 ## ----dwi-fit, echo=FALSE, warning=FALSE, eval=TRUE, fig.cap="The group norm of the 12 groups based on neuroanatomical structure against the magnitude of the penalty. The fit was produced using \\texttt{sparsegl()} to estimate the group lasso ($\\alpha=0$).", fig.height=3----
-# Download and load brain data ---------------------------------------------------------
-# download <- function(url, path) {
-#   file.exists(path) || download.file(url, path, mode = 'wb')
-# }
-#
-# options(timeout = max(15 * 60)) # 15 minutes, assuming 1MB/s download speed
-# # https://doi.org/10.6084/m9.figshare.20314917
-# download("https://figshare.com/ndownloader/files/36288819", "large-data/A.mtx.gz")
-# download("https://figshare.com/ndownloader/files/36288825", "large-data/Y.rds")
-# download("https://figshare.com/ndownloader/files/36288822", "large-data/G.rds")
-# download("https://figshare.com/ndownloader/files/36294165", "large-data/Gpf.rds")
-# download("https://figshare.com/ndownloader/files/36288828", "large-data/brain-fit.rds")
-#
-# # The below files exceed the limits for JSS submission. We save only the result.
-# A <- Matrix::readMM("large-data/A.mtx.gz")
-# Y <- readRDS("large-data/Y.rds")
-# G <- readRDS("large-data/G.rds")
-# gpf <- readRDS("large-data/Gpf.rds")
-#
-# # Fit and estimate risk ---------------------------------------------------
-# system.time(fit <- sparsegl(A, Y, group=G, pf_group=gpf, asparse=0.0)) # ~ 1.5 minutes
-#
-# df <- estimate_risk(fit, A, approx_df=TRUE)
-# write.csv(df, "large-data/fit.csv", row.names=FALSE, quote=FALSE) # unused
+## Download and load brain data ---------------------------------------------------------
+download <- function(url, path) {
+  file.exists(path) || download.file(url, path, mode = 'wb')
+  cat("Done.\n")
+}
+
+options(timeout = max(15 * 60)) # 15 minutes, assuming 1MB/s download speed
+# https://doi.org/10.6084/m9.figshare.20314917
+download("https://figshare.com/ndownloader/files/36288819", "large-data/A.mtx.gz")
+download("https://figshare.com/ndownloader/files/36288825", "large-data/Y.rds")
+download("https://figshare.com/ndownloader/files/36288822", "large-data/G.rds")
+download("https://figshare.com/ndownloader/files/36294165", "large-data/Gpf.rds")
+download("https://figshare.com/ndownloader/files/36288828", "large-data/brain-fit.rds")
+
+# The below files exceed the limits for JSS submission. We save only the result.
+A <- Matrix::readMM("large-data/A.mtx.gz")
+Y <- readRDS("large-data/Y.rds")
+G <- readRDS("large-data/G.rds")
+gpf <- readRDS("large-data/Gpf.rds")
+
+# Fit and estimate risk ---------------------------------------------------
+# ~ 2.5 minutes
+system.time(fit <- sparsegl(A, Y, group = G, pf_group = gpf, asparse = 0.0))
+
+df <- estimate_risk(fit, A, approx_df = TRUE)
 # saveRDS(fit, file = "large-data/brain-fit.rds")
-fit <- readRDS("large-data/brain-fit.rds")
+# fit <- readRDS("large-data/brain-fit.rds")
+
 plot(fit,
      y_axis = "group",
      x_axis = "penalty",
      add_legend = FALSE) +
   scale_y_continuous(labels = scales::label_number(scale = 1e5)) +
-  coord_cartesian(c(0,1), c(0,5e-5), clip = "off") +
-  annotate("text", x = -.14, y = 5.2e-5, fontface="plain",
+  coord_cartesian(c(0, 1), c(0, 5e-5), clip = "off") +
+  annotate("text", x = -.14, y = 5.2e-5, fontface = "plain",
            label = quote(phantom(0) %*% 10^{-5}), size = 2.5)
 
 sessionInfo()
