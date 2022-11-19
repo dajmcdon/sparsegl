@@ -228,7 +228,7 @@ where $\mathbf{u}$ is the subgradient of $\norm{\vbeta}_2$ and $\mathbf{v}$ is t
 
 
 
-For the Gaussian case, the unpenalized loss $\ell (\vbeta)$ is a quadratic function in $\vbeta$, so it is equal to its second order Taylor expansion about any point $\vbeta_0$ in the parameter space. We thus start with the following equality for any given $\vbeta_0$ (recalling that $\vbeta_0$ here is really only for group $g$):  
+For the Gaussian case, the unpenalized loss $\ell (\vbeta)$ is a quadratic function in $\vbeta$, so it is equal to its second order Taylor expansion about any point $\vbeta_0$ in the parameter space. We thus start with the following equality for any given $\vbeta_0$ (recalling that $\vbeta_0$ here is only for group $g$):  
 \begin{equation}
 \forall \vbeta,\ \vbeta_0,\quad \ell(\vbeta) = \ell(\vbeta_0)+(\vbeta - \vbeta_0)^\T\nabla \ell(\vbeta_0)+\frac{1}{2}(\vbeta - \vbeta_0)^\T \Hessian (\vbeta - \vbeta_0),
 \label{eq:TaylorExp}
@@ -291,7 +291,7 @@ An examination of Equation \eqref{eq:updateStep} shows that it is possible for t
 
 Above, we have focused on the Gaussian linear model with $\ell(\vbeta) = \frac{1}{2n}\snorm{\vR - \mX\vbeta}_2^2$, $\nabla \ell(\vbeta) = -\frac{1}{n}\mX^\T (\vR - \mX\vbeta)$, and $\mathbf{H}\preceq t^{-1}\mathbf{I}$. 
 In the case of logistic regression, we use exactly the same procedure but with
-$\ell(\vbeta) = \frac{1}{n}\sum_{i}\log(1 + \exp\{-r_i\vx_i^\T\vbeta\})$, $\nabla \ell(\vbeta) = -\frac{1}{n}\sum_{i}y_i\vx_i^\top (1 + \exp\{-r_i\vx_i^\T\vbeta\})^{-1}$, and $\mathbf{H}(\vbeta) \preceq 4t^{-1}\mathbf{I}$. This procedure is explicitly stated in \autoref{alg:sparsegl}.
+$\ell(\vbeta) = \frac{1}{n}\sum_{i}\log(1 + \exp\{-r_i\vx_i^\T\vbeta\})$, $\nabla \ell(\vbeta) = -\frac{1}{n}\sum_{i}y_i\vx_i^\top (1 + \exp\{-r_i\vx_i^\T\vbeta\})^{-1}$, and $\mathbf{H}(\vbeta) \preceq 4t^{-1}\mathbf{I}$. This procedure is explicitly stated in \autoref{alg:sparsegl}. For other exponential families (for example, Poisson, Gamma, or Probit regression), we provide functionality to pass an \proglang{R} `family` object. These will generally be much slower than the built-in families described above because they require using iteratively reweighted least squares rather than the majorization-minimization described here.
 
 While the procedure described so far solves Equation \eqref{eq:sparsegl} for fixed choices of $\lambda$ and $\alpha$, the data analyst does not typically know these ahead of time. Rather, we would like to solve the problem for a collection of values of $\lambda$ (and perhaps $\alpha$ as well). It turns out that the structure of this optimization problem allows for some heuristics that can perform this sequential optimization with a minimum of additional computational resources, in some cases, solving Equation \eqref{eq:sparsegl} faster for a sequence of values $\lambda_m \in \{\lambda_1,\ldots,\lambda_M\}$ than for a single choice \citep{tibshirani2012strong}. We describe our implementation of this procedure next.
 
@@ -501,11 +501,11 @@ plot(cv_fit_logit, log_axis = "none")
 In some cases, when computations are at a premium, cross validation my be too demanding for the purposes of risk estimation. For this reason, \pkg{sparsegl} provides an `estimate_risk()` function. It can be used to compute any of AIC \citep{Akaike1973}, BIC \citep{Schwarz1978}, and GCV \citep{golub1979generalized}. All three are computed by combining the
 log-likelihood with a penalty term for model flexibility. In addition to a fitted `sparsegl` model, `estimate_risk()` also needs the original design matrix. Because the exact degrees-of-freedom can be computationally expensive, setting `approx_df=TRUE` uses the number of non-zero coefficient estimates, which is fairly accurate.
 
-```{r risk-estimate, fig.width = 4, fig.height = 2}
+```{r risk-estimate, fig.width = 4, fig.height = 1.5}
 er <- estimate_risk(fit, X)
 ```
 
-```{r re-plot, echo=FALSE, message=FALSE, warning=FALSE, fig.width = 4, fig.height = 2, fig.cap="AIC, BIC, and GCV (solid lines) along with their minima (vertical dashed lines)."}
+```{r re-plot, echo=FALSE, message=FALSE, warning=FALSE, fig.width = 4, fig.height = 1.5, fig.cap="AIC, BIC, and GCV (solid lines) along with their minima (vertical dashed lines)."}
 library(tidyverse)
 er <- er %>% dplyr::select(-df) %>% pivot_longer(-lambda, values_to = "risk")
 err <- er %>% group_by(name) %>% summarise(lambda = lambda[which.min(risk)])
@@ -532,22 +532,22 @@ We examine two applications for which sparse group lasso is a natural estimator.
 
 ## Geographic distribution of trust in experts {#sec:trust}
 
-Two typical uses for sparse group lasso are (1) additive models where continuous predictors are expanded in a basis and (2) discrete factors as predictors. Here we demonstrate an example using both at the same time. We examine data from The Delphi Group at Carnegie Mellon University U.S. [COVID-19 Trends and Impact Survey (CTIS)](https://cmu-delphi.github.io/delphi-epidata/symptom-survey/contingency-tables.html), in partnership with Facebook. In particular, we examine the publicly available contingency table reports, which break down survey responses by age, race/ethnicity, gender, and other demographic variables of interest. The necessary data to reproduce this analysis (a sparse `dgCmatrix` object) is included in \pkg{sparsegl} as `trust_experts`.
+Two typical uses for sparse group lasso are (1) additive models where continuous predictors are expanded in a basis and (2) discrete factors as predictors. Here we demonstrate an example using both at the same time. We examine data from The Delphi Group at Carnegie Mellon University U.S. [COVID-19 Trends and Impact Survey (CTIS)](https://cmu-delphi.github.io/delphi-epidata/symptom-survey/contingency-tables.html), in partnership with Facebook. In particular, we examine the publicly available contingency table reports, which break down survey responses by age, race/ethnicity, gender, and other demographic variables of interest. The necessary data to reproduce this analysis is included in \pkg{sparsegl} as `trust_experts`.
 
 In particular, we will focus on the "estimated percentage of respondents who trust ... to provide accurate news and information about COVID-19."  This survey item is reported for a variety of different potential sources of information---personal doctors/nurses, scientists, the Centers for Disease Control (CDC), government health officials, politicians, journalists, friends, and religious leaders. In this analysis, we average the first 4, characterize the combination as "experts", and use this as the response variable in a linear model.
 
-We regress "trust in experts" on discrete predictors representing (1) month of report, (2) state of residence, (3) age group, (4) race/ethnicity, and (5) self-reported gender identity. This leads to 76 0-1 valued predictors in 5 groups. We also use spline basis expansions with 10 degrees-of-freedom to include continuous variables for "estimated percentage of people with Covid-like illness" and "estimated percentage of people reporting Covid-like illness in their local community, including their household" to control for the amount of exposure that respondents may have been having to the pandemic. 
+We regress "trust in experts" on factor-valued predictors representing (1) month of report, (2) state of residence, (3) age group, (4) race/ethnicity, and (5) self-reported gender identity. We also use spline basis expansions with 10 degrees-of-freedom to include continuous predictors for "estimated percentage of people with Covid-like illness" and "estimated percentage of people reporting Covid-like illness in their local community, including their household" to control for the amount of exposure that respondents may have been having to the pandemic. 
 
-After omitting both structural and otherwise missing data, the final model is estimated with 3775 observations on 96 predictors. Encoded as a sparse matrix, this requires about 500 KB of RAM to store, as opposed to 3 MB if it were dense. We estimated the model using `sparsegl()` and default arguments. Finally, we chose $\lambda$ to minimize BIC. \autoref{fig:trust} displays the estimated coefficients for the state-of-residence terms. Even controlling for age, race, gender, and the amount of circulating Covid-like illness, the United States displays strong geographic disparities when it comes to citizens' trust in scientists and other health authorities. 
+After omitting both structural and otherwise missing data, the final model is estimated with 9759 observations on 101 predictors. We did not use contrasts, fully expanding each factor in a one-hot encoding. This allows all estimated coefficients to be interpreted as deviations from the grand mean conditional on continuous predictors, which is natural. Such a formulation (along with the group penalty) is closely related to Bayesian linear models with separate Gaussian priors centered at 0 for each factor. Other contrasts could be used, but the interpretation is more complicated. Encoded as a sparse matrix, this requires about 2.1 MB of RAM to store, as opposed to 8.5 MB if it were dense. We estimated the model using `cv.sparsegl()` and default arguments. Finally, we chose $\lambda$ to be the largest lambda within 1 standard error of the CV minimum (`lambda.1se`), resulting in a sparser model. \autoref{fig:trust} displays the estimated coefficients for the state-of-residence predictors. Even controlling for age, race, gender, and the amount of circulating Covid-like illness, the United States displays strong geographic disparities when it comes to citizens' trust in scientists and other health authorities. 
 
-```{r trust, echo=FALSE, fig.cap="State-level estimates for the amount of trust in experts about Covid-19. The value displayed represents the change relative the US-wide average.", fig.width=8, fig.height=4, message=FALSE, warning=FALSE, out.width="5in"}
+```{r trust, echo=FALSE, fig.cap="State-level estimates for the amount of trust in experts about Covid-19. The value displayed represents the change relative the US-wide average.", fig.width=8, fig.height=3, message=FALSE, warning=FALSE, out.width="5in"}
 source("code/covid.R")
 g
 ```
 
 ## Estimating white matter connectivity
 
-```{r dwi-model-description, out.width="85%", fig.cap="Pictorial representation illustrating how the streamlines and voxels are converted from a diffusion-weighted image to a linear model. Each voxel is measured on 90 angles, so it occupies 90 rows in the data. When a streamline (column of $\\mathbf{X}$) passes through a voxel, the values within that voxel are given by a physical model based on the direction of passage. Otherwise, if the streamline does not cross the voxel, the respective rows are zero.", echo=FALSE}
+```{r dwi-model-description, out.width="75%", fig.cap="Pictoral representation illustrating how the streamlines and voxels are converted from a diffusion-weighted image to a linear model. Each voxel is measured on 90 angles, so it occupies 90 rows in the data. When a streamline (column of $\\mathbf{X}$) passes through a voxel, the values within that voxel are given by a physical model based on the direction of passage. Otherwise, if the streamline does not cross the voxel, the respective rows are zero.", echo=FALSE}
 knitr::include_graphics("fig/model-description.pdf")
 ```
 
@@ -565,7 +565,7 @@ This results in a linear regression problem  with $n\approx1M$ and $p = 868$.
 In comparison, our data contains 77,630 voxels measured on 90 angles, with a tractography of 10,244 streamlines. The resulting linear model has $n\approx6.9M$ and $p\approx88K$, around $700\times$ the size of the previous analysis.
 The design matrix would occupy nearly 533 GB if it were dense, but since it is only about 0.02\% non-sparse, it requires 1.2 GB of memory when stored in CSC format.
 
-```{r dwi-fit, echo=FALSE, warning=FALSE, eval=TRUE, fig.cap="The group norm of the 12 groups based on neuroanatomical structure against the magnitude of the penalty. The fit was produced using \\texttt{sparsegl()} to estimate the group lasso ($\\alpha=0$).", fig.height=3}
+```{r dwi-fit, echo=FALSE, warning=FALSE, eval=TRUE, fig.cap="The group norm of the 12 groups based on neuroanatomical structure against the magnitude of the penalty. The fit was produced using \\texttt{sparsegl()} to estimate the group lasso ($\\alpha=0$).", fig.height=2.5}
 # source("code/brains.R") takes 6 GB memory and about 1 minute, once the data is downloaded
 fit <- readRDS("large-data/brain-fit.rds")
 plot(fit, 
