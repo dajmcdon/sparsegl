@@ -44,7 +44,6 @@
 #'
 #' @examples
 #' \dontrun{
-#' library(magrittr)
 #' library(splines)
 #' df <- 10
 #'

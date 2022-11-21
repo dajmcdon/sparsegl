@@ -55,7 +55,6 @@ on 05 February 2022.
 }
 \examples{
 \dontrun{
-library(magrittr)
 library(splines)
 df <- 10
 
