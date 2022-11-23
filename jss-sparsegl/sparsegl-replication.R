@@ -1,12 +1,13 @@
-# _Note on replication_
-#
-# This file will reproduce all results, but downloading the large brain data
-# and running the timing simulation at the beginning takes some time/memory.
+#' _Note on replication_
+#'
+#' This file will reproduce all results, but downloading the large brain data
+#' and running the timing simulation at the beginning takes some time/memory.
 
 
-# Necessary packages
-# install.packages(c("knitr", "ggplot2", "tibble", "SGL", "dplyr", "covidcast"))
-# install.packages(c("scales", "tidyr", "stringr"))
+#' Necessary packages
+#' install.packages(c("knitr", "ggplot2", "tibble", "SGL", "dplyr", "covidcast"))
+#' install.packages(c("scales", "tidyr", "stringr", "here"))
+#' install.packages("sparsegl")
 #
 
 ## ---- setup, include=FALSE----------------------------------------------------
@@ -43,7 +44,7 @@ noise_sd <- sqrt(signal)
 
 y <- mu + rnorm(n*length(p), sd = rep(noise_sd, each = n))
 res <- tibble(method = "a", time = proc.time()["elapsed"], .rows = 0)
-# takes ~15 minutes on a 2020 Macbook Air M1, OS 12.6, R 4.2.2
+#' takes ~15 minutes on a 2020 Macbook Air M1, OS 12.6, R 4.2.2
 for (i in seq_along(p)) {
   pp <- seq(p[i])
   dat <- list(y = y[ ,i], x = x[ ,pp])
@@ -62,9 +63,10 @@ for (i in seq_along(p)) {
 }
 
 res$p <- rep(p, each = nrepls * 3)
-# saveRDS(res, "large-data/sparsegl-timing.rds")
+if (!dir.exists("large-data")) dir.create("large-data")
+# saveRDS(res, "large-data", "sparsegl-timing.rds"))
 
-# res <- readRDS("large-data/sparsegl-timing.rds")
+# res <- readRDS(here::here("large-data", "sparsegl-timing.rds"))
 res <- res %>%
   group_by(method, p) %>%
   summarise(time = median(time), .groups = "drop")
@@ -108,7 +110,7 @@ y0 <- rbinom(n, 1, pr)
 
 
 ## ---- eval=TRUE, echo=FALSE--------------------------------------------------------
-library(sparsegl)
+# library(sparsegl)
 
 
 ## ----------------------------------------------------------------------------------
@@ -166,7 +168,6 @@ ggplot(er, aes(lambda, risk, color = name)) +
 ## ----trust, echo=FALSE, fig.cap="State-level estimates for the amount of trust in experts about Covid-19. The value displayed represents the change relative the US-wide average.", fig.width=8, fig.height=4, message=FALSE, warning=FALSE, out.width="5in"----
 library(magrittr)
 library(splines)
-library(dplyr)
 df <- 10
 data("trust_experts")
 
@@ -219,14 +220,16 @@ download <- function(url, path) {
 }
 
 options(timeout = max(15 * 60)) # 15 minutes, assuming 1MB/s download speed
-# https://doi.org/10.6084/m9.figshare.20314917
+#' The below files exceed the limits for JSS submission.
+#' They are available with a persistent DOI at the following link.
+#' https://doi.org/10.6084/m9.figshare.20314917
 download("https://figshare.com/ndownloader/files/36288819", "large-data/A.mtx.gz")
 download("https://figshare.com/ndownloader/files/36288825", "large-data/Y.rds")
 download("https://figshare.com/ndownloader/files/36288822", "large-data/G.rds")
 download("https://figshare.com/ndownloader/files/36294165", "large-data/Gpf.rds")
 download("https://figshare.com/ndownloader/files/36288828", "large-data/brain-fit.rds")
 
-# The below files exceed the limits for JSS submission. We save only the result.
+
 A <- Matrix::readMM("large-data/A.mtx.gz")
 Y <- readRDS("large-data/Y.rds")
 G <- readRDS("large-data/G.rds")
@@ -240,6 +243,9 @@ df <- estimate_risk(fit, A, approx_df = TRUE)
 # saveRDS(fit, file = "large-data/brain-fit.rds")
 # fit <- readRDS("large-data/brain-fit.rds")
 
+# This will produce a warning
+#  "is.na() applied to non-(list or vector) of type 'language'"
+# It is due to `annotate()`
 plot(fit,
      y_axis = "group",
      x_axis = "penalty",
