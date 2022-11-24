@@ -170,8 +170,8 @@ predict.irlsspgl <- function(
 fitted.sparsegl <- function(object, ...) {
   abort(c(
     "Because design matrices are typically large, these are not stored ",
-    "in the estimated sparsegl object. Use `predict()` instead, and ",
-    "pass in the original data."))
+    `!`="in the estimated `sparsegl` object. Use `predict()` instead, and ",
+    `!`="pass in the original data."))
 }
 
 #' @method summary sparsegl
@@ -181,7 +181,7 @@ summary.sparsegl <- function(object, ...) {
   ns <- length(object$lambda)
   if (ns > 5) {
     xlam <- round(stats::quantile(1:ns))
-    names(xlam) <- c("Min.", "1st Qu.", "Median", "3rd Qu.", "Max.")
+    names(xlam) <- c("Max.", "3rd Qu.", "Median", "1st Qu.", "Min.")
   } else {
     xlam <- seq_len(ns)
     names(xlam) <- paste0("s", seq_len(ns))
@@ -209,7 +209,7 @@ print.summary.sparsegl <- function(
   rlang::check_dots_empty()
   lambda_warning <- all(x$table$nnzero == 0)
 
-  cat("\nCall: ", deparse(x$call), "\n\n")
+  cat("\nCall: ", deparse(x$call), "\n", fill = TRUE)
 
 
   if (lambda_warning) {

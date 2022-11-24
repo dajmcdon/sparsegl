@@ -2,7 +2,6 @@
 % Please edit documentation in R/cv.R
 \name{cv.sparsegl}
 \alias{cv.sparsegl}
-\alias{cv.ls}
 \title{Cross-validation for a \code{sparsegl} object.}
 \usage{
 cv.sparsegl(

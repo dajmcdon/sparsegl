@@ -5,21 +5,24 @@
 \alias{trust_experts}
 \title{Trust in scientific experts during the Covid-19 pandemic}
 \format{
-A named \code{\link[Matrix:sparseMatrix]{Matrix::sparseMatrix()}} with 3775 rows, 96 columns, and
-51738 non-zero entries
+A \code{data.frame} with 9759 rows and 8 columns
 \describe{
-\item{\code{y}}{Real-valued response. This is the average of \verb{pct_trust_covid_info_*}
+\item{\code{trust_experts}}{Real-valued. This is the average of
+\verb{pct_trust_covid_info_*}
 where \code{*} is each of \code{doctors}, \code{experts}, \code{cdc}, and \code{govt_health}.}
-\item{\code{yyyy-mm-01}}{\code{0-1}-valued predictor. Start date of data collection period.
-There are 8 monthly periods}
-\item{\code{AK}-\code{WY}}{\code{0-1}-valued predictor. State abbreviation.}
-\item{\verb{age_*}}{\code{0-1}-valued predictor. Self-reported age bucket.}
-\item{\verb{gender_*}}{\code{0-1}-valued predictor. Self-reported gender.}
-\item{\verb{race_*}}{\code{0-1}-valued predictor. Self-reported race.}
-\item{\verb{cli_*}}{Real-valued predictor. \code{pct_cli} expanded in a B-spline
-basis with 10 degrees of freedom.}
-\item{\verb{cmnty_cli_*}}{Real-valued predictor. \code{pct_hh_cmnty_cli} expanded
-in a B-spline basis with 10 degrees of freedom.}
+\item{\code{period}}{Factor. Start date of data collection period.
+There are 13 monthly periods}
+\item{\code{region}}{Factor. State abbreviation.}
+\item{\code{age}}{Factor. Self-reported age bucket.}
+\item{\code{gender}}{Factor. Self-reported gender.}
+\item{\code{raceethnicity}}{Factor. Self-reported race or ethnicity.}
+\item{\code{cli}}{Real-valued. This is the \code{wcli} indicator measuring the
+percent of circulating Covid-like illness in a particular region. See
+the \href{https://cmu-delphi.github.io/delphi-epidata/api/covidcast-signals/fb-survey.html#ili-and-cli-indicators}{Delphi Epidata API}
+for a complete description.}
+\item{\code{hh_cmnty_cli}}{Real-valued. This is the \code{whh_cmnty_cli} indicator
+measuring the percent of people reporting illness in their local
+community and household.}
 }
 }
 \source{
@@ -49,5 +52,26 @@ particular dataset is created from one of the public
 \href{https://www.cmu.edu/delphi-web/surveys/monthly-rollup/}{contingency tables},
 specifically, the breakdown by state, age, gender, and race/ethnicity published
 on 05 February 2022.
+}
+\examples{
+\dontrun{
+library(splines)
+df <- 10
+
+trust_experts <- trust_experts \%>\%
+  mutate(across(
+    where(is.factor),
+    ~ set_attr(.x, "contrasts", contr.sum(nlevels(.x), FALSE, TRUE))
+  ))
+
+x <- Matrix::sparse.model.matrix(
+    ~ 0 + region + age + gender + raceethnicity + period +
+    bs(cli, df = df) + bs(hh_cmnty_cli, df = df),
+    data = trust_experts, drop.unused.levels = TRUE)
+
+gr <- sapply(trust_experts, function(x) ifelse(is.factor(x), nlevels(x), NA))
+gr <- rep(seq(ncol(trust_experts) - 1), times = c(gr[!is.na(gr)], df, df))
+fit <- cv.sparsegl(x, trust_experts$trust_experts, gr)
+}
 }
 \keyword{datasets}

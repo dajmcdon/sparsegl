@@ -95,8 +95,8 @@ predict.cv.sparsegl <- function(
 fitted.cv.sparsegl <- function(object, ...) {
   abort(c(
     "Because design matrices are typically large, these are not stored ",
-    "in the estimated sparsegl object. Use `predict()` instead, and ",
-    "pass in the original data."))
+    `!`="in the estimated `cv.sparsegl` object. Use `predict()` instead, and ",
+    `!`="pass in the original data."))
 }
 
 
@@ -114,7 +114,7 @@ summary.cv.sparsegl <- function(object, ...) {
     nnzero = nnzero[optlax],
     active_grps = active_grps[optlax])
   )
-  rownames(tab) <- c("maximum", "cv.1se", "cv.min", "minimum")
+  rownames(tab) <- c("Max.", "lambda.1se", "lambda.min", "Min.")
   out <- structure(
     list(
       call = object$call,
@@ -138,7 +138,7 @@ print.summary.cvsparsegl <- function(
   lambda_warning = NULL
   if (x$table$index[2] == 1) lambda_warning = "smallest"
   if (x$table$index[3] == x$table$index[4]) lambda_warning = "largest"
-  cat("\nCall: ", deparse(x$call), "\n\n")
+  cat("\nCall: ", deparse(x$call), "\n", fill = TRUE)
 
   cat("Error measure: ", x$error_measure, "\n\n")
 
