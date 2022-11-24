@@ -8,21 +8,24 @@
 #' specifically, the breakdown by state, age, gender, and race/ethnicity published
 #' on 05 February 2022.
 #'
-#' @format A named [Matrix::sparseMatrix()] with 3775 rows, 96 columns, and
-#'   51738 non-zero entries
+#' @format A `data.frame` with 9759 rows and 8 columns
 #' \describe{
-#'   \item{`y`}{Real-valued response. This is the average of `pct_trust_covid_info_*`
+#'   \item{`trust_experts`}{Real-valued. This is the average of
+#'     `pct_trust_covid_info_*`
 #'     where `*` is each of `doctors`, `experts`, `cdc`, and `govt_health`.}
-#'   \item{`yyyy-mm-01`}{`0-1`-valued predictor. Start date of data collection period.
-#'     There are 8 monthly periods}
-#'   \item{`AK`-`WY`}{`0-1`-valued predictor. State abbreviation.}
-#'   \item{`age_*`}{`0-1`-valued predictor. Self-reported age bucket.}
-#'   \item{`gender_*`}{`0-1`-valued predictor. Self-reported gender.}
-#'   \item{`race_*`}{`0-1`-valued predictor. Self-reported race.}
-#'   \item{`cli_*`}{Real-valued predictor. `pct_cli` expanded in a B-spline
-#'     basis with 10 degrees of freedom.}
-#'   \item{`cmnty_cli_*`}{Real-valued predictor. `pct_hh_cmnty_cli` expanded
-#'     in a B-spline basis with 10 degrees of freedom.}
+#'   \item{`period`}{Factor. Start date of data collection period.
+#'     There are 13 monthly periods}
+#'   \item{`region`}{Factor. State abbreviation.}
+#'   \item{`age`}{Factor. Self-reported age bucket.}
+#'   \item{`gender`}{Factor. Self-reported gender.}
+#'   \item{`raceethnicity`}{Factor. Self-reported race or ethnicity.}
+#'   \item{`cli`}{Real-valued. This is the `wcli` indicator measuring the
+#'     percent of circulating Covid-like illness in a particular region. See
+#'     the [Delphi Epidata API](https://cmu-delphi.github.io/delphi-epidata/api/covidcast-signals/fb-survey.html#ili-and-cli-indicators)
+#'     for a complete description.}
+#'   \item{`hh_cmnty_cli`}{Real-valued. This is the `whh_cmnty_cli` indicator
+#'     measuring the percent of people reporting illness in their local
+#'     community and household.}
 #' }
 #' @source The U.S. COVID-19 Trends and Impact Survey.
 #'
@@ -38,4 +41,25 @@
 #'   \doi{10.1073/pnas.2111454118}.
 #'
 #'   [The Public Delphi US CTIS Documentation](https://cmu-delphi.github.io/delphi-epidata/symptom-survey/contingency-tables.html)
+#'
+#' @examples
+#' \dontrun{
+#' library(splines)
+#' df <- 10
+#'
+#' trust_experts <- trust_experts %>%
+#'   mutate(across(
+#'     where(is.factor),
+#'     ~ set_attr(.x, "contrasts", contr.sum(nlevels(.x), FALSE, TRUE))
+#'   ))
+#'
+#' x <- Matrix::sparse.model.matrix(
+#'     ~ 0 + region + age + gender + raceethnicity + period +
+#'     bs(cli, df = df) + bs(hh_cmnty_cli, df = df),
+#'     data = trust_experts, drop.unused.levels = TRUE)
+#'
+#' gr <- sapply(trust_experts, function(x) ifelse(is.factor(x), nlevels(x), NA))
+#' gr <- rep(seq(ncol(trust_experts) - 1), times = c(gr[!is.na(gr)], df, df))
+#' fit <- cv.sparsegl(x, trust_experts$trust_experts, gr)
+#' }
 "trust_experts"
