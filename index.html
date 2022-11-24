@@ -81,7 +81,9 @@
 <div class="page-header"><h1 id="r-package-sparsegl">R-package <code>sparsegl</code>
 <a class="anchor" aria-label="anchor" href="#r-package-sparsegl"></a>
 </h1></div>
-<p>The goal of sparsegl is to fit regularization paths for sparse group-lasso penalized learning problems. The model is typically fit for a sequence of regularization parameters <code>lambda</code>.</p>
+<p>The goal of sparsegl is to fit regularization paths for sparse group-lasso penalized learning problems. The model is typically fit for a sequence of regularization parameters <span class="math inline"><em>λ</em></span>. Such estimators minimize</p>
+<p><span class="math display"> − ℓ(<em>β</em>|<em>y</em>,<strong>X</strong>)+<em>λ</em>(1−<em>α</em>)∑<sub><em>g</em> ∈ <em>G</em></sub>||<em>β</em><sub><em>g</em></sub>||<sub>2</sub>+<em>λ</em><em>α</em>||<em>β</em>||<sub>1</sub>.</span></p>
+<p>The main focus of this package is for the case where the loglikelihood is corresponds to Gaussian of logistic regression. But we also provide the ability to fit arbitrary GLMs using <code><a href="https://rdrr.io/r/stats/family.html" class="external-link">stats::family()</a></code> objects.</p>
 <div class="section level2">
 <h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
 </h2>
@@ -109,11 +111,6 @@
 <span><span class="va">fit1</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/sparsegl.html">sparsegl</a></span><span class="op">(</span><span class="va">X</span>, <span class="va">y</span>, group <span class="op">=</span> <span class="va">groups</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">fit1</span>, y_axis <span class="op">=</span> <span class="st">"coef"</span>, x_axis <span class="op">=</span> <span class="st">"penalty"</span>, add_legend <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
 <p><img src="reference/figures/README-minimal-ex-1.png" width="100%" style="display: block; margin: auto;"></p>
-</div>
-<div class="section level2">
-<h2 id="documentation">Documentation<a class="anchor" aria-label="anchor" href="#documentation"></a>
-</h2>
-<p>The package documentation and more examples are <a href="https://dajmcdon.github.io/sparsegl/">available online</a>.</p>
 </div>
 </div>
 

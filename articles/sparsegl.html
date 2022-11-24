@@ -121,8 +121,9 @@ matrix),</p>
 \epsilon\)</span>.</li>
 <li>Logistic regression model: <span class="math inline">\(y = (y_1,
 y_2, \cdots, y_n)\)</span>, where <span class="math inline">\(y_i \sim
-\text{Bernoulli}\left(\frac{1}{1 + \exp(-X_i \beta^*)}\right)\)</span>,
-<span class="math inline">\(i = 1, 2, \cdots, n.\)</span>
+\text{Bernoulli}\left(\frac{1}{1 + \exp(-x_i^\top
+\beta^*)}\right)\)</span>, <span class="math inline">\(i = 1, 2, \cdots,
+n.\)</span>
 </li>
 </ul>
 <p>where the coefficient vector <span class="math inline">\(\beta^*\)</span> is specified as below, and the
@@ -141,7 +142,7 @@ X^{(g)}\beta^{(g)}\rVert_2^2 + (1-\alpha)\lambda\sum_g
 </li>
 <li>Logistic regression: <span class="math display">\[
 \min_{\beta\in\mathbb{R}^p}\left(\frac{1}{2n}\sum_{i=1}^n \log\left(1 +
-\exp\left(-y_i\beta^\top X_i\right)\right) + (1-\alpha)\lambda\sum_g
+\exp\left(-y_ix_i^\top\beta\right)\right) + (1-\alpha)\lambda\sum_g
 \sqrt{\text{bs}}\rVert\beta^{(g)}\rVert_2 +
 \alpha\lambda\rVert\beta\rVert_1 \right) \qquad (**).
 \]</span>
@@ -167,8 +168,9 @@ overfitting.</p></li>
 <span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">1010</span><span class="op">)</span></span>
 <span><span class="va">n</span> <span class="op">&lt;-</span> <span class="fl">100</span></span>
 <span><span class="va">p</span> <span class="op">&lt;-</span> <span class="fl">200</span></span>
-<span><span class="va">X</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span>data <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="va">n</span><span class="op">*</span><span class="va">p</span>, mean <span class="op">=</span> <span class="fl">0</span>, sd <span class="op">=</span> <span class="fl">1</span><span class="op">)</span>, nrow <span class="op">=</span> <span class="va">n</span>, ncol <span class="op">=</span> <span class="va">p</span><span class="op">)</span></span>
-<span><span class="va">beta_star</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">5</span>, <span class="fl">5</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">5</span>, <span class="op">-</span><span class="fl">5</span>, <span class="fl">2</span>, <span class="fl">0</span>, <span class="fl">0</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="op">-</span><span class="fl">5</span>, <span class="fl">5</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">2</span>, <span class="op">-</span><span class="fl">3</span>, <span class="fl">8</span>, <span class="fl">0</span>, <span class="fl">0</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">0</span>, <span class="op">(</span><span class="va">p</span> <span class="op">-</span> <span class="fl">20</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">X</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span>data <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="va">n</span> <span class="op">*</span> <span class="va">p</span>, mean <span class="op">=</span> <span class="fl">0</span>, sd <span class="op">=</span> <span class="fl">1</span><span class="op">)</span>, nrow <span class="op">=</span> <span class="va">n</span>, ncol <span class="op">=</span> <span class="va">p</span><span class="op">)</span></span>
+<span><span class="va">beta_star</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">5</span>, <span class="fl">5</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">5</span>, <span class="op">-</span><span class="fl">5</span>, <span class="fl">2</span>, <span class="fl">0</span>, <span class="fl">0</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="op">-</span><span class="fl">5</span>, <span class="fl">5</span><span class="op">)</span>, </span>
+<span>               <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">2</span>, <span class="op">-</span><span class="fl">3</span>, <span class="fl">8</span>, <span class="fl">0</span>, <span class="fl">0</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">0</span>, <span class="op">(</span><span class="va">p</span> <span class="op">-</span> <span class="fl">20</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">groups</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="op">(</span><span class="va">p</span> <span class="op">/</span> <span class="fl">5</span><span class="op">)</span>, each <span class="op">=</span> <span class="fl">5</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Linear regression model</span></span>
