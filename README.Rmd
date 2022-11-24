@@ -20,7 +20,11 @@ knitr::opts_chunk$set(
 # R-package `sparsegl`
 
 The goal of sparsegl is to fit regularization paths for sparse group-lasso
-penalized learning problems. The model is typically fit for a sequence of regularization parameters `lambda`.
+penalized learning problems. The model is typically fit for a sequence of regularization parameters $\lambda$. Such estimators minimize
+
+$$-\ell(\beta | y, \mathbf{X}) + \lambda(1-\alpha)\sum_{g\in G} ||\beta_g||_2 + \lambda\alpha ||\beta||_1.$$
+
+The main focus of this package is for the case where the loglikelihood is corresponds to Gaussian of logistic regression. But we also provide the ability to fit arbitrary GLMs using `stats::family()` objects.
 
 ## Installation
 
@@ -58,7 +62,3 @@ groups <- rep(1:(p / 5), each = 5)
 fit1 <- sparsegl(X, y, group = groups)
 plot(fit1, y_axis = "coef", x_axis = "penalty", add_legend = FALSE)
 ```
-
-## Documentation
-
-The package documentation and more examples are [available online](https://dajmcdon.github.io/sparsegl/).

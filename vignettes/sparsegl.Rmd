@@ -61,7 +61,7 @@ predictors of dimension `n`-obs by `p`-feature. To initiate `y`, a real-valued v
 (make it a vector rather a matrix), 
 
 * Linear Regression model: $y = X\beta^* + \epsilon$.
-* Logistic regression model: $y = (y_1, y_2, \cdots, y_n)$, where $y_i \sim \text{Bernoulli}\left(\frac{1}{1 + \exp(-X_i \beta^*)}\right)$, $i = 1, 2, \cdots, n.$
+* Logistic regression model: $y = (y_1, y_2, \cdots, y_n)$, where $y_i \sim \text{Bernoulli}\left(\frac{1}{1 + \exp(-x_i^\top \beta^*)}\right)$, $i = 1, 2, \cdots, n.$
 
 where the coefficient vector $\beta^*$ is specified as below, and the white noise
 $\epsilon$ following standard normal distribution serves as data variation. Then
@@ -75,7 +75,7 @@ $$
 $$
 * Logistic regression: 
 $$
-\min_{\beta\in\mathbb{R}^p}\left(\frac{1}{2n}\sum_{i=1}^n \log\left(1 + \exp\left(-y_i\beta^\top X_i\right)\right) + (1-\alpha)\lambda\sum_g \sqrt{\text{bs}}\rVert\beta^{(g)}\rVert_2 + \alpha\lambda\rVert\beta\rVert_1 \right) \qquad (**).
+\min_{\beta\in\mathbb{R}^p}\left(\frac{1}{2n}\sum_{i=1}^n \log\left(1 + \exp\left(-y_ix_i^\top\beta\right)\right) + (1-\alpha)\lambda\sum_g \sqrt{\text{bs}}\rVert\beta^{(g)}\rVert_2 + \alpha\lambda\rVert\beta\rVert_1 \right) \qquad (**).
 $$
 
 where 
@@ -97,8 +97,9 @@ library(sparsegl)
 set.seed(1010)
 n <- 100
 p <- 200
-X <- matrix(data = rnorm(n*p, mean = 0, sd = 1), nrow = n, ncol = p)
-beta_star <- c(rep(5, 5), c(5, -5, 2, 0, 0), rep(-5, 5), c(2, -3, 8, 0, 0), rep(0, (p - 20)))
+X <- matrix(data = rnorm(n * p, mean = 0, sd = 1), nrow = n, ncol = p)
+beta_star <- c(rep(5, 5), c(5, -5, 2, 0, 0), rep(-5, 5), 
+               c(2, -3, 8, 0, 0), rep(0, (p - 20)))
 groups <- rep(1:(p / 5), each = 5)
 
 # Linear regression model

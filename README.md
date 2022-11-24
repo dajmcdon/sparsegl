@@ -10,7 +10,14 @@ status](https://www.r-pkg.org/badges/version/sparsegl)](https://CRAN.R-project.o
 
 The goal of sparsegl is to fit regularization paths for sparse
 group-lasso penalized learning problems. The model is typically fit for
-a sequence of regularization parameters `lambda`.
+a sequence of regularization parameters $\lambda$. Such estimators
+minimize
+
+$$-\ell(\beta | y, \mathbf{X}) + \lambda(1-\alpha)\sum_{g\in G} ||\beta_g||_2 + \lambda\alpha ||\beta||_1.$$
+
+The main focus of this package is for the case where the loglikelihood
+is corresponds to Gaussian of logistic regression. But we also provide
+the ability to fit arbitrary GLMs using `stats::family()` objects.
 
 ## Installation
 
@@ -46,8 +53,3 @@ plot(fit1, y_axis = "coef", x_axis = "penalty", add_legend = FALSE)
 ```
 
 <img src="man/figures/README-minimal-ex-1.png" width="100%" style="display: block; margin: auto;" />
-
-## Documentation
-
-The package documentation and more examples are [available
-online](https://dajmcdon.github.io/sparsegl/).
