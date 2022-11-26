@@ -1,9 +1,9 @@
 ---
-title: Getting started with `sparsegl`
+title: Getting started with sparsegl
 description: An introductory tutorial with examples
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Getting started with `sparsegl`}
+  %\VignetteIndexEntry{Getting started with sparsegl}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -123,7 +123,7 @@ of the features. By default, each group only contains one feature if without
 initialization.
 
 * `family`: A character string specifying the likelihood to use, could be either
-linear regression "gaussian" or logistic regression loss "binomial". Default is "gaussian".
+linear regression `"gaussian"` or logistic regression loss `"binomial"`. Default is `"gaussian"`.
 If other exponential families are required, a `stats::family()` object may be used
 (e.g. `poisson()`). In that case, arguments providing observation weights or 
 offset terms are allowed as well.
@@ -206,19 +206,19 @@ the negative log-likelihood. The option `"misclass"` is only available if
 fit_l1 <- cv.sparsegl(X, y, group = groups, pred.loss = "mae")
 ```
 
-### `coef()`, `predict()`, `print()` and `summary()` methods
+### Methods
 
-These methods are provided for both `sparsegl` and `cv.sparsegl` objects.
+A number of S3 methods are provided for both `sparsegl` and `cv.sparsegl` objects.
 
 * `coef()` and `predict()` return a matrix of coefficients and predictions $\hat{y}$
 given a matrix `X` at each lambda respectively.
-The optional `s` argument may provide a specific value of $\lambda$ (not necessarily)
-part of the original sequence, or, in the case of a `cv.sparsegl` object, a 
+The optional `s` argument may provide a specific value of $\lambda$ (not necessarily
+part of the original sequence), or, in the case of a `cv.sparsegl` object, a 
 string specifying either `"lambda.min"` or `"lambda.1se"`.
 
 
 
-```{r, eval = FALSE}
+```{r}
 coef <- coef(fit1, s = c(0.02, 0.03))
 predict(fit1, newx = X[100,], s = fit1$lambda[2:3])
 predict(fit_l1, newx = X[100,], s = "lambda.1se")
@@ -256,7 +256,25 @@ For more details about how this formula, see
 (Vaiter, Deledalle, Peyré, et al., 2012).[^1] 
 
 ```{r}
-risk <- estimate_risk(fit1, X, type = "AIC", approx_df = FALSE)
+risk <- estimate_risk(fit1, X, approx_df = FALSE)
+```
+
+```{r echo = FALSE, message=FALSE, warning=FALSE, fig.align='center', fig.width = 8, fig.height = 4}
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+er <- risk %>% dplyr::select(-df) %>% pivot_longer(-lambda, values_to = "risk")
+err <- er %>% group_by(name) %>% summarise(lambda = lambda[which.min(risk)])
+ggplot(er, aes(lambda, risk, color = name)) +
+  geom_line() +
+  scale_color_brewer(palette = "Dark2") +
+  geom_vline(data = err, aes(xintercept = lambda, color = name),
+             linetype = "dashed", show.legend = FALSE) +
+  theme_bw() +
+  ylab("Estimated risk") +
+  xlab("Lambda") +
+  scale_x_log10() + scale_y_log10() +
+  theme(legend.title = element_blank())  
 ```
 
 [^1]: Vaiter S, Deledalle C, Peyré G, Fadili J, Dossal C. (2012). _The Degrees of Freedom of the Group Lasso for a General Design._ <https://arxiv.org/abs/1212.6478>.
