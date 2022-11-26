@@ -62,6 +62,5 @@ fit1 <- sparsegl(X, y, group = groups)
 predict(fit1, newx = X[10, ], s = fit1$lambda[3:5])
 }
 \seealso{
-\code{\link[=sparsegl]{sparsegl()}}, \code{\link[=coef.sparsegl]{coef.sparsegl()}} and
-\code{\link[=print.sparsegl]{print.sparsegl()}} methods.
+\code{\link[=sparsegl]{sparsegl()}}, \code{\link[=coef.sparsegl]{coef.sparsegl()}}.
 }

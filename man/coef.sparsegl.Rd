@@ -40,6 +40,5 @@ fit1 <- sparsegl(X, y, group = groups)
 coef(fit1, s = c(0.02, 0.03))
 }
 \seealso{
-\code{\link[=sparsegl]{sparsegl()}}, \code{\link[=predict.sparsegl]{predict.sparsegl()}} and
-\code{\link[=print.sparsegl]{print.sparsegl()}} methods.
+\code{\link[=sparsegl]{sparsegl()}} and \code{\link[=predict.sparsegl]{predict.sparsegl()}}.
 }

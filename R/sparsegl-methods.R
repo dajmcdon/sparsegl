@@ -13,8 +13,7 @@
 #' @param s Value(s) of the penalty parameter `lambda` at which
 #'  coefficients are required. Default is the entire sequence.
 #' @param ... Not used.
-#' @seealso [sparsegl()], [predict.sparsegl()] and
-#' [print.sparsegl()] methods.
+#' @seealso [sparsegl()] and [predict.sparsegl()].
 #'
 #' @return The coefficients at the requested values for `lambda`.
 #'
@@ -91,8 +90,7 @@ coef.sparsegl <- function(object, s = NULL, ...) {
 #'
 #' @param ... Not used.
 #' @return The object returned depends on type.
-#' @seealso [sparsegl()], [coef.sparsegl()] and
-#' [print.sparsegl()] methods.
+#' @seealso [sparsegl()], [coef.sparsegl()].
 #'
 #' @method predict sparsegl
 #' @export
@@ -114,7 +112,9 @@ predict.sparsegl <- function(
   type <- match.arg(type)
   if (missing(newx)) {
     if (!match(type, c("coefficients", "nonzero"), FALSE))
-      stop("You need to supply a value for 'newx'")
+      cli::cli_abort(
+        "You must supply a value for `newx` when `type` == '{type}'."
+      )
   }
   nbeta <- coef(object, s)
   if (type == "coefficients") return(nbeta)
@@ -124,7 +124,7 @@ predict.sparsegl <- function(
   p <- object$dim[1]
   if (is.null(dx)) newx <- matrix(newx, 1, byrow = TRUE)
   if (ncol(newx) != p)
-    stop(paste0("The number of variables in newx must be ", p))
+    cli::cli_abort("The number of variables in `newx` must be {p}.")
   fit <- as.matrix(cbind2(1, newx) %*% nbeta)
   fit
 }
@@ -168,10 +168,10 @@ predict.irlsspgl <- function(
 
 #' @export
 fitted.sparsegl <- function(object, ...) {
-  abort(c(
-    "Because design matrices are typically large, these are not stored ",
-    `!`="in the estimated `sparsegl` object. Use `predict()` instead, and ",
-    `!`="pass in the original data."))
+  cli::cli_abort(c(
+    "!" = "Because design matrices are typically large, these are not stored ",
+    "!" = "in the estimated `sparsegl` object. Use `predict()` instead, and ",
+    "!" = "pass in the original data."))
 }
 
 #' @method summary sparsegl
@@ -222,30 +222,8 @@ print.summary.sparsegl <- function(
 
 }
 
-#' Print a `sparsegl` object.
-#'
-#' Prints some summary information about the estimated [sparsegl()] object.
-#'
-#'
-#' @param x Fitted [sparsegl()] object.
-#' @param digits Significant digits in printout.
-#' @param ... not used
-#'
-#' @seealso [sparsegl()], [coef.sparsegl()] and
-#' [predict.sparsegl()] methods.
-#'
 #' @method print sparsegl
 #' @export
-#' @examples
-#' n <- 100
-#' p <- 20
-#' X <- matrix(rnorm(n * p), nrow = n)
-#' eps <- rnorm(n)
-#' beta_star <- c(rep(5, 5), c(5, -5, 2, 0, 0), rep(-5, 5), rep(0, (p - 15)))
-#' y <- X %*% beta_star + eps
-#' groups <- rep(1:(p / 5), each = 5)
-#' fit1 <- sparsegl(X, y, group = groups)
-#' print(fit1)
 print.sparsegl <- function(x, digits = min(3, getOption("digits") - 3), ...) {
   rlang::check_dots_empty()
   print(summary(x), digits = digits)

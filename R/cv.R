@@ -80,7 +80,9 @@ cv.sparsegl <- function(
   # predict -> coef
   if (is.null(foldid)) foldid <- sample(rep(seq(nfolds), length = N))
   else nfolds <- max(foldid)
-  if (nfolds < 2) abort("`nfolds` must be at least 2; `nfolds = 10` recommended")
+  if (nfolds < 2) {
+    cli::cli_abort("`nfolds` must be at least 2; `nfolds = 10` is recommended.")
+  }
   outlist <- as.list(seq(nfolds))
   ###Now fit the nfold models and store them
   for (i in seq(nfolds)) {

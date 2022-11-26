@@ -40,7 +40,7 @@ estimate_risk <- function(object, x,
 estimate_risk.default <- function(object, x,
                                   type = c("AIC", "BIC", "GCV"),
                                   approx_df = FALSE) {
-  stop("Risk estimation is only available for Gaussian likelihood.")
+  cli::cli_abort("Risk estimation is only available for Gaussian likelihood.")
 }
 
 #' @export

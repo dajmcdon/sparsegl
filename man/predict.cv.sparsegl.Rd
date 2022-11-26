@@ -61,5 +61,5 @@ predict(cv_fit, newx = X[50:60, ], s = "lambda.min")
 
 }
 \seealso{
-\code{\link[=cv.sparsegl]{cv.sparsegl()}}, and \code{\link[=coef.cv.sparsegl]{coef.cv.sparsegl()}} methods.
+\code{\link[=cv.sparsegl]{cv.sparsegl()}} and \code{\link[=coef.cv.sparsegl]{coef.cv.sparsegl()}}.
 }

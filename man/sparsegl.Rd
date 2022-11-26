@@ -178,6 +178,5 @@ yp <- rpois(n, abs(X \%*\% beta_star))
 fit_pois <- sparsegl(X, yp, group = groups, family = poisson())
 }
 \seealso{
-\code{\link[=plot.sparsegl]{plot.sparsegl()}}, \code{\link[=coef.sparsegl]{coef.sparsegl()}}, \code{\link[=predict.sparsegl]{predict.sparsegl()}}
-and \code{\link[=print.sparsegl]{print.sparsegl()}} methods.
+\code{\link[=plot.sparsegl]{plot.sparsegl()}}, \code{\link[=coef.sparsegl]{coef.sparsegl()}}, \code{\link[=predict.sparsegl]{predict.sparsegl()}} methods.
 }

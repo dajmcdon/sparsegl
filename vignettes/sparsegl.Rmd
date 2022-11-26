@@ -1,9 +1,9 @@
 ---
-title: Getting started with `sparsegl`
+title: Getting started with sparsegl
 description: An introductory tutorial with examples
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Getting started with `sparsegl`}
+  %\VignetteIndexEntry{Getting started with sparsegl}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -21,15 +21,15 @@ parameters.
 
 The strengths and improvements that this package offers relative to other sparse group-lasso packages are as follows: 
 
-* Compiled Fortran code significantly speeds up the sparse group-lasso model building process.
+* Compiled Fortran code significantly speeds up the sparse group-lasso estimation process.
 
-* So-called "strong rules" are implemented during group wise coordinate descent steps to screen out groups which are likely to be 0 at the solution.
+* So-called "strong rules" are implemented during group wise coordinate descent steps screen out groups which are likely to be 0 at the solution.
 
-* The design matrix `X` can be a sparse.
+* The design matrix `X` may be a sparse.
 
 * An `estimate_risk()` function may be used to evaluate the quality of fitted models via information criteria, providing a means for model selection if cross-validation is too computationally costly.
 
-* Additional glm families may be fit (though this is typically slower).
+* Additional exponential families may be fit (though this is typically slower).
 
 
 ## Installing
@@ -52,30 +52,30 @@ Vignettes are not included in the package by default. If you want to
 include vignettes, then use this modified command:
 
 ```{r, eval = FALSE}
-remotes::install_github("dajmcdon/sparsegl", 
-                        build_vignettes = TRUE, dependencies = TRUE)
+remotes::install_github(
+  "dajmcdon/sparsegl", 
+  build_vignettes = TRUE, dependencies = TRUE
+)
 ```
 
 For this getting-started vignette, first, we will randomly generate `X`, an input matrix of 
-predictors of dimension `n`-obs by `p`-feature. To initiate `y`, a real-valued vector
-(make it a vector rather a matrix), 
+predictors of dimension $n\times p$. To create `y`, a real-valued vector, we use either a 
 
 * Linear Regression model: $y = X\beta^* + \epsilon$.
-* Logistic regression model: $y = (y_1, y_2, \cdots, y_n)$, where $y_i \sim \text{Bernoulli}\left(\frac{1}{1 + \exp(-X_i \beta^*)}\right)$, $i = 1, 2, \cdots, n.$
+* Logistic regression model: $y = (y_1, y_2, \cdots, y_n)$, where $y_i \sim \text{Bernoulli}\left(\frac{1}{1 + \exp(-x_i^\top \beta^*)}\right)$, $i = 1, 2, \cdots, n.$
 
 where the coefficient vector $\beta^*$ is specified as below, and the white noise
-$\epsilon$ following standard normal distribution serves as data variation. Then
-the sparse group-lasso problem is formulated as the sum of mean squared error (
-linear regression) or logistic loss (logistic regression) and a convex 
-combination of lasso penalty and group lasso penalty:
+$\epsilon$ follows a standard normal distribution. Then
+the sparse group-lasso problem is formulated as the sum of mean squared error (linear regression) or logistic loss (logistic regression) and a convex 
+combination of the $\ell_1$ lasso penalty with an $\ell_2$ group lasso penalty:
 
 * Linear regression: 
 $$
-\min_{\beta\in\mathbb{R}^p}\left(\frac{1}{2n} \rVert y - \sum_g X^{(g)}\beta^{(g)}\rVert_2^2 + (1-\alpha)\lambda\sum_g \sqrt{\text{bs}}\rVert\beta^{(g)}\rVert_2 + \alpha\lambda\rVert\beta\rVert_1 \right) \qquad (*).
+\min_{\beta\in\mathbb{R}^p}\left(\frac{1}{2n} \rVert y - \sum_g X^{(g)}\beta^{(g)}\rVert_2^2 + (1-\alpha)\lambda\sum_g \sqrt{|g|}\rVert\beta^{(g)}\rVert_2 + \alpha\lambda\rVert\beta\rVert_1 \right) \qquad (*).
 $$
 * Logistic regression: 
 $$
-\min_{\beta\in\mathbb{R}^p}\left(\frac{1}{2n}\sum_{i=1}^n \log\left(1 + \exp\left(-y_i\beta^\top X_i\right)\right) + (1-\alpha)\lambda\sum_g \sqrt{\text{bs}}\rVert\beta^{(g)}\rVert_2 + \alpha\lambda\rVert\beta\rVert_1 \right) \qquad (**).
+\min_{\beta\in\mathbb{R}^p}\left(\frac{1}{2n}\sum_{i=1}^n \log\left(1 + \exp\left(-y_ix_i^\top\beta\right)\right) + (1-\alpha)\lambda\sum_g \sqrt{|g|}\rVert\beta^{(g)}\rVert_2 + \alpha\lambda\rVert\beta\rVert_1 \right) \qquad (**).
 $$
 
 where 
@@ -86,19 +86,20 @@ to the features in group $g$.
 * $\beta^{(g)}$ is the corresponding coefficients of
 the features in group $g$.
 
-* `bs` is the length of $\beta^{(g)}$.
+* $|g|$ is the number of predictors in group $g$.
 
 * $\alpha$ adjusts the weight between lasso penalty and group-lasso penalty.
 
-* $\lambda$ fine-tunes the size of penalty imposed on the model to control the 
-number of nonzero coefficients of features, and furthermore, to avoid overfitting.
+* $\lambda$ fine-tunes the size of penalty imposed on the model to control the number of nonzero coefficients.
+
 ```{r}
 library(sparsegl)
 set.seed(1010)
 n <- 100
 p <- 200
-X <- matrix(data = rnorm(n*p, mean = 0, sd = 1), nrow = n, ncol = p)
-beta_star <- c(rep(5, 5), c(5, -5, 2, 0, 0), rep(-5, 5), c(2, -3, 8, 0, 0), rep(0, (p - 20)))
+X <- matrix(data = rnorm(n * p, mean = 0, sd = 1), nrow = n, ncol = p)
+beta_star <- c(rep(5, 5), c(5, -5, 2, 0, 0), rep(-5, 5), 
+               c(2, -3, 8, 0, 0), rep(0, (p - 20)))
 groups <- rep(1:(p / 5), each = 5)
 
 # Linear regression model
@@ -112,22 +113,25 @@ y_binary <- rbinom(n, 1, pr)
 
 ## `sparsegl()`
 
-Given an input matrix `X`, and a response vector `y` (or a matrix with 1 column), 
-a sparse group-lasso regularized linear model is fitted for a sequence of penalty
-parameter values in terms of penalized maximum likelihood. The penalty is composed
-of lasso penalty and group lasso penalty. The other main arguments the users might give
-are:
+Given an input matrix `X`, and a response vector `y`, 
+a sparse group-lasso regularized linear model is estimated for a sequence of penalty
+parameter values. The penalty is composed
+of lasso penalty and group lasso penalty. The other main arguments the users might supply are:
 
 * `group`: a vector with consecutive integers of length `p` indicating the grouping 
 of the features. By default, each group only contains one feature if without
 initialization.
 
 * `family`: A character string specifying the likelihood to use, could be either
-linear regression "gaussian" or logistic regression loss "binomial". Default is "gaussian".
+linear regression `"gaussian"` or logistic regression loss `"binomial"`. Default is `"gaussian"`.
+If other exponential families are required, a `stats::family()` object may be used
+(e.g. `poisson()`). In that case, arguments providing observation weights or 
+offset terms are allowed as well.
 
-* `pf`: a penalty vector of the length of the number of groups in total. Default 
-value for each entry is the square-root of the corresponding size of each group, 
-which is $\sqrt{\text{bs}}$ in $(*)$ and $(**)$ above.
+* `pf_group`: Separate penalty weights can be applied to each group $\beta_g$ to allow differential shrinkage. Can be 0 for some groups, which implies no shrinkage. The default 
+value for each entry is the square-root of the corresponding size of each group.
+
+* `pf_sparse`: Penalty factor on $\ell_1$-norm, a vector the same length as the total number of columns in x. Each value corresponds to one predictor Can be 0 for some predictors, which implies that predictor will be receive only the group penalty.
 
 * `asparse`: changes the weight of lasso penalty, referring to $\alpha$ in $(*)$
 and $(**)$ above: `asparse` = $1$ gives the lasso penalty only. `asparse` = $0$ 
@@ -141,49 +145,45 @@ entry is -$\infty$.
 or the number of groups including non-negative numbers only. Default value for each
 entry is $\infty$.
 
-It returns a `sparsegl` object, and the main attribute of this object is:
-
-* `df`: the number of nonzero coefficients for each lambda value. This only represents
-an approximation to the exact degree-of-freedom. Detailed explanation can be checked 
-under function `estimate_risk()` below.
 
 ```{r}
 fit1 <- sparsegl(X, y, group = groups)
 ```
 
-### Plotting function `plot()` for `sparsegl` object 
+### Plotting `sparsegl` objects 
 
-This function produces nonzero-only coefficient curves for each penalty parameter
+This function displays nonzero coefficient curves for each penalty parameter
 `lambda` values in the regularization path for a fitted `sparsegl` object. 
 The arguments of this function are: 
 
-* `y_axis`: can be set with either "coef" or "group". Default is "coef".
+* `y_axis`: can be set with either `"coef"` or `"group"`. Default is `"coef"`.
 
-* `x_axis`: can be set with either "lambda" or "penalty". Default is "lambda".
+* `x_axis`: can be set with either `"lambda"` or `"penalty"`. Default is `"lambda"`.
 
-To elaborate on `y_axis` and `x_axis`:
+To elaborate on these arguments:
 
-* The plot with `y_axis` = "group" is the group norms against the log-`lambda` 
+* The plot with `y_axis = "group"` shows the group norms against the log-`lambda` 
 or the scaled group norm vector. Each group norm is defined by:
 $$
-\text{asparse}\times\rVert\beta^{(g)}\rVert_1 + (1 - \text{asparse})\times\sum_g\rVert\beta^{(g)}\rVert_2
+\alpha\rVert\beta^{(g)}\rVert_1 + (1 - \alpha)\sum_g\rVert\beta^{(g)}\rVert_2
 $$
 Curves are plotted in the same color if the corresponding features are in the same 
-group. Notice that the number of curves shown on the plots could be less than the 
-actual number of groups since only the groups containing nonzero features at least
-at one lambda in the sequence `lambda` are included.
+group. Note that the number of curves shown on the plots may be less than the 
+actual number of groups since only the groups containing nonzero features for
+at least one $\lambda$ in the sequence are included.
 
-* The plot with `y_axis` = "coef" is the coefficients of features against
-the log-`lambda` or the scaled group norm vector. Each curve with a distinct color 
-represents a feature. Again, only the features having nonzero coefficients at least
-at one lambda value in the sequence `lambda` are considered.
+* The plot with `y_axis = "coef"` shows the estimated coefficients against
+the `lambda` or the scaled group norm. Again, only the features 
+with nonzero estimates for at least one $\lambda$ value in the sequence are 
+displayed.
 
-* The plot with `x_axis` = "lambda" indicates the `x_axis` presenting with log-`lambda`.
+* The plot with `x_axis = "lambda"` indicates the `x_axis` displays 
+$\log(\lambda)$.
 
-* The plot with `x_axis` = "penalty" indicates the `x_axis` presenting with the 
+* The plot with `x_axis = "penalty"` indicates the `x_axis` displays the 
 scaled group norm vector. Each element in this vector is defined by:
 $$
-\frac{\text{asparse}\times\rVert \beta\rVert_1 + (1-\text{asparse})\times\sum_g\rVert \beta^{(g)}\rVert_2}{\max_\beta\left(\text{asparse}\times\ \rVert \beta\rVert_1 + (1-\text{asparse})\times\sum_g\rVert \beta^{(g)}\rVert_2\right)}
+\frac{\alpha\rVert \beta\rVert_1 + (1-\alpha)\sum_g\rVert \beta^{(g)}\rVert_2}{\max_\beta\left(\alpha \rVert \beta\rVert_1 + (1-\alpha)\sum_g\rVert \beta^{(g)}\rVert_2\right)}
 $$
 
 ```{r, message = FALSE, warning = FALSE, fig.width = 8, fig.height = 4}
@@ -192,92 +192,90 @@ plot(fit1, y_axis = "coef", x_axis = "penalty", add_legend = FALSE)
 ```
 
 
-### `coef()`, `predict()` and `print()` `sparsegl` object
-
-All three functions consume a  fitted `sparsegl` object as an arguments and
-
-* `coef()` and `predict()` return a matrix of coefficients and predictions $\hat{y}$
-given a matrix `X` at each lambda respectively, unless an optional argument `s` is assigned
-with a specified vector or numeric value from (but not necessarily) the original 
-`lambda` sequence.
-
-* `print()` returns the number of nonzero features with nonzero coefficients
-at each `lambda`. 
-
-
-```{r, eval = FALSE}
-coef <- coef(fit1, s = c(0.02, 0.03))
-pred <- predict(fit1, newx = X[100,], s = fit1$lambda[2:3])
-print(fit1)
-```
-
 ## `cv.sparsegl()`
 
-This function does a k-fold cross-validation (cv) on `sparsegl`. It takes the same
+This function performs k-fold cross-validation (cv). It takes the same
 arguments `X`, `y`, `group`, which are specified above, with additional
-argument `pred.loss`. It can be set with either "L2" or "L1" for linear regression
-model, "loss" or "misclass"  for logistic regression model indicating the loss to
-use for cv error. This will return a `cv.sparsegl` object.
+argument `pred.loss` for the error measure. Options are `"default"`, `"mse"`,
+`"deviance"`, `"mae"`, and `"misclass"`. With `family = "gaussian"`, `"default"`
+is equivalent to `"mse"` and `"deviance"`. In general, `"deviance"` will give
+the negative log-likelihood. The option `"misclass"` is only available if
+`family = "binomial"`.
 
-```{r}
+```{r, fig.width = 8, fig.height = 4}
 fit_l1 <- cv.sparsegl(X, y, group = groups, pred.loss = "mae")
-```
-
-### `plot()`, `coef()` and `predict()` for `cv.sparsegl` object
-
-* `plot()`: produces cross-validation curve with upper and lower confidence bounds
-plots for each `lambda` in the regularization path for a fitted `cv.sparsegl` object. 
-In the generated plot, the red points represent the `cvm` values at each `lambda`,
-and the attached gray vertical error bars indicate the uncertainty of `cvm`.
-
-```{r, message = FALSE, warning = FALSE, fig.width = 8, fig.height = 4}
 plot(fit_l1)
 ```
 
-* `coef()` and `predict()` for `cv.sparsegl` object work similarly to those 
-introduced above. The only differences are that the argument 
-`object` passes a fitted `cv.sparsegl` object, and `s` can also be set with `lambda.1se`, 
-`lambda.min` in addition.
+### Methods
+
+A number of S3 methods are provided for both `sparsegl` and `cv.sparsegl` objects.
+
+* `coef()` and `predict()` return a matrix of coefficients and predictions $\hat{y}$
+given a matrix `X` at each lambda respectively.
+The optional `s` argument may provide a specific value of $\lambda$ (not necessarily
+part of the original sequence), or, in the case of a `cv.sparsegl` object, a 
+string specifying either `"lambda.min"` or `"lambda.1se"`.
+
+
 
 ```{r}
-coef <- coef(fit_l1, s = "lambda.1se")
-pred <- predict(fit_l1, newx = X[50:80, ], s = "lambda.min")
+coef <- coef(fit1, s = c(0.02, 0.03))
+predict(fit1, newx = X[100,], s = fit1$lambda[2:3])
+predict(fit_l1, newx = X[100,], s = "lambda.1se")
+print(fit1)
 ```
+
 
 
 ## `estimate_risk()`
 
-This function returns the information criterion, which is the sum of the maximum 
-log-likelihood and a penalty term determined by the chosen penalty type for
-a `sparsegl` model at each `lambda`. It provides a means for model selection by 
-representing the trade-off between the goodness of fit of the model and the 
-complexity of the model. It takes the same arguments `X` and `y` from the function
-`sparsegl()`. The additional arguments it needs are:
+With extremely large data sets, cross validation may be to slow for tuning parameter selection. This function uses the degrees of freedom to calculate various information criteria. This function uses the "unknown variance" version of the likelihood. Only implemented for Gaussian regression. The constant is ignored (as in `stats::extractAIC()`).
 
 * `object`: a fitted `sparsegl` object.
 
 * `type`: three types of penalty used for calculation:
 
-    - AIC (Akaike information criterion): 2 * df / n
+    - AIC (Akaike information criterion): $2 df / n$
     
-    - BIC (Bayesian information criterion): log(n) * df / n
+    - BIC (Bayesian information criterion): $2 df\log(n) / n$
     
-    - GCV (Generalized cross validation): -2 * log(1 - df / n)
+    - GCV (Generalized cross validation): $-2\log(1 - df / n)$
 
 where df is the degree-of-freedom, and n is the sample size.
 
-* `approx_df`: indicate if a vector of the approximation to the degree-of-freedom
-at each penalty parameter `lambda` is used. Default is FALSE and 
-the program will compute the unbiased estimate of the exact degree-of-freedom.
+* `approx_df`: indicates if an approximation to the correct degree-of-freedom
+at each penalty parameter $\lambda$ should used. Default is `FALSE` and 
+the program will compute an unbiased estimate of the exact degree-of-freedom.
 
-FYI: Degree-of-freedom is a tool to assess the complexity of a statistical modeling
-procedure. `object$df`, the approximation to the degree-of-freedom is the number of nonzero
-coefficients of the model. Notice that it would take some time to calculate the 
-unbiased estimate of the exact degrees-of-freedom if `X` is complicated. For more
-details about how to realize this calculation, our method is implemented based on
-the paper https://arxiv.org/pdf/1212.6478.pdf. 
+
+The `df` component of a `sparsegl` object is an approximation (albeit a fairly 
+accurate one) to the actual degrees-of-freedom. However, computing the exact 
+value requires inverting a portion of $\mathbf{X}^\top \mathbf{X}$.
+So this computation may take some time (the default computes the exact df). 
+For more details about how this formula, see
+(Vaiter, Deledalle, Peyré, et al., 2012).[^1] 
 
 ```{r}
-risk <- estimate_risk(fit1, X, type = "AIC", approx_df = FALSE)
+risk <- estimate_risk(fit1, X, approx_df = FALSE)
 ```
 
+```{r echo = FALSE, message=FALSE, warning=FALSE, fig.align='center', fig.width = 8, fig.height = 4}
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+er <- risk %>% dplyr::select(-df) %>% pivot_longer(-lambda, values_to = "risk")
+err <- er %>% group_by(name) %>% summarise(lambda = lambda[which.min(risk)])
+ggplot(er, aes(lambda, risk, color = name)) +
+  geom_line() +
+  scale_color_brewer(palette = "Dark2") +
+  geom_vline(data = err, aes(xintercept = lambda, color = name),
+             linetype = "dashed", show.legend = FALSE) +
+  theme_bw() +
+  ylab("Estimated risk") +
+  xlab("Lambda") +
+  scale_x_log10() + scale_y_log10() +
+  theme(legend.title = element_blank())  
+```
+
+[^1]: Vaiter S, Deledalle C, Peyré G, Fadili J, Dossal C. (2012). _The Degrees of Freedom of the Group Lasso for a General Design._ <https://arxiv.org/abs/1212.6478>.

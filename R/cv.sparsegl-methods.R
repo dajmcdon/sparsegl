@@ -16,7 +16,7 @@
 #'
 #'
 #' @return The coefficients at the requested value(s) for `lambda`.
-#' @seealso [cv.sparsegl()], and [predict.cv.sparsegl()] methods.
+#' @seealso [cv.sparsegl()] and [predict.cv.sparsegl()].
 #' @method coef cv.sparsegl
 #' @export
 #' @examples
@@ -32,7 +32,8 @@
 #' coef(cv_fit, s = c(0.02, 0.03))
 coef.cv.sparsegl <- function(object, s = c("lambda.1se", "lambda.min"), ...) {
   rlang::check_dots_empty()
-  if (!(is.numeric(s) || is.character(s))) abort("Invalid form for `s`.")
+  if (!(is.numeric(s) || is.character(s)))
+    cli::cli_abort("Invalid form for `s`.")
   if (is.numeric(s)) lambda <- s
   else {
     s <- match.arg(s)
@@ -59,7 +60,7 @@ coef.cv.sparsegl <- function(object, s = c("lambda.1se", "lambda.min"), ...) {
 #'   If `s` is numeric, it is taken as the value(s) of `lambda` to be used.
 #'
 #' @return A matrix or vector of predicted values.
-#' @seealso [cv.sparsegl()], and [coef.cv.sparsegl()] methods.
+#' @seealso [cv.sparsegl()] and [coef.cv.sparsegl()].
 #'
 #' @method predict cv.sparsegl
 #' @export
@@ -81,7 +82,8 @@ predict.cv.sparsegl <- function(
     type = c("link", "response", "coefficients", "nonzero", "class"), ...) {
   rlang::check_dots_empty()
   type <- match.arg(type)
-  if (!(is.numeric(s) || is.character(s))) abort("Invalid form for `s`.")
+  if (!(is.numeric(s) || is.character(s)))
+    cli::cli_abort("Invalid form for `s`.")
   if (is.numeric(s)) lambda <- s
   else {
     s <- match.arg(s)
@@ -93,10 +95,10 @@ predict.cv.sparsegl <- function(
 #' @method fitted cv.sparsegl
 #' @export
 fitted.cv.sparsegl <- function(object, ...) {
-  abort(c(
-    "Because design matrices are typically large, these are not stored ",
-    `!`="in the estimated `cv.sparsegl` object. Use `predict()` instead, and ",
-    `!`="pass in the original data."))
+  cli::cli_abort(c(
+    "!" = "Because design matrices are typically large, these are not stored ",
+    "!" = "in the estimated `cv.sparsegl` object. Use `predict()` instead, and ",
+    "!" = "pass in the original data."))
 }
 
 

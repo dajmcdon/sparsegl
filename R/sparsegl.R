@@ -110,8 +110,7 @@
 #' contain information about the deviance and the family used in fitting.
 #'
 #'
-#' @seealso [plot.sparsegl()], [coef.sparsegl()], [predict.sparsegl()]
-#'   and [print.sparsegl()] methods.
+#' @seealso [plot.sparsegl()], [coef.sparsegl()], [predict.sparsegl()] methods.
 #'
 #' @export
 #'
@@ -156,16 +155,18 @@ sparsegl <- function(
   if (is.null(vnames)) vnames <- paste("V", seq(nvars), sep = "")
 
   if (length(y) != nobs) {
-    abort(c("`x` has {nobs} rows while `y` has {length(y)}.",
-            "Both should be the same."))}
+    cli::cli_abort(c("`x` has {nobs} rows while `y` has {length(y)}.",
+                     "Both should be the same."))
+  }
 
   #    group setup
   if (is.null(group)) {
     group <- 1:nvars
   } else {
     if (length(group) != nvars) {
-      abort(c("The length of group is {length(group)}.",
-              "It must match the number of columns in `x`: {nvars}"))}
+      cli::cli_abort(c("The length of group is {length(group)}.",
+                       "It must match the number of columns in `x`: {nvars}"))
+    }
   }
 
   bn <- as.integer(max(group))  # number of groups
@@ -190,7 +191,8 @@ sparsegl <- function(
     abort("`pf_group` may not be infinite. Simply remove the group from `x`.")
   if (all(pf_sparse == 0)) {
     if (asparse > 0) {
-      abort("`pf_sparse` is identically 0 but `asparse` suggests some L1 penalty is desired.")
+      abort(c("`pf_sparse` is identically 0 but `asparse` suggests",
+            "!" = "some L1 penalty is desired."))
     } else {
       rlang::warn("`pf_sparse` was set to 1 since `asparse == 0`.")
       pf_sparse = rep(1, nvars)
@@ -207,10 +209,16 @@ sparsegl <- function(
   group <- as.integer(group)
 
   #parameter setup
-  if (length(pf_group) != bn)
-    abort("The length of `pf_group` must be the same as the number of groups {bn}.")
-  if (length(pf_sparse) != nvars)
-    abort("The length of `pf_sparse` must be equal to the number of predictors {nvars}.")
+  if (length(pf_group) != bn) {
+    cli::cli_abort(
+      "The length of `pf_group` must be the same as the number of groups {bn}."
+    )
+  }
+  if (length(pf_sparse) != nvars) {
+    cli::cli_abort(
+      "The length of `pf_sparse` must be equal to the number of predictors {nvars}."
+    )
+  }
 
   pf_sparse <- pf_sparse / sum(pf_sparse) * nvars
   maxit <- as.integer(maxit)
@@ -236,19 +244,19 @@ sparsegl <- function(
   intr <- as.integer(intercept)
 
   ### check on upper/lower bounds
-  if (any(lower_bnd > 0)) abort("`lower_bnd` should be non-positive")
-  if (any(upper_bnd < 0)) abort("`upper_bnd` should be non-negative")
+  if (any(lower_bnd > 0)) abort("`lower_bnd` must be non-positive")
+  if (any(upper_bnd < 0)) abort("`upper_bnd` must be non-negative")
   lower_bnd[lower_bnd == -Inf] <- -9.9e30
   upper_bnd[upper_bnd == Inf] <- 9.9e30
   if (length(lower_bnd) < bn) {
     if (length(lower_bnd) == 1) lower_bnd <- rep(lower_bnd, bn)
-    else abort("`lower_bnd` must be length 1 or length {bn}.")
+    else cli::cli_abort("`lower_bnd` must be length 1 or length {bn}.")
   } else {
     lower_bnd <- lower_bnd[seq_len(bn)]
   }
   if (length(upper_bnd) < bn) {
     if (length(upper_bnd) == 1) upper_bnd <- rep(upper_bnd, bn)
-    else abort("`upper_bnd` must be length 1 or length {bn}")
+    else cli::cli_abort("`upper_bnd` must be length 1 or length {bn}.")
   } else {
     upper_bnd <- upper_bnd[seq_len(bn)]
   }
