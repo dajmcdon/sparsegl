@@ -225,8 +225,7 @@ numbers only. Default value for each entry is <span class="math inline">\(\infty
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">fit1</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/sparsegl.html">sparsegl</a></span><span class="op">(</span><span class="va">X</span>, <span class="va">y</span>, group <span class="op">=</span> <span class="va">groups</span><span class="op">)</span></span></code></pre></div>
 <div class="section level3">
-<h3 id="plotting-function-plot-for-sparsegl-object">Plotting function <code>plot()</code> for <code>sparsegl</code>
-object<a class="anchor" aria-label="anchor" href="#plotting-function-plot-for-sparsegl-object"></a>
+<h3 id="plotting-sparsegl-objects">Plotting <code>sparsegl</code> objects<a class="anchor" aria-label="anchor" href="#plotting-sparsegl-objects"></a>
 </h3>
 <p>This function displays nonzero coefficient curves for each penalty
 parameter <code>lambda</code> values in the regularization path for a
@@ -287,7 +286,9 @@ the error measure. Options are <code>"default"</code>,
 the negative log-likelihood. The option <code>"misclass"</code> is only
 available if <code>family = "binomial"</code>.</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">fit_l1</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/cv.sparsegl.html">cv.sparsegl</a></span><span class="op">(</span><span class="va">X</span>, <span class="va">y</span>, group <span class="op">=</span> <span class="va">groups</span>, pred.loss <span class="op">=</span> <span class="st">"mae"</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">fit_l1</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/cv.sparsegl.html">cv.sparsegl</a></span><span class="op">(</span><span class="va">X</span>, <span class="va">y</span>, group <span class="op">=</span> <span class="va">groups</span>, pred.loss <span class="op">=</span> <span class="st">"mae"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">fit_l1</span><span class="op">)</span></span></code></pre></div>
+<p><img src="sparsegl_files/figure-html/unnamed-chunk-8-1.png" width="768"></p>
 <div class="section level3">
 <h3 id="methods">Methods<a class="anchor" aria-label="anchor" href="#methods"></a>
 </h3>
