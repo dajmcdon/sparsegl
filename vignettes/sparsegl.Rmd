@@ -150,7 +150,7 @@ entry is $\infty$.
 fit1 <- sparsegl(X, y, group = groups)
 ```
 
-### Plotting function `plot()` for `sparsegl` object 
+### Plotting `sparsegl` objects 
 
 This function displays nonzero coefficient curves for each penalty parameter
 `lambda` values in the regularization path for a fitted `sparsegl` object. 
@@ -202,8 +202,9 @@ is equivalent to `"mse"` and `"deviance"`. In general, `"deviance"` will give
 the negative log-likelihood. The option `"misclass"` is only available if
 `family = "binomial"`.
 
-```{r}
+```{r, fig.width = 8, fig.height = 4}
 fit_l1 <- cv.sparsegl(X, y, group = groups, pred.loss = "mae")
+plot(fit_l1)
 ```
 
 ### Methods
