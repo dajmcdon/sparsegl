@@ -56,6 +56,8 @@ on 05 February 2022.
 \examples{
 \dontrun{
 library(splines)
+library(dplyr)
+library(magrittr)
 df <- 10
 
 trust_experts <- trust_experts \%>\%

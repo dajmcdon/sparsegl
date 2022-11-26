@@ -14,7 +14,6 @@
 #'   can become overwhelming.
 #' @param ... Not used.
 #' @seealso [sparsegl()].
-#' @method plot sparsegl
 #' @export
 #' @examples
 #' n <- 100
@@ -38,8 +37,12 @@ plot.sparsegl <- function(x,
 
   xb <- x$beta
   nonzeros <- sort(unique(xb@i)) + 1
-  if (length(nonzeros) == 0)
-    abort("No nonzero betas / groups are available to plot")
+  if (length(nonzeros) == 0) {
+    cli::cli_abort(
+      c("No nonzero betas / groups are available to plot.",
+        i = "All coefficient estimates are exactly 0.")
+    )
+  }
 
   xb <- xb[nonzeros, , drop = FALSE]
   g <- x$group[nonzeros]

@@ -40,5 +40,5 @@ cv_fit <- cv.sparsegl(X, y, groups)
 coef(cv_fit, s = c(0.02, 0.03))
 }
 \seealso{
-\code{\link[=cv.sparsegl]{cv.sparsegl()}}, and \code{\link[=predict.cv.sparsegl]{predict.cv.sparsegl()}} methods.
+\code{\link[=cv.sparsegl]{cv.sparsegl()}} and \code{\link[=predict.cv.sparsegl]{predict.cv.sparsegl()}}.
 }
