@@ -118,8 +118,7 @@ are interpolated using a fraction of coefficients from both left and right
     </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
-    <div class="dont-index"><p><code><a href="sparsegl.html">sparsegl()</a></code>, <code><a href="coef.sparsegl.html">coef.sparsegl()</a></code> and
-<code><a href="print.sparsegl.html">print.sparsegl()</a></code> methods.</p></div>
+    <div class="dont-index"><p><code><a href="sparsegl.html">sparsegl()</a></code>, <code><a href="coef.sparsegl.html">coef.sparsegl()</a></code>.</p></div>
     </div>
 
     <div class="section level2">
@@ -133,8 +132,8 @@ are interpolated using a fraction of coefficients from both left and right
 <span class="r-in"><span><span class="va">groups</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="op">(</span><span class="va">p</span> <span class="op">/</span> <span class="fl">5</span><span class="op">)</span>, each <span class="op">=</span> <span class="fl">5</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">fit1</span> <span class="op">&lt;-</span> <span class="fu"><a href="sparsegl.html">sparsegl</a></span><span class="op">(</span><span class="va">X</span>, <span class="va">y</span>, group <span class="op">=</span> <span class="va">groups</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict</a></span><span class="op">(</span><span class="va">fit1</span>, newx <span class="op">=</span> <span class="va">X</span><span class="op">[</span><span class="fl">10</span>, <span class="op">]</span>, s <span class="op">=</span> <span class="va">fit1</span><span class="op">$</span><span class="va">lambda</span><span class="op">[</span><span class="fl">3</span><span class="op">:</span><span class="fl">5</span><span class="op">]</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>             s1        s2        s3</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1,] -1.854753 -1.905274 -2.143007</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>            s1       s2       s3</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1,] 2.884893 3.966918 5.032628</span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>

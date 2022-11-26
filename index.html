@@ -82,8 +82,8 @@
 <a class="anchor" aria-label="anchor" href="#r-package-sparsegl"></a>
 </h1></div>
 <p>The goal of sparsegl is to fit regularization paths for sparse group-lasso penalized learning problems. The model is typically fit for a sequence of regularization parameters <span class="math inline"><em>λ</em></span>. Such estimators minimize</p>
-<p><span class="math display"> − ℓ(<em>β</em>|<em>y</em>,<strong>X</strong>)+<em>λ</em>(1−<em>α</em>)∑<sub><em>g</em> ∈ <em>G</em></sub>||<em>β</em><sub><em>g</em></sub>||<sub>2</sub>+<em>λ</em><em>α</em>||<em>β</em>||<sub>1</sub>.</span></p>
-<p>The main focus of this package is for the case where the loglikelihood is corresponds to Gaussian of logistic regression. But we also provide the ability to fit arbitrary GLMs using <code><a href="https://rdrr.io/r/stats/family.html" class="external-link">stats::family()</a></code> objects.</p>
+<p><span class="math display"> − ℓ(<em>β</em>|<em>y</em>, <strong>X</strong>)+<em>λ</em>(1−<em>α</em>)∑<sub><em>g</em> ∈ <em>G</em></sub>||<em>β</em><sub><em>g</em></sub>||<sub>2</sub>+<em>λ</em><em>α</em>||<em>β</em>||<sub>1</sub>.</span></p>
+<p>The main focus of this package is for the case where the loglikelihood corresponds to Gaussian or logistic regression. But we also provide the ability to fit arbitrary GLMs using <code><a href="https://rdrr.io/r/stats/family.html" class="external-link">stats::family()</a></code> objects.</p>
 <div class="section level2">
 <h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
 </h2>

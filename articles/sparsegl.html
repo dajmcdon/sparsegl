@@ -84,17 +84,17 @@ sequence of the regularization parameters.</p>
 other sparse group-lasso packages are as follows:</p>
 <ul>
 <li><p>Compiled Fortran code significantly speeds up the sparse
-group-lasso model building process.</p></li>
+group-lasso estimation process.</p></li>
 <li><p>So-called “strong rules” are implemented during group wise
-coordinate descent steps to screen out groups which are likely to be 0
-at the solution.</p></li>
-<li><p>The design matrix <code>X</code> can be a sparse.</p></li>
+coordinate descent steps screen out groups which are likely to be 0 at
+the solution.</p></li>
+<li><p>The design matrix <code>X</code> may be a sparse.</p></li>
 <li><p>An <code><a href="../reference/estimate_risk.html">estimate_risk()</a></code> function may be used to evaluate
 the quality of fitted models via information criteria, providing a means
 for model selection if cross-validation is too computationally
 costly.</p></li>
-<li><p>Additional glm families may be fit (though this is typically
-slower).</p></li>
+<li><p>Additional exponential families may be fit (though this is
+typically slower).</p></li>
 </ul>
 <div class="section level2">
 <h2 id="installing">Installing<a class="anchor" aria-label="anchor" href="#installing"></a>
@@ -109,13 +109,13 @@ slower).</p></li>
 <p>Vignettes are not included in the package by default. If you want to
 include vignettes, then use this modified command:</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu">remotes</span><span class="fu">::</span><span class="fu">install_github</span><span class="op">(</span><span class="st">"dajmcdon/sparsegl"</span>, </span>
-<span>                        build_vignettes <span class="op">=</span> <span class="cn">TRUE</span>, dependencies <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu">remotes</span><span class="fu">::</span><span class="fu">install_github</span><span class="op">(</span></span>
+<span>  <span class="st">"dajmcdon/sparsegl"</span>, </span>
+<span>  build_vignettes <span class="op">=</span> <span class="cn">TRUE</span>, dependencies <span class="op">=</span> <span class="cn">TRUE</span></span>
+<span><span class="op">)</span></span></code></pre></div>
 <p>For this getting-started vignette, first, we will randomly generate
-<code>X</code>, an input matrix of predictors of dimension
-<code>n</code>-obs by <code>p</code>-feature. To initiate
-<code>y</code>, a real-valued vector (make it a vector rather a
-matrix),</p>
+<code>X</code>, an input matrix of predictors of dimension <span class="math inline">\(n\times p\)</span>. To create <code>y</code>, a
+real-valued vector, we use either a</p>
 <ul>
 <li>Linear Regression model: <span class="math inline">\(y = X\beta^* +
 \epsilon\)</span>.</li>
@@ -127,24 +127,24 @@ n.\)</span>
 </li>
 </ul>
 <p>where the coefficient vector <span class="math inline">\(\beta^*\)</span> is specified as below, and the
-white noise <span class="math inline">\(\epsilon\)</span> following
-standard normal distribution serves as data variation. Then the sparse
-group-lasso problem is formulated as the sum of mean squared error (
-linear regression) or logistic loss (logistic regression) and a convex
-combination of lasso penalty and group lasso penalty:</p>
+white noise <span class="math inline">\(\epsilon\)</span> follows a
+standard normal distribution. Then the sparse group-lasso problem is
+formulated as the sum of mean squared error (linear regression) or
+logistic loss (logistic regression) and a convex combination of the
+<span class="math inline">\(\ell_1\)</span> lasso penalty with an <span class="math inline">\(\ell_2\)</span> group lasso penalty:</p>
 <ul>
 <li>Linear regression: <span class="math display">\[
 \min_{\beta\in\mathbb{R}^p}\left(\frac{1}{2n} \rVert y - \sum_g
 X^{(g)}\beta^{(g)}\rVert_2^2 + (1-\alpha)\lambda\sum_g
-\sqrt{\text{bs}}\rVert\beta^{(g)}\rVert_2 +
-\alpha\lambda\rVert\beta\rVert_1 \right) \qquad (*).
+\sqrt{|g|}\rVert\beta^{(g)}\rVert_2 + \alpha\lambda\rVert\beta\rVert_1
+\right) \qquad (*).
 \]</span>
 </li>
 <li>Logistic regression: <span class="math display">\[
 \min_{\beta\in\mathbb{R}^p}\left(\frac{1}{2n}\sum_{i=1}^n \log\left(1 +
 \exp\left(-y_ix_i^\top\beta\right)\right) + (1-\alpha)\lambda\sum_g
-\sqrt{\text{bs}}\rVert\beta^{(g)}\rVert_2 +
-\alpha\lambda\rVert\beta\rVert_1 \right) \qquad (**).
+\sqrt{|g|}\rVert\beta^{(g)}\rVert_2 + \alpha\lambda\rVert\beta\rVert_1
+\right) \qquad (**).
 \]</span>
 </li>
 </ul>
@@ -155,13 +155,13 @@ X^{(g)}\beta^{(g)}\rVert_2^2 + (1-\alpha)\lambda\sum_g
 features in group <span class="math inline">\(g\)</span>.</p></li>
 <li><p><span class="math inline">\(\beta^{(g)}\)</span> is the
 corresponding coefficients of the features in group <span class="math inline">\(g\)</span>.</p></li>
-<li><p><code>bs</code> is the length of <span class="math inline">\(\beta^{(g)}\)</span>.</p></li>
+<li><p><span class="math inline">\(|g|\)</span> is the number of
+predictors in group <span class="math inline">\(g\)</span>.</p></li>
 <li><p><span class="math inline">\(\alpha\)</span> adjusts the weight
 between lasso penalty and group-lasso penalty.</p></li>
 <li><p><span class="math inline">\(\lambda\)</span> fine-tunes the size
 of penalty imposed on the model to control the number of nonzero
-coefficients of features, and furthermore, to avoid
-overfitting.</p></li>
+coefficients.</p></li>
 </ul>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/dajmcdon/sparsegl/" class="external-link">sparsegl</a></span><span class="op">)</span></span>
@@ -186,21 +186,29 @@ overfitting.</p></li>
 <code>sparsegl()</code><a class="anchor" aria-label="anchor" href="#sparsegl"></a>
 </h2>
 <p>Given an input matrix <code>X</code>, and a response vector
-<code>y</code> (or a matrix with 1 column), a sparse group-lasso
-regularized linear model is fitted for a sequence of penalty parameter
-values in terms of penalized maximum likelihood. The penalty is composed
-of lasso penalty and group lasso penalty. The other main arguments the
-users might give are:</p>
+<code>y</code>, a sparse group-lasso regularized linear model is
+estimated for a sequence of penalty parameter values. The penalty is
+composed of lasso penalty and group lasso penalty. The other main
+arguments the users might supply are:</p>
 <ul>
 <li><p><code>group</code>: a vector with consecutive integers of length
 <code>p</code> indicating the grouping of the features. By default, each
 group only contains one feature if without initialization.</p></li>
 <li><p><code>family</code>: A character string specifying the likelihood
 to use, could be either linear regression “gaussian” or logistic
-regression loss “binomial”. Default is “gaussian”.</p></li>
-<li><p><code>pf</code>: a penalty vector of the length of the number of
-groups in total. Default value for each entry is the square-root of the
-corresponding size of each group, which is <span class="math inline">\(\sqrt{\text{bs}}\)</span> in <span class="math inline">\((*)\)</span> and <span class="math inline">\((**)\)</span> above.</p></li>
+regression loss “binomial”. Default is “gaussian”. If other exponential
+families are required, a <code><a href="https://rdrr.io/r/stats/family.html" class="external-link">stats::family()</a></code> object may be used
+(e.g. <code><a href="https://rdrr.io/r/stats/family.html" class="external-link">poisson()</a></code>). In that case, arguments providing
+observation weights or offset terms are allowed as well.</p></li>
+<li><p><code>pf_group</code>: Separate penalty weights can be applied to
+each group <span class="math inline">\(\beta_g\)</span> to allow
+differential shrinkage. Can be 0 for some groups, which implies no
+shrinkage. The default value for each entry is the square-root of the
+corresponding size of each group.</p></li>
+<li><p><code>pf_sparse</code>: Penalty factor on <span class="math inline">\(\ell_1\)</span>-norm, a vector the same length as
+the total number of columns in x. Each value corresponds to one
+predictor Can be 0 for some predictors, which implies that predictor
+will be receive only the group penalty.</p></li>
 <li><p><code>asparse</code>: changes the weight of lasso penalty,
 referring to <span class="math inline">\(\alpha\)</span> in <span class="math inline">\((*)\)</span> and <span class="math inline">\((**)\)</span> above: <code>asparse</code> = <span class="math inline">\(1\)</span> gives the lasso penalty only.
 <code>asparse</code> = <span class="math inline">\(0\)</span> gives the
@@ -213,58 +221,46 @@ numbers only. Default value for each entry is -<span class="math inline">\(\inft
 vector in length of 1 or the number of groups including non-negative
 numbers only. Default value for each entry is <span class="math inline">\(\infty\)</span>.</p></li>
 </ul>
-<p>It returns a <code>sparsegl</code> object, and the main attribute of
-this object is:</p>
-<ul>
-<li>
-<code>df</code>: the number of nonzero coefficients for each lambda
-value. This only represents an approximation to the exact
-degree-of-freedom. Detailed explanation can be checked under function
-<code><a href="../reference/estimate_risk.html">estimate_risk()</a></code> below.</li>
-</ul>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">fit1</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/sparsegl.html">sparsegl</a></span><span class="op">(</span><span class="va">X</span>, <span class="va">y</span>, group <span class="op">=</span> <span class="va">groups</span><span class="op">)</span></span></code></pre></div>
 <div class="section level3">
 <h3 id="plotting-function-plot-for-sparsegl-object">Plotting function <code>plot()</code> for <code>sparsegl</code>
 object<a class="anchor" aria-label="anchor" href="#plotting-function-plot-for-sparsegl-object"></a>
 </h3>
-<p>This function produces nonzero-only coefficient curves for each
-penalty parameter <code>lambda</code> values in the regularization path
-for a fitted <code>sparsegl</code> object. The arguments of this
-function are:</p>
+<p>This function displays nonzero coefficient curves for each penalty
+parameter <code>lambda</code> values in the regularization path for a
+fitted <code>sparsegl</code> object. The arguments of this function
+are:</p>
 <ul>
-<li><p><code>y_axis</code>: can be set with either “coef” or “group”.
-Default is “coef”.</p></li>
-<li><p><code>x_axis</code>: can be set with either “lambda” or
-“penalty”. Default is “lambda”.</p></li>
+<li><p><code>y_axis</code>: can be set with either <code>"coef"</code>
+or <code>"group"</code>. Default is <code>"coef"</code>.</p></li>
+<li><p><code>x_axis</code>: can be set with either <code>"lambda"</code>
+or <code>"penalty"</code>. Default is <code>"lambda"</code>.</p></li>
 </ul>
-<p>To elaborate on <code>y_axis</code> and <code>x_axis</code>:</p>
+<p>To elaborate on these arguments:</p>
 <ul>
-<li><p>The plot with <code>y_axis</code> = “group” is the group norms
+<li><p>The plot with <code>y_axis = "group"</code> shows the group norms
 against the log-<code>lambda</code> or the scaled group norm vector.
 Each group norm is defined by: <span class="math display">\[
-\text{asparse}\times\rVert\beta^{(g)}\rVert_1 + (1 -
-\text{asparse})\times\sum_g\rVert\beta^{(g)}\rVert_2
+\alpha\rVert\beta^{(g)}\rVert_1 + (1 -
+\alpha)\sum_g\rVert\beta^{(g)}\rVert_2
 \]</span> Curves are plotted in the same color if the corresponding
-features are in the same group. Notice that the number of curves shown
-on the plots could be less than the actual number of groups since only
-the groups containing nonzero features at least at one lambda in the
-sequence <code>lambda</code> are included.</p></li>
-<li><p>The plot with <code>y_axis</code> = “coef” is the coefficients of
-features against the log-<code>lambda</code> or the scaled group norm
-vector. Each curve with a distinct color represents a feature. Again,
-only the features having nonzero coefficients at least at one lambda
-value in the sequence <code>lambda</code> are considered.</p></li>
-<li><p>The plot with <code>x_axis</code> = “lambda” indicates the
-<code>x_axis</code> presenting with log-<code>lambda</code>.</p></li>
-<li><p>The plot with <code>x_axis</code> = “penalty” indicates the
-<code>x_axis</code> presenting with the scaled group norm vector. Each
-element in this vector is defined by: <span class="math display">\[
-\frac{\text{asparse}\times\rVert \beta\rVert_1 +
-(1-\text{asparse})\times\sum_g\rVert
-\beta^{(g)}\rVert_2}{\max_\beta\left(\text{asparse}\times\ \rVert
-\beta\rVert_1 + (1-\text{asparse})\times\sum_g\rVert
-\beta^{(g)}\rVert_2\right)}
+features are in the same group. Note that the number of curves shown on
+the plots may be less than the actual number of groups since only the
+groups containing nonzero features for at least one <span class="math inline">\(\lambda\)</span> in the sequence are
+included.</p></li>
+<li><p>The plot with <code>y_axis = "coef"</code> shows the estimated
+coefficients against the <code>lambda</code> or the scaled group norm.
+Again, only the features with nonzero estimates for at least one <span class="math inline">\(\lambda\)</span> value in the sequence are
+displayed.</p></li>
+<li><p>The plot with <code>x_axis = "lambda"</code> indicates the
+<code>x_axis</code> displays <span class="math inline">\(\log(\lambda)\)</span>.</p></li>
+<li><p>The plot with <code>x_axis = "penalty"</code> indicates the
+<code>x_axis</code> displays the scaled group norm vector. Each element
+in this vector is defined by: <span class="math display">\[
+\frac{\alpha\rVert \beta\rVert_1 + (1-\alpha)\sum_g\rVert
+\beta^{(g)}\rVert_2}{\max_\beta\left(\alpha \rVert \beta\rVert_1 +
+(1-\alpha)\sum_g\rVert \beta^{(g)}\rVert_2\right)}
 \]</span></p></li>
 </ul>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
@@ -274,84 +270,57 @@ element in this vector is defined by: <span class="math display">\[
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">fit1</span>, y_axis <span class="op">=</span> <span class="st">"coef"</span>, x_axis <span class="op">=</span> <span class="st">"penalty"</span>, add_legend <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
 <p><img src="sparsegl_files/figure-html/unnamed-chunk-7-2.png" width="768"></p>
 </div>
-<div class="section level3">
-<h3 id="coef-predict-and-print-sparsegl-object">
-<code>coef()</code>, <code>predict()</code> and <code>print()</code>
-<code>sparsegl</code> object<a class="anchor" aria-label="anchor" href="#coef-predict-and-print-sparsegl-object"></a>
-</h3>
-<p>All three functions consume a fitted <code>sparsegl</code> object as
-an arguments and</p>
-<ul>
-<li><p><code><a href="https://rdrr.io/r/stats/coef.html" class="external-link">coef()</a></code> and <code><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict()</a></code> return a matrix of
-coefficients and predictions <span class="math inline">\(\hat{y}\)</span> given a matrix <code>X</code> at
-each lambda respectively, unless an optional argument <code>s</code> is
-assigned with a specified vector or numeric value from (but not
-necessarily) the original <code>lambda</code> sequence.</p></li>
-<li><p><code><a href="https://rdrr.io/r/base/print.html" class="external-link">print()</a></code> returns the number of nonzero features with
-nonzero coefficients at each <code>lambda</code>.</p></li>
-</ul>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">coef</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/coef.html" class="external-link">coef</a></span><span class="op">(</span><span class="va">fit1</span>, s <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.02</span>, <span class="fl">0.03</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="va">pred</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict</a></span><span class="op">(</span><span class="va">fit1</span>, newx <span class="op">=</span> <span class="va">X</span><span class="op">[</span><span class="fl">100</span>,<span class="op">]</span>, s <span class="op">=</span> <span class="va">fit1</span><span class="op">$</span><span class="va">lambda</span><span class="op">[</span><span class="fl">2</span><span class="op">:</span><span class="fl">3</span><span class="op">]</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">fit1</span><span class="op">)</span></span></code></pre></div>
-</div>
 </div>
 <div class="section level2">
 <h2 id="cv-sparsegl">
 <code>cv.sparsegl()</code><a class="anchor" aria-label="anchor" href="#cv-sparsegl"></a>
 </h2>
-<p>This function does a k-fold cross-validation (cv) on
-<code>sparsegl</code>. It takes the same arguments <code>X</code>,
-<code>y</code>, <code>group</code>, which are specified above, with
-additional argument <code>pred.loss</code>. It can be set with either
-“L2” or “L1” for linear regression model, “loss” or “misclass” for
-logistic regression model indicating the loss to use for cv error. This
-will return a <code>cv.sparsegl</code> object.</p>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<p>This function performs k-fold cross-validation (cv). It takes the
+same arguments <code>X</code>, <code>y</code>, <code>group</code>, which
+are specified above, with additional argument <code>pred.loss</code> for
+the error measure. Options are <code>"default"</code>,
+<code>"mse"</code>, <code>"deviance"</code>, <code>"mae"</code>, and
+<code>"misclass"</code>. With <code>family = "gaussian"</code>,
+<code>"default"</code> is equivalent to <code>"mse"</code> and
+<code>"deviance"</code>. In general, <code>"deviance"</code> will give
+the negative log-likelihood. The option <code>"misclass"</code> is only
+available if <code>family = "binomial"</code>.</p>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">fit_l1</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/cv.sparsegl.html">cv.sparsegl</a></span><span class="op">(</span><span class="va">X</span>, <span class="va">y</span>, group <span class="op">=</span> <span class="va">groups</span>, pred.loss <span class="op">=</span> <span class="st">"mae"</span><span class="op">)</span></span></code></pre></div>
 <div class="section level3">
-<h3 id="plot-coef-and-predict-for-cv-sparsegl-object">
-<code>plot()</code>, <code>coef()</code> and <code>predict()</code>
-for <code>cv.sparsegl</code> object<a class="anchor" aria-label="anchor" href="#plot-coef-and-predict-for-cv-sparsegl-object"></a>
+<h3 id="coef-predict-print-and-summary-methods">
+<code>coef()</code>, <code>predict()</code>, <code>print()</code>
+and <code>summary()</code> methods<a class="anchor" aria-label="anchor" href="#coef-predict-print-and-summary-methods"></a>
 </h3>
+<p>These methods are provided for both <code>sparsegl</code> and
+<code>cv.sparsegl</code> objects.</p>
 <ul>
 <li>
-<code><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot()</a></code>: produces cross-validation curve with upper and
-lower confidence bounds plots for each <code>lambda</code> in the
-regularization path for a fitted <code>cv.sparsegl</code> object. In the
-generated plot, the red points represent the <code>cvm</code> values at
-each <code>lambda</code>, and the attached gray vertical error bars
-indicate the uncertainty of <code>cvm</code>.</li>
+<code><a href="https://rdrr.io/r/stats/coef.html" class="external-link">coef()</a></code> and <code><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict()</a></code> return a matrix of
+coefficients and predictions <span class="math inline">\(\hat{y}\)</span> given a matrix <code>X</code> at
+each lambda respectively. The optional <code>s</code> argument may
+provide a specific value of <span class="math inline">\(\lambda\)</span>
+(not necessarily) part of the original sequence, or, in the case of a
+<code>cv.sparsegl</code> object, a string specifying either
+<code>"lambda.min"</code> or <code>"lambda.1se"</code>.</li>
 </ul>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">fit_l1</span><span class="op">)</span></span></code></pre></div>
-<p><img src="sparsegl_files/figure-html/unnamed-chunk-10-1.png" width="768"></p>
-<ul>
-<li>
-<code><a href="https://rdrr.io/r/stats/coef.html" class="external-link">coef()</a></code> and <code><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict()</a></code> for
-<code>cv.sparsegl</code> object work similarly to those introduced
-above. The only differences are that the argument <code>object</code>
-passes a fitted <code>cv.sparsegl</code> object, and <code>s</code> can
-also be set with <code>lambda.1se</code>, <code>lambda.min</code> in
-addition.</li>
-</ul>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">coef</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/coef.html" class="external-link">coef</a></span><span class="op">(</span><span class="va">fit_l1</span>, s <span class="op">=</span> <span class="st">"lambda.1se"</span><span class="op">)</span></span>
-<span><span class="va">pred</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict</a></span><span class="op">(</span><span class="va">fit_l1</span>, newx <span class="op">=</span> <span class="va">X</span><span class="op">[</span><span class="fl">50</span><span class="op">:</span><span class="fl">80</span>, <span class="op">]</span>, s <span class="op">=</span> <span class="st">"lambda.min"</span><span class="op">)</span></span></code></pre></div>
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">coef</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/coef.html" class="external-link">coef</a></span><span class="op">(</span><span class="va">fit1</span>, s <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.02</span>, <span class="fl">0.03</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict</a></span><span class="op">(</span><span class="va">fit1</span>, newx <span class="op">=</span> <span class="va">X</span><span class="op">[</span><span class="fl">100</span>,<span class="op">]</span>, s <span class="op">=</span> <span class="va">fit1</span><span class="op">$</span><span class="va">lambda</span><span class="op">[</span><span class="fl">2</span><span class="op">:</span><span class="fl">3</span><span class="op">]</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict</a></span><span class="op">(</span><span class="va">fit_l1</span>, newx <span class="op">=</span> <span class="va">X</span><span class="op">[</span><span class="fl">100</span>,<span class="op">]</span>, s <span class="op">=</span> <span class="st">"lambda.1se"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">fit1</span><span class="op">)</span></span></code></pre></div>
 </div>
 </div>
 <div class="section level2">
 <h2 id="estimate_risk">
 <code>estimate_risk()</code><a class="anchor" aria-label="anchor" href="#estimate_risk"></a>
 </h2>
-<p>This function returns the information criterion, which is the sum of
-the maximum log-likelihood and a penalty term determined by the chosen
-penalty type for a <code>sparsegl</code> model at each
-<code>lambda</code>. It provides a means for model selection by
-representing the trade-off between the goodness of fit of the model and
-the complexity of the model. It takes the same arguments <code>X</code>
-and <code>y</code> from the function <code><a href="../reference/sparsegl.html">sparsegl()</a></code>. The
-additional arguments it needs are:</p>
+<p>With extremely large data sets, cross validation may be to slow for
+tuning parameter selection. This function uses the degrees of freedom to
+calculate various information criteria. This function uses the “unknown
+variance” version of the likelihood. Only implemented for Gaussian
+regression. The constant is ignored (as in
+<code><a href="https://rdrr.io/r/stats/extractAIC.html" class="external-link">stats::extractAIC()</a></code>).</p>
 <ul>
 <li><p><code>object</code>: a fitted <code>sparsegl</code>
 object.</p></li>
@@ -359,30 +328,34 @@ object.</p></li>
 <p><code>type</code>: three types of penalty used for
 calculation:</p>
 <ul>
-<li><p>AIC (Akaike information criterion): 2 * df / n</p></li>
-<li><p>BIC (Bayesian information criterion): log(n) * df / n</p></li>
-<li><p>GCV (Generalized cross validation): -2 * log(1 - df / n)</p></li>
+<li><p>AIC (Akaike information criterion): <span class="math inline">\(2
+df / n\)</span></p></li>
+<li><p>BIC (Bayesian information criterion): <span class="math inline">\(2 df\log(n) / n\)</span></p></li>
+<li><p>GCV (Generalized cross validation): <span class="math inline">\(-2\log(1 - df / n)\)</span></p></li>
 </ul>
 </li>
 </ul>
 <p>where df is the degree-of-freedom, and n is the sample size.</p>
 <ul>
 <li>
-<code>approx_df</code>: indicate if a vector of the approximation to
-the degree-of-freedom at each penalty parameter <code>lambda</code> is
-used. Default is FALSE and the program will compute the unbiased
-estimate of the exact degree-of-freedom.</li>
+<code>approx_df</code>: indicates if an approximation to the correct
+degree-of-freedom at each penalty parameter <span class="math inline">\(\lambda\)</span> should used. Default is
+<code>FALSE</code> and the program will compute an unbiased estimate of
+the exact degree-of-freedom.</li>
 </ul>
-<p>FYI: Degree-of-freedom is a tool to assess the complexity of a
-statistical modeling procedure. <code>object$df</code>, the
-approximation to the degree-of-freedom is the number of nonzero
-coefficients of the model. Notice that it would take some time to
-calculate the unbiased estimate of the exact degrees-of-freedom if
-<code>X</code> is complicated. For more details about how to realize
-this calculation, our method is implemented based on the paper <a href="https://arxiv.org/pdf/1212.6478.pdf" class="external-link uri">https://arxiv.org/pdf/1212.6478.pdf</a>.</p>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<p>The <code>df</code> component of a <code>sparsegl</code> object is an
+approximation (albeit a fairly accurate one) to the actual
+degrees-of-freedom. However, computing the exact value requires
+inverting a portion of <span class="math inline">\(\mathbf{X}^\top
+\mathbf{X}\)</span>. So this computation may take some time (the default
+computes the exact df). For more details about how this formula, see
+(Vaiter, Deledalle, Peyré, et al., 2012).<a class="footnote-ref" tabindex="0" data-bs-toggle="popover" data-bs-content='&lt;p&gt;Vaiter S, Deledalle C, Peyré G, Fadili J, Dossal C.
+(2012). &lt;em&gt;The Degrees of Freedom of the Group Lasso for a General
+Design.&lt;/em&gt; &lt;a href="https://arxiv.org/abs/1212.6478" class="external-link uri"&gt;https://arxiv.org/abs/1212.6478&lt;/a&gt;.&lt;/p&gt;'><sup>1</sup></a></p>
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">risk</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/estimate_risk.html">estimate_risk</a></span><span class="op">(</span><span class="va">fit1</span>, <span class="va">X</span>, type <span class="op">=</span> <span class="st">"AIC"</span>, approx_df <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
 </div>
+
   </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>
     </nav></aside>
 </div>
