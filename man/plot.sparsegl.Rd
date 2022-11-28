@@ -8,12 +8,12 @@
   x,
   y_axis = c("coef", "group"),
   x_axis = c("lambda", "penalty"),
-  add_legend = TRUE,
+  add_legend = n_legend_values < 20,
   ...
 )
 }
 \arguments{
-\item{x}{Fitted \code{\link[=sparsegl]{sparsegl()}} object.}
+\item{x}{Fitted \code{"sparsegl"} object, produced by \code{\link[=sparsegl]{sparsegl()}}.}
 
 \item{y_axis}{Variable on the y_axis. Either the coefficients (default)
 or the group norm.}
@@ -23,7 +23,8 @@ sequence (default) or the value of the penalty. In the second case,
 the penalty is scaled by its maximum along the path.}
 
 \item{add_legend}{Show the legend. Often, with many groups/predictors, this
-can become overwhelming.}
+can become overwhelming. The default produces a legend if the number of
+groups/predictors is less than 20.}
 
 \item{...}{Not used.}
 }

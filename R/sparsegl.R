@@ -92,7 +92,7 @@
 #'   and a progress bar), and `2` (more detailed printing).
 #'   These can only be used with a [stats::family()] object.
 #'
-#' @return An object with S3 class [sparsegl()]. Among the list components:
+#' @return An object with S3 class `"sparsegl"`. Among the list components:
 #' * `call` The call that produced this object.
 #' * `b0` Intercept sequence of length `length(lambda)`.
 #' * `beta` A `p` x `length(lambda)` sparse matrix of coefficients.
@@ -110,7 +110,9 @@
 #' contain information about the deviance and the family used in fitting.
 #'
 #'
-#' @seealso [plot.sparsegl()], [coef.sparsegl()], [predict.sparsegl()] methods.
+#' @seealso [cv.sparsegl()] and the [`plot()`][plot.sparsegl()],
+#'   [`predict()`][predict.sparsegl()], and [`coef()`][coef.sparsegl()]
+#'   methods for `"sparsegl"` objects.
 #'
 #' @export
 #'
