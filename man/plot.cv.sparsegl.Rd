@@ -7,7 +7,7 @@
 \method{plot}{cv.sparsegl}(x, log_axis = c("xy", "x", "y", "none"), sign.lambda = 1, ...)
 }
 \arguments{
-\item{x}{Fitted \code{\link[=cv.sparsegl]{cv.sparsegl()}} object}
+\item{x}{Fitted \code{"cv.sparsegl"} object, produced with \code{\link[=cv.sparsegl]{cv.sparsegl()}}.}
 
 \item{log_axis}{Apply log scaling to the requested axes.}
 
@@ -18,8 +18,7 @@ reverse if \code{sign.lambda < 0}.}
 }
 \description{
 Plots the cross-validation curve, and upper and lower standard deviation
-curves, as a function of the \code{lambda} values used. This function is
-modified based on \code{\link[glmnet:plot.cv.glmnet]{glmnet::plot.cv.glmnet()}}.
+curves, as a function of the \code{lambda} values used.
 }
 \details{
 A \code{\link[ggplot2:ggplot]{ggplot2::ggplot()}} plot is produced. Additional user

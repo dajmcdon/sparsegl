@@ -45,8 +45,9 @@
 #'   \item{call}{The function call.}
 #'
 #'
-#' @seealso [sparsegl()], [plot.cv.sparsegl()],
-#' [predict.cv.sparsegl()], and [coef.cv.sparsegl()] methods.
+#' @seealso [sparsegl()], as well as [`plot()`][plot.cv.sparsegl()],
+#'   [`predict()`][predict.cv.sparsegl()], and [`coef()`][coef.cv.sparsegl()]
+#'   methods for `"cv.sparsegl"` objects.
 #'
 #' @export
 #'

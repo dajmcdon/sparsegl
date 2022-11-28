@@ -4,7 +4,7 @@
 #' [sparsegl()] object. The result is a [ggplot2::ggplot()]. Additional user
 #' modifications can be added as desired.
 #'
-#' @param x Fitted [sparsegl()] object.
+#' @param x Fitted `"sparsegl"` object, produced by [sparsegl()].
 #' @param y_axis Variable on the y_axis. Either the coefficients (default)
 #'   or the group norm.
 #' @param x_axis Variable on the x-axis. Either the (log)-lambda
@@ -58,25 +58,25 @@ plot.sparsegl <- function(x,
   df$lambda <- x$lambda
   df$penalty <- sgnorm / max(sgnorm)
   df <- df %>%
-    tidyr::pivot_longer(!c(.data$lambda, .data$penalty), names_to = y_axis)
+    tidyr::pivot_longer(df, !c(.data$lambda, .data$penalty), names_to = y_axis)
 
-  plot_layer <- df %>%
-    ggplot2::ggplot(
-      ggplot2::aes(x = !!rlang::sym(x_axis),
-                   y = .data$value,
-                   color = !!rlang::sym(y_axis))) +
-    ggplot2::geom_hline(yintercept = 0)
+  plot_layer <- ggplot2::ggplot(
+    df, ggplot2::aes(
+      x = !!rlang::sym(x_axis), y = .data$value, color = !!rlang::sym(y_axis)
+    )) + ggplot2::geom_hline(yintercept = 0)
 
-  if (x_axis == "penalty") xlab_layer <- ggplot2::xlab("penalty / max (penalty)")
-  else xlab_layer <- ggplot2::xlab("lambda") + ggplot2::scale_x_log10()
-
+  if (x_axis == "penalty") {
+    xlab_layer <- ggplot2::xlab("penalty / max (penalty)")
+  }
+  if (x_axis == "lambda") {
+    xlab_layer <- ggplot2::xlab("lambda") + ggplot2::scale_x_log10()
+  }
   if (y_axis == "group") {
-    plot_layer <- plot_layer +
-      ggplot2::geom_line(ggplot2::aes(group = .data$group)) +
-      ggplot2::ylab("group norm")
-  } else {
-    plot_layer <- plot_layer +
-      ggplot2::geom_line() +
+    plot_layer <- plot_layer + ggplot2::ylab("group norm") +
+      ggplot2::geom_line(ggplot2::aes(group = .data$group))
+  }
+  if (y_axix == "coef") {
+    plot_layer <- plot_layer + ggplot2::geom_line() +
       ggplot2::ylab("coefficients")
   }
 

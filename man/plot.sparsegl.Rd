@@ -13,7 +13,7 @@
 )
 }
 \arguments{
-\item{x}{Fitted \code{\link[=sparsegl]{sparsegl()}} object.}
+\item{x}{Fitted \code{"sparsegl"} object, produced by \code{\link[=sparsegl]{sparsegl()}}.}
 
 \item{y_axis}{Variable on the y_axis. Either the coefficients (default)
 or the group norm.}

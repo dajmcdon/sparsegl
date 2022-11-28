@@ -138,7 +138,7 @@ value. Default is \code{3e8}. If models do not converge, consider increasing
 \code{maxit}.}
 }
 \value{
-An object with S3 class \code{\link[=sparsegl]{sparsegl()}}. Among the list components:
+An object with S3 class \code{"sparsegl"}. Among the list components:
 \itemize{
 \item \code{call} The call that produced this object.
 \item \code{b0} Intercept sequence of length \code{length(lambda)}.
@@ -178,5 +178,7 @@ yp <- rpois(n, abs(X \%*\% beta_star))
 fit_pois <- sparsegl(X, yp, group = groups, family = poisson())
 }
 \seealso{
-\code{\link[=plot.sparsegl]{plot.sparsegl()}}, \code{\link[=coef.sparsegl]{coef.sparsegl()}}, \code{\link[=predict.sparsegl]{predict.sparsegl()}} methods.
+\code{\link[=cv.sparsegl]{cv.sparsegl()}} and the \code{\link[=plot.sparsegl]{plot()}},
+\code{\link[=predict.sparsegl]{predict()}}, and \code{\link[=coef.sparsegl]{coef()}}
+methods for \code{"sparsegl"} objects.
 }

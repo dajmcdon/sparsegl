@@ -115,6 +115,7 @@ cv_fit <- cv.sparsegl(X, y, groups)
 
 }
 \seealso{
-\code{\link[=sparsegl]{sparsegl()}}, \code{\link[=plot.cv.sparsegl]{plot.cv.sparsegl()}},
-\code{\link[=predict.cv.sparsegl]{predict.cv.sparsegl()}}, and \code{\link[=coef.cv.sparsegl]{coef.cv.sparsegl()}} methods.
+\code{\link[=sparsegl]{sparsegl()}}, as well as \code{\link[=plot.cv.sparsegl]{plot()}},
+\code{\link[=predict.cv.sparsegl]{predict()}}, and \code{\link[=coef.cv.sparsegl]{coef()}}
+methods for \code{"cv.sparsegl"} objects.
 }
