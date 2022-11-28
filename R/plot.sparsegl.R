@@ -11,7 +11,8 @@
 #'   sequence (default) or the value of the penalty. In the second case,
 #'   the penalty is scaled by its maximum along the path.
 #' @param add_legend Show the legend. Often, with many groups/predictors, this
-#'   can become overwhelming.
+#'   can become overwhelming. The default produces a legend if the number of
+#'   groups/predictors is less than 20.
 #' @param ... Not used.
 #' @seealso [sparsegl()].
 #' @export
@@ -28,7 +29,7 @@
 plot.sparsegl <- function(x,
                           y_axis = c("coef", "group"),
                           x_axis = c("lambda", "penalty"),
-                          add_legend = TRUE,
+                          add_legend = n_legend_values < 20,
                           ...) {
 
   rlang::check_dots_empty()
@@ -54,11 +55,13 @@ plot.sparsegl <- function(x,
     rownames(xb) <- paste0("group", uni_group)
   }
 
+  n_legend_values <- nrow(xb)
   df <- as.data.frame(t(as.matrix(xb)))
+
   df$lambda <- x$lambda
   df$penalty <- sgnorm / max(sgnorm)
   df <- df %>%
-    tidyr::pivot_longer(df, !c(.data$lambda, .data$penalty), names_to = y_axis)
+    tidyr::pivot_longer(!c(.data$lambda, .data$penalty), names_to = y_axis)
 
   plot_layer <- ggplot2::ggplot(
     df, ggplot2::aes(
@@ -75,7 +78,7 @@ plot.sparsegl <- function(x,
     plot_layer <- plot_layer + ggplot2::ylab("group norm") +
       ggplot2::geom_line(ggplot2::aes(group = .data$group))
   }
-  if (y_axix == "coef") {
+  if (y_axis == "coef") {
     plot_layer <- plot_layer + ggplot2::geom_line() +
       ggplot2::ylab("coefficients")
   }
