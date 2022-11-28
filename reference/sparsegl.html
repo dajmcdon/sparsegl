@@ -245,7 +245,7 @@ value. Default is <code>3e8</code>. If models do not converge, consider increasi
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     
 
-<p>An object with S3 class <code>sparsegl()</code>. Among the list components:</p><ul><li><p><code>call</code> The call that produced this object.</p></li>
+<p>An object with S3 class <code>"sparsegl"</code>. Among the list components:</p><ul><li><p><code>call</code> The call that produced this object.</p></li>
 <li><p><code>b0</code> Intercept sequence of length <code>length(lambda)</code>.</p></li>
 <li><p><code>beta</code> A <code>p</code> x <code>length(lambda)</code> sparse matrix of coefficients.</p></li>
 <li><p><code>df</code> The number of features with nonzero coefficients for each value of
@@ -262,7 +262,9 @@ contain information about the deviance and the family used in fitting.</p>
     </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
-    <div class="dont-index"><p><code><a href="plot.sparsegl.html">plot.sparsegl()</a></code>, <code><a href="coef.sparsegl.html">coef.sparsegl()</a></code>, <code><a href="predict.sparsegl.html">predict.sparsegl()</a></code> methods.</p></div>
+    <div class="dont-index"><p><code><a href="cv.sparsegl.html">cv.sparsegl()</a></code> and the <code><a href="plot.sparsegl.html">plot()</a></code>,
+<code><a href="predict.sparsegl.html">predict()</a></code>, and <code><a href="coef.sparsegl.html">coef()</a></code>
+methods for <code>"sparsegl"</code> objects.</p></div>
     </div>
 
     <div class="section level2">
