@@ -71,6 +71,8 @@ cv.sparsegl <- function(
   else validate_family(family)
 
   pred.loss <- match.arg(pred.loss)
+  if (pred.loss == "misclass" && !(is.character(family) && family == "binomial"))
+    cli::cli_abort('`pred.loss = "misclass"` only works if `family = "binomial"`.')
   N <- nrow(x)
   ###Fit the model once to get dimensions etc of output
   y <- drop(y)
@@ -110,6 +112,8 @@ cv.sparsegl <- function(
   class(obj) <- "cv.sparsegl"
   obj
 }
+
+
 
 cverror <- function(fullfit, outlist, lambda, x, y, foldid, pred.loss) {
   UseMethod("cverror")
