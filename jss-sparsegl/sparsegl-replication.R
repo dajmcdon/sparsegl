@@ -165,7 +165,7 @@ ggplot(er, aes(lambda, risk, color = name)) +
   theme(legend.title = element_blank())
 
 
-## ----trust, echo=FALSE, fig.cap="State-level estimates for the amount of trust in experts about Covid-19. The value displayed represents the change relative the US-wide average.", fig.width=8, fig.height=4, message=FALSE, warning=FALSE, out.width="5in"----
+## ----trust, echo=TRUE
 library(magrittr)
 library(splines)
 df <- 10
@@ -193,7 +193,7 @@ states <- tibble(state = rownames(cc)[reg], coef = cc[reg]) %>%
   mutate(state = stringr::str_remove(state, "region"),
          state_name = tolower(covidcast::abbr_to_name(state, TRUE)))
 states_map <- map_data("state")
-g <- ggplot(states, aes(map_id = state_name)) +
+ggplot(states, aes(map_id = state_name)) +
   geom_map(aes(fill = coef), map = states_map) +
   expand_limits(x = states_map$long, y = states_map$lat) +
   scale_fill_gradient2(
@@ -205,7 +205,7 @@ g <- ggplot(states, aes(map_id = state_name)) +
   theme_void() +
   theme(legend.position = "bottom", legend.key.width = unit(2, "cm"),
         legend.title = element_blank())
-g
+
 
 
 ## ----dwi-model-description, out.width="85%", fig.cap="Pictorial representation illustrating how the streamlines and voxels are converted from a diffusion-weighted image to a linear model. Each voxel is measured on 90 angles, so it occupies 90 rows in the data. When a streamline (column of $\\mathbf{X}$) passes through a voxel, the values within that voxel are given by a physical model based on the direction of passage. Otherwise, if the streamline does not cross the voxel, the respective rows are zero.", echo=FALSE----

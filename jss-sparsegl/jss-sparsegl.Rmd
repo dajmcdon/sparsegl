@@ -69,7 +69,7 @@ ggplot2::theme_set(ggplot2::theme_bw(base_family = "Palatino"))
 # 
 # Note: tags are R-<pkg>
 knitr::write_bib(c("base", "devtools", "knitr", "testthat", "usethis",
-                   "rticles", "sparsegl", "glmnet",
+                   "rticles", "sparsegl", "glmnet", "dplyr", "magrittr",
                    "SGL","gglasso", "msgl", "biglasso",
                    "RSpectra", "mgcv",
                    "ggplot2", "dotCall64","CVXR"),
@@ -81,12 +81,13 @@ library(ggplot2)
 # Introduction
 
 \shortcites{tibshirani2012strong,vaiter2012degrees,R-glmnet,pestilli2014,aminmansour2019,Schiavi2020,vanessen2012,R-ggplot2,R-rticles}
+\nocite{R-dplyr,R-magrittr}
 
 Regularized linear models are now ubiquitous tools for prediction and, increasingly, inference. When solving such high-dimensional learning problems, adding regularization helps to reduce the chances of overfitting and improve the model performance on unseen data. Sparsity inducing  $\ell_1$-type penalties such as the lasso \citep{tibshirani1996regression} or the Dantzig selector 
 \citep{CandesTao2007} perform both variable selection and shrinkage, resulting in near-optimal
 statistical properties. The group lasso \citep{yuan2006model} modifies the regularizer, replacing the $\ell_1$ penalty with a groupwise sum of $\ell_2$ norms. When covariates have natural groupings, such as with genomics data or one-hot encoded factors, this group penalty is preferable, because the resulting estimate will include or exclude entire groups of covariates. To simultaneously attain sparsity at both group and individual feature levels, \citet{simon2013sparse} proposed the sparse group-lasso, a convex combination of the $\ell_1$ lasso penalty and the group lasso-penalty. 
 
-While a number of packages exist for solving the sparse group lasso, our \proglang{R} \citep{R-base} implementation in \pkg{sparsegl} is designed to be fast, especially in the case of large, sparse covariate matrices. This package focuses on finding the optimal solutions to sparse group-lasso penalized learning problems at a sequence of regularization parameters, implements risk estimators in an effort to avoid cross validation if necessary, leverages a fast, compiled \proglang{Fortran} implementation, avoids extraneous data copies, and undertakes a number of additional computational efficiency improvements.
+While a number of packages exist for solving the sparse group lasso, our \proglang{R} \citep{R-base} implementation in \pkg{sparsegl} \citep{R-sparsegl} is designed to be fast, especially in the case of large, sparse covariate matrices. This package focuses on finding the optimal solutions to sparse group-lasso penalized learning problems at a sequence of regularization parameters, implements risk estimators in an effort to avoid cross validation if necessary, leverages a fast, compiled \proglang{Fortran} implementation, avoids extraneous data copies, and undertakes a number of additional computational efficiency improvements.
 In \proglang{R}, there are already excellent implementations of sparse group lasso and group lasso, namely \pkg{SGL} \citep{R-SGL}, \pkg{gglasso} \citep{R-gglasso,yang2015fast}, and \pkg{biglasso} \citep{R-biglasso,zeng2020biglasso}. Of these, only \pkg{SGL} employs the additional $\ell_1$ sparsity-inducing penalty. However, it has a number of drawbacks that result in much slower performance, even on small data. One major reason is the omission of so-called "strong rules" \citep{tibshirani2012strong} that help coordinate descent algorithms to avoid many of the groups which will turn out to have zero coefficient estimates. The \pkg{gglasso} and \pkg{biglasso} packages are both computationally fast. The former incorporates the strong rule, and the latter involves a hybrid safe-strong rule along with scalable storage and a parallel implementation in \proglang{C++} and \proglang{R} that allows for data that exceeds the size of installed random access memory. Unfortunately, neither allows within-group sparsity (i.e., they perform group lasso, not sparse group lasso). Thus, the estimated coefficients produced by these packages will have some active groups and some inactive groups, but within an active group, generally all the coefficients will be nonzero. 
 
 
@@ -108,7 +109,7 @@ Our contribution, then, is to provide a package that performs sparse group lasso
 \item Accommodates a sparse design matrix and returns the coefficient estimates in a sparse matrix;
 \item Uses strong rules for fast computation along a sequence of tuning parameters;
 \item Uses \pkg{dotCall64} to interface with low-level \proglang{Fortran} functions and avoid unnecessary copying as well as allow for 64-bit integers \citep[see][]{gerber2017dotcall,gerber2018dotcall};
-\item Provides information criteria as risk estimators (AIC/BIC/GCV) in addition to cross validation;
+\item Provides information criteria as risk estimators (AIC/BIC/GCV) in addition to cross validation.
 \end{itemize}
 A comparison of features of this and related \proglang{R} packages is shown in \autoref{tab:comparison}. \autoref{fig:timing-comparison} compares the speed of the dense and sparse implementations in \pkg{sparsegl} with \pkg{SGL} across a number of different problem sizes, finding speedups of 1.5 to 2.5 orders of magnitude. In \autoref{methodology-estimation-and-prediction}, we describe the algorithmic implementation in detail, paying particular attention to the strong rule. In \autoref{example-usage}, we show how to use the package, running through an example with simulated data. \autoref{applications} demonstrates many of the
 unique features of \pkg{sparsegl} in two applications.
@@ -536,9 +537,24 @@ Two typical uses for sparse group lasso are (1) additive models where continuous
 
 In particular, we will focus on the "estimated percentage of respondents who trust ... to provide accurate news and information about COVID-19."  This survey item is reported for a variety of different potential sources of information---personal doctors/nurses, scientists, the Centers for Disease Control (CDC), government health officials, politicians, journalists, friends, and religious leaders. In this analysis, we average the first 4, characterize the combination as "experts", and use this as the response variable in a linear model.
 
-We regress "trust in experts" on 5 factor predictors representing month of report, state of residence, age group, race/ethnicity, and self-reported gender identity. We also include two continuous predictors: "estimated percentage of people with Covid-like illness" and "estimated percentage of people reporting Covid-like illness in their local community, including their household" to control for the amount of exposure that respondents may have been having to the pandemic. Both continuous predictors are incorporated with a B-spline basis expansion with 10 degrees-of-freedom. The result is largely similar to a generalized additive model as implemented with \pkg{mgcv} \citep{woodGams,R-mgcv}.
+We regress "trust in experts" on 5 factor predictors representing month of report, state of residence, age group, race/ethnicity, and self-reported gender identity. We also include two continuous predictors: "estimated percentage of people with Covid-like illness" and "estimated percentage of people reporting Covid-like illness in their local community, including their household" to control for the amount of exposure that respondents may have been having to the pandemic. Both continuous predictors are incorporated with a B-spline basis expansion and 10 degrees-of-freedom. The result is largely similar to a generalized additive model as implemented with \pkg{mgcv} \citep{woodGams,R-mgcv}. We created the design matrix using the following code:
 
-After omitting both structural and otherwise missing data, the final model is estimated with 9759 observations on 101 predictors. We did not use contrasts, fully expanding each factor in a one-hot encoding. This allows all estimated coefficients to be interpreted as deviations from the grand mean conditional on continuous predictors, which is natural. Such a formulation (along with the group penalty) is closely related to Bayesian linear models with separate Gaussian priors centered at 0 for each factor. Other contrasts could be used, but the interpretation is more complicated. Encoded as a sparse matrix, this requires about 2.1 MB of RAM to store, as opposed to 8.5 MB if it were dense. We estimated the model using `cv.sparsegl()` and default arguments. Finally, we chose $\lambda$ to be the largest lambda within 1 standard error of the CV minimum (`lambda.1se`), resulting in a sparser model. \autoref{fig:trust} displays the estimated coefficients for the state-of-residence predictors. Even controlling for age, race, gender, and the amount of circulating Covid-like illness, the United States displays strong geographic disparities when it comes to citizens' trust in scientists and other health authorities.
+```{r trust-experts-x, eval=FALSE, echo=TRUE}
+library(dplyr)
+library(magrittr)
+library(splines)
+data("trust_experts", package="sparsegl")
+trust_experts <- mutate(trust_experts, across(
+  where(is.factor), 
+  ~ set_attr(.x, "contrasts", contr.sum(nlevels(.x), contrasts = FALSE))
+))
+x <- Matrix::sparse.model.matrix(
+  trust_experts ~ 0 + region + age + gender + raceethnicity + period +
+    bs(cli, df = 10) + bs(hh_cmnty_cli, df = 10),
+  data = trust_experts, drop.unused.levels = TRUE)
+```
+
+After omitting both structural and otherwise missing data, the final model is estimated with 9759 observations on 101 predictors. As shown in the code, we did not use contrasts, fully expanding each factor in a one-hot encoding. This allows all estimated coefficients to be interpreted as deviations from the grand mean conditional on continuous predictors, which is natural. Such a formulation (along with the group penalty) is closely related to Bayesian linear models with separate Gaussian priors centered at 0 for each level of the factor. Other contrasts could be used by modifying the above, but the interpretation is more complicated. Encoded as a sparse matrix, this requires about 2.1 MB of RAM to store, as opposed to 8.5 MB if it were dense. We estimated the model using `cv.sparsegl()` and default arguments. Finally, we chose $\lambda$ to be the largest lambda within 1 standard error of the CV minimum (`lambda.1se`), resulting in a sparser model. \autoref{fig:trust} displays the estimated coefficients for the state-of-residence predictors. Even controlling for age, race, gender, and the amount of circulating Covid-like illness, the United States displays strong geographic disparities when it comes to citizens' trust in scientists and other health authorities.
 
 ```{r trust, echo=FALSE, fig.cap="State-level estimates for the amount of trust in experts about Covid-19. The value displayed represents the change relative the US-wide average.", fig.width=8, fig.height=3, message=FALSE, warning=FALSE, out.width="5in"}
 source("code/covid.R")
@@ -563,7 +579,7 @@ The full brain tractogram has 3M streamlines, though we used only the streamline
 \citet{aminmansour2019} used an algorithm based on Orthogonal Matching Pursuit to estimate a related model. The data used in that study measures diffusion in 11,823 voxels using 96 magnetic field angles and attempts to reconstruct the image using the ENCODE method \citep{encode2017}, resulting in 1057 orientations and 868 fascicles.
 This results in a linear regression problem  with $n\approx1M$ and $p = 868$.
 In comparison, our data contains 77,630 voxels measured on 90 angles, with a tractography of 10,244 streamlines. The resulting linear model has $n\approx6.9M$ and $p\approx88K$, around $700\times$ the size of the previous analysis.
-The design matrix would occupy nearly 533 GB if it were dense, but since it is only about 0.02\% non-sparse, it requires 1.2 GB of memory when stored in CSC format.
+The design matrix would occupy over 500 GB if it were dense, but since it is only about 0.02\% non-sparse, it requires 1.8 GB of memory when stored in CSC format.
 
 ```{r dwi-fit, echo=FALSE, warning=FALSE, eval=TRUE, fig.cap="The group norm of the 12 groups based on neuroanatomical structure against the magnitude of the penalty. The fit was produced using \\texttt{sparsegl()} to estimate the group lasso ($\\alpha=0$).", fig.height=2.5}
 # source("code/brains.R") takes 6 GB memory and about 1 minute, once the data is downloaded
@@ -588,7 +604,7 @@ We developed this package for solving sparse group lasso optimization problems u
 
 # Acknowledgements {.unnumbered}
 
-In addition to the \proglang{R} packages described above, this manuscript and \pkg{sparsegl} benefitted from \pkg{devtools} [@R-devtools], \pkg{usethis} [@R-usethis], \pkg{testthat} [@R-testthat], \pkg{knitr} [@R-knitr], \pkg{ggplot2} [@R-ggplot2], and \pkg{rticles} [@R-rticles]. 
+In addition to the \proglang{R} packages described above, this manuscript and \pkg{sparsegl} benefitted from \pkg{devtools} [@R-devtools], \pkg{usethis} [@R-usethis], \pkg{testthat} [@R-testthat], \pkg{knitr} [@R-knitr], and \pkg{rticles} [@R-rticles]. 
 
 Franco Pestilli was supported with grants from the National Science Foundation (OAC-1916518, IIS-1912270, IIS-1636893, BCS-1734853), National Institutes of Health (NIMH R01MH126699, NIBIB R01EB030896, NIBIB R01EB029272), a Microsoft Investigator Fellowship, and a gift from the Kavli Foundation. Daniel J. McDonald was partially supported by the National Science Foundation (DMS–1753171) and the National Sciences and Engineering Research Council of Canada (RGPIN-2021-02618). The analysis in \autoref{sec:trust} is based on survey results from Carnegie Mellon University’s Delphi Group.
 
