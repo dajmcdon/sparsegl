@@ -3,6 +3,7 @@
   author={Tibshirani, Robert and Bien, Jacob and Friedman, Jerome and Hastie, Trevor and Simon, Noah and Taylor, Jonathan and Tibshirani, Ryan J},
   journal={Journal of the Royal Statistical Society B},
   volume={74},
+  doi={10.1111/j.1467-9868.2011.01004.x},
   number={2},
   pages={245--266},
   year={2012},
@@ -19,7 +20,7 @@
 }
 
 @Techreport{python,
-  title= {\proglang{Python} Tutorial},
+  title= {\proglang{python} Tutorial},
   author = {G. van Rossum},
   number={CS-R9526},
   institution= {Centrum voor Wiskunde en Informatica (CWI)},
@@ -28,9 +29,10 @@
 
 @article{cvxpy-jmlr,
   author  = {Steven Diamond and Stephen Boyd},
-  title   = {\pkg{CVXPY}: {A} \proglang{python}-embedded Modeling Language for Convex Optimization},
+  title   = {\pkg{CVXPY}: {A} \proglang{python}-Embedded Modeling Language for Convex Optimization},
   journal = {Journal of Machine Learning Research},
   year    = {2016},
+  url     = {http://jmlr.org/papers/v17/15-408.html},
   volume  = {17},
   number  = {83},
   pages   = {1--5},
@@ -55,6 +57,7 @@
   volume  = {5},
   number  = {1},
   pages   = {42--60},
+  doi = {10.1080/23307706.2017.1397554}
 }
 @inproceedings{aminmansour2019,
 	author = {Aminmansour, Farzane and Patterson, Andrew and Le, Lei and Peng, Yisu and Mitchell, Daniel and Pestilli, Franco and Caiafa, Cesar F and Greiner, Russell and White, Martha},
@@ -62,58 +65,48 @@
 	editor = {Wallach, H. and Larochelle, H. and Beygelzimer, A. and d\textquotesingle Alch\'{e}-Buc, F. and Fox, E. and Garnett, R.},
 	title = {Learning Macroscopic Brain Connectomes via Group-Sparse Factorization},
 	volume = {32},
+	url = {https://proceedings.neurips.cc/paper/2019/hash/0bfce127947574733b19da0f30739fcd-Abstract.html},
 	year = {2019}}
+
+
 @inproceedings{encode2017,
 	author = {Caiafa, Cesar F and Sporns, Olaf and Saykin, Andrew and Pestilli, Franco},
 	booktitle = {Advances in Neural Information Processing Systems},
 	editor = {Guyon, I. and Luxburg, U. V. and Bengio, S. and Wallach, H. and Fergus, R. and Vishwanathan, S. and Garnett, R.},
-	publisher = {Curran Associates, Inc.},
-	title = {Unified representation of tractography and diffusion-weighted MRI data using sparse multidimensional arrays},
+	title = {Unified Representation of Tractography and Diffusion-Weighted MRI Data Using Sparse Multidimensional Arrays},
+	url = {https://proceedings.neurips.cc/paper/2017/hash/ccbd8ca962b80445df1f7f38c57759f0-Abstract.html},
 	volume = {30},
 	year = {2017}}
+
 @article{pestilli2014,
 	title = {Evaluation and statistical inference for human connectomes},
 	volume = {11},
-	issn = {1548-7091},
-	url = {http://www.nature.com/articles/nmeth.3098},
 	doi = {10.1038/nmeth.3098},
 	number = {10},
 	journal = {Nature Methods},
 	author = {Pestilli, Franco and Yeatman, Jason D and Rokem, Ariel and Kay, Kendrick N and Wandell, Brian A},
-	month = oct,
 	year = {2014},
-	keywords = {★},
 	pages = {1058--1063},
 }
 
 @article{daducci2015,
 	title = {{COMMIT}: {Convex} Optimization Modeling for Microstructure Informed Tractography},
 	volume = {34},
-	issn = {1558254X},
 	doi = {10.1109/TMI.2014.2352414},
-	abstract = {Tractography is a class of algorithms aiming at in vivo mapping the major neuronal pathways in the white matter from diffusion magnetic resonance imaging (MRI) data. These techniques offer a powerful tool to noninvasively investigate at the macroscopic scale the architecture of the neuronal connections of the brain. However, unfortunately, the reconstructions recovered with existing tractography algorithms are not really quantitative even though diffusion MRI is a quantitative modality by nature. As a matter of fact, several techniques have been proposed in recent years to estimate, at the voxel level, intrinsic microstructural features of the tissue, such as axonal density and diameter, by using multicompartment models. In this paper, we present a novel framework to reestablish the link between tractography and tissue microstructure. Starting from an input set of candidate fiber-tracts, which are estimated from the data using standard fiber-tracking techniques, we model the diffusion MRI signal in each voxel of the image as a linear combination of the restricted and hindered contributions generated in every location of the brain by these candidate tracts. Then, we seek for the global weight of each of them, i.e., the effective contribution or volume, such that they globally fit the measured signal at best. We demonstrate that these weights can be easily recovered by solving a global convex optimization problem and using efficient algorithms. The effectiveness of our approach has been evaluated both on a realistic phantom with known ground-truth and in vivo brain data. Results clearly demonstrate the benefits of the proposed formulation, opening new perspectives for a more quantitative and biologically plausible assessment of the structural connectivity of the brain.},
-	number = {1},
 	journal = {IEEE Transactions on Medical Imaging},
 	author = {Daducci, Alessandro and Dal Palù, Alessandro and Lemkaddem, Alia and Thiran, Jean Philippe},
 	year = {2015},
-	pmid = {25167548},
-	keywords = {★, Convex optimization, diffusion magnetic resonance imaging (MRI), global tractography, tissue microstructure},
 	pages = {246--257},
 }
 @article{vanessen2012,
 	title = {The {Human} {Connectome} {Project}: {A} Data Acquisition Perspective},
 	volume = {62},
-	issn = {10538119},
 	shorttitle = {The {Human} {Connectome} {Project}},
-	url = {https://linkinghub.elsevier.com/retrieve/pii/S1053811912001954},
 	doi = {10.1016/j.neuroimage.2012.02.018},
-	abstract = {The Human Connectome Project (HCP) is an ambitious 5-year effort to characterize brain connectivity and function and their variability in healthy adults. This review summarizes the data acquisition plans being implemented by a consortium of HCP investigators who will study a population of 1200 subjects (twins and their non-twin siblings) using multiple imaging modalities along with extensive behavioral and genetic data. The imaging modalities will include diffusion imaging (dMRI), resting-state fMRI (R-fMRI), task-evoked fMRI (T-fMRI), T1- and T2-weighted MRI for structural and myelin mapping, plus combined magnetoencephalography and electroencephalography (MEG/EEG). Given the importance of obtaining the best possible data quality, we discuss the efforts underway during the first two years of the grant (Phase I) to refine and optimize many aspects of HCP data acquisition, including a new 7T scanner, a customized 3T scanner, and improved MR pulse sequences.},
 	language = {en},
 	number = {4},
-	urldate = {2022-07-14},
 	journal = {NeuroImage},
 	author = {Van Essen, D.C. and Ugurbil, K. and Auerbach, E. and Barch, D. and Behrens, T.E.J. and Bucholz, R. and Chang, A. and Chen, L. and Corbetta, M. and Curtiss, S.W. and Della Penna, S. and Feinberg, D. and Glasser, M.F. and Harel, N. and Heath, A.C. and Larson-Prior, L. and Marcus, D. and Michalareas, G. and Moeller, S. and Oostenveld, R. and Petersen, S.E. and Prior, F. and Schlaggar, B.L. and Smith, S.M. and Snyder, A.Z. and Xu, J. and Yacoub, E.},
-	month = oct,
 	year = {2012},
 	pages = {2222--2231},
 }
@@ -124,6 +117,7 @@
   journal={Statistics and Computing},
   volume={25},
   number={6},
+  doi = {10.1007/s11222-014-9498-5},
   pages={1129--1141},
   year={2015},
   publisher={Springer}
@@ -137,7 +131,7 @@
   number={2},
   pages={231--245},
   year={2013},
-  publisher={Taylor \& Francis Group}
+  doi={10.1080/10618600.2012.681250}
 }
 
 
@@ -146,8 +140,9 @@
 	journal = {The Annals of Statistics},
 	number = {6},
 	pages = {2313--2351},
-	title = {The {D}antzig Selector: {S}tatistical Estimation when $p$ is Much Larger than $n$},
+	title = {The {D}antzig Selector: {S}tatistical Estimation When $p$ Is Much Larger Than $n$},
 	volume = {35},
+	doi = {10.1214/009053606000001523},
 	year = {2007}}
 
 
@@ -157,9 +152,9 @@
   journal={Journal of the Royal Statistical Society B},
   volume={58},
   number={1},
+  doi={10.1111/j.2517-6161.1996.tb02080.x},
   pages={267--288},
   year={1996},
-  publisher={Wiley Online Library}
 }
 
 @article{yuan2006model,
@@ -169,6 +164,7 @@
   volume={68},
   number={1},
   pages={49--67},
+  doi={10.1111/j.1467-9868.2005.00532.x},
   year={2006},
   publisher={Wiley Online Library}
 }
@@ -179,6 +175,7 @@
   booktitle={Traces and Emergence of Nonlinear Programming},
   pages={217--245},
   year={2014},
+  doi={10.1007/978-3-0348-0439-4_10},
   publisher={Springer}
 }
 
@@ -195,6 +192,7 @@
   journal={Journal of Optimization Theory and Applications},
   volume={109},
   number={3},
+  doi={10.1023/A:1017501703105},
   pages={475--494},
   year={2001},
   publisher={Springer}
@@ -204,15 +202,20 @@
   title={Adaptive Sparse Group LASSO in Quantile Regression},
   author={Civieta, Aivaro Mendez and Aguilera-Morillo, M. Carmen and Lillo, Rosa E.},
   journal={Advances in Data Analysis and Classification},
-  year={2020},
-  publisher={Springer}
+  year={2021},
+  volume={15},
+  doi={10.1007/s11634-020-00413-8},
+  pages={547--573}
 }
 
-@article{ida2019fast,
+@incollection{ida2019fast,
   title={Fast Sparse Group Lasso},
   author={Ida, Yasutoshi and Fujiwara, Yasuhiro and Kashima, Hisashi},
   year={2019},
-  publisher={NeurlIPS Proceedings}
+  booktitle = {Advances in Neural Information Processing Systems},
+ editor = {H. Wallach and H. Larochelle and A. Beygelzimer and F. d\textquotesingle Alch\'{e}-Buc and E. Fox and R. Garnett},
+ title = {Fast Sparse Group Lasso},
+ url = {https://proceedings.neurips.cc/paper/2019/file/d240e3d38a8882ecad8633c8f9c78c9b-Paper.pdf},
 }
 
 @article{zeng2020biglasso,
@@ -220,6 +223,7 @@
   author={Zeng, Yaohui and Breheny, Patrick},
   journal={The \proglang{R} Journal},
   volume={12},
+  doi={10.32614/RJ-2021-001},
   number={2},
   pages={6--19},
   year={2020}
@@ -241,7 +245,6 @@
   year = {2018},
   volume = {7},
   pages = {217--221},
-  issn = {2352-7110},
   doi = {10.1016/j.softx.2018.06.002},
 }
 
@@ -252,7 +255,6 @@
   year = {2017},
   volume = {104},
   pages = {109--119},
-  issn = {0098-3004},
   doi = {10.1016/j.cageo.2016.11.015},
 }
 
@@ -270,6 +272,7 @@
 	author = {Schwarz, G.},
 	journal = {The Annals of Statistics},
 	pages = {461--464},
+	doi={10.1214/aos/1176344136},
 	title = {Estimating the Dimension of a Model},
 	volume = {6},
 	year = {1978}}
@@ -280,17 +283,17 @@
 	journal = {Technometrics},
 	number = {2},
 	pages = {215--223},
+	doi = {10.1080/00401706.1979.10489751},
 	title = {Generalized Cross-Validation as a Method for Choosing a Good Ridge Parameter},
 	volume = {21},
 	year = {1979}}
 
-@misc{vaiter2012degrees,
+@techreport{vaiter2012degrees,
       title={The Degrees of Freedom of the Group Lasso for a General Design},
       author={Samuel Vaiter and Charles Deledalle and Gabriel Peyré and Jalal Fadili and Charles Dossal},
       year={2012},
-      eprint={1212.6478},
-      archivePrefix={arXiv},
-      primaryClass={cs.IT}
+      doi={10.48550/arXiv.1212.6478},
+      institution={arXiv}
 }
 
 
@@ -299,7 +302,8 @@
 	journal = {Journal of the American Statistical Association},
 	number = {394},
 	pages = {461--470},
-	title = {How Biased is the Apparent Error Rate of a Prediction Rule?},
+	doi = {10.1080/01621459.1986.10478291},
+	title = {How Biased Is the Apparent Error Rate of a Prediction Rule?},
 	volume = {81},
 	year = {1986}}
 
@@ -309,6 +313,7 @@
 	journal = {The Annals of Statistics},
 	number = {5},
 	pages = {2173--2192},
+	doi={10.1214/009053607000000127},
 	title = {{On the `Degrees of Freedom' of the Lasso}},
 	volume = {35},
 	year = {2007}}
@@ -320,6 +325,7 @@
 	number = {31},
 	pages = {eaba8245},
 	title = {A New Method for Accurate in vivo Mapping of Human Brain Connections Using Microstructural and Anatomical Information},
+	doi = {10.1126/sciadv.aba8245},
 	volume = {6},
 	year = {2020}}
 
@@ -337,7 +343,7 @@
   title = {\pkg{biglasso}: Extending Lasso Model Fitting to Big Data},
   author = {Yaohui Zeng and Chuyi Wang and Patrick Breheny},
   year = {2022},
-  note = {\proglang{R} package version 1.5.2},
+  note = {\proglang{R}~package version~1.5.2},
   url = {https://CRAN.R-project.org/package=biglasso},
 }
 
@@ -345,7 +351,7 @@
   title = {\pkg{CVXR}: Disciplined Convex Optimization},
   author = {Anqi Fu and Balasubramanian Narasimhan and David W Kang and Steven Diamond and John Miller},
   year = {2022},
-  note = {\proglang{R} package version 1.0-11},
+  note = {\proglang{R}~package version~1.0-11},
   url = {https://CRAN.R-project.org/package=CVXR},
 }
 
@@ -353,7 +359,7 @@
   title = {\pkg{devtools}: Tools to Make Developing \proglang{R} Packages Easier},
   author = {Hadley Wickham and Jim Hester and Winston Chang and Jennifer Bryan},
   year = {2022},
-  note = {\proglang{R} package version 2.4.5},
+  note = {\proglang{R}~package version~2.4.5},
   url = {https://CRAN.R-project.org/package=devtools},
 }
 
@@ -361,7 +367,7 @@
   title = {\pkg{dotCall64}: Enhanced Foreign Function Interface Supporting Long Vectors},
   author = {Kaspar Moesinger and Florian Gerber},
   year = {2022},
-  note = {\proglang{R} package version 1.0-2},
+  note = {\proglang{R}~package version~1.0-2},
   url = {https://git.math.uzh.ch/reinhard.furrer/dotCall64},
 }
 
@@ -369,7 +375,7 @@
   title = {\pkg{dplyr}: A Grammar of Data Manipulation},
   author = {Hadley Wickham and Romain François and Lionel Henry and Kirill Müller},
   year = {2022},
-  note = {\proglang{R} package version 1.0.10},
+  note = {\proglang{R}~package version~1.0.10},
   url = {https://CRAN.R-project.org/package=dplyr},
 }
 
@@ -377,15 +383,15 @@
   title = {\pkg{gglasso}: Group Lasso Penalized Learning Using a Unified BMD Algorithm},
   author = {Yi Yang and Hui Zou and Sahir Bhatnagar},
   year = {2020},
-  note = {\proglang{R} package version 1.5},
-  url = {https://github.com/emeryyi/gglasso},
+  note = {\proglang{R}~package version~1.5},
+  url = {https://CRAN.R-project.org/package=gglasso},
 }
 
 @Manual{R-ggplot2,
   title = {\pkg{ggplot2}: Create Elegant Data Visualisations Using the Grammar of Graphics},
   author = {Hadley Wickham and Winston Chang and Lionel Henry and Thomas Lin Pedersen and Kohske Takahashi and Claus Wilke and Kara Woo and Hiroaki Yutani and Dewey Dunnington},
   year = {2022},
-  note = {\proglang{R} package version 3.4.0},
+  note = {\proglang{R}~package version~3.4.0},
   url = {https://CRAN.R-project.org/package=ggplot2},
 }
 
@@ -393,7 +399,7 @@
   title = {\pkg{glmnet}: Lasso and Elastic-Net Regularized Generalized Linear Models},
   author = {Jerome Friedman and Trevor Hastie and Rob Tibshirani and Balasubramanian Narasimhan and Kenneth Tay and Noah Simon and James Yang},
   year = {2022},
-  note = {\proglang{R} package version 4.1-4},
+  note = {\proglang{R}~package version~4.1-4},
   url = {https://CRAN.R-project.org/package=glmnet},
 }
 
@@ -401,15 +407,15 @@
   title = {\pkg{knitr}: A General-Purpose Package for Dynamic Report Generation in \proglang{R}},
   author = {Yihui Xie},
   year = {2022},
-  note = {\proglang{R} package version 1.40},
-  url = {https://yihui.org/knitr/},
+  note = {\proglang{R}~package version~1.40},
+  url = {https://CRAN.R-project.org/package=knitr},
 }
 
 @Manual{R-magrittr,
   title = {\pkg{magrittr}: A Forward-Pipe Operator for \proglang{R}},
   author = {Stefan Milton Bache and Hadley Wickham},
   year = {2022},
-  note = {\proglang{R} package version 2.0.3},
+  note = {\proglang{R}~package version~2.0.3},
   url = {https://CRAN.R-project.org/package=magrittr},
 }
 
@@ -418,7 +424,7 @@
 Estimation},
   author = {Simon Wood},
   year = {2022},
-  note = {\proglang{R} package version 1.8-41},
+  note = {\proglang{R}~package version~1.8-41},
   url = {https://CRAN.R-project.org/package=mgcv},
 }
 
@@ -426,16 +432,16 @@ Estimation},
   title = {\pkg{RSpectra}: Solvers for Large-Scale Eigenvalue and SVD Problems},
   author = {Yixuan Qiu and Jiali Mei},
   year = {2022},
-  note = {\proglang{R} package version 0.16-1},
-  url = {https://github.com/yixuan/RSpectra},
+  note = {\proglang{R}~package version~0.16-1},
+  url = {https://CRAN.R-project.org/package=RSpectra},
 }
 
 @Manual{R-rticles,
   title = {\pkg{rticles}: Article Formats for \proglang{R} \proglang{Markdown}},
   author = {JJ Allaire and Yihui Xie and Christophe Dervieux and {R Foundation} and Hadley Wickham and {Journal of Statistical Software} and Ramnath  Vaidyanathan and {Association for Computing Machinery} and Carl Boettiger and {Elsevier} and Karl Broman and Kirill Mueller and Bastiaan Quast and Randall  Pruim and Ben Marwick and Charlotte Wickham and Oliver Keyes and Miao Yu and Daniel Emaasit and Thierry Onkelinx and Alessandro Gasparini and Marc-Andre Desautels and Dominik Leutnant and {MDPI} and {Taylor and Francis} and Oğuzhan Öğreden and Dalton Hance and Daniel Nüst and Petter Uvesten and Elio Campitelli and John Muschelli and Alex Hayes and Zhian N. Kamvar and Noam Ross and Robrecht Cannoodt and Duncan Luguern and David M. Kaplan and Sebastian Kreutzer and Shixiang Wang and Jay Hesselberth and Rob Hyndman},
   year = {2022},
-  note = {\proglang{R} package version 0.24},
-  url = {https://github.com/rstudio/rticles},
+  note = {\proglang{R}~package version~0.24},
+  url = {https://CRAN.R-project.org/package=rticles},
 }
 
 @Manual{R-SGL,
@@ -443,7 +449,7 @@ Estimation},
 Lasso Regularization},
   author = {Noah Simon and Jerome Friedman and Trevor Hastie and Rob Tibshirani},
   year = {2019},
-  note = {\proglang{R} package version 1.3},
+  note = {\proglang{R}~package version~1.3},
   url = {https://CRAN.R-project.org/package=SGL},
 }
 
@@ -451,15 +457,15 @@ Lasso Regularization},
   title = {\pkg{sparsegl}: Sparse Group Lasso},
   author = {Daniel J. McDonald and Xiaoxuan Liang and Anibal {Solón Heinsfeld} and Aaron Cohen},
   year = {2022},
-  note = {\proglang{R} package version 1.0.0},
-  url = {https://github.com/dajmcdon/sparsegl/},
+  note = {\proglang{R}~package version~1.0.1},
+  url = {https://CRAN.R-project.org/package=sparsegl},
 }
 
 @Manual{R-testthat,
   title = {\pkg{testthat}: Unit Testing for \proglang{R}},
   author = {Hadley Wickham},
   year = {2022},
-  note = {\proglang{R} package version 3.1.5},
+  note = {\proglang{R}~package version~3.1.5},
   url = {https://CRAN.R-project.org/package=testthat},
 }
 
@@ -467,7 +473,7 @@ Lasso Regularization},
   title = {\pkg{usethis}: Automate Package and Project Setup},
   author = {Hadley Wickham and Jennifer Bryan and Malcolm Barrett},
   year = {2022},
-  note = {\proglang{R} package version 2.1.6},
+  note = {\proglang{R}~package version~2.1.6},
   url = {https://CRAN.R-project.org/package=usethis},
 }
 
