@@ -12,7 +12,7 @@ using the stored sparsegl.fit object, and the value chosen for lambda."><!-- mat
     
     <a class="navbar-brand me-2" href="../index.html">sparsegl</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.1</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -129,18 +129,18 @@ of the nonzero coefficients for each value of <code>s</code>.</p></dd>
 <span class="r-in"><span><span class="va">fit1</span> <span class="op">&lt;-</span> <span class="fu"><a href="sparsegl.html">sparsegl</a></span><span class="op">(</span><span class="va">X</span>, <span class="va">y</span>, group <span class="op">=</span> <span class="va">groups</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">cv_fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="cv.sparsegl.html">cv.sparsegl</a></span><span class="op">(</span><span class="va">X</span>, <span class="va">y</span>, <span class="va">groups</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict</a></span><span class="op">(</span><span class="va">cv_fit</span>, newx <span class="op">=</span> <span class="va">X</span><span class="op">[</span><span class="fl">50</span><span class="op">:</span><span class="fl">60</span>, <span class="op">]</span>, s <span class="op">=</span> <span class="st">"lambda.min"</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                s1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [1,]   3.1094470</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [2,]   0.7523497</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [3,]  20.3953662</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [4,] -34.6674989</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [5,]   2.5931440</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [6,]  11.1836771</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [7,]  13.3363404</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [8,]   6.4805684</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [9,]  24.6806743</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [10,]  11.1658785</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [11,] -27.1149561</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>               s1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [1,]  29.982218</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [2,] -46.894707</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [3,]   7.597738</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [4,]  23.575849</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [5,]   1.000355</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [6,]   2.564896</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [7,]  13.264474</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [8,] -31.849694</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [9,]   7.287316</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [10,] -13.742948</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [11,] -12.283153</span>
 <span class="r-in"><span></span></span>
 </code></pre></div>
     </div>
