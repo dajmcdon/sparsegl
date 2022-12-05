@@ -414,7 +414,7 @@ This section provides a simple illustration for how to use the \pkg{sparsegl} pa
 
 ```{r install, eval=FALSE, echo=TRUE}
 install.packages("sparsegl")
-library(sparsegl)
+library("sparsegl")
 ```
 
 [^devel]: The development version of the package is hosted at https://github.com/dajmcdon/sparsegl with accompanying [documentation](https://dajmcdon.github.io/sparsegl).
@@ -449,7 +449,7 @@ To perform the regularization path fitting at a sequence of regularization param
 
 
 ```{r, eval=TRUE, echo=FALSE}
-library(sparsegl)
+library("sparsegl")
 ```
 
 ```{r}
@@ -507,7 +507,7 @@ er <- estimate_risk(fit, X)
 ```
 
 ```{r re-plot, echo=FALSE, message=FALSE, warning=FALSE, fig.width = 4, fig.height = 1.5, fig.cap="AIC, BIC, and GCV (solid lines) along with their minima (vertical dashed lines)."}
-library(tidyverse)
+library("tidyverse")
 er <- er %>% dplyr::select(-df) %>% pivot_longer(-lambda, values_to = "risk")
 err <- er %>% group_by(name) %>% summarise(lambda = lambda[which.min(risk)])
 ggplot(er, aes(lambda, risk, color = name)) +
@@ -540,9 +540,9 @@ In particular, we will focus on the "estimated percentage of respondents who tru
 We regress "trust in experts" on 5 factor predictors representing month of report, state of residence, age group, race/ethnicity, and self-reported gender identity. We also include two continuous predictors: "estimated percentage of people with Covid-like illness" and "estimated percentage of people reporting Covid-like illness in their local community, including their household" to control for the amount of exposure that respondents may have been having to the pandemic. Both continuous predictors are incorporated with a B-spline basis expansion and 10 degrees-of-freedom. The result is largely similar to a generalized additive model as implemented with \pkg{mgcv} \citep{woodGams,R-mgcv}. We created the design matrix using the following code:
 
 ```{r trust-experts-x, eval=FALSE, echo=TRUE}
-library(dplyr)
-library(magrittr)
-library(splines)
+library("dplyr")
+library("magrittr")
+library("splines")
 data("trust_experts", package="sparsegl")
 trust_experts <- mutate(trust_experts, across(
   where(is.factor), 
