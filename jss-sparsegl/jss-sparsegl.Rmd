@@ -119,7 +119,6 @@ We summarize our contributions in \autoref{discussion}.
 
 \begin{table}
 \centering
-\caption{Summary of features available in this and related \proglang{R} packages.\label{tab:comparison}}
 \begin{tabular}{lcccccc}
 \toprule
 & Regression \& & Within group & Sparse & Strong & Avoids & Interval \\
@@ -130,6 +129,7 @@ We summarize our contributions in \autoref{discussion}.
 \pkg{SGL} & \checkmark & \checkmark \\
 \bottomrule
 \end{tabular}
+\caption{This table summarizes the features available in \pkg{sparsegl} and related \proglang{R} packages.\label{tab:comparison}}
 \end{table}
 
 ```{r timing-comparison, echo=FALSE, fig.width=6, fig.height=2.5, fig.cap="This figure shows the time required to compute sparse group lasso solutions across a number of different problem sizes. In all cases, we use $n=500$ observations and 100 values of the tuning parameter $\\lambda$. The median is taken across 5 replications for each method and problem size. Note that both axes are on the log scale." }
@@ -460,7 +460,7 @@ We include a number of \pkg{S3} methods for `sparsegl` typical for linear models
 
 [^gg]: We have chosen to implement plotting throughout the package using \pkg{ggplot2} \citep{R-ggplot2}.
 
-```{r coef-trace, fig.width = 4, fig.height = 3, fig.cap="Coefficient trace plots produced with the \\texttt{plot()} method.", fig.show='hold', out.width="45%"}
+```{r coef-trace, fig.width = 4, fig.height = 3, fig.cap="The left panel plots the estimated coefficients aganist the sparse group penalty; while the right plots the $\\ell_2$-norm of each group against $\\lambda$.", fig.show='hold', out.width="45%"}
 plot(fit, y_axis = "coef", x_axis = "penalty", add_legend = FALSE)
 plot(fit, y_axis = "group", x_axis = "lambda", add_legend = FALSE)
 ```
@@ -468,7 +468,7 @@ plot(fit, y_axis = "group", x_axis = "lambda", add_legend = FALSE)
 The `coef()` and `predict()` methods give the coefficients or predicted values for a new design matrix $\widetilde{\mX}$ at the requested $\lambda$'s, potentially allowing for $\lambda$ values different from those used at the fitting stage. 
 
 ```{r, message=FALSE}
-coef(fit, s = c(0.02, 0.03))[c(1,3,25,29),] # display a few
+coef(fit, s = c(0.02, 0.03))[c(1,3,25,29),]
 predict(fit, newx = tail(X), s = fit$lambda[2:3])
 print(fit)
 ```
@@ -476,7 +476,7 @@ print(fit)
 The `cv.sparsegl()` function implements $K$-fold cross validation and has a similar signature to `sparsegl()`. It allows the user to choose the number of splits and the loss function for measuring prediction or classification accuracy on the held-out sets.
 Here, the \pkg{S3} `plot()` method displays the cross-validation curve with upper and lower confidence bounds calculated as $\pm 1$ standard error across the folds for each $\lambda$ in the regularization path (\autoref{fig:cv-plot}). 
 
-```{r cv-plot, fig.width = 4, fig.height = 2, fig.cap = "Cross validation error produced by the \\texttt{plot()} method for a \\texttt{cv.sparsegl} object."}
+```{r cv-plot, fig.width = 4, fig.height = 2, fig.cap = "The cross validation estimate of out-of-sample prediction mean-squared error is displayed against the sequence of $\\lambda$ values."}
 cv_fit <- cv.sparsegl(X, y, groups, nfolds = 15)
 plot(cv_fit)
 ```
@@ -491,7 +491,7 @@ predict(cv_fit, newx = tail(X), s = "lambda.min") %>% c()
 For logistic regression, only a different `family` is required. Cross validation
 can be implemented with misclassification or deviance loss (\autoref{fig:logitres}).
 
-```{r logitres, fig.width = 4, fig.height = 2, fig.cap="Cross validation error for logistic regression produced by the \\texttt{plot()} method using misclassification error on the held-out set."}
+```{r logitres, fig.width = 4, fig.height = 2, fig.cap="The cross validation estimate of out-of-sample error is displayed against the sequence of $\\lambda$ values. For logistic regression, misclassification error may be used."}
 fit_logit <- sparsegl(X, y0, groups, family = "binomial")
 cv_fit_logit <- cv.sparsegl(
   X, y0, groups, family = "binomial", pred.loss = "misclass"
@@ -506,7 +506,7 @@ log-likelihood with a penalty term for model flexibility. In addition to a fitte
 er <- estimate_risk(fit, X)
 ```
 
-```{r re-plot, echo=FALSE, message=FALSE, warning=FALSE, fig.width = 4, fig.height = 1.5, fig.cap="AIC, BIC, and GCV (solid lines) along with their minima (vertical dashed lines)."}
+```{r re-plot, echo=FALSE, message=FALSE, warning=FALSE, fig.width = 4, fig.height = 1.5, fig.cap="For Gaussian loss, AIC, BIC, and GCV (solid lines) along with their minima (vertical dashed lines) can be estimated."}
 library("tidyverse")
 er <- er %>% dplyr::select(-df) %>% pivot_longer(-lambda, values_to = "risk")
 err <- er %>% group_by(name) %>% summarise(lambda = lambda[which.min(risk)])
@@ -556,14 +556,14 @@ x <- Matrix::sparse.model.matrix(
 
 After omitting both structural and otherwise missing data, the final model is estimated with 9759 observations on 101 predictors. As shown in the code, we did not use contrasts, fully expanding each factor in a one-hot encoding. This allows all estimated coefficients to be interpreted as deviations from the grand mean conditional on continuous predictors, which is natural. Such a formulation (along with the group penalty) is closely related to Bayesian linear models with separate Gaussian priors centered at 0 for each level of the factor. Other contrasts could be used by modifying the above, but the interpretation is more complicated. Encoded as a sparse matrix, this requires about 2.1 MB of RAM to store, as opposed to 8.5 MB if it were dense. We estimated the model using `cv.sparsegl()` and default arguments. Finally, we chose $\lambda$ to be the largest lambda within 1 standard error of the CV minimum (`lambda.1se`), resulting in a sparser model. \autoref{fig:trust} displays the estimated coefficients for the state-of-residence predictors. Even controlling for age, race, gender, and the amount of circulating Covid-like illness, the United States displays strong geographic disparities when it comes to citizens' trust in scientists and other health authorities.
 
-```{r trust, echo=FALSE, fig.cap="State-level estimates for the amount of trust in experts about Covid-19. The value displayed represents the change relative the US-wide average.", fig.width=8, fig.height=3, message=FALSE, warning=FALSE, out.width="5in"}
+```{r trust, echo=FALSE, fig.cap="This figure displays estimates for each state's level of trust in experts' advice about Covid-19. The value displayed represents the change relative the U.S.-wide average.", fig.width=8, fig.height=3, message=FALSE, warning=FALSE, out.width="5in"}
 source("code/covid.R")
 g
 ```
 
 ## Estimating white matter connectivity
 
-```{r dwi-model-description, out.width="75%", fig.cap="Pictoral representation illustrating how the streamlines and voxels are converted from a diffusion-weighted image to a linear model. Each voxel is measured on 90 angles, so it occupies 90 rows in the data. When a streamline (column of $\\mathbf{X}$) passes through a voxel, the values within that voxel are given by a physical model based on the direction of passage. Otherwise, if the streamline does not cross the voxel, the respective rows are zero.", echo=FALSE}
+```{r dwi-model-description, out.width="75%", fig.cap="This graphic illustrates how the streamlines and voxels are converted from a diffusion-weighted image to a linear model. Each voxel is measured on 90 angles, so it occupies 90 rows in the data. When a streamline (column of $\\mathbf{X}$) passes through a voxel, the values within that voxel are given by a physical model based on the direction of passage. Otherwise, if the streamline does not cross the voxel, the respective rows are zero.", echo=FALSE}
 knitr::include_graphics("fig/model-description.pdf")
 ```
 
@@ -581,7 +581,7 @@ This results in a linear regression problem  with $n\approx1M$ and $p = 868$.
 In comparison, our data contains 77,630 voxels measured on 90 angles, with a tractography of 10,244 streamlines. The resulting linear model has $n\approx6.9M$ and $p\approx88K$, around $700\times$ the size of the previous analysis.
 The design matrix would occupy over 500 GB if it were dense, but since it is only about 0.02\% non-sparse, it requires 1.8 GB of memory when stored in CSC format.
 
-```{r dwi-fit, echo=FALSE, warning=FALSE, eval=TRUE, fig.cap="The group norm of the 12 groups based on neuroanatomical structure against the magnitude of the penalty. The fit was produced using \\texttt{sparsegl()} to estimate the group lasso ($\\alpha=0$).", fig.height=2.5}
+```{r dwi-fit, echo=FALSE, warning=FALSE, eval=TRUE, fig.cap="The group norm of the 12 groups based on neuroanatomical structure is plotted against the magnitude of the penalty.", fig.height=2.5}
 # source("code/brains.R") takes 6 GB memory and about 1 minute, once the data is downloaded
 fit <- readRDS("large-data/brain-fit.rds")
 plot(fit, 
