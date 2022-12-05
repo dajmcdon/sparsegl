@@ -55,7 +55,7 @@ keywords:
 preamble: >
   \input{jss-sparsegl-preamble}
 output: rticles::jss_article
-bibliography: [sparsegl.bib, pkgs.bib]
+bibliography: [sparsegl.bib]
 keep_tex: true
 ---
 
@@ -104,7 +104,7 @@ In \proglang{python} \citep{python}, \pkg{asgl} \citep{civieta2020adaptive} impl
 Our contribution, then, is to provide a package that performs sparse group lasso, and is faster than existing implementations. In particular, \pkg{sparsegl} has the following benefits:
 \begin{itemize}
 \item Performs Gaussian and logistic regression using fast, compiled code;
-\item Allows arbitrary generalized linear models using \proglang{R}'s \texttt{family()} object, though with slightly less efficiency;
+\item Allows arbitrary generalized linear models using \proglang{R}'s \code{family} object, though with slightly less efficiency;
 \item Allows for interval constraints and differential weights on the coefficients;
 \item Accommodates a sparse design matrix and returns the coefficient estimates in a sparse matrix;
 \item Uses strong rules for fast computation along a sequence of tuning parameters;
