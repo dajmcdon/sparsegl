@@ -179,30 +179,30 @@ The benefit of this penalty is that it tends to allow only a subset of coefficie
 
 A variant of this, the group lasso \citep{yuan2006model} is appropriate when there is a natural grouping structure for the features. That is, we assume that both the design matrix $\mX$ and the corresponding vector of coefficients can be partitioned into interpretable non-overlapping groups, and, by analogy with lasso regression, only a few of the groups are active, i.e., have nonzero coefficients. The group lasso thus performs regularization that has the effect of discarding groups of predictors rather than the predictors themselves:
 \begin{equation}
-\min_{\vbeta}\left\{\frac{1}{2n}\big\lVert \vY-\sum_{g=1}^G \mX^{(g)}\vbeta^{(g)}\big\rVert_2^2 + \lambda\sum_{l=1}^m\sqrt{w_g}\snorm{\vbeta^{(g)}}_2\right\}.
 \label{eq:group-lasso}
+\min_{\vbeta}\left\{\frac{1}{2n}\big\lVert \vY-\sum_{g=1}^G \mX^{(g)}\vbeta^{(g)}\big\rVert_2^2 + \lambda\sum_{l=1}^m\sqrt{w_g}\snorm{\vbeta^{(g)}}_2\right\}.
 \end{equation}
 Grouping may occur naturally---say with the inclusion of many categorical predictors, groups of genes, or brain regions---or may be a design choice using additive models and basis expansions.
-Note that in Equation \eqref{eq:group-lasso}, the grouping structure is explicitly stated: the vector of coefficients, $\vbeta$, is thought of as a concatenation of the coefficient subvectors of the various groups $\vbeta^{(g)}$, and similarly the data matrix $\mX$ is the concatenation of submatrices, each submatrix $\mX^{(g)}$ being composed of the columns that correspond to that particular group. Thus the first part of the equation, $\vY-\sum_{g=1}^G\mX^{(g)}\vbeta^{(g)}$, is identical to the more simply-written equation $\vY-\mX\vbeta$, but the notation serves to emphasise the partitioning.
+Note that in Equation\ \ref{eq:group-lasso}, the grouping structure is explicitly stated: the vector of coefficients, $\vbeta$, is thought of as a concatenation of the coefficient subvectors of the various groups $\vbeta^{(g)}$, and similarly the data matrix $\mX$ is the concatenation of submatrices, each submatrix $\mX^{(g)}$ being composed of the columns that correspond to that particular group. Thus the first part of the equation, $\vY-\sum_{g=1}^G\mX^{(g)}\vbeta^{(g)}$, is identical to the more simply-written equation $\vY-\mX\vbeta$, but the notation serves to emphasise the partitioning.
 
-The penalty however---$\sum_{g=1}^G\sqrt{w_g}\snorm{\vbeta^{(g)}}_2$---is different from the corresponding part in Equation \eqref{eq:lasso}, using instead the sum of the (non-squared) $\ell_2$-norms of the coefficient vectors of the various groups. It is the non-differentiability of this expression at $\mathbf{0}\in\R^{|g|}$ (with $|g|$ meaning the size of group $g$) that accounts for the group-discarding property of the problem, similar to the way that the  non-differentiability the absolute value at $0$ is responsible for discarding individual predictors in the lasso.
+The penalty however---$\sum_{g=1}^G\sqrt{w_g}\snorm{\vbeta^{(g)}}_2$---is different from the corresponding part in Equation\ \ref{eq:lasso}, using instead the sum of the (non-squared) $\ell_2$-norms of the coefficient vectors of the various groups. It is the non-differentiability of this expression at $\mathbf{0}\in\R^{|g|}$ (with $|g|$ meaning the size of group $g$) that accounts for the group-discarding property of the problem, similar to the way that the  non-differentiability the absolute value at $0$ is responsible for discarding individual predictors in the lasso.
 
-As with Equation \eqref{eq:lasso}, there is only a single tuning parameter $\lambda$, whose value determines the strength of regularization. Within the second summation are the relative weights of the groups, $w_g$. These are often taken to be the size of the corresponding group. For simplicity, this notation is suppressed below where the meaning is clear.
+As with Equation\ \ref{eq:lasso}, there is only a single tuning parameter $\lambda$, whose value determines the strength of regularization. Within the second summation are the relative weights of the groups, $w_g$. These are often taken to be the size of the corresponding group. For simplicity, this notation is suppressed below where the meaning is clear.
 
-Finally, in a group-structured problem as above, it may be desirable to enforce sparsity, not only among the groups, but also within the groups. The sparse group lasso \citep{simon2013sparse} does this by combining the penalties in Equations \eqref{eq:lasso} and \eqref{eq:group-lasso}:
+Finally, in a group-structured problem as above, it may be desirable to enforce sparsity, not only among the groups, but also within the groups. The sparse group lasso \citep{simon2013sparse} does this by combining the penalties in Equations\ \ref{eq:lasso} and\ \ref{eq:group-lasso}:
 \begin{equation}
   \label{eq:sparsegl}
 \min_{\vbeta}\left\{\frac{1}{2n}\snorm{\vY-\mX\vbeta}_2^2 + (1-\alpha)\lambda\sum_{g=1}^G \snorm{\vbeta^{(g)}}_2+\alpha\lambda\sum_{g=1}^G\snorm{\vbeta^{(g)}}_1\right\}.
 \end{equation}
-There is now a second tuning parameter $\alpha$, which controls the relative emphasis of intra- versus inter-group sparsity in the coefficient estimates. In Equation \ref{eq:sparsegl}, we have chosen to write the group dependence explicitly in the $\ell_1$ component of the penalty, but note that $\sum_{g=1}^G\snorm{\vbeta^{(g)}}_1 = \snorm{\vbeta}_1$. Similar to the weights $w_g$ in the group component, \pkg{sparsegl} also allows individual predictor weights in the $\ell_1$ component, $\sum_{j=1}^p \omega_j |\beta_j|$, but we suppress this generality for clarity, setting $\omega_j=1$ for all $j$ below.
+There is now a second tuning parameter $\alpha$, which controls the relative emphasis of intra- versus inter-group sparsity in the coefficient estimates. In Equation\ \ref{eq:sparsegl}, we have chosen to write the group dependence explicitly in the $\ell_1$ component of the penalty, but note that $\sum_{g=1}^G\snorm{\vbeta^{(g)}}_1 = \snorm{\vbeta}_1$. Similar to the weights $w_g$ in the group component, \pkg{sparsegl} also allows individual predictor weights in the $\ell_1$ component, $\sum_{j=1}^p \omega_j |\beta_j|$, but we suppress this generality for clarity, setting $\omega_j=1$ for all $j$ below.
 
 
 ## The group-wise majorization-minimization algorithm
 
-There is no closed-form solution to the optimization problem in Equation \eqref{eq:sparsegl}, so we require a numerical procedure. Because the problem is convex, a variety of methods may be used.
+There is no closed-form solution to the optimization problem in Equation\ \ref{eq:sparsegl}, so we require a numerical procedure. Because the problem is convex, a variety of methods may be used.
 The general framework for our algorithm is the same as the majorized block-wise coordinate descent algorithm developed in \citep{yang2015fast, simon2013sparse}. What this means is that, for a fixed value of $\lambda$, we loop over the groups and update only those coefficients while holding all other groups constant. In particular, instead of using the exact Hessian to determine the step size and direction in every update step, we update according to a simpler expression that majorizes the objective. 
 
-For the rest of this section, we describe this majorization algorithm, focusing on a particular group $g$ and holding the coefficients for all other groups fixed. We note here that, because the loss function in Equation \eqref{eq:sparsegl} is differentiable and the penalty terms are convex and separable (i.e., they can be decomposed into a sum of functions each only involving a single group), this block coordinate descent algorithm is guaranteed to converge to a global optimum \citep{tseng2001convergence}.
+For the rest of this section, we describe this majorization algorithm, focusing on a particular group $g$ and holding the coefficients for all other groups fixed. We note here that, because the loss function in Equation\ \ref{eq:sparsegl} is differentiable and the penalty terms are convex and separable (i.e., they can be decomposed into a sum of functions each only involving a single group), this block coordinate descent algorithm is guaranteed to converge to a global optimum \citep{tseng2001convergence}.
 
 To begin with, we introduce some notation. Let 
 \[
@@ -219,7 +219,7 @@ In what follows, we will suppress the $(g)$ notation, with the understanding tha
 \]
 so that our objective function for the $g^\textrm{th}$ group becomes $\ell (\vbeta) + (1-\alpha)\lambda\norm{\vbeta}_2 + \alpha \lambda \norm{\vbeta}_1$, and we are interested in finding an optimal value, $\hat{\vbeta}$. This enables the procedure to generalize easily to logistic loss or, in principle, other exponential families.
 
-Any global minimum must satisfy a subgradient equation, similar to a first-derivative test for an optimum, except that $\norm{\cdot}_2$ and $\norm{\cdot}_1$ are non-differentiable at $\mathbf{0}$. For Equation \eqref{eq:sparsegroupk} above, taking the subdifferential and setting equal to zero gives us the following first-order condition: 
+Any global minimum must satisfy a subgradient equation, similar to a first-derivative test for an optimum, except that $\norm{\cdot}_2$ and $\norm{\cdot}_1$ are non-differentiable at $\mathbf{0}$. For Equation\ \ref{eq:sparsegroupk} above, taking the subdifferential and setting equal to zero gives us the following first-order condition: 
 \begin{equation}
   \label{eq:subgrad}
 \nabla \ell(\vbeta) = (1-\alpha)\lambda \mathbf{u} + \alpha \lambda \mathbf{v},
@@ -230,10 +230,9 @@ where $\mathbf{u}$ is the subgradient of $\norm{\vbeta}_2$ and $\mathbf{v}$ is t
 
 
 For the Gaussian case, the unpenalized loss $\ell (\vbeta)$ is a quadratic function in $\vbeta$, so it is equal to its second order Taylor expansion about any point $\vbeta_0$ in the parameter space. We thus start with the following equality for any given $\vbeta_0$ (recalling that $\vbeta_0$ here is only for group $g$):  
-\begin{equation}
+\begin{equation*}
 \forall \vbeta,\ \vbeta_0,\quad \ell(\vbeta) = \ell(\vbeta_0)+(\vbeta - \vbeta_0)^\T\nabla \ell(\vbeta_0)+\frac{1}{2}(\vbeta - \vbeta_0)^\T \Hessian (\vbeta - \vbeta_0),
-\label{eq:TaylorExp}
-\end{equation}
+\end{equation*}
 where the gradient $\nabla \ell$ is the first total derivative of $\ell$ (evaluated at $\vbeta_0$) and $\Hessian$, the Hessian, is the second total derivative. For $\ell(\vbeta) = \frac{1}{2n}\snorm{\vR - \mX\vbeta}_2^2$, a short computation shows that the Hessian is $\Hessian = \frac{1}{n}\mX^\T \mX$.
 
 For the large-scale problems motivating this work, the matrix $\mX$ is large, so computing $\mX^\T \mX$, storing it in memory, or inverting it, is computationally prohibitive. Instead, we replace this matrix with a simpler one, $t^{-1}\mathbf{I}$, a diagonal matrix with the value of $t$ selected to be such that this dominates the Hessian (in the sense that $t^{-1}\mathbf{I} - \Hessian$ is positive definite). For our algorithm we choose the largest eigenvalue of the Hessian and use that for $t^{-1}$. Note that this eigenvalue must be computed for each group $g \in G$, but this computation is relatively simple using the power method or other techniques as implemented with \pkg{RSpectra} \citep{R-RSpectra}. This upper bound leads to the following inequality:
@@ -242,7 +241,7 @@ For the large-scale problems motivating this work, the matrix $\mX$ is large, so
 \label{eq:dominate}
 \end{equation}
 
-Replacing the loss function in the original minimization problem in Equation \eqref{eq:sparsegroupk} with the right-hand side of Equation \eqref{eq:dominate}
+Replacing the loss function in the original minimization problem in Equation\ \ref{eq:sparsegroupk} with the right-hand side of Equation\ \ref{eq:dominate}
 leads to a majorized version of the original problem
 \begin{equation}
 \label{eq:Meq}
@@ -251,10 +250,10 @@ leads to a majorized version of the original problem
 which no longer involves operations with the Hessian matrix. 
 
 
-As before, the optimal value for Equation \eqref{eq:Meq} is determined by its subgradient equation, similar to that of Equation \eqref{eq:subgrad}:
-\begin{equation}
+As before, the optimal value for Equation\ \ref{eq:Meq} is determined by its subgradient equation, similar to that of Equation\ \ref{eq:subgrad}:
+\begin{equation*}
 \frac{1}{t} \Big(\vbeta - \big(\vbeta_0 - t\nabla \ell(\vbeta_0)\big)\Big) +(1-\alpha)\lambda \mathbf{u} + \alpha \lambda \mathbf{v} = \mathbf{0},
-\end{equation}
+\end{equation*}
 with $\mathbf{u}$ and $\mathbf{v}$ as defined above. Solving this for $\vbeta$ in terms of $\vbeta_0$ results in the following expression:
 \begin{equation}
 \hat{\vbeta} = U(\vbeta_0) =
@@ -262,13 +261,13 @@ with $\mathbf{u}$ and $\mathbf{v}$ as defined above. Solving this for $\vbeta$ i
 \label{eq:updateStep}
 \end{equation}
 where $(z)_+ = \max\{z,\ 0\}$ and $S$ is the coordinate-wise soft threshold operator, on a vector $\boldsymbol\gamma$ and scalar $b$,
-\begin{equation}
+\begin{equation*}
 \label{softthresh}
 (S(\boldsymbol\gamma,b))_j = \text{sign}(\gamma_j)(|\gamma_j| - b)_+,
-\end{equation}
+\end{equation*}
 i.e., for each coordinate in the vector, it shrinks that coordinate in magnitude by the amount $b$, and sets it to zero if the magnitude of that coordinate was smaller than $b$ to begin with. It is this soft-thresholding operation that encourages within-group sparsity.
 
-An examination of Equation \eqref{eq:updateStep} shows that it is possible for the whole group to be set to zero (made inactive) due to the (hard) threshold operator $(\cdot)_+$ in the first part of the expression. It is also possible for individual components of $\vbeta^{(k)}$ to be zeroed out by the coordinate-wise (soft) threshold operator $S$. Therefore, performing this update step tends to enforce coefficient sparsity at both the group- and individual-level.
+An examination of Equation\ \ref{eq:updateStep} shows that it is possible for the whole group to be set to zero (made inactive) due to the (hard) threshold operator $(\cdot)_+$ in the first part of the expression. It is also possible for individual components of $\vbeta^{(k)}$ to be zeroed out by the coordinate-wise (soft) threshold operator $S$. Therefore, performing this update step tends to enforce coefficient sparsity at both the group- and individual-level.
 
 
 
@@ -294,32 +293,32 @@ Above, we have focused on the Gaussian linear model with $\ell(\vbeta) = \frac{1
 In the case of logistic regression, we use exactly the same procedure but with
 $\ell(\vbeta) = \frac{1}{n}\sum_{i}\log(1 + \exp\{-r_i\vx_i^\T\vbeta\})$, $\nabla \ell(\vbeta) = -\frac{1}{n}\sum_{i}y_i\vx_i^\top (1 + \exp\{-r_i\vx_i^\T\vbeta\})^{-1}$, and $\mathbf{H}(\vbeta) \preceq 4t^{-1}\mathbf{I}$. This procedure is explicitly stated in \autoref{alg:sparsegl}. For other exponential families (for example, Poisson, Gamma, or Probit regression), we provide functionality to pass an \proglang{R} `family` object. These will generally be much slower than the built-in families described above because they require using iteratively reweighted least squares rather than the majorization-minimization described here.
 
-While the procedure described so far solves Equation \eqref{eq:sparsegl} for fixed choices of $\lambda$ and $\alpha$, the data analyst does not typically know these ahead of time. Rather, we would like to solve the problem for a collection of values of $\lambda$ (and perhaps $\alpha$ as well). It turns out that the structure of this optimization problem allows for some heuristics that can perform this sequential optimization with a minimum of additional computational resources, in some cases, solving Equation \eqref{eq:sparsegl} faster for a sequence of values $\lambda_m \in \{\lambda_1,\ldots,\lambda_M\}$ than for a single choice \citep{tibshirani2012strong}. We describe our implementation of this procedure next.
+While the procedure described so far solves Equation\ \ref{eq:sparsegl} for fixed choices of $\lambda$ and $\alpha$, the data analyst does not typically know these ahead of time. Rather, we would like to solve the problem for a collection of values of $\lambda$ (and perhaps $\alpha$ as well). It turns out that the structure of this optimization problem allows for some heuristics that can perform this sequential optimization with a minimum of additional computational resources, in some cases, solving Equation\ \ref{eq:sparsegl} faster for a sequence of values $\lambda_m \in \{\lambda_1,\ldots,\lambda_M\}$ than for a single choice \citep{tibshirani2012strong}. We describe our implementation of this procedure next.
 
 
 
 
 ## Sequential strong rule and KKT conditions
 
-For any fixed value of $\lambda$, many groups of coefficient estimates will end up being equal to zero. If, somehow, we knew _which_ groups, we could completely avoid visiting them in the blockwise coordinate descent updates, and therefore avoid calculating Equation \eqref{eq:updateStep} for those groups. This would significantly speed up computations. 
+For any fixed value of $\lambda$, many groups of coefficient estimates will end up being equal to zero. If, somehow, we knew _which_ groups, we could completely avoid visiting them in the blockwise coordinate descent updates, and therefore avoid calculating Equation\ \ref{eq:updateStep} for those groups. This would significantly speed up computations. 
 
-Re-examining Equation \eqref{eq:subgrad}, we can see that the first order condition implies that, for each group $g$, any solution must satisfy
+Re-examining Equation\ \ref{eq:subgrad}, we can see that the first order condition implies that, for each group $g$, any solution must satisfy
 \begin{equation}
 \label{eq:subgrad-again}
 \snorm{S(\nabla \ell(\vbeta_g),\ \lambda\alpha)}_2 \leq (1-\alpha)\lambda.
 \end{equation}
-This is because, as $\mathbf{u}$ is the subgradient of $\snorm{\vbeta_g}_2$, $\snorm{\mathbf{u}}_2\leq 1$. Furthermore, if $\snorm{\mathbf{u}}_2 < 1$, then $\hat{\vbeta}_j = \mathbf{0}$. In the previous section, we used the sufficiency of the Karush-Kuhn-Tucker (KKT) stationarity condition to derive a solution, while Equation \eqref{eq:subgrad-again} is the necessary version. So given a potential solution, it is easy to check its validity. Unfortunately, this is not constructive. 
+This is because, as $\mathbf{u}$ is the subgradient of $\snorm{\vbeta_g}_2$, $\snorm{\mathbf{u}}_2\leq 1$. Furthermore, if $\snorm{\mathbf{u}}_2 < 1$, then $\hat{\vbeta}_j = \mathbf{0}$. In the previous section, we used the sufficiency of the Karush-Kuhn-Tucker (KKT) stationarity condition to derive a solution, while Equation\ \ref{eq:subgrad-again} is the necessary version. So given a potential solution, it is easy to check its validity. Unfortunately, this is not constructive. 
 
-The sequential strong rule \citep{tibshirani2012strong} begins from Equation \eqref{eq:subgrad-again} and makes use of the fact that we are solving for a sequence of parameters $\{\lambda_1 > \lambda_2 > \dots > \lambda_M\}$ rather than a single value. At each $\lambda_m$, we rely on the fact that we have already solved the problem at $\lambda_{m-1}$ and use this information to quickly discard many groups of predictors. Without loss of generality, for the rest of this section assume that the problem has already been solved for $\lambda_{m-1}$.
+The sequential strong rule \citep{tibshirani2012strong} begins from Equation\ \ref{eq:subgrad-again} and makes use of the fact that we are solving for a sequence of parameters $\{\lambda_1 > \lambda_2 > \dots > \lambda_M\}$ rather than a single value. At each $\lambda_m$, we rely on the fact that we have already solved the problem at $\lambda_{m-1}$ and use this information to quickly discard many groups of predictors. Without loss of generality, for the rest of this section assume that the problem has already been solved for $\lambda_{m-1}$.
 
 Define $c_g(\lambda) = S(\nabla \ell(\vbeta_g),\ \lambda\alpha)$. Now, we make the assumption that $c_g(\lambda)$ is $(1-\alpha)$-Lipschitz, i.e., that
-\begin{equation}
+\begin{equation*}
 \label{eq:lipschitz}
 \forall \lambda,\ \lambda^{\prime}\ \  \ \snorm{c_g(\lambda)-c_g(\lambda^{\prime})}_2 \leq (1-\alpha)|\lambda - \lambda'|.
-\end{equation}
+\end{equation*}
 This Lipschitz assumption appears unintuitive, and in fact, is not always true, but it turns out to be useful. 
 
-By Equation \eqref{eq:subgrad-again}, if we knew that $\snorm{c_g(\lambda_m)}_2 < (1-\alpha)\lambda_m$ then we could safely ignore it. But we already have the solution at $\lambda_{m-1}$. By the triangle inequality (first) and the Lipschitz assumption (second),
+By Equation\ \ref{eq:subgrad-again}, if we knew that $\snorm{c_g(\lambda_m)}_2 < (1-\alpha)\lambda_m$ then we could safely ignore it. But we already have the solution at $\lambda_{m-1}$. By the triangle inequality (first) and the Lipschitz assumption (second),
 $$
 \snorm{c_g(\lambda_m)}_2 \leq \snorm{c_g(\lambda_m) - c_g(\lambda_{m-1})}_2 +
 \snorm{c_g(\lambda_{m-1})}_2 \leq (1-\alpha)(\lambda_{m-1} - \lambda_m) + \snorm{c_g(\lambda_{m-1})}_2.
@@ -327,18 +326,18 @@ $$
 We want to be able to assert that
 $(1-\alpha)(\lambda_{m-1} - \lambda_m) + \snorm{c_g(\lambda_{m-1})}_2 \leq (1-\alpha)\lambda_m$, allowing us to ignore group $g$, and this assertion holds 
 precisely when
-\begin{equation}
+\begin{equation*}
 \label{eq:strong}
 \snorm{c_g(\lambda_{m-1})}_2 \leq (1-\alpha)(2\lambda_m - \lambda_{m-1}).
-\end{equation}
+\end{equation*}
 
-Applying this logic to Equation \eqref{eq:Meq} above gives the sequential strong rule for the sparse group lasso:
+Applying this logic to Equation\ \ref{eq:Meq} above gives the sequential strong rule for the sparse group lasso:
 \begin{equation}
 \label{eq:sgl-strong}
 \snorm{S\big(\nabla \ell(\vbeta_g),\ t\alpha\lambda_{m-1}\big)}_2 \leq t(1-\alpha)(2\lambda_m - \lambda_{m-1}).
 \end{equation}
 For more details in related settings, see \citet{tibshirani2012strong}.
-If Equation \eqref{eq:sgl-strong}
+If Equation\ \ref{eq:sgl-strong}
 holds, then we ignore group $g$ when solving the problem at $\lambda_m$. That is to say, when we move from $\lambda_{m-1}$ to $\lambda_m$, we first check this condition using the previously computed solution for $\hat{\vbeta}(\lambda_{m-1})$, and then perform blockwise coordinate descent, using only those groups that failed this inequality.
 
 This discarding rule is fast, because it uses the previously computed solution and a simple inequality, and in practice, it tends to accurately discard large numbers of groups. However, we should reiterate that it is possible for the strong rule to fail. The Lipschitz assumption is not a guarantee. Because of this, it is critical that, after discarding some of the groups and running the algorithm on the others, the KKT condition is checked on all discarded groups. If there are no violations, then we have the solution. 
@@ -375,7 +374,7 @@ To minimize gradient computations for groups that will eventually be determined 
 
 For many regularized prediction methods, tuning parameter selection is largely performed with cross validation. However, cross validation can be computationally expensive when the data set is large enough that the initial fit is slow. For this reason, \pkg{sparsegl} provides information criteria as well as cross validation routines.
 
-In the Gaussian linear regression model given by Equation \eqref{eq:linmod}, if $\sigma$ is
+In the Gaussian linear regression model given by Equation\ \ref{eq:linmod}, if $\sigma$ is
 unknown then a general form for a family of information criteria is given by
 \begin{equation}
   \label{eq:GICsigUnknown}
@@ -387,11 +386,11 @@ where $C_n$ depends only on $n$, $g: [0,\infty) \rightarrow \mathbb{R}$ is a fix
 The choices
 $C_n = 2/n$ or $C_n = \log(n)/n$ with $g(x) = x$ are commonly referred to as AIC \citep{Akaike1973} and BIC \citep{Schwarz1978}, respectively.  Additionally, generalized
 cross validation \citep[GCV]{golub1979generalized} is defined as
-\begin{equation}
+\begin{equation*}
 \textrm{GCV} = \frac{\frac{1}{n}\snorm{\vY-\mX\hat\vbeta}_2^2}{(1-\df/n)^2}.
 \label{eq:gcv}
-\end{equation}
-Written on the log scale, GCV takes the form of equation \eqref{eq:GICsigUnknown} with $g(x) = \log(1-x/n)$ and $C_n = -2$.
+\end{equation*}
+Written on the log scale, GCV takes the form of Equation\ \ref{eq:GICsigUnknown} with $g(x) = \log(1-x/n)$ and $C_n = -2$.
 
 The key components for all three information criteria are the negative log likelihood and the degrees of freedom. The first is simply a function of the in-sample (training) error. On the other hand, the degrees of freedom, while simple in the unregularized linear model---it is the number of parameters---is less obvious for the sparse group lasso. In general, the degress of freedom for any predictor $\hat{\vy}$ of $\vY$ is defined as \citep{Efron1986}
 $$\mathrm{df}(\hat\vy) = \frac{1}{\sigma^2}\sum_{i=1}^n\mathrm{Cov}(\vy_i,\ \hat\vy_i).$$
