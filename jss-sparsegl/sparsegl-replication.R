@@ -5,8 +5,11 @@
 
 
 #' Necessary packages
+#'
 #' install.packages(c("knitr", "ggplot2", "tibble", "SGL", "dplyr", "covidcast"))
+#'
 #' install.packages(c("scales", "tidyr", "stringr", "here"))
+#'
 #' install.packages("sparsegl")
 #
 
@@ -14,18 +17,18 @@
 ## Used in the Rmd for the pdf submission
 # knitr::opts_chunk$set(echo = TRUE, cache = TRUE, fig.path = "fig/")
 # options(prompt = 'R> ', continue = '+ ')
-library(ggplot2)
-library(tidyr)
+library("ggplot2")
+library("tidyr")
 theme_set(theme_bw(base_family = "Palatino"))
 
 
 
-## ----timing-comparison, echo=FALSE, fig.width=6, fig.height=3, fig.cap="This figure shows the time required to compute sparse group lasso solutions across a number of different problem sizes. In all cases, we use $n=500$ observations and 100 values of the tuning parameter $\\lambda$. The median is taken across 5 replications for each method and problem size. Note that both axes are on the log scale."----
-library(Matrix)
-library(tibble)
-library(SGL)
-library(sparsegl)
-library(dplyr)
+## ----timing-comparison, echo=TRUE, fig.width=6, fig.height=3, fig.cap="This figure shows the time required to compute sparse group lasso solutions across a number of different problem sizes. In all cases, we use $n=500$ observations and 100 values of the tuning parameter $\\lambda$. The median is taken across 5 replications for each method and problem size. Note that both axes are on the log scale."----
+library("Matrix")
+library("tibble")
+library("SGL")
+library("sparsegl")
+library("dplyr")
 
 nrepls <- 5
 n <- 500
@@ -110,7 +113,7 @@ y0 <- rbinom(n, 1, pr)
 
 
 ## ---- eval=TRUE, echo=FALSE--------------------------------------------------------
-# library(sparsegl)
+# library("sparsegl")
 
 
 ## ----------------------------------------------------------------------------------
@@ -166,8 +169,8 @@ ggplot(er, aes(lambda, risk, color = name)) +
 
 
 ## ----trust, echo=TRUE
-library(magrittr)
-library(splines)
+library("magrittr")
+library("splines")
 df <- 10
 data("trust_experts")
 
@@ -236,16 +239,16 @@ G <- readRDS("large-data/G.rds")
 gpf <- readRDS("large-data/Gpf.rds")
 
 # Fit and estimate risk ---------------------------------------------------
-# ~ 2.5 minutes
+# ~ 1 minutes
 system.time(fit <- sparsegl(A, Y, group = G, pf_group = gpf, asparse = 0.0))
 
 df <- estimate_risk(fit, A, approx_df = TRUE)
 # saveRDS(fit, file = "large-data/brain-fit.rds")
 # fit <- readRDS("large-data/brain-fit.rds")
 
-# This will produce a warning
-#  "is.na() applied to non-(list or vector) of type 'language'"
-# It is due to `annotate()`
+#' This will produce a warning
+#'  "is.na() applied to non-(list or vector) of type 'language'"
+#' It is due to `annotate()`, annoying, but meaningless
 plot(fit,
      y_axis = "group",
      x_axis = "penalty",
