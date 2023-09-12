@@ -111,7 +111,13 @@ Our contribution, then, is to provide a package that performs sparse group lasso
 \item Uses \pkg{dotCall64} to interface with low-level \proglang{Fortran} functions and avoid unnecessary copying as well as allow for 64-bit integers \citep[see][]{gerber2017dotcall,gerber2018dotcall};
 \item Provides information criteria as risk estimators (AIC/BIC/GCV) in addition to cross validation.
 \end{itemize}
-A comparison of features of this and related \proglang{R} packages is shown in \autoref{tab:comparison}. \autoref{fig:timing-comparison} compares the speed of the dense and sparse implementations in \pkg{sparsegl} with \pkg{SGL} across a number of different problem sizes, finding speedups of 1.5 to 2.5 orders of magnitude. In \autoref{methodology-estimation-and-prediction}, we describe the algorithmic implementation in detail, paying particular attention to the strong rule. In \autoref{example-usage}, we show how to use the package, running through an example with simulated data. \autoref{applications} demonstrates many of the
+A comparison of features of this and related \proglang{R} packages is shown in 
+\autoref{tab:comparison}. \autoref{fig:timing-comparison} compares the speed of 
+the dense and sparse implementations in \pkg{sparsegl} with \pkg{SGL} across a 
+number of different problem sizes, finding speedups of 1.5 to 2.5 orders of 
+magnitude.
+
+In \autoref{methodology-estimation-and-prediction}, we describe the algorithmic implementation in detail, paying particular attention to the strong rule. In \autoref{example-usage}, we show how to use the package, running through an example with simulated data. \autoref{applications} demonstrates many of the
 unique features of \pkg{sparsegl} in two applications.
 <!-- In Section \ref{comparisons-with-other-packages}, we compare our package to the other existing group-lasso packages, and also compare the two variants of our algorithm with each other. -->
 We summarize our contributions in \autoref{discussion}.
@@ -527,7 +533,8 @@ Additional documentation and examples are provided on the package [website](http
 
 # Applications
 
-We examine two applications for which sparse group lasso is a natural estimator. The first uses data regarding COVID-19 and trustworthiness of information sources, which is included in the package. The second uses a very large though sparse data set from neuroimaging.
+We examine two applications for which sparse group lasso is a natural estimator. The first uses data regarding COVID-19 and trustworthiness of information sources, which is included in the package. The second uses a very large though sparse data set from neuroimaging. Finally, we briefly investigate the 
+accuracy of \pkg{sparsegl} relative to \pkg{gglasso} and \pkg{CVXR}.
 
 
 ## Geographic distribution of trust in experts {#sec:trust}
@@ -596,6 +603,64 @@ plot(fit,
 Estimating the group lasso using \pkg{sparsegl} with 12 groups and 100 values of $\lambda$ required a little over 1 minute and about 6 GB of peak memory usage on an Intel i7-11700K PC with 64 GB of RAM. The previous method required nearly a day for a single value of $\lambda$. \autoref{fig:dwi-fit} displays the group norms of the 12 groups against the magnitude of the penalty.
 
 [^brain-data]: The processed data used to estimate the sparse group lasso is available at https://doi.org/10.6084/m9.figshare.20314917.
+
+## Accuracy on synthetic problems
+
+A small-scale simulated comparison illustrates that \pkg{sparsegl} is highly 
+accurate in many regimes of interest. We generate synthetic data from a linear
+model and examine the objective function for the estimated model across a range
+of $\lambda$. Specifically, we first generate the predictors $\mathbf{X}$ by
+simulating each element $x_{ij}$ i.i.d. standard Gaussian. We generate $n=100$
+observations and $p = \{50,\ 100,\ 150\}$ predictors. We use 10
+groups in all cases, with 
+$$\beta = (\underbrace{1, \ldots, 1,}_{\textrm{group } 1}\ 
+\underbrace{0, \dots, 0}_{\textrm{group } 2},\  
+\underbrace{1, \ldots, 1}_{\textrm{group } 3},\ \ldots,\ 
+\underbrace{0, \ldots, 0}_{\textrm{group } 10}).$$
+The groups are all of size $p/10$. The expected signal is then equal to $p / 2$.
+We simulate the response
+from \autoref{eq:linmod} with the variance of the noise $\epsilon$
+calibrated to produce expected signal-to-noise ratios (SNR) of $\{0.1,\ 1,\ 10\}$.
+We note that this design produces group sparsity, even groups have no
+effect on the response, but no within-group sparsity. \autoref{fig:accuracy}
+shows the results for these 9 conditions across 20 values of $\lambda$. The
+$\lambda$ range is determined automatically by \pkg{sparsegl} and reused for 
+the other packages. Note that \pkg{gglasso} is optimizing a different objective
+function than \pkg{CVXR} or \pkg{sparsegl}.
+
+```{r accuracy, echo=FALSE, warning=FALSE, message=FALSE, eval=TRUE, fig.cap="The \\% change in objective function for \\pkg{gglasso} and \\pkg{CVXR} relative to \\pkg{sparsegl}.", fig.height=4, fig.width=6}
+results <- readRDS(here::here("jss-sparsegl", "large-data", "accuracy-results.rds"))
+results <- results |>
+  tidyr::hoist("res", objective = list("obj"), lambda = list("lambda")) |>
+  tidyr::unnest(c(objective, lambda)) |>
+  mutate(`p/n` = nvars / 100) |>
+  select(-res, -seed, -nvars)
+
+library(scales)
+
+lb <- function(labels, sep = " = ") label_both(labels, TRUE, sep)
+
+results |>
+  mutate(across(sparsegl:cvxr, ~ .x / sparsegl - 1)) |>
+  mutate(sparsegl = NULL) |>
+  pivot_longer(gglasso:cvxr) |>
+  ggplot(aes(lambda, value, colour = name)) +
+  facet_grid(`p/n` ~ SNR, labeller = lb, scales = "free") +
+  geom_line() +
+  geom_hline(yintercept = 0) +
+  theme_bw() +
+  scale_colour_manual(values = c("darkblue", "orange"), name = "") +
+  theme(legend.position = "bottom") +
+  scale_x_log10(name = bquote(log(lambda)), 
+    breaks = trans_breaks("log10", function(x) 10^x),
+    labels = trans_format("log10", math_format(10^.x))
+  ) +
+  scale_y_continuous(
+    labels = scales::label_percent(),
+    name = "Change in objective relative to sparsegl"
+  )
+```
+
 
 # Discussion
 

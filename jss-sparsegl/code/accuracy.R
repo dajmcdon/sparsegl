@@ -4,9 +4,7 @@ library(CVXR)
 library(purrr)
 library(dplyr)
 
-make_problem <- function(nobs, nvars, SNR = 1,
-                         coefs = c(rep(1, 5), rep(0, 5)),
-                         seed = 12345) {
+make_problem <- function(nobs, nvars, SNR = 1, coefs, seed = 12345) {
   set.seed(seed)
   X <- matrix(rnorm(nobs * nvars), nobs, nvars)
   beta <- rep(coefs, length.out = nvars)
