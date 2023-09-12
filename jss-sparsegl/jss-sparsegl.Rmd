@@ -626,7 +626,14 @@ effect on the response, but no within-group sparsity. \autoref{fig:accuracy}
 shows the results for these 9 conditions across 20 values of $\lambda$. The
 $\lambda$ range is determined automatically by \pkg{sparsegl} and reused for 
 the other packages. Note that \pkg{gglasso} is optimizing a different objective
-function than \pkg{CVXR} or \pkg{sparsegl}.
+function than \pkg{CVXR} or \pkg{sparsegl}. Despite this discrepancy, the objective values for \pkg{gglasso} and \pkg{sparsegl} are generally quite close,
+with \pkg{gglasso} tending to be slightly higher. On the other hand \pkg{CVXR}
+is often much less accurate, especially for large values of $\lambda$. This
+divergence is due to its inability to recover exact 0 solutions, tending to 
+instead produce estimates near, but not exactly, 0. When $p=n=100$, \pkg{CVXR}
+is actually slightly more accurate. Inspecting the estimated $\widehat{\beta}$,
+it seems to have slightly less bias on the non-zero groups, producing estimates
+with slightly larger magnitude.
 
 ```{r accuracy, echo=FALSE, warning=FALSE, message=FALSE, eval=TRUE, fig.cap="The \\% change in objective function for \\pkg{gglasso} and \\pkg{CVXR} relative to \\pkg{sparsegl}.", fig.height=4, fig.width=6}
 results <- readRDS(here::here("jss-sparsegl", "large-data", "accuracy-results.rds"))
