@@ -1,11 +1,15 @@
-library(magrittr)
 library(splines)
+library(dplyr)
+library(sparsegl)
+library(tibble)
+library(ggplot2)
 df <- 10
 
+data("trust_experts", package = "sparsegl")
 trust_experts <- trust_experts %>%
   mutate(across(
     where(is.factor),
-    ~ set_attr(.x, "contrasts", contr.sum(nlevels(.x), FALSE, TRUE))
+    ~ `attr<-`(.x, "contrasts", contr.sum(nlevels(.x), FALSE, TRUE))
   ))
 
 x <- Matrix::sparse.model.matrix(
@@ -18,9 +22,9 @@ gr <- rep(seq(ncol(trust_experts) - 1), times = c(gr[!is.na(gr)], df, df))
 fit <- cv.sparsegl(x, trust_experts$trust_experts, gr)
 
 cc <- coef(fit, s = "lambda.1se")
-reg <- which(str_detect(rownames(cc), "region"))
-states <- tibble(state = rownames(cc)[reg], coef = cc[reg]) %>%
-  mutate(state = str_remove(state, "region"),
+reg <- which(substr(rownames(cc), 1, nchar("region")) == "region")
+states <- tibble(state = rownames(cc)[reg], coef = cc[reg]) |>
+  mutate(state = substring(state, nchar("region") + 1),
          state_name = tolower(covidcast::abbr_to_name(state, TRUE)))
 states_map <- map_data("state")
 g <- ggplot(states, aes(map_id = state_name)) +

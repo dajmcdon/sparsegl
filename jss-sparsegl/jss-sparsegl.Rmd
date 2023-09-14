@@ -69,13 +69,13 @@ ggplot2::theme_set(ggplot2::theme_bw(base_family = "Palatino"))
 # 
 # Note: tags are R-<pkg>
 knitr::write_bib(c("base", "devtools", "knitr", "testthat", "usethis",
-                   "rticles", "sparsegl", "glmnet", "dplyr", "magrittr",
-                   "SGL","gglasso", "msgl", "biglasso",
-                   "RSpectra", "mgcv",
+                   "rticles", "sparsegl", "glmnet", "dplyr",
+                   "SGL", "gglasso", "msgl", "biglasso",
+                   "RSpectra", "mgcv", "tidyr",
                    "ggplot2", "dotCall64","CVXR"),
                  file = "pkgs.bib")
-library(dplyr)
-library(ggplot2)
+library("dplyr")
+library("ggplot2")
 ```
 
 # Introduction
@@ -99,7 +99,6 @@ In \proglang{python} \citep{python}, \pkg{asgl} \citep{civieta2020adaptive} impl
 
 [^cvxr]: A similar implementation could be achieved in \proglang{R} using \pkg{CVXR} \citep{CVXR,R-CVXR}.
 
-<!-- The paper \citep{ida2019fast} also brings up a fast algorithm applying KKT and revised KKT checks repetitively through block coordinate descent for computing sparse group-lasso model. In this algorithm, the main feature is that the revised KKT check first searches through all groups to filter out the groups whose feature coefficients are zero, then the original KKT check confirms the actual nonzero coefficient groups among the remaining candidate active groups. The revised KKT check could remarkably reduce the time complexity, which is introduced by approximating a metric used to compare against a fixed threshold with a tight upper bound.-->
 
 Our contribution, then, is to provide a package that performs sparse group lasso, and is faster than existing implementations. In particular, \pkg{sparsegl} has the following benefits:
 \begin{itemize}
@@ -119,7 +118,6 @@ magnitude.
 
 In \autoref{methodology-estimation-and-prediction}, we describe the algorithmic implementation in detail, paying particular attention to the strong rule. In \autoref{example-usage}, we show how to use the package, running through an example with simulated data. \autoref{applications} demonstrates many of the
 unique features of \pkg{sparsegl} in two applications.
-<!-- In Section \ref{comparisons-with-other-packages}, we compare our package to the other existing group-lasso packages, and also compare the two variants of our algorithm with each other. -->
 We summarize our contributions in \autoref{discussion}.
 
 
@@ -473,7 +471,7 @@ plot(fit, y_axis = "group", x_axis = "lambda", add_legend = FALSE)
 The `coef()` and `predict()` methods give the coefficients or predicted values for a new design matrix $\widetilde{\mX}$ at the requested $\lambda$'s, potentially allowing for $\lambda$ values different from those used at the fitting stage. 
 
 ```{r, message=FALSE}
-coef(fit, s = c(0.02, 0.03))[c(1,3,25,29),]
+coef(fit, s = c(0.02, 0.03))[c(1, 3, 25, 29), ]
 predict(fit, newx = tail(X), s = fit$lambda[2:3])
 print(fit)
 ```
@@ -489,8 +487,8 @@ plot(cv_fit)
 The `coef()` and `predict()` methods work similarly to those above. The only difference being that they can additionally accept the strings `lambda.min` or `lambda.1se`, respectively the $\lambda$ that minimizes the average cross validation error and the largest $\lambda$ such that the prediction error is within 1 standard error or the minimum.
 
 ```{r}
-coef(cv_fit, s = "lambda.1se")[c(1,3,25,29),]
-predict(cv_fit, newx = tail(X), s = "lambda.min") %>% c()
+coef(cv_fit, s = "lambda.1se")[c(1, 3, 25, 29), ]
+predict(cv_fit, newx = tail(X), s = "lambda.min") |> c()
 ```
 
 For logistic regression, only a different `family` is required. Cross validation
@@ -512,22 +510,26 @@ er <- estimate_risk(fit, X)
 ```
 
 ```{r re-plot, echo=FALSE, message=FALSE, warning=FALSE, fig.width = 4, fig.height = 1.5, fig.cap="For Gaussian loss, AIC, BIC, and GCV (solid lines) along with their minima (vertical dashed lines) can be estimated."}
-library("tidyverse")
-er <- er %>% dplyr::select(-df) %>% pivot_longer(-lambda, values_to = "risk")
-err <- er %>% group_by(name) %>% summarise(lambda = lambda[which.min(risk)])
+library("dplyr")
+library("tidyr")
+er <- er |> dplyr::select(-df) |> pivot_longer(-lambda, values_to = "risk")
+err <- er |> group_by(name) |> summarise(lambda = lambda[which.min(risk)])
 ggplot(er, aes(lambda, risk, color = name)) +
   geom_line() +
-  scale_color_brewer(palette = "Dark2") +
-  geom_vline(data = err, aes(xintercept = lambda, color=name),
-             linetype="dashed", show.legend = FALSE) +
-  theme_bw() +
+  scale_colour_brewer(palette = "Dark2", name = "") +
+  geom_vline(
+    data = err, aes(xintercept = lambda, color = name),
+    linetype = "dashed", show.legend = FALSE
+  ) +
   ylab("Estimated risk") +
   xlab("Lambda") +
-  scale_x_log10() +
-  theme(legend.title = element_blank())
+  scale_x_log10() 
 ```
 
-In this simulation, the $\lambda$ that minimizes AIC is `r round(err$lambda[1],3)` while the CV minimizer is `r round(cv_fit$lambda.min,3)`. The estimated risk curves are plotted against $\lambda$ in \autoref{fig:re-plot}.
+In this simulation, the $\lambda$ that minimizes AIC is 
+`r round(err$lambda[1], 3)` while the CV minimizer is 
+`r round(cv_fit$lambda.min, 3)`. The estimated risk curves are plotted against 
+$\lambda$ in \autoref{fig:re-plot}.
 
 Additional documentation and examples are provided on the package [website](https://dajmcdon.github.io/sparsegl).
 
@@ -547,12 +549,11 @@ We regress "trust in experts" on 5 factor predictors representing month of repor
 
 ```{r trust-experts-x, eval=FALSE, echo=TRUE}
 library("dplyr")
-library("magrittr")
 library("splines")
-data("trust_experts", package="sparsegl")
+data("trust_experts", package = "sparsegl")
 trust_experts <- mutate(trust_experts, across(
   where(is.factor), 
-  ~ set_attr(.x, "contrasts", contr.sum(nlevels(.x), contrasts = FALSE))
+  ~ `attr<-`(.x, "contrasts", contr.sum(nlevels(.x), contrasts = FALSE))
 ))
 x <- Matrix::sparse.model.matrix(
   trust_experts ~ 0 + region + age + gender + raceethnicity + period +
@@ -590,14 +591,13 @@ The design matrix would occupy over 500 GB if it were dense, but since it is onl
 ```{r dwi-fit, echo=FALSE, warning=FALSE, eval=TRUE, fig.cap="The group norm of the 12 groups based on neuroanatomical structure is plotted against the magnitude of the penalty.", fig.height=2.5}
 # source("code/brains.R") takes 6 GB memory and about 1 minute, once the data is downloaded
 fit <- readRDS("large-data/brain-fit.rds")
-plot(fit, 
-     y_axis = "group", 
-     x_axis = "penalty", 
-     add_legend = FALSE) +
+plot(fit, y_axis = "group", x_axis = "penalty", add_legend = FALSE) +
   scale_y_continuous(labels = scales::label_number(scale = 1e5)) +
   coord_cartesian(c(0, 1), c(0, 5e-5), clip = "off") +
-  annotate("text", x = -.14, y = 5.2e-5, fontface = "plain",
-           label = quote(phantom(0) %*% 10^{-5}), size = 2.5)
+  annotate(
+    geom = "text", x = -.14, y = 5.2e-5, fontface = "plain",
+    label = quote(phantom(0) %*% 10^{-5}), size = 2.5
+  )
 ```
 
 Estimating the group lasso using \pkg{sparsegl} with 12 groups and 100 values of $\lambda$ required a little over 1 minute and about 6 GB of peak memory usage on an Intel i7-11700K PC with 64 GB of RAM. The previous method required nearly a day for a single value of $\lambda$. \autoref{fig:dwi-fit} displays the group norms of the 12 groups against the magnitude of the penalty.
@@ -605,6 +605,45 @@ Estimating the group lasso using \pkg{sparsegl} with 12 groups and 100 values of
 [^brain-data]: The processed data used to estimate the sparse group lasso is available at https://doi.org/10.6084/m9.figshare.20314917.
 
 ## Accuracy on synthetic problems
+
+```{r accuracy, echo=FALSE, warning=FALSE, message=FALSE, eval=TRUE, fig.cap="This figure shows \\% change in objective function for \\pkg{gglasso} and \\pkg{CVXR} relative to \\pkg{sparsegl}. The x-axis is scaled to make the $\\lambda$ range comparable across conditions.", fig.height=4, fig.width=6}
+# source("code/accuracy")
+results <- readRDS("large-data/accuracy-results.rds")
+results <- results |>
+  hoist("res", objective = list("obj"), lambda = list("lambda")) |>
+  unnest(c(objective, lambda)) |>
+  mutate(`p/n` = nvars / 100) |>
+  select(-res, -seed, -nvars)
+
+lb <- function(labels, sep = " = ") label_both(labels, TRUE, sep)
+results <- results |>
+  mutate(across(sparsegl:cvxr, ~ .x / sparsegl - 1)) |>
+  mutate(sparsegl = NULL) |>
+  rename(CVXR = cvxr) |> 
+  group_by(`p/n`, SNR) |> 
+  mutate( 
+    lambda = log10(lambda), 
+    lambda = (lambda - min(lambda)) / (max(lambda) - min(lambda))
+  )
+
+pivot_longer(results, gglasso:CVXR) |>
+  ggplot(aes(lambda, value, colour = name)) +
+  facet_grid(`p/n` ~ SNR, labeller = lb, scales = "free_y") +
+  geom_line() +
+  geom_hline(yintercept = 0) +
+  theme_bw() +
+  scale_colour_manual(values = c("darkblue", "orange"), name = "") +
+  theme(legend.position = "bottom") +
+  scale_x_continuous(
+    name = "Range of lambda, smallest → largest", 
+    breaks = c(0, .1, .22, .46,  1), 
+    labels = NULL, minor_breaks = NULL) +
+  scale_y_continuous(
+    labels = scales::label_percent(),
+    name = "Change in objective relative to sparsegl"
+  )
+```
+
 
 A small-scale simulated comparison illustrates that \pkg{sparsegl} is highly 
 accurate in many regimes of interest. We generate synthetic data from a linear
@@ -619,59 +658,31 @@ $$\beta = (\underbrace{1, \ldots, 1,}_{\textrm{group } 1}\
 \underbrace{0, \ldots, 0}_{\textrm{group } 10}).$$
 The groups are all of size $p/10$. The expected signal is then equal to $p / 2$.
 We simulate the response
-from \autoref{eq:linmod} with the variance of the noise $\epsilon$
-calibrated to produce expected signal-to-noise ratios (SNR) of $\{0.1,\ 1,\ 10\}$.
-We note that this design produces group sparsity, even groups have no
-effect on the response, but no within-group sparsity. \autoref{fig:accuracy}
-shows the results for these 9 conditions across 20 values of $\lambda$. The
-$\lambda$ range is determined automatically by \pkg{sparsegl} and reused for 
-the other packages. Note that \pkg{gglasso} is optimizing a different objective
-function than \pkg{CVXR} or \pkg{sparsegl}. Despite this discrepancy, the objective values for \pkg{gglasso} and \pkg{sparsegl} are generally quite close,
-with \pkg{gglasso} tending to be slightly higher. On the other hand \pkg{CVXR}
+from Equation \ref{eq:linmod} with $\sigma$
+chosen to produce expected signal-to-noise ratios (SNR) of $\{0.1,\ 1,\ 10\}$.
+We note that this design produces group sparsity, even-numbered groups have no
+effect on the response, but it does not produce within-group sparsity.
+\autoref{fig:accuracy}
+shows the results for the 9 combinations of these conditions across 20 values 
+of $\lambda$, whose values are determined automatically by \pkg{sparsegl} 
+and reused for the other packages. Note that \pkg{gglasso} is optimizing a
+different objective
+function than \pkg{CVXR} or \pkg{sparsegl} which both use $\alpha = 0.2$. Despite this discrepancy, the objective values for \pkg{gglasso} and \pkg{sparsegl} are generally quite close,
+with \pkg{gglasso} tending to be slightly higher, as expected, but by no more 
+than 0.75%. On the other hand \pkg{CVXR}
 is often much less accurate, especially for large values of $\lambda$. This
 divergence is due to its inability to recover exact 0 solutions, tending to 
-instead produce estimates near, but not exactly, 0. When $p=n=100$, \pkg{CVXR}
-is actually slightly more accurate. Inspecting the estimated $\widehat{\beta}$,
+instead produce estimates nearly, but not exactly, equal to 0. When $p=n=100$, \pkg{CVXR}
+is actually slightly more accurate, especially for large or small $\lambda$. 
+Inspecting the estimated $\widehat{\beta}$,
 it seems to have slightly less bias on the non-zero groups, producing estimates
 with slightly larger magnitude.
 
-```{r accuracy, echo=FALSE, warning=FALSE, message=FALSE, eval=TRUE, fig.cap="The \\% change in objective function for \\pkg{gglasso} and \\pkg{CVXR} relative to \\pkg{sparsegl}.", fig.height=4, fig.width=6}
-results <- readRDS(here::here("jss-sparsegl", "large-data", "accuracy-results.rds"))
-results <- results |>
-  tidyr::hoist("res", objective = list("obj"), lambda = list("lambda")) |>
-  tidyr::unnest(c(objective, lambda)) |>
-  mutate(`p/n` = nvars / 100) |>
-  select(-res, -seed, -nvars)
-
-library(scales)
-
-lb <- function(labels, sep = " = ") label_both(labels, TRUE, sep)
-
-results |>
-  mutate(across(sparsegl:cvxr, ~ .x / sparsegl - 1)) |>
-  mutate(sparsegl = NULL) |>
-  pivot_longer(gglasso:cvxr) |>
-  ggplot(aes(lambda, value, colour = name)) +
-  facet_grid(`p/n` ~ SNR, labeller = lb, scales = "free") +
-  geom_line() +
-  geom_hline(yintercept = 0) +
-  theme_bw() +
-  scale_colour_manual(values = c("darkblue", "orange"), name = "") +
-  theme(legend.position = "bottom") +
-  scale_x_log10(name = bquote(log(lambda)), 
-    breaks = trans_breaks("log10", function(x) 10^x),
-    labels = trans_format("log10", math_format(10^.x))
-  ) +
-  scale_y_continuous(
-    labels = scales::label_percent(),
-    name = "Change in objective relative to sparsegl"
-  )
-```
 
 
 # Discussion
 
-We developed this package for solving sparse group lasso optimization problems using group $\ell_2$ and $\ell_1$ penalties with an eye toward computational efficiency for very large, potentially sparse design matrices. This efficiency is achieved through a customized \proglang{Fortran} implementation, avoidance of deep copy behaviour, and the use of sequential strong rules for the regularization parameter. We also provide tuning parameter selection without the need for refitting inherent in cross-validation and enable some simple extensions such as differential weights in the $\ell_1$ penalty and boundary constraints on the coefficients. 
+We developed this package for solving sparse group lasso optimization problems using group $\ell_2$ and $\ell_1$ penalties with an eye toward computational efficiency for very large, potentially sparse design matrices. This efficiency is achieved through a customized \proglang{Fortran} implementation, avoidance of deep copy behaviour, and the use of sequential strong rules for the regularization parameter. We also provide heuristics for tuning parameter selection without the need for refitting inherent in cross-validation and enable some simple extensions such as differential weights in the $\ell_1$ penalty and boundary constraints on the coefficients. 
 
 # Acknowledgements {.unnumbered}
 

@@ -92,43 +92,10 @@ make_and_run <- function(nvars, SNR, nobs = 100, ngroups = 10, seed = 12345) {
 
 design <- tidyr::expand_grid(nvars = nvars, SNR = SNR, seed = 12345)
 
-# runs for about 5 minutes
+# runs for about 1 minute
 results <- design |>
   rowwise() |>
   mutate(res = list(make_and_run(nvars, SNR, nobs, ngroups, seed = seed)))
 
 
 saveRDS(results, here::here("jss-sparsegl", "large-data", "accuracy-results.rds"))
-
-
-# plotting ----------------------------------------------------------------
-
-results <- readRDS(here::here("jss-sparsegl", "large-data", "accuracy-results.rds"))
-results <- results |>
-  tidyr::hoist("res", objective = list("obj"), lambda = list("lambda")) |>
-  tidyr::unnest(c(objective, lambda)) |>
-  mutate(`p/n` = nvars / 100) |>
-  select(-res, -seed, -nvars)
-
-library(ggplot2)
-library(scales)
-
-results |>
-  mutate(across(sparsegl:cvxr, ~ .x / sparsegl - 1)) |>
-  mutate(sparsegl = NULL) |>
-  pivot_longer(gglasso:cvxr) |>
-  ggplot(aes(lambda, value, colour = name)) +
-  facet_grid(`p/n` ~ SNR, labeller = label_both, scales = "free") +
-  geom_line() +
-  geom_hline(yintercept = 0) +
-  theme_bw() +
-  scale_colour_manual(values = c("darkblue", "orange"), name = "") +
-  theme(legend.position = "bottom") +
-  scale_x_log10(
-    breaks = trans_breaks("log10", function(x) 10^x),
-    labels = trans_format("log10", math_format(10^.x))
-  ) +
-  scale_y_continuous(
-    labels = scales::label_percent(),
-    name = "Change in objective relative to sparsegl"
-  )
