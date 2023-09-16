@@ -2,7 +2,7 @@ Type: Package
 Package: sparsegl
 Title: Sparse Group Lasso
 Version: 1.0.1
-Date: 2022-12-05
+Date: 2023-01-27
 Authors@R: c(
     person("Daniel J.", "McDonald", , "daniel@stat.ubc.ca", role = c("aut", "cre")),
     person("Xiaoxuan", "Liang", , "xiaoxuan.liang@stat.ubc.ca", role = "aut"),
@@ -44,6 +44,7 @@ Imports:
 Suggests: 
     dplyr,
     glmnet,
+    gglasso,
     knitr,
     markdown,
     rmarkdown,
@@ -56,4 +57,4 @@ Encoding: UTF-8
 LazyData: true
 NeedsCompilation: yes
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.2.2
+RoxygenNote: 7.2.3

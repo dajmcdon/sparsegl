@@ -1,34 +1,33 @@
-#' _Note on replication_
+#' **Note on replication**
+#' _14 September 2023_
 #'
 #' This file will reproduce all results, but downloading the large brain data
 #' and running the timing simulation at the beginning takes some time/memory.
-
-
+#'
+#'
 #' Necessary packages
 #'
-#' install.packages(c("knitr", "ggplot2", "tibble", "SGL", "dplyr", "covidcast"))
+#' install.packages(c("ggplot2", "tidyr", "dplyr", "tibble", "SGL", "sparsegl"))
 #'
-#' install.packages(c("scales", "tidyr", "stringr", "here"))
-#'
-#' install.packages("sparsegl")
-#
+#' install.packages(c("CVXR", "purrr", "gglasso"))
 
-## ---- setup, include=FALSE----------------------------------------------------
-## Used in the Rmd for the pdf submission
-# knitr::opts_chunk$set(echo = TRUE, cache = TRUE, fig.path = "fig/")
-# options(prompt = 'R> ', continue = '+ ')
+## The following are used in the .Rmd for the pdf submission
 library("ggplot2")
 library("tidyr")
+library("dplyr")
 theme_set(theme_bw(base_family = "Palatino"))
 
 
 
-## ----timing-comparison, echo=TRUE, fig.width=6, fig.height=3, fig.cap="This figure shows the time required to compute sparse group lasso solutions across a number of different problem sizes. In all cases, we use $n=500$ observations and 100 values of the tuning parameter $\\lambda$. The median is taken across 5 replications for each method and problem size. Note that both axes are on the log scale."----
+#' **Timing comparison**
+#'
+#'
+#'
 library("Matrix")
 library("tibble")
 library("SGL")
 library("sparsegl")
-library("dplyr")
+
 
 nrepls <- 5
 n <- 500
@@ -38,16 +37,18 @@ b <- c(rep(1, 5), rep(-1, 5), c(-1,-1,0,0,0), c(1,1,0,0,0), rep(1, 5),
 s <- .1
 gr <- rep(1:(max(p) / 5), each = 5)
 x <- matrix(rnorm(n*max(p)), nrow = n)
+
 x[as.logical(rbinom(n*max(p), 1, 1 - s))] <- 0
 xsp <- Matrix(x)
 mu <- sapply(p, function(z) x[ ,1:z] %*% rep(b, length.out = z) / sqrt(z))
+# prob <- 1 / (1 + exp(-mu))
 
 signal <- sqrt(colSums(mu^2))
 noise_sd <- sqrt(signal)
 
 y <- mu + rnorm(n*length(p), sd = rep(noise_sd, each = n))
+
 res <- tibble(method = "a", time = proc.time()["elapsed"], .rows = 0)
-#' takes ~15 minutes on a 2020 Macbook Air M1, OS 12.6, R 4.2.2
 for (i in seq_along(p)) {
   pp <- seq(p[i])
   dat <- list(y = y[ ,i], x = x[ ,pp])
@@ -55,11 +56,16 @@ for (i in seq_along(p)) {
   g <- gr[pp]
   for (j in seq(nrepls)) {
     s1 <- system.time(
-      SGL(dat, nlam = 100, alpha = 0.05, index = g, standardize = FALSE))
+      SGL(dat, nlam = 100, alpha = 0.05, index = g, standardize = FALSE)
+    )
     res <- add_row(res, method = "SGL", time = s1["elapsed"])
-    s2 <- system.time(sparsegl(dat$x, dat$y, g, standardize = FALSE))
+    s2 <- system.time(
+      sparsegl(dat$x, dat$y, g, standardize = FALSE)
+    )
     res <- add_row(res, method = "sparsegl", time = s2["elapsed"])
-    s3 <- system.time(sparsegl(xxsp, dat$y, g, standardize = FALSE))
+    s3 <- system.time(
+      sparsegl(xxsp, dat$y, g, standardize = FALSE)
+    )
     res <- add_row(res, method = "sparsegl_sp", time = s3["elapsed"])
     # print(paste("Done with p = ", p[i], "repl = ", j))
   }
@@ -67,11 +73,11 @@ for (i in seq_along(p)) {
 
 res$p <- rep(p, each = nrepls * 3)
 if (!dir.exists("large-data")) dir.create("large-data")
-# saveRDS(res, "large-data", "sparsegl-timing.rds"))
+# saveRDS(res, "large-data/sparsegl-timing.rds")
 
-# res <- readRDS(here::here("large-data", "sparsegl-timing.rds"))
-res <- res %>%
-  group_by(method, p) %>%
+# res <- readRDS("large-data/sparsegl-timing.rds")
+res <- res |>
+  group_by(method, p) |>
   summarise(time = median(time), .groups = "drop")
 p <- unique(res$p)
 better_labs <- c(
@@ -88,15 +94,18 @@ ggplot(res, aes(p, time, colour = method)) +
                 breaks = p) +
   scale_colour_viridis_d(
     begin = .1, end = .9, name = "Method",
-    labels = better_labs) +
-  theme_bw()
+    labels = better_labs)
 
 
-## ----install, eval=FALSE, echo=TRUE------------------------------------------------
+#' **Simple usage example**
+#'
+#'
+## ----install, eval=FALSE, echo=TRUE--------------------------------------------------
 ## install.packages("sparsegl")
+## library("sparsegl")
 
 
-## ---- data-simulation--------------------------------------------------------------
+## ---- data-simulation----------------------------------------------------------------
 set.seed(1010)
 n <- 100
 p <- 200
@@ -112,36 +121,33 @@ pr <- 1 / (1 + exp(-X %*% beta))
 y0 <- rbinom(n, 1, pr)
 
 
-## ---- eval=TRUE, echo=FALSE--------------------------------------------------------
-# library("sparsegl")
 
-
-## ----------------------------------------------------------------------------------
+## ------------------------------------------------------------------------------------
 fit <- sparsegl(X, y, group = groups)
 
 
-## ----coef-trace, fig.width = 4, fig.height = 3, fig.cap="Coefficient trace plots produced with the \\texttt{plot()} method.", fig.show='hold', out.width="45%"----
+## ----coef-trace
 plot(fit, y_axis = "coef", x_axis = "penalty", add_legend = FALSE)
 plot(fit, y_axis = "group", x_axis = "lambda", add_legend = FALSE)
 
 
-## ---- message=FALSE----------------------------------------------------------------
-coef(fit, s = c(0.02, 0.03))[c(1,3,25,29),] # display a few
+## ----
+coef(fit, s = c(0.02, 0.03))[c(1, 3, 25, 29), ]
 predict(fit, newx = tail(X), s = fit$lambda[2:3])
 print(fit)
 
 
-## ----cv-plot, fig.width = 4, fig.height = 2, fig.cap = "Cross validation error produced by the \\texttt{plot()} method for a \\texttt{cv.sparsegl} object."----
+## ----
 cv_fit <- cv.sparsegl(X, y, groups, nfolds = 15)
 plot(cv_fit)
 
 
-## ----------------------------------------------------------------------------------
-coef(cv_fit, s = "lambda.1se")[c(1,3,25,29),]
-predict(cv_fit, newx = tail(X), s = "lambda.min") %>% c()
+## -----
+coef(cv_fit, s = "lambda.1se")[c(1, 3, 25, 29), ]
+predict(cv_fit, newx = tail(X), s = "lambda.min") |> c()
 
 
-## ----logitres, fig.width = 4, fig.height = 2, fig.cap="Cross validation error for logistic regression produced by the \\texttt{plot()} method using misclassification error on the held-out set."----
+## -----
 fit_logit <- sparsegl(X, y0, groups, family = "binomial")
 cv_fit_logit <- cv.sparsegl(
   X, y0, groups, family = "binomial", pred.loss = "misclass"
@@ -149,35 +155,36 @@ cv_fit_logit <- cv.sparsegl(
 plot(cv_fit_logit, log_axis = "none")
 
 
-## ----risk-estimate, fig.width = 4, fig.height = 2----------------------------------
+## ----
 er <- estimate_risk(fit, X)
 
 
-## ----re-plot, echo=FALSE, message=FALSE, warning=FALSE, fig.width = 4, fig.height = 2, fig.cap="AIC, BIC, and GCV (solid lines) along with their minima (vertical dashed lines)."----
-er <- er %>% dplyr::select(-df) %>% pivot_longer(-lambda, values_to = "risk")
-err <- er %>% group_by(name) %>% summarise(lambda = lambda[which.min(risk)])
+## ----re-plot
+er <- er |> dplyr::select(-df) |> pivot_longer(-lambda, values_to = "risk")
+err <- er |> group_by(name) |> summarise(lambda = lambda[which.min(risk)])
 ggplot(er, aes(lambda, risk, color = name)) +
   geom_line() +
-  scale_color_brewer(palette = "Dark2") +
-  geom_vline(data = err, aes(xintercept = lambda, color=name),
-             linetype="dashed", show.legend = FALSE) +
-  theme_bw() +
+  scale_colour_brewer(palette = "Dark2", name = "") +
+  geom_vline(
+    data = err, aes(xintercept = lambda, color = name),
+    linetype = "dashed", show.legend = FALSE
+  ) +
   ylab("Estimated risk") +
   xlab("Lambda") +
-  scale_x_log10() +
-  theme(legend.title = element_blank())
+  scale_x_log10()
 
-
-## ----trust, echo=TRUE
-library("magrittr")
+#' **Trust in experts**
+#'
+#'
+#'
 library("splines")
 df <- 10
-data("trust_experts")
 
+data("trust_experts", package = "sparsegl")
 trust_experts <- trust_experts %>%
   mutate(across(
     where(is.factor),
-    ~ set_attr(.x, "contrasts", contr.sum(nlevels(.x), FALSE, TRUE))
+    ~ `attr<-`(.x, "contrasts", contr.sum(nlevels(.x), FALSE, TRUE))
   ))
 
 x <- Matrix::sparse.model.matrix(
@@ -187,13 +194,12 @@ x <- Matrix::sparse.model.matrix(
 
 gr <- sapply(trust_experts, function(x) ifelse(is.factor(x), nlevels(x), NA))
 gr <- rep(seq(ncol(trust_experts) - 1), times = c(gr[!is.na(gr)], df, df))
-# ~2 minutes of runtime
 fit <- cv.sparsegl(x, trust_experts$trust_experts, gr)
 
 cc <- coef(fit, s = "lambda.1se")
-reg <- which(stringr::str_detect(rownames(cc), "region"))
-states <- tibble(state = rownames(cc)[reg], coef = cc[reg]) %>%
-  mutate(state = stringr::str_remove(state, "region"),
+reg <- which(substr(rownames(cc), 1, nchar("region")) == "region")
+states <- tibble(state = rownames(cc)[reg], coef = cc[reg]) |>
+  mutate(state = substring(state, nchar("region") + 1),
          state_name = tolower(covidcast::abbr_to_name(state, TRUE)))
 states_map <- map_data("state")
 ggplot(states, aes(map_id = state_name)) +
@@ -211,12 +217,10 @@ ggplot(states, aes(map_id = state_name)) +
 
 
 
-## ----dwi-model-description, out.width="85%", fig.cap="Pictorial representation illustrating how the streamlines and voxels are converted from a diffusion-weighted image to a linear model. Each voxel is measured on 90 angles, so it occupies 90 rows in the data. When a streamline (column of $\\mathbf{X}$) passes through a voxel, the values within that voxel are given by a physical model based on the direction of passage. Otherwise, if the streamline does not cross the voxel, the respective rows are zero.", echo=FALSE----
-# knitr::include_graphics("fig/model-description.pdf")
-
-
-## ----dwi-fit, echo=FALSE, warning=FALSE, eval=TRUE, fig.cap="The group norm of the 12 groups based on neuroanatomical structure against the magnitude of the penalty. The fit was produced using \\texttt{sparsegl()} to estimate the group lasso ($\\alpha=0$).", fig.height=3----
-## Download and load brain data ---------------------------------------------------------
+#' **Brain analysis**
+#'
+#'
+#'
 download <- function(url, path) {
   file.exists(path) || download.file(url, path, mode = 'wb')
   cat("Done.\n")
@@ -238,8 +242,8 @@ Y <- readRDS("large-data/Y.rds")
 G <- readRDS("large-data/G.rds")
 gpf <- readRDS("large-data/Gpf.rds")
 
-# Fit and estimate risk ---------------------------------------------------
-# ~ 1 minutes
+
+#' ~ 1 minutes
 system.time(fit <- sparsegl(A, Y, group = G, pf_group = gpf, asparse = 0.0))
 
 df <- estimate_risk(fit, A, approx_df = TRUE)
@@ -249,13 +253,140 @@ df <- estimate_risk(fit, A, approx_df = TRUE)
 #' This will produce a warning
 #'  "is.na() applied to non-(list or vector) of type 'language'"
 #' It is due to `annotate()`, annoying, but meaningless
-plot(fit,
-     y_axis = "group",
-     x_axis = "penalty",
-     add_legend = FALSE) +
+plot(fit, y_axis = "group", x_axis = "penalty", add_legend = FALSE) +
   scale_y_continuous(labels = scales::label_number(scale = 1e5)) +
   coord_cartesian(c(0, 1), c(0, 5e-5), clip = "off") +
-  annotate("text", x = -.14, y = 5.2e-5, fontface = "plain",
-           label = quote(phantom(0) %*% 10^{-5}), size = 2.5)
+  annotate(
+    geom = "text", x = -.14, y = 5.2e-5, fontface = "plain",
+    label = quote(phantom(0) %*% 10^{-5}), size = 2.5
+  )
+
+#' **Accuracy analysis**
+#'
+#'
+#'
+library("CVXR")
+library("purrr")
+library("gglasso")
+
+SNR <- c(.1, 1, 10)
+nobs <- 100
+ngroups <- 10
+nvars <- c(50, 100, 150)
+nlambdas <- 20
+
+make_problem <- function(nobs, nvars, SNR = 1, coefs, seed = 12345) {
+  set.seed(seed)
+  X <- matrix(rnorm(nobs * nvars), nobs, nvars)
+  beta <- rep(coefs, length.out = nvars)
+  mu <- drop(X %*% beta)
+  noise_sd <- sqrt(sum(beta^2)) / SNR # in expectation
+  epsilon <- rnorm(nobs, 0, noise_sd)
+  y <- mu + epsilon
+  list(y = y, mu = mu, epsilon = epsilon, beta = beta, X = X, seed = seed)
+}
+
+create_algos <- function(
+    X, y, groups, asparse = 0.05, nlambdas = 20, lambdas = NULL
+) {
+  bn <- max(groups)
+  ngroups <- length(groups) / bn
+  pfg <- rep(1, bn)
+  spgl <- sparsegl(
+    X, y, groups, lambda = lambdas,
+    nlambda = nlambdas, asparse = asparse,
+    standardize = FALSE, pf_group = pfg, intercept = FALSE)
+  lambdas <- spgl$lambda
+  ggl <- gglasso(X, y, groups, lambda = lambdas, pf = pfg, intercept = FALSE)
+
+  # CVXR implementation, requires same-size groups
+  beta <- Variable(ncol(X))
+  loss <- sum((y - X %*% beta)^2) / (2 * nrow(X))
+  pen <- function(beta, asparse) {
+    l1 <- p_norm(beta, 1)
+    l2 <- sum_entries(p_norm(reshape_expr(beta, c(bn, ngroups)), 2, axis = 2))
+    asparse * l1 + (1 - asparse) * l2
+  }
+  cvx_temp <- sapply(lambdas, function(lambda) {
+    obj <- loss + lambda * pen(beta, asparse)
+    prob <- Problem(Minimize(obj))
+    res <- solve(prob)
+    res$getValue(beta)
+  })
+  betahat <- list(
+    sparsegl = as.matrix(spgl$beta),
+    gglasso = ggl$beta,
+    CVXR = cvx_temp
+  )
+  muhat <- map(betahat, \(b) X %*% b)
+  loss <- map(muhat, \(z) colMeans((y - z)^2) / 2) |> bind_cols()
+  penalty <- map(
+    betahat,
+    \(b) lambdas * apply(b, 2, sp_group_norm, gr = groups, asparse = asparse)
+  ) |>
+    bind_cols()
+  obj <- loss + penalty
+  list(
+    obj = obj, loss = loss, penalty = penalty, lambda = lambdas,
+    betahat = betahat
+  )
+}
+
+make_and_run <- function(nvars, SNR, nobs = 100, ngroups = 10, seed = 12345) {
+  stopifnot(nvars %% ngroups == 0)
+  stopifnot(ngroups %% 2 == 0)
+  cat("nvars = ", nvars, ", SNR = ", SNR, "\n")
+  grp_size <- nvars / ngroups
+  gr <- rep(1:ngroups, each = grp_size)
+  prob <- make_problem(
+    nobs, nvars, SNR,
+    coefs = rep(c(1, 0), each = grp_size)
+  )
+  out <- with(prob, create_algos(X, y, gr, nlambdas = nlambdas))
+  out
+}
+
+design <- expand_grid(nvars = nvars, SNR = SNR, seed = 12345)
+
+# runs for about 1 minute
+results <- design |>
+  rowwise() |>
+  mutate(res = list(make_and_run(nvars, SNR, nobs, ngroups, seed = seed)))
+
+# saveRDS(results, "large-data/accuracy-results.rds")
+
+# results <- readRDS("large-data/accuracy-results.rds")
+results <- results |>
+  hoist("res", objective = list("obj"), lambda = list("lambda")) |>
+  unnest(c(objective, lambda)) |>
+  mutate(`p/n` = nvars / 100) |>
+  select(-res, -seed, -nvars)
+
+lb <- function(labels, sep = " = ") label_both(labels, TRUE, sep)
+results <- results |>
+  mutate(across(sparsegl:CVXR, ~ .x / sparsegl - 1)) |>
+  mutate(sparsegl = NULL) |>
+  group_by(`p/n`, SNR) |>
+  mutate(
+    lambda = log10(lambda),
+    lambda = (lambda - min(lambda)) / (max(lambda) - min(lambda))
+  )
+
+pivot_longer(results, gglasso:CVXR) |>
+  ggplot(aes(lambda, value, colour = name)) +
+  facet_grid(`p/n` ~ SNR, labeller = lb, scales = "free_y") +
+  geom_line() +
+  geom_hline(yintercept = 0) +
+  theme_bw() +
+  scale_colour_manual(values = c("darkblue", "orange"), name = "") +
+  theme(legend.position = "bottom") +
+  scale_x_continuous(
+    name = "Range of lambda, smallest → largest",
+    breaks = c(0, .1, .22, .46,  1),
+    labels = NULL, minor_breaks = NULL) +
+  scale_y_continuous(
+    labels = scales::label_percent(),
+    name = "Change in objective relative to sparsegl"
+  )
 
 sessionInfo()
