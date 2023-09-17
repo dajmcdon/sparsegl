@@ -76,15 +76,16 @@ cv.sparsegl <- function(
   # not allowed for some families
   pred.loss <- match.arg(pred.loss)
   if (pred.loss == "misclass") {
-    if (fam$check == "char" && fam$family != bin) {
+    if (fam$check == "char" && fam$family != "binomial") {
       cli::cli_abort(
         "`pred.loss` cannot be {.val {pred.loss}} unless `family` is {.val {'binomial'}}."
       )
     }
-    if (fam$check == "fun" && fam$family$family != "binomial") {
+    if (fam$check == "fam" && fam$family$family != "binomial") {
       cli::cli_abort("`pred.loss` cannot be {.val {pred.loss}} unless `family` is {.fn stats::binomial}.")
     }
   }
+
   N <- nrow(x)
   ###Fit the model once to get dimensions etc of output
   y <- drop(y)
@@ -139,7 +140,7 @@ cverror.lsspgl <- function(
     fullfit, outlist, lambda, x, y, foldid,
     pred.loss = c("default", "mse", "deviance", "mae"),
     ...) {
-  rlang::check_dots_empty()
+
   typenames <- c(default = "Mean squared error", mse = "Mean squared error",
                  deviance = "Mean squared error", mae = "Mean absolute error")
   pred.loss <- match.arg(pred.loss)
@@ -167,7 +168,7 @@ cverror.logitspgl <- function(
     fullfit, outlist, lambda, x, y, foldid,
     pred.loss = c("default", "mse", "deviance", "mae", "misclass"),
     ...) {
-  rlang::check_dots_empty()
+
   typenames <- c(default = "Binomial deviance", mse = "Mean squared error",
                  deviance = "Binomial deviance", mae = "Mean absolute error",
                  misclass = "Missclassification error")
@@ -207,9 +208,8 @@ cverror.logitspgl <- function(
 #' @export
 cverror.irlsspgl <- function(
     fullfit, outlist, lambda, x, y, foldid,
-    pred.loss = c("default", "mse", "deviance", "mae"),
-    weights, ...) {
-  rlang::check_dots_empty()
+    pred.loss = c("default", "mse", "deviance", "mae", "misclass"),
+    weights = NULL, ...) {
   typenames <- c(default = "Deviance", mse = "Mean squared error",
                  deviance = "Deviance", mae = "Mean absolute error")
   pred.loss <- match.arg(pred.loss)
@@ -231,15 +231,17 @@ cverror.irlsspgl <- function(
     pred.loss,
     mse = (y - predmat)^2,
     mae = abs(y - predmat),
+    misclass = y != ifelse(predmat > 0.5, 1, 0),
     apply(predmat, 2, dev_fun)
   )
+
   N <- length(y) - apply(is.na(predmat), 2, sum)
-  if (is.null(weights)) weights <- rep(1, nrow(cvm))
-  cvm <- apply(cvraw, 2, weighted.mean, na.rm = TRUE, w = weights)
+  if (is.null(weights)) weights <- rep(1, nrow(cvraw))
+  cvm <- apply(cvraw, 2, stats::weighted.mean, na.rm = TRUE, w = weights)
   cvsd <- sqrt(
     apply(
       scale(cvraw, cvm, FALSE)^2,
-      2, weighted.mean, w = weights, NA.RM = TRUE
+      2, stats::weighted.mean, w = weights, NA.RM = TRUE
     ) / (N - 1)
   )
   list(cvm = cvm, cvsd = cvsd, name = typenames[pred.loss])

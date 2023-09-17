@@ -284,7 +284,7 @@ sparsegl <- function(
   # call R sub-function
   fam <- validate_family(family)
   if (fam$check == "char") {
-    family <- match.arg(fam$family)
+    family <- match.arg(family)
     if (!is.null(weights)) {
       cli::cli_warn(c(
         "Currently, `weights` are only supported when `family` has class {.cls family}.",
