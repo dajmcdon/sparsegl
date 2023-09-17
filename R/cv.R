@@ -76,13 +76,14 @@ cv.sparsegl <- function(
   # not allowed for some families
   pred.loss <- match.arg(pred.loss)
   if (pred.loss == "misclass") {
-    if (fam$check == "char" && fam$family != "binomial") {
-      cli::cli_abort(
-        "`pred.loss` cannot be {.val {pred.loss}} unless `family` is {.val {'binomial'}}."
-      )
-    }
-    if (fam$check == "fam" && fam$family$family != "binomial") {
-      cli::cli_abort("`pred.loss` cannot be {.val {pred.loss}} unless `family` is {.fn stats::binomial}.")
+    bugger <- FALSE
+    if (fam$check == "char") if (fam$family != "binomial") bugger <- TRUE
+    if (fam$check == "fam") if (fam$family$family != "binomial") bugger <- TRUE
+    if (bugger) {
+      cli::cli_abort(c(
+        "When `pred.loss` is {.val {pred.loss}}, `family` must be either:",
+        `!` = "{.val {'binomial'}}, or {.fn stats::binomial}."
+      ))
     }
   }
 
