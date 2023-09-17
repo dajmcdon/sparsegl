@@ -266,8 +266,9 @@ sparsegl <- function(
   storage.mode(lower_bnd) <- "double"
 
   # call R sub-function
-  if (is.character(family)) {
-    family <- match.arg(family)
+  fam <- validate_family(family)
+  if (fam$check == "char") {
+    family <- match.arg(fam$family)
     fit <- switch(
       family,
       gaussian = sgl_ls(
@@ -279,12 +280,13 @@ sparsegl <- function(
         dfmax, pmax, nlam, flmin, ulam, eps, maxit, vnames, group, intr,
         as.double(asparse), standardize, lower_bnd, upper_bnd)
     )
-  } else {
+  }
+  if (fam$check == "fam") {
     fit <- sgl_irwls(
       bn, bs, ix, iy, nobs, nvars, x, y, pf_group, pf_sparse,
       dfmax, pmax, nlam, flmin, ulam, eps, maxit, vnames, group, intr,
       as.double(asparse), standardize, lower_bnd, upper_bnd, weights,
-      offset, family, trace_it, warm
+      offset, fam$family, trace_it, warm
     )
   }
 
