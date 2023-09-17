@@ -285,6 +285,18 @@ sparsegl <- function(
   fam <- validate_family(family)
   if (fam$check == "char") {
     family <- match.arg(fam$family)
+    if (!is.null(weights)) {
+      cli::cli_warn(c(
+        "Currently, `weights` are only supported when `family` has class {.cls family}.",
+        i = "Estimating unweighted sparse group lasso. See {.fn sparsegl::sparsegl}."
+      ))
+    }
+    if (!is.null(offset)) {
+      cli::cli_warn(c(
+        "Currently, `offset` is only supported when `family` has class {.cls family}.",
+        i = "Estimating sparse group lasso without any offset. See {.fn sparsegl::sparsegl}."
+      ))
+    }
     fit <- switch(
       family,
       gaussian = sgl_ls(
