@@ -66,25 +66,40 @@ cv.sparsegl <- function(
     x, y, group = NULL, family = c("gaussian", "binomial"),
     lambda = NULL,
     pred.loss = c("default", "mse", "deviance", "mae", "misclass"),
-    nfolds = 10, foldid = NULL, ...) {
+    nfolds = 10, foldid = NULL,
+    weights = NULL, offset = NULL,
+    ...) {
 
-  if (is.character(family)) family <- match.arg(family)
-  else validate_family(family)
+  fam <- validate_family(family)
 
+
+  # not allowed for some families
   pred.loss <- match.arg(pred.loss)
-  if (pred.loss == "misclass" && !(is.character(family) && family == "binomial"))
-    cli::cli_abort('`pred.loss = "misclass"` only works if `family = "binomial"`.')
+  if (pred.loss == "misclass") {
+    bugger <- FALSE
+    if (fam$check == "char") if (fam$family != "binomial") bugger <- TRUE
+    if (fam$check == "fam") if (fam$family$family != "binomial") bugger <- TRUE
+    if (bugger) {
+      cli::cli_abort(c(
+        "When `pred.loss` is {.val {pred.loss}}, `family` must be either:",
+        `!` = "{.val {'binomial'}}, or {.fn stats::binomial}."
+      ))
+    }
+  }
+
   N <- nrow(x)
   ###Fit the model once to get dimensions etc of output
   y <- drop(y)
   sparsegl.object <- sparsegl(x, y, group, lambda = lambda, family = family,
-                              ...)
+                              weights = weights, offset = offset, ...)
   lambda <- sparsegl.object$lambda
   # predict -> coef
   if (is.null(foldid)) foldid <- sample(rep(seq(nfolds), length = N))
   else nfolds <- max(foldid)
   if (nfolds < 2) {
-    cli::cli_abort("`nfolds` must be at least 2; `nfolds = 10` is recommended.")
+    cli::cli_abort(
+      "`nfolds` must be at least {.val {2}}. `nfolds` = {.val {10}} is recommended."
+    )
   }
   outlist <- as.list(seq(nfolds))
   ###Now fit the nfold models and store them
@@ -93,10 +108,11 @@ cv.sparsegl <- function(
     outlist[[i]] <- sparsegl(
       x = x[!test_fold, , drop = FALSE],
       y = y[!test_fold], group = group, lambda = lambda, family = family,
-      ...)
+      weights = weights[!test_fold], offset = offset[!test_fold], ...)
   }
   ###What to do depends on the pred.loss and the model fit
-  cvstuff <- cverror(sparsegl.object, outlist, lambda, x, y, foldid, pred.loss)
+  cvstuff <- cverror(sparsegl.object, outlist, lambda, x, y, foldid,
+                     pred.loss, weights)
   cvm <- cvstuff$cvm
   cvsd <- cvstuff$cvsd
   cvname <- cvstuff$name
@@ -116,25 +132,28 @@ cv.sparsegl <- function(
 
 
 
-cverror <- function(fullfit, outlist, lambda, x, y, foldid, pred.loss) {
+cverror <- function(fullfit, outlist, lambda, x, y, foldid, pred.loss, ...) {
   UseMethod("cverror")
 }
 
 #' @export
-cverror.lsspgl <- function(fullfit, outlist, lambda, x, y, foldid,
-                           pred.loss = c("default", "mse", "deviance", "mae")) {
+cverror.lsspgl <- function(
+    fullfit, outlist, lambda, x, y, foldid,
+    pred.loss = c("default", "mse", "deviance", "mae"),
+    ...) {
+
   typenames <- c(default = "Mean squared error", mse = "Mean squared error",
                  deviance = "Mean squared error", mae = "Mean absolute error")
   pred.loss <- match.arg(pred.loss)
   predmat <- matrix(NA, length(y), length(lambda))
   nfolds <- max(foldid)
   nlams <- double(nfolds)
-  for (i in seq(nfolds)) {
+  for (i in seq_len(nfolds)) {
     test_fold <- foldid == i
     fitobj <- outlist[[i]]
     preds <- predict(fitobj, x[test_fold, , drop = FALSE], type = "link")
     nlami <- length(outlist[[i]]$lambda)
-    predmat[test_fold, seq(nlami)] <- preds
+    predmat[test_fold, seq_len(nlami)] <- preds
     nlams[i] <- nlami
   }
   cvraw <- switch(pred.loss, mae = abs(y - predmat), (y - predmat)^2)
@@ -148,7 +167,9 @@ cverror.lsspgl <- function(fullfit, outlist, lambda, x, y, foldid,
 #' @export
 cverror.logitspgl <- function(
     fullfit, outlist, lambda, x, y, foldid,
-    pred.loss = c("default", "mse", "deviance", "mae", "misclass")) {
+    pred.loss = c("default", "mse", "deviance", "mae", "misclass"),
+    ...) {
+
   typenames <- c(default = "Binomial deviance", mse = "Mean squared error",
                  deviance = "Binomial deviance", mae = "Mean absolute error",
                  misclass = "Missclassification error")
@@ -161,12 +182,12 @@ cverror.logitspgl <- function(
   nfolds <- max(foldid)
   predmat <- matrix(NA, length(y), length(lambda))
   nlams <- double(nfolds)
-  for (i in seq(nfolds)) {
+  for (i in seq_len(nfolds)) {
     test_fold <- foldid == i
     fitobj <- outlist[[i]]
     preds <- predict(fitobj, x[test_fold, , drop = FALSE], type = "response")
     nlami <- length(outlist[[i]]$lambda)
-    predmat[test_fold, seq(nlami)] <- preds
+    predmat[test_fold, seq_len(nlami)] <- preds
     nlams[i] <- nlami
   }
   predmat <- pmin(pmax(predmat, fmin), fmax)
@@ -188,7 +209,8 @@ cverror.logitspgl <- function(
 #' @export
 cverror.irlsspgl <- function(
     fullfit, outlist, lambda, x, y, foldid,
-    pred.loss = c("default", "mse", "deviance", "mae")) {
+    pred.loss = c("default", "mse", "deviance", "mae", "misclass"),
+    weights = NULL, ...) {
   typenames <- c(default = "Deviance", mse = "Mean squared error",
                  deviance = "Deviance", mae = "Mean absolute error")
   pred.loss <- match.arg(pred.loss)
@@ -196,12 +218,12 @@ cverror.irlsspgl <- function(
   nfolds <- max(foldid)
   predmat <- matrix(NA, length(y), length(lambda))
   nlams <- double(nfolds)
-  for (i in seq(nfolds)) {
+  for (i in seq_len(nfolds)) {
     test_fold <- foldid == i
     fitobj <- outlist[[i]]
     preds <- predict(fitobj, x[test_fold, , drop = FALSE], type = "response")
     nlami <- length(outlist[[i]]$lambda)
-    predmat[test_fold, seq(nlami)] <- preds
+    predmat[test_fold, seq_len(nlami)] <- preds
     nlams[i] <- nlami
   }
 
@@ -210,11 +232,18 @@ cverror.irlsspgl <- function(
     pred.loss,
     mse = (y - predmat)^2,
     mae = abs(y - predmat),
+    misclass = y != ifelse(predmat > 0.5, 1, 0),
     apply(predmat, 2, dev_fun)
   )
+
   N <- length(y) - apply(is.na(predmat), 2, sum)
-  cvm <- apply(cvraw, 2, mean, na.rm = TRUE)
-  cvsd <- sqrt(apply(scale(cvraw, cvm, FALSE)^2, 2, mean, NA.RM = TRUE) /
-                 (N - 1))
+  if (is.null(weights)) weights <- rep(1, nrow(cvraw))
+  cvm <- apply(cvraw, 2, stats::weighted.mean, na.rm = TRUE, w = weights)
+  cvsd <- sqrt(
+    apply(
+      scale(cvraw, cvm, FALSE)^2,
+      2, stats::weighted.mean, w = weights, NA.RM = TRUE
+    ) / (N - 1)
+  )
   list(cvm = cvm, cvsd = cvsd, name = typenames[pred.loss])
 }
