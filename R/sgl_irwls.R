@@ -677,7 +677,7 @@ validate_family <- function(family) {
   if (check$check == "warn") {
     cli::cli_warn(c(
       "`family` does not have class {.cls family}, but appears to contain",
-      i = "the required functions {.code $variance} and {.code $linkinv}.",
+      i = "the required functions {.field variance} and {.field linkinv}.",
       i = "Attempting to estimate sparse group lasso with IRLS."
     ))
   }
