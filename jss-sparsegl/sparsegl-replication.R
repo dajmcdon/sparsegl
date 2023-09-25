@@ -381,7 +381,7 @@ pivot_longer(results, gglasso:CVXR) |>
   scale_colour_manual(values = c("darkblue", "orange"), name = "") +
   theme(legend.position = "bottom") +
   scale_x_continuous(
-    name = "Range of lambda, smallest → largest",
+    name = "Range of lambda, smallest (left) to largest (right)",
     breaks = c(0, .1, .22, .46,  1),
     labels = NULL, minor_breaks = NULL) +
   scale_y_continuous(
