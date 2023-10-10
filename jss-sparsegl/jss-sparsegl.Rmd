@@ -62,20 +62,20 @@ keep_tex: true
 ```{r, setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE, cache = TRUE, fig.path = "fig/")
 options(prompt = 'R> ', continue = '+ ')
-ggplot2::theme_set(ggplot2::theme_bw(base_family = "Palatino"))
+ggplot2::theme_set(ggplot2::theme_bw())
 # Add any packages we want to cite to the list below. Don't edit the bib
 # manually, or changes will be overwritten. Add other references to
 # `sparsegl.bib`
 # 
 # Note: tags are R-<pkg>
 knitr::write_bib(c("base", "devtools", "knitr", "testthat", "usethis",
-                   "rticles", "sparsegl", "glmnet", "dplyr", "magrittr",
-                   "SGL","gglasso", "msgl", "biglasso",
-                   "RSpectra", "mgcv",
+                   "rticles", "sparsegl", "glmnet", "dplyr",
+                   "SGL", "gglasso", "msgl", "biglasso",
+                   "RSpectra", "mgcv", "tidyr",
                    "ggplot2", "dotCall64","CVXR"),
                  file = "pkgs.bib")
-library(dplyr)
-library(ggplot2)
+library("dplyr")
+library("ggplot2")
 ```
 
 # Introduction
@@ -85,35 +85,36 @@ library(ggplot2)
 
 Regularized linear models are now ubiquitous tools for prediction and, increasingly, inference. When solving such high-dimensional learning problems, adding regularization helps to reduce the chances of overfitting and improve the model performance on unseen data. Sparsity inducing  $\ell_1$-type penalties such as the lasso \citep{tibshirani1996regression} or the Dantzig selector 
 \citep{CandesTao2007} perform both variable selection and shrinkage, resulting in near-optimal
-statistical properties. The group lasso \citep{yuan2006model} modifies the regularizer, replacing the $\ell_1$ penalty with a groupwise sum of $\ell_2$ norms. When covariates have natural groupings, such as with genomics data or one-hot encoded factors, this group penalty is preferable, because the resulting estimate will include or exclude entire groups of covariates. To simultaneously attain sparsity at both group and individual feature levels, \citet{simon2013sparse} proposed the sparse group-lasso, a convex combination of the $\ell_1$ lasso penalty and the group lasso-penalty. 
+statistical properties. The group lasso \citep{yuan2006model} modifies the regularizer, replacing the $\ell_1$ penalty with a groupwise sum of $\ell_2$ norms. When covariates have natural groupings, such as with genomics data or one-hot encoded factors, this group penalty is preferable, because the resulting estimate will include or exclude entire groups of covariates. To simultaneously attain sparsity at both group and individual feature levels, \citet{simon2013sparse} proposed the sparse group-lasso, a convex combination of the $\ell_1$ lasso penalty and the group lasso penalty. 
 
 While a number of packages exist for solving the sparse group lasso, our \proglang{R} \citep{R-base} implementation in \pkg{sparsegl} \citep{R-sparsegl} is designed to be fast, especially in the case of large, sparse covariate matrices. This package focuses on finding the optimal solutions to sparse group-lasso penalized learning problems at a sequence of regularization parameters, implements risk estimators in an effort to avoid cross validation if necessary, leverages a fast, compiled \proglang{Fortran} implementation, avoids extraneous data copies, and undertakes a number of additional computational efficiency improvements.
 In \proglang{R}, there are already excellent implementations of sparse group lasso and group lasso, namely \pkg{SGL} \citep{R-SGL}, \pkg{gglasso} \citep{R-gglasso,yang2015fast}, and \pkg{biglasso} \citep{R-biglasso,zeng2020biglasso}. Of these, only \pkg{SGL} employs the additional $\ell_1$ sparsity-inducing penalty. However, it has a number of drawbacks that result in much slower performance, even on small data. One major reason is the omission of so-called "strong rules" \citep{tibshirani2012strong} that help coordinate descent algorithms to avoid many of the groups which will turn out to have zero coefficient estimates. The \pkg{gglasso} and \pkg{biglasso} packages are both computationally fast. The former incorporates the strong rule, and the latter involves a hybrid safe-strong rule along with scalable storage and a parallel implementation in \proglang{C++} and \proglang{R} that allows for data that exceeds the size of installed random access memory. Unfortunately, neither allows within-group sparsity (i.e., they perform group lasso, not sparse group lasso). Thus, the estimated coefficients produced by these packages will have some active groups and some inactive groups, but within an active group, generally all the coefficients will be nonzero. 
 
 
 
-<!-- \pkg{msgl} \citep{vincent2014sparse} is also an \proglang{R} package solving sparsel group lasso multiclassification problems via fitting multinomial logistic regression model. This package overcomes the nondifferential penalty problem at zero and since the algorithm is Newton-based, it substitutes the Hessian matrix with an upper bound on that, which reduces the costs of computation. However, the multinomial logistic regression is an extension to the binary logistic regression, allowing for taking the response variable with multiple classes, which consumes an excessive amount of time for model fitting when processing binary response variable. -->
-
-
 In \proglang{python} \citep{python}, \pkg{asgl} \citep{civieta2020adaptive} implements adaptive sparse group-lasso, which flexibly adjusts the weights in the penalization on the groups of features. Additionally it incorporates quantile loss. As with the other packages mentioned above, it can also solve the special cases (lasso and group lasso). However, for all optimization problems, it directly uses \pkg{CVXPY} \citep{cvxpy-jmlr,cvxpy-jcd}, a general purpose optimizer, without strong rules or other tricks to relate solutions to each other across values of the tuning parameter.[^cvxr]
 
 [^cvxr]: A similar implementation could be achieved in \proglang{R} using \pkg{CVXR} \citep{CVXR,R-CVXR}.
 
-<!-- The paper \citep{ida2019fast} also brings up a fast algorithm applying KKT and revised KKT checks repetitively through block coordinate descent for computing sparse group-lasso model. In this algorithm, the main feature is that the revised KKT check first searches through all groups to filter out the groups whose feature coefficients are zero, then the original KKT check confirms the actual nonzero coefficient groups among the remaining candidate active groups. The revised KKT check could remarkably reduce the time complexity, which is introduced by approximating a metric used to compare against a fixed threshold with a tight upper bound.-->
 
-Our contribution, then, is to provide a package that performs sparse group lasso, and is faster than existing implementations. In particular, \pkg{sparsegl} has the following benefits:
+Our contribution, then, is to provide a package that performs sparse group lasso and is faster than existing implementations. In particular, \pkg{sparsegl} has the following benefits:
 \begin{itemize}
 \item Performs Gaussian and logistic regression using fast, compiled code;
 \item Allows arbitrary generalized linear models using \proglang{R}'s \code{family} object, though with slightly less efficiency;
 \item Allows for interval constraints and differential weights on the coefficients;
 \item Accommodates a sparse design matrix and returns the coefficient estimates in a sparse matrix;
-\item Uses strong rules for fast computation along a sequence of tuning parameters;
+\item Uses strong rules (and active set iteration) for fast computation along a sequence of tuning parameters;
 \item Uses \pkg{dotCall64} to interface with low-level \proglang{Fortran} functions and avoid unnecessary copying as well as allow for 64-bit integers \citep[see][]{gerber2017dotcall,gerber2018dotcall};
 \item Provides information criteria as risk estimators (AIC/BIC/GCV) in addition to cross validation.
 \end{itemize}
-A comparison of features of this and related \proglang{R} packages is shown in \autoref{tab:comparison}. \autoref{fig:timing-comparison} compares the speed of the dense and sparse implementations in \pkg{sparsegl} with \pkg{SGL} across a number of different problem sizes, finding speedups of 1.5 to 2.5 orders of magnitude. In \autoref{methodology-estimation-and-prediction}, we describe the algorithmic implementation in detail, paying particular attention to the strong rule. In \autoref{example-usage}, we show how to use the package, running through an example with simulated data. \autoref{applications} demonstrates many of the
+A comparison of features of this and related \proglang{R} packages is shown in 
+\autoref{tab:comparison}. \autoref{fig:timing-comparison} compares the speed of 
+the dense and sparse implementations in \pkg{sparsegl} with \pkg{SGL} across a 
+number of different problem sizes, finding speedups of 1.5 to 2.5 orders of 
+magnitude.
+
+In \autoref{methodology-estimation-and-prediction}, we describe the algorithmic implementation in detail, paying particular attention to the strong rule. In \autoref{example-usage}, we show how to use the package, running through an example with simulated data. \autoref{applications} demonstrates many of the
 unique features of \pkg{sparsegl} in two applications.
-<!-- In Section \ref{comparisons-with-other-packages}, we compare our package to the other existing group-lasso packages, and also compare the two variants of our algorithm with each other. -->
 We summarize our contributions in \autoref{discussion}.
 
 
@@ -180,16 +181,16 @@ The benefit of this penalty is that it tends to allow only a subset of coefficie
 A variant of this, the group lasso \citep{yuan2006model} is appropriate when there is a natural grouping structure for the features. That is, we assume that both the design matrix $\mX$ and the corresponding vector of coefficients can be partitioned into interpretable non-overlapping groups, and, by analogy with lasso regression, only a few of the groups are active, i.e., have nonzero coefficients. The group lasso thus performs regularization that has the effect of discarding groups of predictors rather than the predictors themselves:
 \begin{equation}
 \label{eq:group-lasso}
-\min_{\vbeta}\left\{\frac{1}{2n}\big\lVert \vY-\sum_{g=1}^G \mX^{(g)}\vbeta^{(g)}\big\rVert_2^2 + \lambda\sum_{l=1}^m\sqrt{w_g}\snorm{\vbeta^{(g)}}_2\right\}.
+\min_{\vbeta}\left\{\frac{1}{2n}\big\lVert \vY-\sum_{g=1}^G \mX^{(g)}\vbeta^{(g)}\big\rVert_2^2 + \lambda\sum_{g=1}^G\sqrt{w_g}\snorm{\vbeta^{(g)}}_2\right\}.
 \end{equation}
 Grouping may occur naturally---say with the inclusion of many categorical predictors, groups of genes, or brain regions---or may be a design choice using additive models and basis expansions.
 Note that in Equation\ \ref{eq:group-lasso}, the grouping structure is explicitly stated: the vector of coefficients, $\vbeta$, is thought of as a concatenation of the coefficient subvectors of the various groups $\vbeta^{(g)}$, and similarly the data matrix $\mX$ is the concatenation of submatrices, each submatrix $\mX^{(g)}$ being composed of the columns that correspond to that particular group. Thus the first part of the equation, $\vY-\sum_{g=1}^G\mX^{(g)}\vbeta^{(g)}$, is identical to the more simply-written equation $\vY-\mX\vbeta$, but the notation serves to emphasise the partitioning.
 
-The penalty however---$\sum_{g=1}^G\sqrt{w_g}\snorm{\vbeta^{(g)}}_2$---is different from the corresponding part in Equation\ \ref{eq:lasso}, using instead the sum of the (non-squared) $\ell_2$-norms of the coefficient vectors of the various groups. It is the non-differentiability of this expression at $\mathbf{0}\in\R^{|g|}$ (with $|g|$ meaning the size of group $g$) that accounts for the group-discarding property of the problem, similar to the way that the  non-differentiability the absolute value at $0$ is responsible for discarding individual predictors in the lasso.
+However, the penalty, $\sum_{g=1}^G\sqrt{w_g}\snorm{\vbeta^{(g)}}_2$, is different from the corresponding part in Equation\ \ref{eq:lasso}, using instead the sum of the (non-squared) $\ell_2$-norms of the coefficient vectors of the various groups. It is the non-differentiability of this expression at $\mathbf{0}\in\R^{|g|}$ (with $|g|$ meaning the size of group $g$) that accounts for the group-discarding property of the solution, similar to the way that the  non-differentiability the absolute value at $0$ is responsible for discarding individual predictors in the lasso.
 
 As with Equation\ \ref{eq:lasso}, there is only a single tuning parameter $\lambda$, whose value determines the strength of regularization. Within the second summation are the relative weights of the groups, $w_g$. These are often taken to be the size of the corresponding group. For simplicity, this notation is suppressed below where the meaning is clear.
 
-Finally, in a group-structured problem as above, it may be desirable to enforce sparsity, not only among the groups, but also within the groups. The sparse group lasso \citep{simon2013sparse} does this by combining the penalties in Equations\ \ref{eq:lasso} and\ \ref{eq:group-lasso}:
+Finally, in a group-structured problem as above, it may be desirable to enforce sparsity not only among the groups but also within the groups. The sparse group lasso \citep{simon2013sparse} does this by combining the penalties in Equations\ \ref{eq:lasso} and\ \ref{eq:group-lasso}:
 \begin{equation}
   \label{eq:sparsegl}
 \min_{\vbeta}\left\{\frac{1}{2n}\snorm{\vY-\mX\vbeta}_2^2 + (1-\alpha)\lambda\sum_{g=1}^G \snorm{\vbeta^{(g)}}_2+\alpha\lambda\sum_{g=1}^G\snorm{\vbeta^{(g)}}_1\right\}.
@@ -267,7 +268,7 @@ where $(z)_+ = \max\{z,\ 0\}$ and $S$ is the coordinate-wise soft threshold oper
 \end{equation*}
 i.e., for each coordinate in the vector, it shrinks that coordinate in magnitude by the amount $b$, and sets it to zero if the magnitude of that coordinate was smaller than $b$ to begin with. It is this soft-thresholding operation that encourages within-group sparsity.
 
-An examination of Equation\ \ref{eq:updateStep} shows that it is possible for the whole group to be set to zero (made inactive) due to the (hard) threshold operator $(\cdot)_+$ in the first part of the expression. It is also possible for individual components of $\vbeta^{(k)}$ to be zeroed out by the coordinate-wise (soft) threshold operator $S$. Therefore, performing this update step tends to enforce coefficient sparsity at both the group- and individual-level.
+An examination of Equation\ \ref{eq:updateStep} shows that it is possible for the entire group to be set to zero (made inactive) due to the (hard) threshold operator $(\cdot)_+$ in the first part of the expression. It is also possible for individual components of $\vbeta^{(b)}$ to be zeroed out by the coordinate-wise (soft) threshold operator $S$. Therefore, performing this update step tends to enforce coefficient sparsity at both the group- and individual-level.
 
 
 
@@ -291,14 +292,14 @@ An examination of Equation\ \ref{eq:updateStep} shows that it is possible for th
 
 Above, we have focused on the Gaussian linear model with $\ell(\vbeta) = \frac{1}{2n}\snorm{\vR - \mX\vbeta}_2^2$, $\nabla \ell(\vbeta) = -\frac{1}{n}\mX^\T (\vR - \mX\vbeta)$, and $\mathbf{H}\preceq t^{-1}\mathbf{I}$. 
 In the case of logistic regression, we use exactly the same procedure but with
-$\ell(\vbeta) = \frac{1}{n}\sum_{i}\log(1 + \exp\{-r_i\vx_i^\T\vbeta\})$, $\nabla \ell(\vbeta) = -\frac{1}{n}\sum_{i}y_i\vx_i^\top (1 + \exp\{-r_i\vx_i^\T\vbeta\})^{-1}$, and $\mathbf{H}(\vbeta) \preceq 4t^{-1}\mathbf{I}$. This procedure is explicitly stated in \autoref{alg:sparsegl}. For other exponential families (for example, Poisson, Gamma, or Probit regression), we provide functionality to pass an \proglang{R} `family` object. These will generally be much slower than the built-in families described above because they require using iteratively reweighted least squares rather than the majorization-minimization described here.
+$\ell(\vbeta) = \frac{1}{n}\sum_{i}\log(1 + \exp\{-r_i\vx_i^\T\vbeta\})$, $\nabla \ell(\vbeta) = -\frac{1}{n}\sum_{i}y_i\vx_i^\top (1 + \exp\{-r_i\vx_i^\T\vbeta\})^{-1}$, and $\mathbf{H}(\vbeta) \preceq 4t^{-1}\mathbf{I}$. This procedure is explicitly stated in \autoref{alg:sparsegl}. For other exponential families (for example, Poisson, Gamma, or Probit regression), we provide functionality to pass an \proglang{R} `family` object. These will generally be much slower than the built-in families described above because they require iteratively reweighted least squares as an outer loop combined with inner majorization-minimization iterations as described here.
 
 While the procedure described so far solves Equation\ \ref{eq:sparsegl} for fixed choices of $\lambda$ and $\alpha$, the data analyst does not typically know these ahead of time. Rather, we would like to solve the problem for a collection of values of $\lambda$ (and perhaps $\alpha$ as well). It turns out that the structure of this optimization problem allows for some heuristics that can perform this sequential optimization with a minimum of additional computational resources, in some cases, solving Equation\ \ref{eq:sparsegl} faster for a sequence of values $\lambda_m \in \{\lambda_1,\ldots,\lambda_M\}$ than for a single choice \citep{tibshirani2012strong}. We describe our implementation of this procedure next.
 
 
 
 
-## Sequential strong rule and KKT conditions
+## Sequential strong rule, KKT conditions, and active set iteration
 
 For any fixed value of $\lambda$, many groups of coefficient estimates will end up being equal to zero. If, somehow, we knew _which_ groups, we could completely avoid visiting them in the blockwise coordinate descent updates, and therefore avoid calculating Equation\ \ref{eq:updateStep} for those groups. This would significantly speed up computations. 
 
@@ -309,7 +310,7 @@ Re-examining Equation\ \ref{eq:subgrad}, we can see that the first order conditi
 \end{equation}
 This is because, as $\mathbf{u}$ is the subgradient of $\snorm{\vbeta_g}_2$, $\snorm{\mathbf{u}}_2\leq 1$. Furthermore, if $\snorm{\mathbf{u}}_2 < 1$, then $\hat{\vbeta}_j = \mathbf{0}$. In the previous section, we used the sufficiency of the Karush-Kuhn-Tucker (KKT) stationarity condition to derive a solution, while Equation\ \ref{eq:subgrad-again} is the necessary version. So given a potential solution, it is easy to check its validity. Unfortunately, this is not constructive. 
 
-The sequential strong rule \citep{tibshirani2012strong} begins from Equation\ \ref{eq:subgrad-again} and makes use of the fact that we are solving for a sequence of parameters $\{\lambda_1 > \lambda_2 > \dots > \lambda_M\}$ rather than a single value. At each $\lambda_m$, we rely on the fact that we have already solved the problem at $\lambda_{m-1}$ and use this information to quickly discard many groups of predictors. Without loss of generality, for the rest of this section assume that the problem has already been solved for $\lambda_{m-1}$.
+The sequential strong rule \citep{tibshirani2012strong} begins from Equation\ \ref{eq:subgrad-again} and makes use of the fact that we are solving for a sequence of parameters $\{\lambda_1 > \lambda_2 > \dots > \lambda_M\}$ rather than a single value. At each $\lambda_m$, we rely on the fact that we have already solved the problem at $\lambda_{m-1}$ and use this information to quickly discard many groups of predictors. Without loss of generality, for the rest of this section, assume that the problem has been solved for $\lambda_{m-1}$.
 
 Define $c_g(\lambda) = S(\nabla \ell(\vbeta_g),\ \lambda\alpha)$. Now, we make the assumption that $c_g(\lambda)$ is $(1-\alpha)$-Lipschitz, i.e., that
 \begin{equation*}
@@ -331,7 +332,7 @@ precisely when
 \snorm{c_g(\lambda_{m-1})}_2 \leq (1-\alpha)(2\lambda_m - \lambda_{m-1}).
 \end{equation*}
 
-Applying this logic to Equation\ \ref{eq:Meq} above gives the sequential strong rule for the sparse group lasso:
+Applying this logic to Equation\ \ref{eq:Meq} gives the sequential strong rule for the sparse group lasso:
 \begin{equation}
 \label{eq:sgl-strong}
 \snorm{S\big(\nabla \ell(\vbeta_g),\ t\alpha\lambda_{m-1}\big)}_2 \leq t(1-\alpha)(2\lambda_m - \lambda_{m-1}).
@@ -340,9 +341,9 @@ For more details in related settings, see \citet{tibshirani2012strong}.
 If Equation\ \ref{eq:sgl-strong}
 holds, then we ignore group $g$ when solving the problem at $\lambda_m$. That is to say, when we move from $\lambda_{m-1}$ to $\lambda_m$, we first check this condition using the previously computed solution for $\hat{\vbeta}(\lambda_{m-1})$, and then perform blockwise coordinate descent, using only those groups that failed this inequality.
 
-This discarding rule is fast, because it uses the previously computed solution and a simple inequality, and in practice, it tends to accurately discard large numbers of groups. However, we should reiterate that it is possible for the strong rule to fail. The Lipschitz assumption is not a guarantee. Because of this, it is critical that, after discarding some of the groups and running the algorithm on the others, the KKT condition is checked on all discarded groups. If there are no violations, then we have the solution. 
+This discarding rule is fast, because it uses the previously computed solution combined with a simple inequality, and, in practice, it tends to accurately discard large numbers of groups. However, we should reiterate that it is possible for the strong rule to fail. The Lipschitz assumption is not a guarantee. Because of this, it is critical that, after discarding some of the groups and running the algorithm on the others, the KKT condition is checked on all discarded groups. If there are no violations, then we have the solution. 
 
-To minimize gradient computations for groups that will eventually be determined to be inactive, we actually keep track of two sets: the strong set $\mathcal{S}$ and the active set $\mathcal{A}$. The active set collects all groups that have ever had non-zero coefficients at previous values of $\lambda$. We first iterate over previously active groups, then check the strong set to see if we missed any, and finally check all the remaining groups. When the number of groups is very large, this avoids onerous computations for as many groups as possible. The complete algorithm is shown in \autoref{alg:djm}.
+To minimize gradient computations for groups that will eventually be determined to be inactive, we actually keep track of two sets: the strong set $\mathcal{S}$ and the active set $\mathcal{A}$. The active set collects all groups that have ever had non-zero coefficients at previous values of $\lambda$. We first iterate over previously active groups, then check the strong set to see if we missed any, and finally check all the remaining groups. When the number of groups is very large, this avoids onerous computations for as many groups as possible. The complete algorithm including this active set iteration is shown in \autoref{alg:djm}.
 
 \begin{algorithm}[tb!]
   \begin{algorithmic}[1]
@@ -392,13 +393,13 @@ cross validation \citep[GCV]{golub1979generalized} is defined as
 \end{equation*}
 Written on the log scale, GCV takes the form of Equation\ \ref{eq:GICsigUnknown} with $g(x) = \log(1-x/n)$ and $C_n = -2$.
 
-The key components for all three information criteria are the negative log likelihood and the degrees of freedom. The first is simply a function of the in-sample (training) error. On the other hand, the degrees of freedom, while simple in the unregularized linear model---it is the number of parameters---is less obvious for the sparse group lasso. In general, the degress of freedom for any predictor $\hat{\vy}$ of $\vY$ is defined as \citep{Efron1986}
+The key components for all three information criteria are the negative log likelihood and the degrees of freedom. The first is simply a function of the in-sample (training) error. On the other hand, the degrees of freedom, while simple in the unregularized linear model (it is the number of parameters), is less obvious for the sparse group lasso. In general, the degress of freedom for any predictor $\hat{\vy}$ of $\vY$ is defined as \citep{Efron1986}
 $$\mathrm{df}(\hat\vy) = \frac{1}{\sigma^2}\sum_{i=1}^n\mathrm{Cov}(\vy_i,\ \hat\vy_i).$$
 In the case of any linear predictor, $\hat\vy = \mathbf{A}\vy$ for some matrix $\mathbf{A}$, it is easy to see that $\mathrm{df} = \mathrm{tr}(\mathbf{A})$.
-\citet{vaiter2012degrees} gives an explicit formula for the group lasso (without intragroup sparsity), but only minor modifications are required for the sparse group lasso. We give a simplified version of their result here
+\citet{vaiter2012degrees} gives an explicit formula for the group lasso (without intragroup sparsity), but only minor modifications are required for the sparse group lasso. We give a simplified version of their result here.
 
 \begin{proposition}[\citealt{vaiter2012degrees}]
-Suppose that for a fixed $\lambda >0$, the active set of $\hat{\beta} = \mathcal{A}$ and that $\mX_{\mathcal{A}}$ is the set of columns associated to $\mathcal{A}$. Assume that $\mX_{\mathcal{A}}$ has full column rank. Then, 
+Suppose that for a fixed $\lambda >0$, the active set of $\hat{\beta}$ is $\mathcal{A}$ and that $\mX_{\mathcal{A}}$ is the set of columns associated to $\mathcal{A}$. Assume that $\mX_{\mathcal{A}}$ has full column rank. Then, 
 $$\df = \mathrm{tr}\left(\mX_\mathcal{A}\left(\mX_\mathcal{A}^\T \mX_\mathcal{A} + \lambda \mathbf{K}\right)^{-1}\mX_{\mathcal{A}}^\T\right).$$
 Here, $\mathbf{K}\in \R^{\mathcal{A}\times\mathcal{A}}$ is a block diagonal matrix with each block corresponding to a group $g$ having at least 1 nonzero $\hat\beta$. For such a group $g$, denote $\hat\beta_{g | \mathcal{A}}$ the subvector of nonzero coefficient estimates. Then $$\mathbf{K}_g = \frac{1}{\snorm{\hat\vbeta_{g | \mathcal{A}}}_2}\left(\mathbf{I} - \frac{\hat\vbeta_{g | \mathcal{A}} \hat\vbeta_{g | \mathcal{A}}^\T}{\snorm{\hat\vbeta_{g | \mathcal{A}}}^2_2} \right).$$
 \end{proposition}
@@ -409,7 +410,7 @@ As long as the number of nonzero coefficients $|\mathcal{A}|$ is reasonably smal
 
 # Example usage
 
-This section provides a simple illustration for how to use the \pkg{sparsegl} package \citep{R-sparsegl} for fitting the regularization path for sparse group-lasso penalized learning problems. We first examine the linear regression model when the response variable is continuous and then briefly go over the logistic regression case. The package is available from the Comprehensive R Archive Network (CRAN) at https://CRAN.R-project.org/package=sparsegl and can be installed and loaded in the usual manner:[^devel]
+This section provides a simple illustration of using the \pkg{sparsegl} package \citep{R-sparsegl} to fit the regularization path for sparse group-lasso penalized learning problems. We first examine the linear regression model when the response variable is continuous and then briefly go over the logistic regression case. The package is available from the Comprehensive R Archive Network (CRAN) at https://CRAN.R-project.org/package=sparsegl and can be installed and loaded in the usual manner:[^devel]
 
 ```{r install, eval=FALSE, echo=TRUE}
 install.packages("sparsegl")
@@ -467,7 +468,7 @@ plot(fit, y_axis = "group", x_axis = "lambda", add_legend = FALSE)
 The `coef()` and `predict()` methods give the coefficients or predicted values for a new design matrix $\widetilde{\mX}$ at the requested $\lambda$'s, potentially allowing for $\lambda$ values different from those used at the fitting stage. 
 
 ```{r, message=FALSE}
-coef(fit, s = c(0.02, 0.03))[c(1,3,25,29),]
+coef(fit, s = c(0.02, 0.03))[c(1, 3, 25, 29), ]
 predict(fit, newx = tail(X), s = fit$lambda[2:3])
 print(fit)
 ```
@@ -480,11 +481,11 @@ cv_fit <- cv.sparsegl(X, y, groups, nfolds = 15)
 plot(cv_fit)
 ```
 
-The `coef()` and `predict()` methods work similarly to those above. The only difference being that they can additionally accept the strings `lambda.min` or `lambda.1se`, respectively the $\lambda$ that minimizes the average cross validation error and the largest $\lambda$ such that the prediction error is within 1 standard error or the minimum.
+The `coef()` and `predict()` methods work similarly to those above. The only difference being that they can additionally accept the strings `lambda.min` or `lambda.1se`, respectively the $\lambda$ that minimizes the average cross validation error and the largest $\lambda$ such that the cross-validated prediction error is within 1 standard error of the minimum.
 
 ```{r}
-coef(cv_fit, s = "lambda.1se")[c(1,3,25,29),]
-predict(cv_fit, newx = tail(X), s = "lambda.min") %>% c()
+coef(cv_fit, s = "lambda.1se")[c(1, 3, 25, 29), ]
+predict(cv_fit, newx = tail(X), s = "lambda.min") |> c()
 ```
 
 For logistic regression, only a different `family` is required. Cross validation
@@ -499,53 +500,57 @@ plot(cv_fit_logit, log_axis = "none")
 ```
 
 In some cases, when computations are at a premium, cross validation my be too demanding for the purposes of risk estimation. For this reason, \pkg{sparsegl} provides an `estimate_risk()` function. It can be used to compute any of AIC \citep{Akaike1973}, BIC \citep{Schwarz1978}, and GCV \citep{golub1979generalized}. All three are computed by combining the
-log-likelihood with a penalty term for model flexibility. In addition to a fitted `sparsegl` model, `estimate_risk()` also needs the original design matrix. Because the exact degrees-of-freedom can be computationally expensive, setting `approx_df=TRUE` uses the number of non-zero coefficient estimates, which is fairly accurate.
+log-likelihood with a penalty term for model flexibility. In addition to a fitted `sparsegl` model, `estimate_risk()` also needs the original design matrix. Because the exact degrees-of-freedom can be computationally expensive, setting `approx_df = TRUE` uses the number of non-zero coefficient estimates, which can be reasonably accurate.
 
 ```{r risk-estimate, fig.width = 4, fig.height = 1.5}
 er <- estimate_risk(fit, X)
 ```
 
 ```{r re-plot, echo=FALSE, message=FALSE, warning=FALSE, fig.width = 4, fig.height = 1.5, fig.cap="For Gaussian loss, AIC, BIC, and GCV (solid lines) along with their minima (vertical dashed lines) can be estimated."}
-library("tidyverse")
-er <- er %>% dplyr::select(-df) %>% pivot_longer(-lambda, values_to = "risk")
-err <- er %>% group_by(name) %>% summarise(lambda = lambda[which.min(risk)])
+library("dplyr")
+library("tidyr")
+er <- er |> dplyr::select(-df) |> pivot_longer(-lambda, values_to = "risk")
+err <- er |> group_by(name) |> summarise(lambda = lambda[which.min(risk)])
 ggplot(er, aes(lambda, risk, color = name)) +
   geom_line() +
-  scale_color_brewer(palette = "Dark2") +
-  geom_vline(data = err, aes(xintercept = lambda, color=name),
-             linetype="dashed", show.legend = FALSE) +
-  theme_bw() +
+  scale_colour_brewer(palette = "Dark2", name = "") +
+  geom_vline(
+    data = err, aes(xintercept = lambda, color = name),
+    linetype = "dashed", show.legend = FALSE
+  ) +
   ylab("Estimated risk") +
   xlab("Lambda") +
-  scale_x_log10() +
-  theme(legend.title = element_blank())
+  scale_x_log10() 
 ```
 
-In this simulation, the $\lambda$ that minimizes AIC is `r round(err$lambda[1],3)` while the CV minimizer is `r round(cv_fit$lambda.min,3)`. The estimated risk curves are plotted against $\lambda$ in \autoref{fig:re-plot}.
+In this simulation, the $\lambda$ that minimizes AIC is 
+`r round(err$lambda[1], 3)` while the CV minimizer is 
+`r round(cv_fit$lambda.min, 3)`. The estimated risk curves are plotted against 
+$\lambda$ in \autoref{fig:re-plot}.
 
 Additional documentation and examples are provided on the package [website](https://dajmcdon.github.io/sparsegl).
 
 # Applications
 
-We examine two applications for which sparse group lasso is a natural estimator. The first uses data regarding COVID-19 and trustworthiness of information sources, which is included in the package. The second uses a very large though sparse data set from neuroimaging.
+We examine two applications for which sparse group lasso is a natural estimator. The first uses data regarding COVID-19 and trustworthiness of information sources, which is included in the package. The second uses a very large though sparse data set from neuroimaging. Finally, we briefly investigate the 
+accuracy of \pkg{sparsegl} relative to \pkg{gglasso} and \pkg{CVXR}.
 
 
 ## Geographic distribution of trust in experts {#sec:trust}
 
 Two typical uses for sparse group lasso are (1) additive models where continuous predictors are expanded in a basis and (2) discrete factors as predictors. Here we demonstrate an example using both at the same time. We examine data from The Delphi Group at Carnegie Mellon University U.S. [COVID-19 Trends and Impact Survey (CTIS)](https://cmu-delphi.github.io/delphi-epidata/symptom-survey/contingency-tables.html), in partnership with Facebook. In particular, we examine the publicly available contingency table reports, which break down survey responses by age, race/ethnicity, gender, and other demographic variables of interest. The necessary data to reproduce this analysis is included in \pkg{sparsegl} as `trust_experts`.
 
-In particular, we will focus on the "estimated percentage of respondents who trust ... to provide accurate news and information about COVID-19."  This survey item is reported for a variety of different potential sources of information---personal doctors/nurses, scientists, the Centers for Disease Control (CDC), government health officials, politicians, journalists, friends, and religious leaders. In this analysis, we average the first 4, characterize the combination as "experts", and use this as the response variable in a linear model.
+In particular, we will focus on the "estimated percentage of respondents who trust $\ldots$ to provide accurate news and information about COVID-19."  This survey item is reported for a variety of different potential sources of information---personal doctors/nurses, scientists, the Centers for Disease Control (CDC), government health officials, politicians, journalists, friends, and religious leaders. In this analysis, we average the first 4, characterize the combination as "experts", and use this as the response variable in a linear model.
 
-We regress "trust in experts" on 5 factor predictors representing month of report, state of residence, age group, race/ethnicity, and self-reported gender identity. We also include two continuous predictors: "estimated percentage of people with Covid-like illness" and "estimated percentage of people reporting Covid-like illness in their local community, including their household" to control for the amount of exposure that respondents may have been having to the pandemic. Both continuous predictors are incorporated with a B-spline basis expansion and 10 degrees-of-freedom. The result is largely similar to a generalized additive model as implemented with \pkg{mgcv} \citep{woodGams,R-mgcv}. We created the design matrix using the following code:
+We regress "trust in experts" on 5 factor predictors representing month of report, state of residence, age group, race/ethnicity, and self-reported gender identity. We also include two continuous predictors: "estimated percentage of people with Covid-like illness" and "estimated percentage of people reporting Covid-like illness in their local community, including their household" to control for the amount of exposure that respondents may have been having to the pandemic. Both continuous predictors are incorporated with a B-spline basis expansion and 10 degrees-of-freedom. The result is largely similar to a generalized additive model as implemented with \pkg{mgcv} \citep{woodGams,R-mgcv}. The design matrix can be created using the following code:
 
 ```{r trust-experts-x, eval=FALSE, echo=TRUE}
 library("dplyr")
-library("magrittr")
 library("splines")
-data("trust_experts", package="sparsegl")
+data("trust_experts", package = "sparsegl")
 trust_experts <- mutate(trust_experts, across(
   where(is.factor), 
-  ~ set_attr(.x, "contrasts", contr.sum(nlevels(.x), contrasts = FALSE))
+  ~ `attr<-`(.x, "contrasts", contr.sum(nlevels(.x), contrasts = FALSE))
 ))
 x <- Matrix::sparse.model.matrix(
   trust_experts ~ 0 + region + age + gender + raceethnicity + period +
@@ -583,23 +588,98 @@ The design matrix would occupy over 500 GB if it were dense, but since it is onl
 ```{r dwi-fit, echo=FALSE, warning=FALSE, eval=TRUE, fig.cap="The group norm of the 12 groups based on neuroanatomical structure is plotted against the magnitude of the penalty.", fig.height=2.5}
 # source("code/brains.R") takes 6 GB memory and about 1 minute, once the data is downloaded
 fit <- readRDS("large-data/brain-fit.rds")
-plot(fit, 
-     y_axis = "group", 
-     x_axis = "penalty", 
-     add_legend = FALSE) +
+plot(fit, y_axis = "group", x_axis = "penalty", add_legend = FALSE) +
   scale_y_continuous(labels = scales::label_number(scale = 1e5)) +
   coord_cartesian(c(0, 1), c(0, 5e-5), clip = "off") +
-  annotate("text", x = -.14, y = 5.2e-5, fontface = "plain",
-           label = quote(phantom(0) %*% 10^{-5}), size = 2.5)
+  annotate(
+    geom = "text", x = -.14, y = 5.2e-5, fontface = "plain",
+    label = quote(phantom(0) %*% 10^{-5}), size = 2.5
+  )
 ```
 
 Estimating the group lasso using \pkg{sparsegl} with 12 groups and 100 values of $\lambda$ required a little over 1 minute and about 6 GB of peak memory usage on an Intel i7-11700K PC with 64 GB of RAM. The previous method required nearly a day for a single value of $\lambda$. \autoref{fig:dwi-fit} displays the group norms of the 12 groups against the magnitude of the penalty.
 
 [^brain-data]: The processed data used to estimate the sparse group lasso is available at https://doi.org/10.6084/m9.figshare.20314917.
 
+## Accuracy on synthetic problems
+
+```{r accuracy, echo=FALSE, warning=FALSE, message=FALSE, eval=TRUE, fig.cap="This figure shows the \\% change in the objective function for \\pkg{gglasso} and \\pkg{CVXR} relative to \\pkg{sparsegl}. The x-axis is scaled to make the $\\lambda$ range comparable across conditions.", fig.height=4, fig.width=6}
+# source("code/accuracy")
+results <- readRDS("large-data/accuracy-results.rds")
+results <- results |>
+  hoist("res", objective = list("obj"), lambda = list("lambda")) |>
+  unnest(c(objective, lambda)) |>
+  mutate(`p/n` = nvars / 100) |>
+  select(-res, -seed, -nvars)
+
+lb <- function(labels, sep = " = ") label_both(labels, TRUE, sep)
+results <- results |>
+  mutate(across(sparsegl:cvxr, ~ .x / sparsegl - 1)) |>
+  mutate(sparsegl = NULL) |>
+  rename(CVXR = cvxr) |> 
+  group_by(`p/n`, SNR) |> 
+  mutate( 
+    lambda = log10(lambda), 
+    lambda = (lambda - min(lambda)) / (max(lambda) - min(lambda))
+  )
+
+pivot_longer(results, gglasso:CVXR) |>
+  ggplot(aes(lambda, value, colour = name)) +
+  facet_grid(`p/n` ~ SNR, labeller = lb, scales = "free_y") +
+  geom_line() +
+  geom_hline(yintercept = 0) +
+  theme_bw() +
+  scale_colour_manual(values = c("darkblue", "orange"), name = "") +
+  theme(legend.position = "bottom") +
+  scale_x_continuous(
+    name = "Range of lambda, smallest (left) to largest (right)", 
+    breaks = c(0, .1, .22, .46,  1), 
+    labels = NULL, minor_breaks = NULL) +
+  scale_y_continuous(
+    labels = scales::label_percent(),
+    name = "Change in objective relative to sparsegl"
+  )
+```
+
+
+A small-scale simulated comparison illustrates that \pkg{sparsegl} is highly 
+accurate in many regimes of interest. We generate synthetic data from a linear
+model and examine the objective function for the estimated model across a range
+of $\lambda$. Specifically, we first generate the predictors $\mathbf{X}$ by
+simulating each element $x_{ij}$ i.i.d. standard Gaussian. We generate $n=100$
+observations and $p = \{50,\ 100,\ 150\}$ predictors. We use 10
+groups in all cases, with 
+$$\beta = (\underbrace{1, \ldots, 1,}_{\textrm{group } 1}\ 
+\underbrace{0, \dots, 0}_{\textrm{group } 2},\  
+\underbrace{1, \ldots, 1}_{\textrm{group } 3},\ \ldots,\ 
+\underbrace{0, \ldots, 0}_{\textrm{group } 10}).$$
+The groups are all of size $p/10$. The expected signal is then equal to $p / 2$.
+We simulate the response
+from Equation \ref{eq:linmod} with $\sigma$
+chosen to produce expected signal-to-noise ratios (SNR) of $\{0.1,\ 1,\ 10\}$.
+We note that this design produces group sparsity, even-numbered groups have no
+effect on the response, but it does not produce within-group sparsity.
+\autoref{fig:accuracy}
+shows the results for the 9 combinations of these conditions across 20 values 
+of $\lambda$ determined automatically by \pkg{sparsegl} 
+and reused for the other packages. Note that \pkg{gglasso} is optimizing a
+different objective
+function than \pkg{CVXR} or \pkg{sparsegl} which both use $\alpha = 0.2$. Despite this discrepancy, the objective values for \pkg{gglasso} and \pkg{sparsegl} are generally quite close,
+with \pkg{gglasso} tending to be slightly higher, as expected, but by no more 
+than 0.75%. On the other hand \pkg{CVXR}
+is often much less accurate, especially for large values of $\lambda$. This
+divergence is due to its inability to recover exact 0 solutions, tending to 
+instead produce estimates nearly, but not exactly, equal to 0. When $p=n=100$, \pkg{CVXR}
+is actually slightly more accurate, especially for large or small $\lambda$. 
+Inspecting the estimated $\widehat{\beta}$ in this setting,
+it seems to have slightly less bias on the non-zero groups, producing estimates
+with slightly larger magnitude.
+
+
+
 # Discussion
 
-We developed this package for solving sparse group lasso optimization problems using group $\ell_2$ and $\ell_1$ penalties with an eye toward computational efficiency for very large, potentially sparse design matrices. This efficiency is achieved through a customized \proglang{Fortran} implementation, avoidance of deep copy behaviour, and the use of sequential strong rules for the regularization parameter. We also provide tuning parameter selection without the need for refitting inherent in cross-validation and enable some simple extensions such as differential weights in the $\ell_1$ penalty and boundary constraints on the coefficients. 
+We developed this package for solving sparse group lasso optimization problems using group $\ell_2$ and $\ell_1$ penalties with an eye toward computational efficiency for very large, potentially sparse design matrices. This efficiency is achieved through a customized \proglang{Fortran} implementation, avoidance of deep copy behaviour, and the use of sequential strong rules for the regularization parameter. We also provide heuristics for tuning parameter selection without the need for refitting inherent in cross-validation and enable some simple extensions such as differential weights in the $\ell_1$ penalty and boundary constraints on the coefficients. 
 
 # Acknowledgements {.unnumbered}
 

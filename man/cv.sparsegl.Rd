@@ -13,6 +13,8 @@ cv.sparsegl(
   pred.loss = c("default", "mse", "deviance", "mae", "misclass"),
   nfolds = 10,
   foldid = NULL,
+  weights = NULL,
+  offset = NULL,
   ...
 )
 }
@@ -70,6 +72,13 @@ large datasets. Smallest value allowable is \code{nfolds = 3}.}
 \item{foldid}{An optional vector of values between 1 and \code{nfolds}
 identifying which fold each observation is in. If supplied, \code{nfolds} can
 be missing.}
+
+\item{weights}{Double vector. Optional observation weights. These can
+only be used with a \code{\link[stats:family]{stats::family()}} object.}
+
+\item{offset}{Double vector. Optional offset (constant predictor without a
+corresponding coefficient). These can only be used with a
+\code{\link[stats:family]{stats::family()}} object.}
 
 \item{...}{Additional arguments to \code{\link[=sparsegl]{sparsegl()}}.}
 }
