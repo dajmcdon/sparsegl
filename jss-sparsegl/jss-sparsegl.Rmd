@@ -60,7 +60,7 @@ keep_tex: true
 ---
 
 ```{r, setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE, cache = TRUE, fig.path = "fig/")
+knitr::opts_chunk$set(echo = TRUE, cache = TRUE, fig.path = "Figures/")
 options(prompt = 'R> ', continue = '+ ')
 ggplot2::theme_set(ggplot2::theme_bw())
 # Add any packages we want to cite to the list below. Don't edit the bib
