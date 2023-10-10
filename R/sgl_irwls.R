@@ -657,13 +657,6 @@ get_eta <- function(x, xs, beta, b0) {
   drop(x %*% beta + b0)
 }
 
-validate_family <- function(family) {
-  if (!is.function(family$variance) || !is.function(family$linkinv)) {
-    cli::cli_abort(
-      "`family` seems not to be a valid family object. See `?family`."
-    )
-  }
-}
 
 
 #' Create starting values for iterative reweighted least squares
