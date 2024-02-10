@@ -55,10 +55,13 @@
 #'   groups, which implies no shrinkage, and results in that group always being
 #'   included in the model (depending on `pf_sparse`). Default value for each
 #'   entry is the square-root of the corresponding size of each group.
+#'   Because this default is typical, these penalties are not rescaled.
 #' @param pf_sparse Penalty factor on l1-norm, a vector the same length as the
 #'   total number of columns in `x`. Each value corresponds to one predictor
 #'   Can be 0 for some predictors, which
 #'   implies that predictor will be receive only the group penalty.
+#'   Note that these are internally rescaled so that the sum is the same as
+#'   the number of predictors.
 #' @param dfmax Limit the maximum number of groups in the model. Default is
 #'   no limit.
 #' @param pmax Limit the maximum number of groups ever to be nonzero. For

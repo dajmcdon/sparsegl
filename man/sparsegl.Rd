@@ -85,12 +85,15 @@ to each group of \eqn{\beta}{beta's}s to allow differential shrinkage.
 Can be 0 for some
 groups, which implies no shrinkage, and results in that group always being
 included in the model (depending on \code{pf_sparse}). Default value for each
-entry is the square-root of the corresponding size of each group.}
+entry is the square-root of the corresponding size of each group.
+Because this default is typical, these penalties are not rescaled.}
 
 \item{pf_sparse}{Penalty factor on l1-norm, a vector the same length as the
 total number of columns in \code{x}. Each value corresponds to one predictor
 Can be 0 for some predictors, which
-implies that predictor will be receive only the group penalty.}
+implies that predictor will be receive only the group penalty.
+Note that these are internally rescaled so that the sum is the same as
+the number of predictors.}
 
 \item{intercept}{Whether to include intercept in the model. Default is TRUE.}
 

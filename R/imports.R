@@ -5,5 +5,4 @@
 #' @importFrom rlang .data abort warn
 #' @importFrom rlang := %||%
 #' @import dotCall64 Matrix
-#' @docType package
-NULL
+"_PACKAGE"
