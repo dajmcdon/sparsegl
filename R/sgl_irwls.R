@@ -50,7 +50,11 @@ sgl_irwls <- function(
   validate_family(family)
 
   ## Init the family just to check that it works
-  if (is.null(weights)) weights <- rep(1, nobs)
+  if (is.null(weights)) {
+    weights <- rep(1, nobs)
+  } else {
+    weights <- weights / sum(weights)
+  }
   etastart <- 0
   mustart <- NULL
   start <- NULL
