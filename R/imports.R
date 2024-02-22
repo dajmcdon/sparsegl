@@ -5,4 +5,5 @@
 #' @importFrom rlang .data abort warn
 #' @importFrom rlang := %||%
 #' @import dotCall64 Matrix
+#' @keywords internal
 "_PACKAGE"

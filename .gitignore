@@ -13,6 +13,7 @@ inst/doc
 *.Rapp.history
 src/*.mod
 deprecated/
+docs/
 jss-sparsegl/*
 !jss-sparsegl/jss-sparsegl.Rmd
 !jss-sparsegl/jss-sparsegl-preamble.tex
