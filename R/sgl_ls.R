@@ -4,7 +4,7 @@ sgl_ls <- function(
   lower_bnd, upper_bnd) {
   # call Fortran core
   is.sparse <- FALSE
-  if (!is.numeric(y)) rlang::abort("For family = 'gaussian', y must be numeric.")
+  if (!is.numeric(y)) cli_abort("For family = 'gaussian', y must be numeric.")
   if (inherits(x,"sparseMatrix")) {
     is.sparse <- TRUE
     x <- as_dgCMatrix(x)
