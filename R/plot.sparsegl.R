@@ -39,7 +39,7 @@ plot.sparsegl <- function(x,
   xb <- x$beta
   nonzeros <- sort(unique(xb@i)) + 1
   if (length(nonzeros) == 0) {
-    cli::cli_abort(
+    cli_abort(
       c("No nonzero betas / groups are available to plot.",
         i = "All coefficient estimates are exactly 0.")
     )

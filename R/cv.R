@@ -80,7 +80,7 @@ cv.sparsegl <- function(
     if (fam$check == "char") if (fam$family != "binomial") bugger <- TRUE
     if (fam$check == "fam") if (fam$family$family != "binomial") bugger <- TRUE
     if (bugger) {
-      cli::cli_abort(c(
+      cli_abort(c(
         "When `pred.loss` is {.val {pred.loss}}, `family` must be either:",
         `!` = "{.val {'binomial'}}, or {.fn stats::binomial}."
       ))
@@ -97,7 +97,7 @@ cv.sparsegl <- function(
   if (is.null(foldid)) foldid <- sample(rep(seq(nfolds), length = N))
   else nfolds <- max(foldid)
   if (nfolds < 2) {
-    cli::cli_abort(
+    cli_abort(
       "`nfolds` must be at least {.val {2}}. `nfolds` = {.val {10}} is recommended."
     )
   }

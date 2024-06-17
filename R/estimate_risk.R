@@ -40,7 +40,7 @@ estimate_risk <- function(object, x,
 estimate_risk.default <- function(object, x,
                                   type = c("AIC", "BIC", "GCV"),
                                   approx_df = FALSE) {
-  cli::cli_abort("Risk estimation is only available for Gaussian likelihood.")
+  cli_abort("Risk estimation is only available for Gaussian likelihood.")
 }
 
 #' @export
@@ -82,8 +82,9 @@ df_correction <- function(obj) {
 exact_df <- function(object, x) {
   # See the correct formula in https://arxiv.org/pdf/1212.6478.pdf
   # Theorem 2
-  if (missing(x))
-    stop("Risk estimation with exact df requires the design matrix `x`.")
+  if (missing(x)) {
+    cli_abort("Risk estimation with exact df requires the design matrix `x`.")
+  }
   Iset <- abs(object$beta) > 0
   Imax <- which(apply(Iset, 1, any))
   Iset <- Iset[Imax,]

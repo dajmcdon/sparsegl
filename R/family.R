@@ -16,14 +16,14 @@ check_family <- function(family) {
 validate_family <- function(family) {
   check <- check_family(family)
   if (check$check == "warn") {
-    cli::cli_warn(c(
+    cli_warn(c(
       "`family` does not have class {.cls family}, but appears to contain",
       i = "the required functions {.field variance} and {.field linkinv}.",
       i = "Attempting to estimate sparse group lasso with IRLS."
     ))
   }
   if (check$check == "err") {
-    cli::cli_abort("`family` is not to be a valid family object. See `?family`.")
+    cli_abort("`family` is not to be a valid family object. See `?family`.")
   }
   invisible(check)
 }

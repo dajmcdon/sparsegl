@@ -32,10 +32,10 @@
 #' coef(cv_fit, s = c(0.02, 0.03))
 coef.cv.sparsegl <- function(object, s = c("lambda.1se", "lambda.min"), ...) {
   rlang::check_dots_empty()
-  if (!(is.numeric(s) || is.character(s)))
-    cli::cli_abort("Invalid form for `s`.")
-  if (is.numeric(s)) lambda <- s
-  else {
+  if (!(is.numeric(s) || is.character(s))) cli_abort("Invalid form for `s`.")
+  if (is.numeric(s)) {
+    lambda <- s
+  } else {
     s <- match.arg(s)
     lambda <- object[[s]]
   }
@@ -82,10 +82,10 @@ predict.cv.sparsegl <- function(
     type = c("link", "response", "coefficients", "nonzero", "class"), ...) {
   rlang::check_dots_empty()
   type <- match.arg(type)
-  if (!(is.numeric(s) || is.character(s)))
-    cli::cli_abort("Invalid form for `s`.")
-  if (is.numeric(s)) lambda <- s
-  else {
+  if (!(is.numeric(s) || is.character(s))) cli_abort("Invalid form for `s`.")
+  if (is.numeric(s)) {
+    lambda <- s
+  } else {
     s <- match.arg(s)
     lambda <- object[[s]]
   }
@@ -95,10 +95,11 @@ predict.cv.sparsegl <- function(
 #' @method fitted cv.sparsegl
 #' @export
 fitted.cv.sparsegl <- function(object, ...) {
-  cli::cli_abort(c(
+  cli_abort(c(
     "!" = "Because design matrices are typically large, these are not stored ",
     "!" = "in the estimated `cv.sparsegl` object. Use `predict()` instead, and ",
-    "!" = "pass in the original data."))
+    "!" = "pass in the original data."
+  ))
 }
 
 

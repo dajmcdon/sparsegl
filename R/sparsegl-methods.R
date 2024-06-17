@@ -112,7 +112,7 @@ predict.sparsegl <- function(
   type <- match.arg(type)
   if (missing(newx)) {
     if (!match(type, c("coefficients", "nonzero"), FALSE))
-      cli::cli_abort(
+      cli_abort(
         "You must supply a value for `newx` when `type` == '{type}'."
       )
   }
@@ -123,8 +123,9 @@ predict.sparsegl <- function(
   dx <- dim(newx)
   p <- object$dim[1]
   if (is.null(dx)) newx <- matrix(newx, 1, byrow = TRUE)
-  if (ncol(newx) != p)
-    cli::cli_abort("The number of variables in `newx` must be {p}.")
+  if (ncol(newx) != p) {
+    cli_abort("The number of variables in `newx` must be {p}.")
+  }
   fit <- as.matrix(cbind2(1, newx) %*% nbeta)
   fit
 }
@@ -168,10 +169,11 @@ predict.irlsspgl <- function(
 
 #' @export
 fitted.sparsegl <- function(object, ...) {
-  cli::cli_abort(c(
+  cli_abort(c(
     "!" = "Because design matrices are typically large, these are not stored ",
     "!" = "in the estimated `sparsegl` object. Use `predict()` instead, and ",
-    "!" = "pass in the original data."))
+    "!" = "pass in the original data."
+  ))
 }
 
 #' @method summary sparsegl

@@ -130,7 +130,7 @@ sgl_irwls <- function(
   if (is.null(warm))
     warm <- make_irls_warmup(nobs, nvars, b0 = init$b0, r = init$r)
   if (!inherits(warm, "irlsspgl_warmup")) {
-    cli::cli_abort(
+    cli_abort(
       "the `warm` object should be created with `make_irls_warmup()`."
     )
   }
@@ -169,15 +169,17 @@ sgl_irwls <- function(
     if (trace_it == 1) utils::setTxtProgressBar(pb, l)
     if (warm$jerr != 0) {
       if (l > 1L) {
-        cli::cli_warn(c(
+        cli_warn(c(
           "Convergence for {l}th lambda value not reached after maxit =",
-          "{maxit} iterations; solutions for larger lambdas returned."))
+          "{maxit} iterations; solutions for larger lambdas returned."
+        ))
         l <- l - 1L
         break
       } else {
-        cli::cli_warn(c(
+        cli_warn(c(
           "Convergence for initial lambda value not reached after maxit =",
-          "{maxit} iterations; no solutions available."))
+          "{maxit} iterations; no solutions available."
+        ))
       }
     }
 
@@ -267,8 +269,8 @@ irwls_fit <- function(warm, static) {
 
 
   if (!validmu(mu) || !valideta(eta)) {
-    cli::cli_abort(c("Cannot find valid starting values.",
-                   "!" = "Please specify some with `make_irls_warmup()`."))
+    cli_abort(c("Cannot find valid starting values.",
+                "!" = "Please specify some with `make_irls_warmup()`."))
   }
 
   start <- NULL     # current value for coefficients
@@ -289,10 +291,10 @@ irwls_fit <- function(warm, static) {
   while (iter < static$maxit && !conv) {
     # some checks for NAs/zeros
     varmu <- variance(mu)
-    if (anyNA(varmu)) rlang::abort("NAs in V(mu)")
-    if (any(varmu == 0)) rlang::abort("0s in V(mu)")
+    if (anyNA(varmu)) cli_abort("NAs in V(mu)")
+    if (any(varmu == 0)) cli_abort("0s in V(mu)")
     mu.eta.val <- mu.eta(eta)
-    if (anyNA(mu.eta.val)) rlang::abort("NAs in d(mu)/d(eta)")
+    if (anyNA(mu.eta.val)) cli_abort("NAs in d(mu)/d(eta)")
 
     # d ell / d beta = X'W (z - mu) / mu.eta.val (theoretically)
     #                = t(wx) %*% r,  (code)
@@ -331,17 +333,18 @@ irwls_fit <- function(warm, static) {
     halved <- FALSE  # did we have to halve the step size?
     # if objective function is not finite, keep halving the stepsize until it is finite
     if (!is.finite(obj_val) || obj_val > 9.9e30) {
-      rlang::warn("Infinite objective function!")
+      cli_warn("Infinite objective function!")
       if (is.null(coefold) || is.null(intold)) {
-        cli::cli_abort(
+        cli_abort(
           c("No valid set of coefficients has been found.",
-            "!" = "Please specify some with `make_irls_warmup()`."))
+            "!" = "Please specify some with `make_irls_warmup()`.")
+        )
       }
-      rlang::warn("step size truncated due to divergence")
+      cli_warn("step size truncated due to divergence")
       ii <- 1
       while (!is.finite(obj_val) || obj_val > 9.9e30) {
         if (ii > maxit_irls)
-          rlang::abort("inner loop 1; cannot correct step size")
+          cli_abort("inner loop 1; cannot correct step size")
         ii <- ii + 1
         start <- (start + coefold) / 2
         start_int <- (start_int + intold) / 2
@@ -358,17 +361,19 @@ irwls_fit <- function(warm, static) {
     }
     # if some of the new eta or mu are invalid, keep halving stepsize until valid
     if (!(valideta(eta) && validmu(mu))) {
-      rlang::warn("Invalid eta / mu!")
+      cli_warn("Invalid eta / mu!")
       if (is.null(coefold) || is.null(intold)) {
-        cli::cli_abort(c("No valid set of coefficients has been found.",
-                         "!" = "Please specify some with `make_irls_warmup()`."
+        cli_abort(c(
+          "No valid set of coefficients has been found.",
+          "!" = "Please specify some with `make_irls_warmup()`."
         ))
       }
-      rlang::warn("step size truncated: out of bounds")
+      cli_warn("step size truncated: out of bounds")
       ii <- 1
       while (!(valideta(eta) && validmu(mu))) {
-        if (ii > maxit_irls)
-          rlang::abort("inner loop 2; cannot correct step size.")
+        if (ii > maxit_irls) {
+          cli_abort("inner loop 2; cannot correct step size.")
+        }
         ii <- ii + 1
         start <- (start + coefold) / 2
         start_int <- (start_int + intold) / 2
@@ -387,8 +392,9 @@ irwls_fit <- function(warm, static) {
     if (obj_val > obj_val_old + 1e-7) {
       ii <- 1
       while (obj_val > obj_val_old + 1e-7) {
-        if (ii > maxit_irls)
-          rlang::abort("inner loop 3; cannot correct step size")
+        if (ii > maxit_irls) {
+          cli_abort("inner loop 3; cannot correct step size")
+        }
         ii <- ii + 1
         start <- (start + coefold) / 2
         start_int <- (start_int + intold) / 2
@@ -424,20 +430,18 @@ irwls_fit <- function(warm, static) {
   # end of IRLS loop
 
   # checks on convergence and fitted values
-  if (!conv)
-    rlang::warn("sparsgl_irls: algorithm did not converge")
-  if (boundary)
-    rlang::warn("sparsgl_irls: algorithm stopped at boundary value")
+  if (!conv) cli_warn("sparsgl_irls: algorithm did not converge")
+  if (boundary) cli_warn("sparsgl_irls: algorithm stopped at boundary value")
 
   # some extra warnings, printed only if trace_it == 2
   if (trace_it == 2) {
     tiny <- 10 * .Machine$double.eps
-    if (static$family$family == "binomial" &&
-        (any(mu > 1 - tiny) || any(mu < tiny))) {
-      rlang::warn("sparsgl_irls: fitted probabilities numerically 0 or 1 occurred")
+    if (static$family$family == "binomial" && (any(mu > 1 - tiny) || any(mu < tiny))) {
+      cli_warn("sparsgl_irls: fitted probabilities numerically 0 or 1 occurred")
     }
-    if (static$family$family == "poisson" && any(mu < static$eps))
-      rlang::warn("sparsegl_irls: fitted rates numerically 0 occurred")
+    if (static$family$family == "poisson" && any(mu < static$eps)) {
+      cli_warn("sparsegl_irls: fitted rates numerically 0 occurred")
+    }
   }
 
   # prepare output object
@@ -451,7 +455,6 @@ irwls_fit <- function(warm, static) {
   fit$boundary <- boundary
   fit$obj_function <- obj_val
   fit$npass <- iter
-
   fit
 }
 
@@ -586,7 +589,7 @@ spgl_wlsfit <- function(warm, wx, gamma, static) {
   if (jerr > 0) {
     if (jerr > 7777) errmsg <- "Unknown error"
     else errmsg <- "Memory allocation bug; contact pkg maintainer"
-    rlang::abort(errmsg, call = rlang::caller_env())
+    cli_abort(errmsg, call = rlang::caller_env())
   } else if (jerr < 0) {
     return(list(jerr = jerr))
   }
@@ -688,17 +691,14 @@ get_eta <- function(x, xs, beta, b0) {
 make_irls_warmup <- function(nobs, nvars, b0 = 0, beta = double(nvars),
                              r = double(nobs)) {
 
-  if (any(length(nobs) != 1, length(nvars) != 1, length(b0) != 1))
-    cli::cli_abort("All of `nobs`, `nvars`, and `b0` must be scalars.")
+  if (any(length(nobs) != 1, length(nvars) != 1, length(b0) != 1)) {
+    cli_abort("All of `nobs`, `nvars`, and `b0` must be scalars.")
+  }
   if ((length(r) > 1 && length(r) != nobs) || length(r) == 0) {
-    cli::cli_abort(
-      "`r` must have length 1 or `nobs` but has length {length(r)}."
-    )
+    cli_abort("`r` must have length 1 or `nobs` but has length {length(r)}.")
   }
   if ((length(beta) > 1 && length(beta) != nvars) || length(beta) == 0) {
-    cli::cli_abort(
-      "`beta` must have length 1 or `nvars` but has length {length(beta)}."
-    )
+    cli_abort("`beta` must have length 1 or `nvars` but has length {length(beta)}.")
   }
 
   structure(list(b0 = b0, beta = beta, r = r), class = "irlsspgl_warmup")

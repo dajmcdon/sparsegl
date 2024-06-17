@@ -10,12 +10,11 @@ sgl_logit <- function(
   ntab <- table(y)
   minclass <- min(ntab)
   if (minclass <= 1)
-    rlang::abort("Binomial regression: one class has 1 or 0 observations; not allowed")
+    cli_abort("Binomial regression: one class has 1 or 0 observations; not supported")
   if (length(ntab) != 2)
-    rlang::abort("Binomial regression: more than one class is not supported")
+    cli_abort("Binomial regression: more than two classes is not supported")
   if (minclass < 8)
-    rlang::warn(c("Binomial regression: one class has fewer than 8",
-                  "observations; dangerous ground"))
+    cli_warn("Binomial regression: one class has fewer than 8 observations; dangerous ground")
   # TODO, enable prediction with class labels if factor is passed
   if (intr == 1L && flmin < 1) b0_first <- coef(glm(y ~ 1, family = binomial()))
   y <- 2 * (as.integer(y) - 1) - 1 # convert to -1 / 1
