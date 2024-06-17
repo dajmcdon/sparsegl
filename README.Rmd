@@ -51,7 +51,7 @@ remotes::install_github("dajmcdon/sparsegl")
 library(sparsegl)
 ```
 
-```{r minimal-ex, echo = TRUE, fig.align = 'center'}
+```{r minimal-ex, echo = TRUE, fig.align = 'center', dev="svg"}
 set.seed(1010)
 n <- 100
 p <- 200

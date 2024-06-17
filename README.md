@@ -54,4 +54,4 @@ fit1 <- sparsegl(X, y, group = groups)
 plot(fit1, y_axis = "coef", x_axis = "penalty", add_legend = FALSE)
 ```
 
-<img src="man/figures/README-minimal-ex-1.png" width="100%" style="display: block; margin: auto;" />
+<img src="man/figures/README-minimal-ex-1.svg" width="100%" style="display: block; margin: auto;" />
