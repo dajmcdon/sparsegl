@@ -1,5 +1,4 @@
 PKG_LIBS = $(LAPACK_LIBS) $(BLAS_LIBS) $(FLIBS)
-PKG_FFLAGS += -Wall
 
 C_OBJS = sparsegl_init.o
 F_OBJS = sparsegl.o log_sgl_subfuns.o spmatmul.o sgl_subfuns.o sparsegllog.o wsgl.o
