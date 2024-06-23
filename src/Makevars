@@ -1,7 +1,7 @@
 C_OBJS = sparsegl_init.o
 F_OBJS = sparsegl.o log_sgl_subfuns.o spmatmul.o sgl_subfuns.o sparsegllog.o wsgl.o
 
-all: $(SHLIB) clean
+all: $(SHLIB)
 
 $(SHLIB): $(F_OBJS) $(C_OBJS)
 
