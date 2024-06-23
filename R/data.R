@@ -56,9 +56,10 @@
 #'   ))
 #'
 #' x <- Matrix::sparse.model.matrix(
-#'     ~ 0 + region + age + gender + raceethnicity + period +
+#'   ~ 0 + region + age + gender + raceethnicity + period +
 #'     bs(cli, df = df) + bs(hh_cmnty_cli, df = df),
-#'     data = trust_experts, drop.unused.levels = TRUE)
+#'   data = trust_experts, drop.unused.levels = TRUE
+#' )
 #'
 #' gr <- sapply(trust_experts, function(x) ifelse(is.factor(x), nlevels(x), NA))
 #' gr <- rep(seq(ncol(trust_experts) - 1), times = c(gr[!is.na(gr)], df, df))

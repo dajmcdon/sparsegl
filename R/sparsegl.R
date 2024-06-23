@@ -133,17 +133,16 @@
 #' yp <- rpois(n, abs(X %*% beta_star))
 #' fit_pois <- sparsegl(X, yp, group = groups, family = poisson())
 sparsegl <- function(
-  x, y, group = NULL, family = c("gaussian", "binomial"),
-  nlambda = 100, lambda.factor = ifelse(nobs < nvars, 0.01, 1e-04),
-  lambda = NULL, pf_group = sqrt(bs), pf_sparse = rep(1, nvars),
-  intercept = TRUE, asparse = 0.05, standardize = TRUE,
-  lower_bnd = -Inf, upper_bnd = Inf,
-  weights = NULL, offset = NULL, warm = NULL,
-  trace_it = 0,
-  dfmax = as.integer(max(group)) + 1L,
-  pmax = min(dfmax * 1.2, as.integer(max(group))),
-  eps = 1e-08, maxit = 3e+06) {
-
+    x, y, group = NULL, family = c("gaussian", "binomial"),
+    nlambda = 100, lambda.factor = ifelse(nobs < nvars, 0.01, 1e-04),
+    lambda = NULL, pf_group = sqrt(bs), pf_sparse = rep(1, nvars),
+    intercept = TRUE, asparse = 0.05, standardize = TRUE,
+    lower_bnd = -Inf, upper_bnd = Inf,
+    weights = NULL, offset = NULL, warm = NULL,
+    trace_it = 0,
+    dfmax = as.integer(max(group)) + 1L,
+    pmax = min(dfmax * 1.2, as.integer(max(group))),
+    eps = 1e-08, maxit = 3e+06) {
   this.call <- match.call()
   if (!is.matrix(x) && !inherits(x, "sparseMatrix")) {
     cli_abort("`x` must be a matrix.")
@@ -176,8 +175,8 @@ sparsegl <- function(
     }
   }
 
-  bn <- as.integer(max(group))  # number of groups
-  bs <- as.integer(as.numeric(table(group)))  # number of elements in each group
+  bn <- as.integer(max(group)) # number of groups
+  bs <- as.integer(as.numeric(table(group))) # number of elements in each group
 
   if (!identical(as.integer(sort(unique(group))), as.integer(1:bn))) {
     cli_abort("Groups must be consecutively numbered 1, 2, 3, ...")
@@ -214,7 +213,7 @@ sparsegl <- function(
       )
     } else {
       cli_warn("`pf_sparse` was set to 1 because `asparse` = {.val {0}}.")
-      pf_sparse = rep(1, nvars)
+      pf_sparse <- rep(1, nvars)
     }
   }
 
@@ -227,7 +226,7 @@ sparsegl <- function(
   iy <- as.integer(iy)
   group <- as.integer(group)
 
-  #parameter setup
+  # parameter setup
   if (length(pf_group) != bn) {
     cli_abort(
       "The length of `pf_group` must be the same as the number of groups: {.val {bn}}."
@@ -247,7 +246,7 @@ sparsegl <- function(
   dfmax <- as.integer(dfmax)
   pmax <- as.integer(pmax)
 
-  #lambda setup
+  # lambda setup
   nlam <- as.integer(nlambda)
   if (is.null(lambda)) {
     if (lambda.factor >= 1) {
@@ -256,7 +255,7 @@ sparsegl <- function(
     flmin <- as.double(lambda.factor)
     ulam <- double(1)
   } else {
-    #flmin = 1 if user define lambda
+    # flmin = 1 if user define lambda
     flmin <- as.double(1)
     if (any(lambda < 0)) cli_abort("`lambda` must be non-negative.")
     ulam <- as.double(rev(sort(lambda)))
@@ -270,14 +269,20 @@ sparsegl <- function(
   lower_bnd[lower_bnd == -Inf] <- -9.9e30
   upper_bnd[upper_bnd == Inf] <- 9.9e30
   if (length(lower_bnd) < bn) {
-    if (length(lower_bnd) == 1) lower_bnd <- rep(lower_bnd, bn)
-    else cli_abort("`lower_bnd` must be length {.val {1}} or length {.val {bn}}.")
+    if (length(lower_bnd) == 1) {
+      lower_bnd <- rep(lower_bnd, bn)
+    } else {
+      cli_abort("`lower_bnd` must be length {.val {1}} or length {.val {bn}}.")
+    }
   } else {
     lower_bnd <- lower_bnd[seq_len(bn)]
   }
   if (length(upper_bnd) < bn) {
-    if (length(upper_bnd) == 1) upper_bnd <- rep(upper_bnd, bn)
-    else cli_abort("`upper_bnd` must be length {.val {1}} or length {.val {bn}}.")
+    if (length(upper_bnd) == 1) {
+      upper_bnd <- rep(upper_bnd, bn)
+    } else {
+      cli_abort("`upper_bnd` must be length {.val {1}} or length {.val {bn}}.")
+    }
   } else {
     upper_bnd <- upper_bnd[seq_len(bn)]
   }
@@ -300,16 +305,17 @@ sparsegl <- function(
         i = "Estimating sparse group lasso without any offset. See {.fn sparsegl::sparsegl}."
       ))
     }
-    fit <- switch(
-      family,
+    fit <- switch(family,
       gaussian = sgl_ls(
         bn, bs, ix, iy, nobs, nvars, x, y, pf_group, pf_sparse,
         dfmax, pmax, nlam, flmin, ulam, eps, maxit, vnames, group, intr,
-        as.double(asparse), standardize, lower_bnd, upper_bnd),
+        as.double(asparse), standardize, lower_bnd, upper_bnd
+      ),
       binomial = sgl_logit(
         bn, bs, ix, iy, nobs, nvars, x, y, pf_group, pf_sparse,
         dfmax, pmax, nlam, flmin, ulam, eps, maxit, vnames, group, intr,
-        as.double(asparse), standardize, lower_bnd, upper_bnd)
+        as.double(asparse), standardize, lower_bnd, upper_bnd
+      )
     )
   }
   if (fam$check == "fam") {
@@ -331,4 +337,3 @@ sparsegl <- function(
   class(fit) <- c(class(fit), "sparsegl")
   fit
 }
-

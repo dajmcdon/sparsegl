@@ -1,6 +1,4 @@
-
 test_that("check if function delP() works as expected", {
-
   # beta is a vector of zeros
   beta <- double(15)
   gr <- rep(1:5, each = 3)
@@ -20,10 +18,9 @@ test_that("check if function delP() works as expected", {
 })
 
 test_that("check if function exact_df() works as expected", {
-
   set.seed(1)
   n <- 100
-  beta <- c(5,5,5,-5,-5,-5,1,0,1,0,0,0,0,2,0)
+  beta <- c(5, 5, 5, -5, -5, -5, 1, 0, 1, 0, 0, 0, 0, 2, 0)
   gr <- rep(1:5, each = 3)
   X <- matrix(rnorm(n * length(beta)), n)
   y <- X %*% beta + rnorm(n)
@@ -43,7 +40,7 @@ test_that("check if function exact_df() works as expected", {
 test_that("risk estimation functions reasonably", {
   set.seed(1)
   n <- 100
-  beta <- c(5,5,5,-5,-5,-5,1,0,1,0,0,0,0,2,0)
+  beta <- c(5, 5, 5, -5, -5, -5, 1, 0, 1, 0, 0, 0, 0, 2, 0)
   gr <- rep(1:5, each = 3)
   X <- matrix(rnorm(n * length(beta)), n)
   y <- X %*% beta + rnorm(n)
@@ -52,19 +49,29 @@ test_that("risk estimation functions reasonably", {
 
   expect_error(estimate_risk(out_logit, X))
   expect_error(estimate_risk(out, approx_df = FALSE))
-  expect_named(estimate_risk(out, approx_df = TRUE),
-               c("lambda", "df", "AIC", "BIC", "GCV"))
-  expect_named(estimate_risk(out, type = c("BIC", "GCV"), approx_df = TRUE),
-               c("lambda", "df", "BIC", "GCV"))
-  expect_identical(estimate_risk(out, approx_df = TRUE),
-                   estimate_risk(out, X, approx_df = TRUE))
-  X[abs(X) < 1] = 0
+  expect_named(
+    estimate_risk(out, approx_df = TRUE),
+    c("lambda", "df", "AIC", "BIC", "GCV")
+  )
+  expect_named(
+    estimate_risk(out, type = c("BIC", "GCV"), approx_df = TRUE),
+    c("lambda", "df", "BIC", "GCV")
+  )
+  expect_identical(
+    estimate_risk(out, approx_df = TRUE),
+    estimate_risk(out, X, approx_df = TRUE)
+  )
+  X[abs(X) < 1] <- 0
   X <- as_dgCMatrix(X)
   out_sparse <- sparsegl(X, y, gr)
-  expect_named(estimate_risk(out_sparse, approx_df = TRUE),
-               c("lambda", "df", "AIC", "BIC", "GCV"))
-  expect_named(estimate_risk(out_sparse, X),
-               c("lambda", "df", "AIC", "BIC", "GCV"))
+  expect_named(
+    estimate_risk(out_sparse, approx_df = TRUE),
+    c("lambda", "df", "AIC", "BIC", "GCV")
+  )
+  expect_named(
+    estimate_risk(out_sparse, X),
+    c("lambda", "df", "AIC", "BIC", "GCV")
+  )
   out_lam <- sparsegl(X, y, gr, lambda = c(100, 10, 1, .1, .01))
   er <- estimate_risk(out_lam, X)
   expect_named(er, c("lambda", "df", "AIC", "BIC", "GCV"))

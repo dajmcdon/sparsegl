@@ -28,8 +28,10 @@ test_that("results match gglasso up to tolerance", {
 
   g <- with(p1, gglasso(X, y, gr, intercept = FALSE))
   s <- with(
-    p1, sparsegl(X, y, gr, asparse = 0, standardize = FALSE,
-                 intercept = FALSE, lambda = g$lambda)
+    p1, sparsegl(X, y, gr,
+      asparse = 0, standardize = FALSE,
+      intercept = FALSE, lambda = g$lambda
+    )
   )
   expect_lt(mean(abs(s$beta - g$beta)), 1e-4)
 })

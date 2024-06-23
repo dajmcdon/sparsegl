@@ -9,17 +9,17 @@ x <- matrix(rnorm(nobs * nvars), nobs, nvars)
 family <- binomial()
 
 # objects created by sparsegl()
-nlambda = 100L
-lambda.factor = ifelse(nobs < nvars, 0.01, 1e-04)
-lambda = NULL
-pf_sparse = rep(1, nvars)
-intercept = as.integer(TRUE)
-asparse = as.double(0.05)
-standardize = TRUE
-dfmax = as.integer(max(group)) + 1L
-pmax = as.integer(min(dfmax * 1.2, as.integer(max(group))))
-eps = as.double(1e-08)
-maxit = as.integer(3e+08)
+nlambda <- 100L
+lambda.factor <- ifelse(nobs < nvars, 0.01, 1e-04)
+lambda <- NULL
+pf_sparse <- rep(1, nvars)
+intercept <- as.integer(TRUE)
+asparse <- as.double(0.05)
+standardize <- TRUE
+dfmax <- as.integer(max(group)) + 1L
+pmax <- as.integer(min(dfmax * 1.2, as.integer(max(group))))
+eps <- as.double(1e-08)
+maxit <- as.integer(3e+08)
 bn <- as.integer(max(group))
 bs <- as.integer(as.numeric(table(group)))
 iy <- cumsum(bs) # last column of x in each group
@@ -27,7 +27,7 @@ ix <- c(0, iy[-bn]) + 1 # first column of x in each group
 ix <- as.integer(ix)
 iy <- as.integer(iy)
 group <- as.integer(group)
-pf = as.double(sqrt(bs))
+pf <- as.double(sqrt(bs))
 pfl1 <- as.double(pf / sum(pf) * nvars)
 flmin <- as.double(lambda.factor)
 ulam <- double(1)
@@ -50,8 +50,10 @@ sx[sx < sqrt(.Machine$double.eps)] <- 1 # Don't divide by zero!]
 xs <- 1 / sx
 x <- x %*% Matrix::Diagonal(x = xs)
 
-init <- initializer(x, y, weights, family, intr = FALSE,
-                   has_offset, offset, pfl1, ulam)
+init <- initializer(x, y, weights, family,
+  intr = FALSE,
+  has_offset, offset, pfl1, ulam
+)
 cur_lambda <- init$cur_lambda
 findlambda <- init$findlambda
 no_user_lambda <- init$findlambda
@@ -92,12 +94,13 @@ static <- list(
 
 warm <- make_irls_warmup(nobs, nvars, b0 = init$b0, r = init$r)
 warm <- c(warm,
-          activeGroup = list(integer(pmax)),
-          activeGroupIndex = list(integer(bn)),
-          sset = list(integer(bn)),
-          ni = 0L, npass = 0L, me = 0L,
-          findlambda = findlambda,
-          eset = list(integer(bn)))
+  activeGroup = list(integer(pmax)),
+  activeGroupIndex = list(integer(bn)),
+  sset = list(integer(bn)),
+  ni = 0L, npass = 0L, me = 0L,
+  findlambda = findlambda,
+  eset = list(integer(bn))
+)
 l <- 0L
 warm$al0 <- as.double(cur_lambda)
 warm$ulam <- as.double(init$lambda_max)
@@ -112,7 +115,4 @@ test_that("calling sgl_irwlsfit works", {
   skip("skipping all macro irwls tests.")
 
   s <- spgl_wlsfit(warm, wx, gamma, static) # stuck
-
-
-
 })

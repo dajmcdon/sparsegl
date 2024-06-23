@@ -20,26 +20,32 @@ as_dgCMatrix <- function(x) {
 err <- function(n, maxit, pmax) {
   if (n == 0) msg <- ""
   if (n > 0) {
-    #fatal error
-    if (n < 7777)
+    # fatal error
+    if (n < 7777) {
       msg <- "Memory allocation error; contact package maintainer"
-    if (n == 10000)
+    }
+    if (n == 10000) {
       msg <- "All penalty factors are <= 0"
+    }
     n <- 1
     msg <- paste("in sparsegl fortran code -", msg)
   }
   if (n < 0) {
-    #non fatal error
-    if (n > -10000)
+    # non fatal error
+    if (n > -10000) {
       msg <- paste(
         "Convergence for ", -n, "th lambda value not reached after maxit=",
         maxit, " iterations; solutions for larger lambdas returned",
-        sep = "")
-    if (n < -10000)
+        sep = ""
+      )
+    }
+    if (n < -10000) {
       msg <- paste(
         "Number of nonzero coefficients along the path exceeds pmax=",
         pmax, " at ", -n - 10000, "th lambda value; solutions for larger lambdas returned",
-        sep = "")
+        sep = ""
+      )
+    }
     n <- -1
     msg <- paste("from gglasso fortran code -", msg)
   }
@@ -67,20 +73,24 @@ getoutput <- function(x, group, fit, maxit, pmax, nvars, vnames, eps) {
   nbetamax <- max(nbeta)
   lam <- fit$alam[seq(nalam)]
   stepnames <- paste("s", seq(nalam) - 1, sep = "")
-  errmsg <- err(fit$jerr, maxit, pmax)  ### error messages from fortran
+  errmsg <- err(fit$jerr, maxit, pmax) ### error messages from fortran
   switch(paste(errmsg$n),
-         `1` = stop(errmsg$msg, call. = FALSE),
-         `-1` = print(errmsg$msg, call. = FALSE))
+    `1` = stop(errmsg$msg, call. = FALSE),
+    `-1` = print(errmsg$msg, call. = FALSE)
+  )
   dd <- c(nvars, nalam)
   if (nbetamax > 0) {
     beta <- Matrix::drop0(
       matrix(fit$beta[seq(nvars * nalam)], nvars, nalam,
-             dimnames = list(vnames, stepnames)),
-      tol = eps^2)
+        dimnames = list(vnames, stepnames)
+      ),
+      tol = eps^2
+    )
     df <- apply(abs(beta) > 0, 2, sum) ## this is wrong, but fast
   } else {
     beta <- Matrix::Matrix(0, nvars, nalam,
-                           dimnames = list(vnames, stepnames))
+      dimnames = list(vnames, stepnames)
+    )
     df <- rep(0, nalam)
   }
   b0 <- fit$b0

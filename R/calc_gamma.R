@@ -3,10 +3,14 @@ calc_gamma <- function(x, ix, iy, bn) {
   for (g in seq_len(bn)) {
     grabcols <- ix[g]:iy[g]
     ncols <- length(grabcols)
-    if (ncols > 2) gamma[g] <- RSpectra::svds(x[,grabcols], 1, 0, 0)$d^2
-    else {
-      if (ncols == 2) gamma[g] <- maxeig2(x[,grabcols])
-      else gamma[g] <- sum(x[,grabcols]^2)
+    if (ncols > 2) {
+      gamma[g] <- RSpectra::svds(x[, grabcols], 1, 0, 0)$d^2
+    } else {
+      if (ncols == 2) {
+        gamma[g] <- maxeig2(x[, grabcols])
+      } else {
+        gamma[g] <- sum(x[, grabcols]^2)
+      }
     }
   }
   return(as.double(gamma / nrow(x)))
