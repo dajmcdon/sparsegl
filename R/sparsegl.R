@@ -291,6 +291,12 @@ sparsegl <- function(
 
   # call R sub-function
   fam <- validate_family(family)
+  if (!is.null(weights)) {
+    if (length(weights) != nobs) {
+      cli_abort("`weights` has length {nobs} while `y` has {length(y)}.")
+    }
+    weights <- weights / sum(weights) * nobs
+  }
   if (fam$check == "char") {
     family <- match.arg(family)
     if (!is.null(weights)) {
