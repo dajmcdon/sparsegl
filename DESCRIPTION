@@ -25,7 +25,7 @@ Description: Efficient implementation of sparse group lasso with optional
     allow for information criteria rather than cross-validation with very
     large data. Finally, the interface to compiled code avoids unnecessary
     copies and allows for the use of long integers.
-License: GPL (>= 2)
+License: MIT + file LICENSE
 URL: https://github.com/dajmcdon/sparsegl/,
     https://dajmcdon.github.io/sparsegl/
 BugReports: https://github.com/dajmcdon/sparsegl/issues/
