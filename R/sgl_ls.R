@@ -1,3 +1,4 @@
+#' @importFrom dotCall64 integer_dc vector_dc numeric_dc
 sgl_ls <- function(
     bn, bs, ix, iy, nobs, nvars, x, y, pf, pfl1, dfmax, pmax, nlam,
     flmin, ulam, eps, maxit, vnames, group, intr, asparse, standardize,
