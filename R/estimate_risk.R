@@ -16,7 +16,7 @@
 #' @seealso [sparsegl()] method.
 #' @references Vaiter S, Deledalle C, Peyré G, Fadili J, Dossal C. (2012). \emph{The
 #' Degrees of Freedom of the Group Lasso for a General Design}.
-#' \url{https://arxiv.org/pdf/1212.6478.pdf}.
+#' \url{https://arxiv.org/abs/1212.6478}.
 #' @return a `data.frame` with as many rows as `object$lambda`. It contains
 #'   columns `lambda`, `df`, and the requested risk types.
 #' @export

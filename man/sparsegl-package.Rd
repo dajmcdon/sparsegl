@@ -12,7 +12,8 @@ Useful links:
 \itemize{
   \item \url{https://github.com/dajmcdon/sparsegl/}
   \item \url{https://dajmcdon.github.io/sparsegl/}
-  \item Report bugs at \url{https://github.com/dajmcdon/sparsegl/issues/}
+  \item \url{https://github.com/dajmcdon/sparsegl}
+  \item Report bugs at \url{https://github.com/dajmcdon/sparsegl/issues}
 }
 
 }
