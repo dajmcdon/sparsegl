@@ -1,24 +1,21 @@
+PKG_LIBS = $(LAPACK_LIBS) $(BLAS_LIBS) $(FLIBS)
+
 C_OBJS = sparsegl_init.o
 F_OBJS = sparsegl.o log_sgl_subfuns.o spmatmul.o sgl_subfuns.o sparsegllog.o wsgl.o
 
-all: $(SHLIB) clean
+.PHONY: all clean
+
+all: $(SHLIB)
 
 $(SHLIB): $(F_OBJS) $(C_OBJS)
 
 spmatmul.o: spmatmul.f90
-spmatmul.mod: spmatmul.o
-sgl_subfuns.o: spmatmul.mod
-sgl_subfuns.mod: spmatmul.mod sgl_subfuns.o
-log_sgl_subfuns.o: spmatmul.mod
-log_sgl_subfuns.mod: log_sgl_subfuns.f90 log_sgl_subfuns.o spmatmul.mod\
-										 spmatmul.o
-sparsegl.o: sparsegl.f90 spmatmul.mod sgl_subfuns.mod sgl_subfuns.o\
-						spmatmul.o
-sparsegllog.o: sparsegllog.f90 log_sgl_subfuns.mod sgl_subfuns.mod spmatmul.mod
-wsgl.o: wsgl.f90 spmatmul.mod sgl_subfuns.mod sgl_subfuns.o spmatmul.o
+sgl_subfuns.o log_sgl_subfuns.o: spmatmul.o
+sparsegl.o: sgl_subfuns.o spmatmul.o
+sparsegllog.o: log_sgl_subfuns.o sgl_subfuns.o spmatmul.o
+wsgl.o: sgl_subfuns.o spmatmul.o
 sparsegl_init.o: sparsegl.o sparsegllog.o spmatmul.o sgl_subfuns.o\
-								 log_sgl_subfuns.o spmatmul.mod sgl_subfuns.mod\
-								 log_sgl_subfuns.mod wsgl.o
+								 log_sgl_subfuns.o wsgl.o
 
 clean:
 	@rm -rf *.mod *.o

@@ -74,8 +74,8 @@ group l1 and l2-norms vectors (a scalar).
 
 }}
 \examples{
-x <- c(rep(-1, 5), rep(0, 5), rep(1,5))
-gr <- c(rep(1,5), rep(2,5), rep(3,5))
+x <- c(rep(-1, 5), rep(0, 5), rep(1, 5))
+gr <- c(rep(1, 5), rep(2, 5), rep(3, 5))
 asparse <- 0.05
 grouped_sp_norm(x, gr, asparse)
 

@@ -41,10 +41,10 @@ coef.sparsegl <- function(object, s = NULL, ...) {
     lamlist <- lambda.interp(lambda, s)
     ls <- length(s)
     if (ls == 1) {
-      nbeta = nbeta[, lamlist$left, drop = FALSE] * lamlist$frac +
+      nbeta <- nbeta[, lamlist$left, drop = FALSE] * lamlist$frac +
         nbeta[, lamlist$right, drop = FALSE] * (1 - lamlist$frac)
     } else {
-      nbeta = nbeta[, lamlist$left, drop = FALSE] %*%
+      nbeta <- nbeta[, lamlist$left, drop = FALSE] %*%
         Matrix::Diagonal(ls, lamlist$frac) +
         nbeta[, lamlist$right, drop = FALSE] %*%
         Matrix::Diagonal(ls, 1 - lamlist$frac)
@@ -111,20 +111,26 @@ predict.sparsegl <- function(
   rlang::check_dots_empty()
   type <- match.arg(type)
   if (missing(newx)) {
-    if (!match(type, c("coefficients", "nonzero"), FALSE))
-      cli::cli_abort(
+    if (!match(type, c("coefficients", "nonzero"), FALSE)) {
+      cli_abort(
         "You must supply a value for `newx` when `type` == '{type}'."
       )
+    }
   }
   nbeta <- coef(object, s)
-  if (type == "coefficients") return(nbeta)
-  if (type == "nonzero") return(nonzeroCoef(nbeta[-1, , drop = FALSE]))
+  if (type == "coefficients") {
+    return(nbeta)
+  }
+  if (type == "nonzero") {
+    return(nonzeroCoef(nbeta[-1, , drop = FALSE]))
+  }
   if (inherits(newx, "sparseMatrix")) newx <- as_dgCMatrix(newx)
   dx <- dim(newx)
   p <- object$dim[1]
   if (is.null(dx)) newx <- matrix(newx, 1, byrow = TRUE)
-  if (ncol(newx) != p)
-    cli::cli_abort("The number of variables in `newx` must be {p}.")
+  if (ncol(newx) != p) {
+    cli_abort("The number of variables in `newx` must be {p}.")
+  }
   fit <- as.matrix(cbind2(1, newx) %*% nbeta)
   fit
 }
@@ -146,8 +152,7 @@ predict.logitspgl <- function(
     ...) {
   type <- match.arg(type)
   nfit <- NextMethod("predict")
-  switch(
-    type,
+  switch(type,
     response = 1 / (1 + exp(-nfit)),
     class = object$classnames[ifelse(nfit > 0, 2, 1)],
     nfit
@@ -161,17 +166,21 @@ predict.irlsspgl <- function(
     ...) {
   type <- match.arg(type)
   nfit <- NextMethod("predict")
-  if (type == "response") return(object$family$linkinv(nfit))
-  else return(nfit)
+  if (type == "response") {
+    return(object$family$linkinv(nfit))
+  } else {
+    return(nfit)
+  }
 }
 
 
 #' @export
 fitted.sparsegl <- function(object, ...) {
-  cli::cli_abort(c(
+  cli_abort(c(
     "!" = "Because design matrices are typically large, these are not stored ",
     "!" = "in the estimated `sparsegl` object. Use `predict()` instead, and ",
-    "!" = "pass in the original data."))
+    "!" = "pass in the original data."
+  ))
 }
 
 #' @method summary sparsegl
@@ -193,11 +202,12 @@ summary.sparsegl <- function(object, ...) {
     lambda = lambda[xlam],
     index = xlam,
     nnzero = nnzero[xlam],
-    active_grps = active_grps[xlam])
-  )
+    active_grps = active_grps[xlam]
+  ))
   rownames(tab) <- names(xlam)
   out <- structure(list(call = object$call, table = tab),
-                   class = "summary.sparsegl")
+    class = "summary.sparsegl"
+  )
   out
 }
 
@@ -205,7 +215,6 @@ summary.sparsegl <- function(object, ...) {
 #' @export
 print.summary.sparsegl <- function(
     x, digits = max(3, getOption("digits") - 3), ...) {
-
   rlang::check_dots_empty()
   lambda_warning <- all(x$table$nnzero == 0)
 
@@ -219,7 +228,6 @@ print.summary.sparsegl <- function(
   cat("Summary of Lambda sequence:\n")
   print(x$tab, digits = digits)
   cat("\n")
-
 }
 
 #' @method print sparsegl
@@ -228,5 +236,3 @@ print.sparsegl <- function(x, digits = min(3, getOption("digits") - 3), ...) {
   rlang::check_dots_empty()
   print(summary(x), digits = digits)
 }
-
-

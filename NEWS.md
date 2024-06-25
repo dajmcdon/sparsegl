@@ -1,3 +1,16 @@
+# sparsegl 1.1.0
+
+* Address some CRAN issues for FORTRAN builds on GCC 14.1
+
+# sparsegl 1.0.2
+
+* Corrects a bug / adds support for `weights` and `offset` in cv
+* Some minor tweaks to error and warning messages
+
+# sparsegl 1.0.1
+
+* Remove unnecessary attributes from the included data
+
 # sparsegl 1.0.0
 
 * Improved documentation

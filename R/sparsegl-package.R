@@ -4,6 +4,9 @@
 #' @importFrom stats approx coef predict fitted
 #' @importFrom rlang .data abort warn
 #' @importFrom rlang := %||%
-#' @import dotCall64 Matrix
+#' @importFrom cli cli_abort cli_warn
+#' @importFrom dotCall64 .C64 integer_dc
+#' @importFrom RSpectra svds
+#' @import Matrix
 #' @keywords internal
 "_PACKAGE"

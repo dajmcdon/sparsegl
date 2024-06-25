@@ -31,7 +31,6 @@ plot.sparsegl <- function(x,
                           x_axis = c("lambda", "penalty"),
                           add_legend = n_legend_values < 20,
                           ...) {
-
   rlang::check_dots_empty()
   y_axis <- match.arg(y_axis)
   x_axis <- match.arg(x_axis)
@@ -39,9 +38,10 @@ plot.sparsegl <- function(x,
   xb <- x$beta
   nonzeros <- sort(unique(xb@i)) + 1
   if (length(nonzeros) == 0) {
-    cli::cli_abort(
+    cli_abort(
       c("No nonzero betas / groups are available to plot.",
-        i = "All coefficient estimates are exactly 0.")
+        i = "All coefficient estimates are exactly 0."
+      )
     )
   }
 
@@ -66,7 +66,9 @@ plot.sparsegl <- function(x,
   plot_layer <- ggplot2::ggplot(
     df, ggplot2::aes(
       x = !!rlang::sym(x_axis), y = .data$value, color = !!rlang::sym(y_axis)
-    )) + ggplot2::geom_hline(yintercept = 0)
+    )
+  ) +
+    ggplot2::geom_hline(yintercept = 0)
 
   if (x_axis == "penalty") {
     xlab_layer <- ggplot2::xlab("penalty / max (penalty)")
@@ -86,10 +88,10 @@ plot.sparsegl <- function(x,
   legend_layer <- ggplot2::scale_color_viridis_d(name = "")
 
   theme_layer <- ggplot2::theme_bw()
-  if (!add_legend)
+  if (!add_legend) {
     theme_layer <- theme_layer + ggplot2::theme(legend.position = "none")
+  }
 
   p <- plot_layer + xlab_layer + legend_layer + theme_layer
   return(p)
 }
-

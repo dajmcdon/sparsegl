@@ -1,6 +1,4 @@
 test_that("family check returns correct results", {
-
-
   expect_identical(check_family("g"), list(check = "char", family = "g"))
   expect_identical(check_family(gaussian), list(check = "fam", family = gaussian()))
   fake_family <- gaussian()

@@ -46,7 +46,6 @@ sgl_irwls <- function(
     flmin, ulam, eps, maxit, vnames, group, intr, asparse, standardize,
     lower_bnd, upper_bnd, weights = NULL, offset = NULL, family = gaussian(),
     trace_it = 0, warm = NULL) {
-
   validate_family(family)
 
   ## Init the family just to check that it works
@@ -80,8 +79,10 @@ sgl_irwls <- function(
 
   # get null deviance and lambda max, work out lambda values
   # we ALWAYS fit the intercept inside wsgl, so start it at zero
-  init <- initializer(x, y, weights, family, intr = intr,
-                      has_offset, offset, ulam, flmin)
+  init <- initializer(x, y, weights, family,
+    intr = intr,
+    has_offset, offset, ulam, flmin
+  )
   # this is supposed to be an upper bound
   # work out lambda values, cur_lambda is lambda_max / 0.99 when appropriate.
   cur_lambda <- init$cur_lambda
@@ -125,12 +126,14 @@ sgl_irwls <- function(
     lb = as.double(lower_bnd),
     ub = as.double(upper_bnd),
     family = family,
-    trace_it = trace_it)
+    trace_it = trace_it
+  )
 
-  if (is.null(warm))
+  if (is.null(warm)) {
     warm <- make_irls_warmup(nobs, nvars, b0 = init$b0, r = init$r)
+  }
   if (!inherits(warm, "irlsspgl_warmup")) {
-    cli::cli_abort(
+    cli_abort(
       "the `warm` object should be created with `make_irls_warmup()`."
     )
   }
@@ -143,8 +146,10 @@ sgl_irwls <- function(
     warm$activeGroupIndex[zn] <- seq_along(zn)
     warm$sset[zn] <- 1L
   }
-  warm <- c(warm, ni = 0L, npass = 0L, me = 0L, findlambda = findlambda,
-            eset = list(warm$sset))
+  warm <- c(warm,
+    ni = 0L, npass = 0L, me = 0L, findlambda = findlambda,
+    eset = list(warm$sset)
+  )
 
   l <- 0L
   while (l < nlam) {
@@ -152,14 +157,16 @@ sgl_irwls <- function(
       l <- l + 1L
       warm$al0 <- as.double(cur_lambda)
       warm$ulam <- as.double(ulam[l])
-      if (trace_it == 2)
+      if (trace_it == 2) {
         cat("Fitting lambda index", l, ":", ulam[l], fill = TRUE)
+      }
     } else {
       # trying to find lambda max, we started too big
       warm$al0 <- as.double(cur_lambda)
       warm$ulam <- as.double(init$lambda_max)
-      if (trace_it == 2)
+      if (trace_it == 2) {
         cat("Trying to find a reasonable starting lambda.", fill = TRUE)
+      }
     }
     warm$l <- as.integer(l)
 
@@ -169,22 +176,24 @@ sgl_irwls <- function(
     if (trace_it == 1) utils::setTxtProgressBar(pb, l)
     if (warm$jerr != 0) {
       if (l > 1L) {
-        cli::cli_warn(c(
+        cli_warn(c(
           "Convergence for {l}th lambda value not reached after maxit =",
-          "{maxit} iterations; solutions for larger lambdas returned."))
+          "{maxit} iterations; solutions for larger lambdas returned."
+        ))
         l <- l - 1L
         break
       } else {
-        cli::cli_warn(c(
+        cli_warn(c(
           "Convergence for initial lambda value not reached after maxit =",
-          "{maxit} iterations; no solutions available."))
+          "{maxit} iterations; no solutions available."
+        ))
       }
     }
 
     # browser()
     if (findlambda) { # we searched inside the FORTRAN code, now we found it
       ulam <- double(nlam)
-      alf <- flmin^(1/(nlam - 1))
+      alf <- flmin^(1 / (nlam - 1))
       ulam[1:nlam] <- exp(log(warm$ulam) + -1:(nlam - 2) * log(alf))
       l <- 2L
       findlambda <- FALSE
@@ -198,8 +207,9 @@ sgl_irwls <- function(
 
     # early stopping if dev.ratio almost 1 or no improvement
     if (l >= mnl && no_user_lambda) {
-      if (dev.ratio[l] > 1 - 1e-4) break
-      else if (l > 1) {
+      if (dev.ratio[l] > 1 - 1e-4) {
+        break
+      } else if (l > 1) {
         if (family$family == "gaussian") {
           if (dev.ratio[l] - dev.ratio[l - 1] < 1e-5 * dev.ratio[l]) break
         } else if (family$family == "poisson") {
@@ -226,8 +236,10 @@ sgl_irwls <- function(
   out <- list()
   out$b0 <- b0
   names(out$b0) <- stepnames
-  out$beta <- Matrix::Matrix(beta, sparse = TRUE,
-                             dimnames = list(vnames, stepnames))
+  out$beta <- Matrix::Matrix(beta,
+    sparse = TRUE,
+    dimnames = list(vnames, stepnames)
+  )
   if (standardize) out$beta <- out$beta * xs
   out$df <- apply(abs(out$beta) > 0, 2, sum)
   out$dim <- dim(out$beta)
@@ -256,8 +268,8 @@ irwls_fit <- function(warm, static) {
 
   fit <- warm
   nulldev <- static$nulldev
-  coefold <- fit$beta   # prev value for coefficients
-  intold <- fit$b0    # prev value for intercept
+  coefold <- fit$beta # prev value for coefficients
+  intold <- fit$b0 # prev value for intercept
   lambda <- fit$ulam
   eta <- get_eta(static$x, static$xs, coefold, intold)
   mu <- linkinv(eta <- eta + static$offset)
@@ -267,11 +279,12 @@ irwls_fit <- function(warm, static) {
 
 
   if (!validmu(mu) || !valideta(eta)) {
-    cli::cli_abort(c("Cannot find valid starting values.",
-                   "!" = "Please specify some with `make_irls_warmup()`."))
+    cli_abort(c("Cannot find valid starting values.",
+      "!" = "Please specify some with `make_irls_warmup()`."
+    ))
   }
 
-  start <- NULL     # current value for coefficients
+  start <- NULL # current value for coefficients
   start_int <- NULL # current value for intercept
   obj_val_old <- obj_function(
     static$y, mu, static$group, static$weights, static$family,
@@ -282,17 +295,17 @@ irwls_fit <- function(warm, static) {
   if (static$trace_it == 2) {
     cat("Warm Start Objective:", obj_val_old, fill = TRUE)
   }
-  conv <- FALSE      # converged?
+  conv <- FALSE # converged?
   iter <- fit$npass
 
   # IRLS loop
   while (iter < static$maxit && !conv) {
     # some checks for NAs/zeros
     varmu <- variance(mu)
-    if (anyNA(varmu)) rlang::abort("NAs in V(mu)")
-    if (any(varmu == 0)) rlang::abort("0s in V(mu)")
+    if (anyNA(varmu)) cli_abort("NAs in V(mu)")
+    if (any(varmu == 0)) cli_abort("0s in V(mu)")
     mu.eta.val <- mu.eta(eta)
-    if (anyNA(mu.eta.val)) rlang::abort("NAs in d(mu)/d(eta)")
+    if (anyNA(mu.eta.val)) cli_abort("NAs in d(mu)/d(eta)")
 
     # d ell / d beta = X'W (z - mu) / mu.eta.val (theoretically)
     #                = t(wx) %*% r,  (code)
@@ -312,7 +325,9 @@ irwls_fit <- function(warm, static) {
     # do WLS with warmstart from previous iteration, dispatch to FORTRAN wls
     fit <- spgl_wlsfit(fit, wx, gamma, static)
 
-    if (fit$jerr != 0) return(list(jerr = fit$jerr))
+    if (fit$jerr != 0) {
+      return(list(jerr = fit$jerr))
+    }
 
     # update coefficients, eta, mu and obj_val
     start <- fit$beta
@@ -322,26 +337,30 @@ irwls_fit <- function(warm, static) {
     mu <- linkinv(eta <- eta + static$offset)
     obj_val <- obj_function(
       static$y, mu, static$group, static$weights, static$family, static$pf,
-      static$pfl1, static$asparse, start, lambda)
+      static$pfl1, static$asparse, start, lambda
+    )
     iter <- iter + fit$npass
     fit$npass <- iter
     if (trace_it == 2) cat("Iteration", iter, "Objective:", obj_val, fill = TRUE)
 
     boundary <- FALSE
-    halved <- FALSE  # did we have to halve the step size?
+    halved <- FALSE # did we have to halve the step size?
     # if objective function is not finite, keep halving the stepsize until it is finite
     if (!is.finite(obj_val) || obj_val > 9.9e30) {
-      rlang::warn("Infinite objective function!")
+      cli_warn("Infinite objective function!")
       if (is.null(coefold) || is.null(intold)) {
-        cli::cli_abort(
+        cli_abort(
           c("No valid set of coefficients has been found.",
-            "!" = "Please specify some with `make_irls_warmup()`."))
+            "!" = "Please specify some with `make_irls_warmup()`."
+          )
+        )
       }
-      rlang::warn("step size truncated due to divergence")
+      cli_warn("step size truncated due to divergence")
       ii <- 1
       while (!is.finite(obj_val) || obj_val > 9.9e30) {
-        if (ii > maxit_irls)
-          rlang::abort("inner loop 1; cannot correct step size")
+        if (ii > maxit_irls) {
+          cli_abort("inner loop 1; cannot correct step size")
+        }
         ii <- ii + 1
         start <- (start + coefold) / 2
         start_int <- (start_int + intold) / 2
@@ -349,26 +368,30 @@ irwls_fit <- function(warm, static) {
         mu <- linkinv(eta <- eta + static$offset)
         obj_val <- obj_function(
           static$y, mu, static$group, static$weights, static$family, static$pf,
-          static$pfl1, static$asparse, start, lambda)
-        if (trace_it == 2)
+          static$pfl1, static$asparse, start, lambda
+        )
+        if (trace_it == 2) {
           cat("Iteration", iter, " Halved step 1, Objective:", obj_val, fill = TRUE)
+        }
       }
       boundary <- TRUE
       halved <- TRUE
     }
     # if some of the new eta or mu are invalid, keep halving stepsize until valid
     if (!(valideta(eta) && validmu(mu))) {
-      rlang::warn("Invalid eta / mu!")
+      cli_warn("Invalid eta / mu!")
       if (is.null(coefold) || is.null(intold)) {
-        cli::cli_abort(c("No valid set of coefficients has been found.",
-                         "!" = "Please specify some with `make_irls_warmup()`."
+        cli_abort(c(
+          "No valid set of coefficients has been found.",
+          "!" = "Please specify some with `make_irls_warmup()`."
         ))
       }
-      rlang::warn("step size truncated: out of bounds")
+      cli_warn("step size truncated: out of bounds")
       ii <- 1
       while (!(valideta(eta) && validmu(mu))) {
-        if (ii > maxit_irls)
-          rlang::abort("inner loop 2; cannot correct step size.")
+        if (ii > maxit_irls) {
+          cli_abort("inner loop 2; cannot correct step size.")
+        }
         ii <- ii + 1
         start <- (start + coefold) / 2
         start_int <- (start_int + intold) / 2
@@ -379,16 +402,22 @@ irwls_fit <- function(warm, static) {
       halved <- TRUE
       obj_val <- obj_function(
         static$y, mu, static$group, static$weights, static$family, static$pf,
-        static$pfl1, static$asparse, start, lambda)
-      if (trace_it == 2) cat("Iteration", iter, " Halved step 2, Objective:",
-                             obj_val, fill = TRUE)
+        static$pfl1, static$asparse, start, lambda
+      )
+      if (trace_it == 2) {
+        cat("Iteration", iter, " Halved step 2, Objective:",
+          obj_val,
+          fill = TRUE
+        )
+      }
     }
     # extra halving step if objective function value actually increased
     if (obj_val > obj_val_old + 1e-7) {
       ii <- 1
       while (obj_val > obj_val_old + 1e-7) {
-        if (ii > maxit_irls)
-          rlang::abort("inner loop 3; cannot correct step size")
+        if (ii > maxit_irls) {
+          cli_abort("inner loop 3; cannot correct step size")
+        }
         ii <- ii + 1
         start <- (start + coefold) / 2
         start_int <- (start_int + intold) / 2
@@ -396,9 +425,14 @@ irwls_fit <- function(warm, static) {
         mu <- linkinv(eta <- eta + static$offset)
         obj_val <- obj_function(
           static$y, mu, static$group, static$weights, static$family, static$pf,
-          static$pfl1, static$asparse, start, lambda)
-        if (trace_it == 2) cat("Iteration", iter, " Halved step 3, Objective:",
-                               obj_val, fill = TRUE)
+          static$pfl1, static$asparse, start, lambda
+        )
+        if (trace_it == 2) {
+          cat("Iteration", iter, " Halved step 3, Objective:",
+            obj_val,
+            fill = TRUE
+          )
+        }
       }
       halved <- TRUE
     }
@@ -424,40 +458,38 @@ irwls_fit <- function(warm, static) {
   # end of IRLS loop
 
   # checks on convergence and fitted values
-  if (!conv)
-    rlang::warn("sparsgl_irls: algorithm did not converge")
-  if (boundary)
-    rlang::warn("sparsgl_irls: algorithm stopped at boundary value")
+  if (!conv) cli_warn("sparsgl_irls: algorithm did not converge")
+  if (boundary) cli_warn("sparsgl_irls: algorithm stopped at boundary value")
 
   # some extra warnings, printed only if trace_it == 2
   if (trace_it == 2) {
     tiny <- 10 * .Machine$double.eps
-    if (static$family$family == "binomial" &&
-        (any(mu > 1 - tiny) || any(mu < tiny))) {
-      rlang::warn("sparsgl_irls: fitted probabilities numerically 0 or 1 occurred")
+    if (static$family$family == "binomial" && (any(mu > 1 - tiny) || any(mu < tiny))) {
+      cli_warn("sparsgl_irls: fitted probabilities numerically 0 or 1 occurred")
     }
-    if (static$family$family == "poisson" && any(mu < static$eps))
-      rlang::warn("sparsegl_irls: fitted rates numerically 0 occurred")
+    if (static$family$family == "poisson" && any(mu < static$eps)) {
+      cli_warn("sparsegl_irls: fitted rates numerically 0 occurred")
+    }
   }
 
   # prepare output object
   # if (save.fit == FALSE) fit$warm_fit <- NULL
   fit$offset <- static$offset
   fit$nulldev <- nulldev
-  fit$dev.ratio <- 1 - dev_function(static$y, mu, static$weights,
-                                    static$family) / fit$nulldev
+  fit$dev.ratio <- 1 - dev_function(
+    static$y, mu, static$weights,
+    static$family
+  ) / fit$nulldev
   fit$family <- static$family
   fit$converged <- conv
   fit$boundary <- boundary
   fit$obj_function <- obj_val
   fit$npass <- iter
-
   fit
 }
 
 
 spgl_wlsfit <- function(warm, wx, gamma, static) {
-
   r <- warm$r
   ulam <- warm$ulam
   activeGroup <- warm$activeGroup
@@ -498,14 +530,16 @@ spgl_wlsfit <- function(warm, wx, gamma, static) {
 
     wls_fit <- dotCall64::.C64(
       "spmat_wsgl",
-      SIGNATURE = c("integer", "integer", "integer", "integer", "double",
-                    "integer", "integer", "double", "integer", "integer",
-                    "integer", "double", "double", "double",
-                    "integer", "double", "double", "integer", "integer",
-                    "double", "double", "integer", "integer", "integer",
-                    "integer", "integer", "double", "double", "double",
-                    "integer", "integer", "double", "double", "double",
-                    "integer", "integer", "integer"),
+      SIGNATURE = c(
+        "integer", "integer", "integer", "integer", "double",
+        "integer", "integer", "double", "integer", "integer",
+        "integer", "double", "double", "double",
+        "integer", "double", "double", "integer", "integer",
+        "double", "double", "integer", "integer", "integer",
+        "integer", "integer", "double", "double", "double",
+        "integer", "integer", "double", "double", "double",
+        "integer", "integer", "integer"
+      ),
       # Read only
       bn = bn, bs = bs, ix = ix, iy = iy, gam = gamma, nobs = nobs,
       nvars = nvars, x = xval, xidx = xidx, xcptr = xcptr, nnz = nnz,
@@ -532,21 +566,26 @@ spgl_wlsfit <- function(warm, wx, gamma, static) {
       b0old = b0old, betaold = betaold,
       # read / write
       al0 = al0, findlambda = findlambda, l = l, me = me,
-      INTENT = c(rep("r", 11), "rw", rep("r", 3), "rw", rep("r", 3), "rw", "w",
-                 rep("rw", 5), rep("r", 3), rep("rw", 2), rep("r", 2),
-                 rep("rw", 4)),
+      INTENT = c(
+        rep("r", 11), "rw", rep("r", 3), "rw", rep("r", 3), "rw", "w",
+        rep("rw", 5), rep("r", 3), rep("rw", 2), rep("r", 2),
+        rep("rw", 4)
+      ),
       NAOK = TRUE,
-      PACKAGE = "sparsegl")
+      PACKAGE = "sparsegl"
+    )
   } else {
     wls_fit <- dotCall64::.C64(
       "wsgl",
-      SIGNATURE = c("integer", "integer", "integer", "integer", "double",
-                    "integer", "integer", "double", "double", "double", "double",
-                    "integer", "double", "double", "integer", "integer",
-                    "double", "double", "integer", "integer", "integer",
-                    "integer", "integer", "double", "double", "double",
-                    "integer", "integer", "double", "double", "double",
-                    "integer", "integer", "integer"),
+      SIGNATURE = c(
+        "integer", "integer", "integer", "integer", "double",
+        "integer", "integer", "double", "double", "double", "double",
+        "integer", "double", "double", "integer", "integer",
+        "double", "double", "integer", "integer", "integer",
+        "integer", "integer", "double", "double", "double",
+        "integer", "integer", "double", "double", "double",
+        "integer", "integer", "integer"
+      ),
       # Read only
       bn = bn, bs = bs, ix = ix, iy = iy, gam = gamma, nobs = nobs,
       nvars = nvars, x = as.double(wx),
@@ -573,28 +612,36 @@ spgl_wlsfit <- function(warm, wx, gamma, static) {
       b0old = b0old, betaold = betaold,
       # read / write
       al0 = al0, findlambda = findlambda, l = l, me = me,
-      INTENT = c(rep("r", 8), "rw", rep("r", 3), "rw", rep("r", 3), "rw", "w",
-                 rep("rw", 5), rep("r", 3), rep("rw", 2), rep("r", 2),
-                 rep("rw", 4)),
+      INTENT = c(
+        rep("r", 8), "rw", rep("r", 3), "rw", rep("r", 3), "rw", "w",
+        rep("rw", 5), rep("r", 3), rep("rw", 2), rep("r", 2),
+        rep("rw", 4)
+      ),
       NAOK = TRUE,
-      PACKAGE = "sparsegl")
+      PACKAGE = "sparsegl"
+    )
   }
 
   jerr <- wls_fit$jerr
   # if error code > 0, fatal error occurred: stop immediately
   # if error code < 0, non-fatal error occurred: return error code
   if (jerr > 0) {
-    if (jerr > 7777) errmsg <- "Unknown error"
-    else errmsg <- "Memory allocation bug; contact pkg maintainer"
-    rlang::abort(errmsg, call = rlang::caller_env())
+    if (jerr > 7777) {
+      errmsg <- "Unknown error"
+    } else {
+      errmsg <- "Memory allocation bug; contact pkg maintainer"
+    }
+    cli_abort(errmsg, call = rlang::caller_env())
   } else if (jerr < 0) {
     return(list(jerr = jerr))
   }
 
   # wls_fit
-  wls_fit[c("r", "ulam", "b0", "beta", "activeGroup", "activeGroupIndex",
-            "ni", "npass", "sset", "eset", "al0", "findlambda", "l", "me",
-            "jerr")]
+  wls_fit[c(
+    "r", "ulam", "b0", "beta", "activeGroup", "activeGroupIndex",
+    "ni", "npass", "sset", "eset", "al0", "findlambda", "l", "me",
+    "jerr"
+  )]
 }
 
 
@@ -604,8 +651,11 @@ initializer <- function(x, y, weights, family, intr, has_offset, offset,
   nvars <- ncol(x)
   if (intr) {
     suppressWarnings({
-      tempfit <- stats::glm(y ~ 1, family = family, weights = weights,
-                            offset = offset)})
+      tempfit <- stats::glm(y ~ 1,
+        family = family, weights = weights,
+        offset = offset
+      )
+    })
     b0 <- coef(tempfit)[1]
     mu <- tempfit$fitted.values
   } else {
@@ -634,9 +684,11 @@ initializer <- function(x, y, weights, family, intr, has_offset, offset,
 
   cur_lambda <- max(lambda_max / 0.99, 1e-6)
 
-  list(r = r, mu = mu, findlambda = findlambda,
-       lambda_max = lambda_max, nulldev = nulldev,
-       cur_lambda = cur_lambda, b0 = b0, eta = eta)
+  list(
+    r = r, mu = mu, findlambda = findlambda,
+    lambda_max = lambda_max, nulldev = nulldev,
+    cur_lambda = cur_lambda, b0 = b0, eta = eta
+  )
 }
 
 
@@ -687,18 +739,14 @@ get_eta <- function(x, xs, beta, b0) {
 #' @importFrom rlang abort
 make_irls_warmup <- function(nobs, nvars, b0 = 0, beta = double(nvars),
                              r = double(nobs)) {
-
-  if (any(length(nobs) != 1, length(nvars) != 1, length(b0) != 1))
-    cli::cli_abort("All of `nobs`, `nvars`, and `b0` must be scalars.")
+  if (any(length(nobs) != 1, length(nvars) != 1, length(b0) != 1)) {
+    cli_abort("All of `nobs`, `nvars`, and `b0` must be scalars.")
+  }
   if ((length(r) > 1 && length(r) != nobs) || length(r) == 0) {
-    cli::cli_abort(
-      "`r` must have length 1 or `nobs` but has length {length(r)}."
-    )
+    cli_abort("`r` must have length 1 or `nobs` but has length {length(r)}.")
   }
   if ((length(beta) > 1 && length(beta) != nvars) || length(beta) == 0) {
-    cli::cli_abort(
-      "`beta` must have length 1 or `nvars` but has length {length(beta)}."
-    )
+    cli_abort("`beta` must have length 1 or `nvars` but has length {length(beta)}.")
   }
 
   structure(list(b0 = b0, beta = beta, r = r), class = "irlsspgl_warmup")

@@ -16,7 +16,7 @@
 #' @seealso [sparsegl()] method.
 #' @references Vaiter S, Deledalle C, Peyré G, Fadili J, Dossal C. (2012). \emph{The
 #' Degrees of Freedom of the Group Lasso for a General Design}.
-#' \url{https://arxiv.org/pdf/1212.6478.pdf}.
+#' \url{https://arxiv.org/abs/1212.6478}.
 #' @return a `data.frame` with as many rows as `object$lambda`. It contains
 #'   columns `lambda`, `df`, and the requested risk types.
 #' @export
@@ -40,7 +40,7 @@ estimate_risk <- function(object, x,
 estimate_risk.default <- function(object, x,
                                   type = c("AIC", "BIC", "GCV"),
                                   approx_df = FALSE) {
-  cli::cli_abort("Risk estimation is only available for Gaussian likelihood.")
+  cli_abort("Risk estimation is only available for Gaussian likelihood.")
 }
 
 #' @export
@@ -52,8 +52,11 @@ estimate_risk.lsspgl <- function(object, x,
   err <- log(object$mse)
   n <- object$nobs
 
-  if (approx_df) df <- object$df + df_correction(object)
-  else df <- exact_df(object, x)
+  if (approx_df) {
+    df <- object$df + df_correction(object)
+  } else {
+    df <- exact_df(object, x)
+  }
   out <- data.frame(
     lambda = object$lambda,
     df = df,
@@ -82,16 +85,17 @@ df_correction <- function(obj) {
 exact_df <- function(object, x) {
   # See the correct formula in https://arxiv.org/pdf/1212.6478.pdf
   # Theorem 2
-  if (missing(x))
-    stop("Risk estimation with exact df requires the design matrix `x`.")
+  if (missing(x)) {
+    cli_abort("Risk estimation with exact df requires the design matrix `x`.")
+  }
   Iset <- abs(object$beta) > 0
   Imax <- which(apply(Iset, 1, any))
-  Iset <- Iset[Imax,]
+  Iset <- Iset[Imax, ]
   group <- object$group[Imax]
-  beta <- object$beta[Imax,]
+  beta <- object$beta[Imax, ]
   pf <- (1 - object$asparse) * object$pf_group[group]
   nlambda <- length(object$lambda)
-  xx <- Matrix::crossprod(x[,Imax])
+  xx <- Matrix::crossprod(x[, Imax])
   df <- double(nlambda)
   for (i in seq(nlambda)) {
     Idx <- Iset[, i]
@@ -113,7 +117,7 @@ delP <- function(beta, group) {
   mats <- lapply(betas, function(x) {
     p <- length(x)
     bn <- two_norm(x)
-    Matrix::diag(1/bn, nrow = p, ncol = p) - outer(x, x) / bn^3
+    Matrix::diag(1 / bn, nrow = p, ncol = p) - outer(x, x) / bn^3
   })
   return(Matrix::bdiag(mats))
 }

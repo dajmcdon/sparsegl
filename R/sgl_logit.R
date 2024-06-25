@@ -1,21 +1,22 @@
 #' @importFrom stats glm binomial gaussian
 sgl_logit <- function(
-  bn, bs, ix, iy, nobs, nvars, x, y, pf, pfl1,
-  dfmax, pmax, nlam, flmin, ulam, eps,
-  maxit, vnames, group, intr, asparse, standardize,
-  lower_bnd, upper_bnd) {
-
+    bn, bs, ix, iy, nobs, nvars, x, y, pf, pfl1,
+    dfmax, pmax, nlam, flmin, ulam, eps,
+    maxit, vnames, group, intr, asparse, standardize,
+    lower_bnd, upper_bnd) {
   y <- as.factor(y)
   lev <- levels(y)
   ntab <- table(y)
   minclass <- min(ntab)
-  if (minclass <= 1)
-    rlang::abort("Binomial regression: one class has 1 or 0 observations; not allowed")
-  if (length(ntab) != 2)
-    rlang::abort("Binomial regression: more than one class is not supported")
-  if (minclass < 8)
-    rlang::warn(c("Binomial regression: one class has fewer than 8",
-                  "observations; dangerous ground"))
+  if (minclass <= 1) {
+    cli_abort("Binomial regression: one class has 1 or 0 observations; not supported")
+  }
+  if (length(ntab) != 2) {
+    cli_abort("Binomial regression: more than two classes is not supported")
+  }
+  if (minclass < 8) {
+    cli_warn("Binomial regression: one class has fewer than 8 observations; dangerous ground")
+  }
   # TODO, enable prediction with class labels if factor is passed
   if (intr == 1L && flmin < 1) b0_first <- coef(glm(y ~ 1, family = binomial()))
   y <- 2 * (as.integer(y) - 1) - 1 # convert to -1 / 1
@@ -43,12 +44,14 @@ sgl_logit <- function(
   if (!is.sparse) {
     fit <- dotCall64::.C64(
       "log_sparse_four",
-      SIGNATURE = c("integer", "integer", "integer", "integer", "double",
-                    "integer", "integer", "double", "double", "double",
-                    "double", "integer", "integer", "integer", "double",
-                    "double", "double", "integer", "integer", "integer",
-                    "double", "double", "integer", "integer", "double",
-                    "integer", "integer", "double", "double", "double"),
+      SIGNATURE = c(
+        "integer", "integer", "integer", "integer", "double",
+        "integer", "integer", "double", "double", "double",
+        "double", "integer", "integer", "integer", "double",
+        "double", "double", "integer", "integer", "integer",
+        "double", "double", "integer", "integer", "double",
+        "integer", "integer", "double", "double", "double"
+      ),
       # Read only
       bn = bn, bs = bs, ix = ix, iy = iy, gam = gamma,
       nobs = nobs, nvars = nvars, x = as.double(x), y = as.double(y), pf = pf,
@@ -65,17 +68,20 @@ sgl_logit <- function(
       alsparse = asparse, lb = lower_bnd, ub = upper_bnd,
       INTENT = c(rep("r", 11), rep("rw", 8), rep("w", 8), rep("r", 3)),
       NAOK = TRUE,
-      PACKAGE = "sparsegl")
+      PACKAGE = "sparsegl"
+    )
   } else {
-     fit <- dotCall64::.C64(
+    fit <- dotCall64::.C64(
       "log_spmat_four",
-      SIGNATURE = c("integer", "integer", "integer", "integer", "double",
-                    "integer", "integer", "double", "integer", "integer",
-                    "integer", "double", "double", "double", "integer",
-                    "integer", "integer", "double", "double", "double",
-                    "integer", "integer", "integer", "double", "double",
-                    "integer", "integer", "double", "integer", "integer",
-                    "double", "double", "double"),
+      SIGNATURE = c(
+        "integer", "integer", "integer", "integer", "double",
+        "integer", "integer", "double", "integer", "integer",
+        "integer", "double", "double", "double", "integer",
+        "integer", "integer", "double", "double", "double",
+        "integer", "integer", "integer", "double", "double",
+        "integer", "integer", "double", "integer", "integer",
+        "double", "double", "double"
+      ),
       # Read only
       bn = bn, bs = bs, ix = ix, iy = iy, gam = gamma,
       nobs = nobs, nvars = nvars, x = as.double(xval), xidx = xidx,
@@ -92,7 +98,8 @@ sgl_logit <- function(
       alsparse = as.double(asparse), lb = lower_bnd, ub = upper_bnd,
       INTENT = c(rep("r", 14), rep("rw", 8), rep("w", 8), rep("r", 3)),
       NAOK = TRUE,
-      PACKAGE = "sparsegl")
+      PACKAGE = "sparsegl"
+    )
   }
   # output
   outlist <- getoutput(x, group, fit, maxit, pmax, nvars, vnames, eps)
@@ -102,10 +109,12 @@ sgl_logit <- function(
   if (intr == 1L && flmin < 1) outlist$b0[1] <- b0_first
   outlist <- c(
     outlist,
-    list(npasses = fit$npass,
-         jerr = fit$jerr,
-         group = group,
-         classnames = lev)
+    list(
+      npasses = fit$npass,
+      jerr = fit$jerr,
+      group = group,
+      classnames = lev
+    )
   )
   class(outlist) <- c("logitspgl")
   outlist

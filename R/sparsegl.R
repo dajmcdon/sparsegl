@@ -133,26 +133,25 @@
 #' yp <- rpois(n, abs(X %*% beta_star))
 #' fit_pois <- sparsegl(X, yp, group = groups, family = poisson())
 sparsegl <- function(
-  x, y, group = NULL, family = c("gaussian", "binomial"),
-  nlambda = 100, lambda.factor = ifelse(nobs < nvars, 0.01, 1e-04),
-  lambda = NULL, pf_group = sqrt(bs), pf_sparse = rep(1, nvars),
-  intercept = TRUE, asparse = 0.05, standardize = TRUE,
-  lower_bnd = -Inf, upper_bnd = Inf,
-  weights = NULL, offset = NULL, warm = NULL,
-  trace_it = 0,
-  dfmax = as.integer(max(group)) + 1L,
-  pmax = min(dfmax * 1.2, as.integer(max(group))),
-  eps = 1e-08, maxit = 3e+06) {
-
+    x, y, group = NULL, family = c("gaussian", "binomial"),
+    nlambda = 100, lambda.factor = ifelse(nobs < nvars, 0.01, 1e-04),
+    lambda = NULL, pf_group = sqrt(bs), pf_sparse = rep(1, nvars),
+    intercept = TRUE, asparse = 0.05, standardize = TRUE,
+    lower_bnd = -Inf, upper_bnd = Inf,
+    weights = NULL, offset = NULL, warm = NULL,
+    trace_it = 0,
+    dfmax = as.integer(max(group)) + 1L,
+    pmax = min(dfmax * 1.2, as.integer(max(group))),
+    eps = 1e-08, maxit = 3e+06) {
   this.call <- match.call()
   if (!is.matrix(x) && !inherits(x, "sparseMatrix")) {
-    cli::cli_abort("`x` must be a matrix.")
+    cli_abort("`x` must be a matrix.")
   }
 
-  if (any(is.na(x))) cli::cli_abort("Missing values in `x` are not supported.")
+  if (any(is.na(x))) cli_abort("Missing values in `x` are not supported.")
 
   y <- drop(y)
-  if (!is.null(dim(y))) cli::cli_abort("`y` must be a vector or 1-column matrix.")
+  if (!is.null(dim(y))) cli_abort("`y` must be a vector or 1-column matrix.")
   np <- dim(x)
   nobs <- as.integer(np[1])
   nvars <- as.integer(np[2])
@@ -161,7 +160,7 @@ sparsegl <- function(
   if (is.null(vnames)) vnames <- paste("V", seq(nvars), sep = "")
 
   if (length(y) != nobs) {
-    cli::cli_abort("`x` has {nobs} rows while `y` has {length(y)}.")
+    cli_abort("`x` has {nobs} rows while `y` has {length(y)}.")
   }
 
   #    group setup
@@ -169,22 +168,22 @@ sparsegl <- function(
     group <- 1:nvars
   } else {
     if (length(group) != nvars) {
-      cli::cli_abort(c(
+      cli_abort(c(
         "The length of `group` is {length(group)}.",
         "It must match the number of columns in `x`: {nvars}"
       ))
     }
   }
 
-  bn <- as.integer(max(group))  # number of groups
-  bs <- as.integer(as.numeric(table(group)))  # number of elements in each group
+  bn <- as.integer(max(group)) # number of groups
+  bs <- as.integer(as.numeric(table(group))) # number of elements in each group
 
   if (!identical(as.integer(sort(unique(group))), as.integer(1:bn))) {
-    cli::cli_abort("Groups must be consecutively numbered 1, 2, 3, ...")
+    cli_abort("Groups must be consecutively numbered 1, 2, 3, ...")
   }
 
   if (asparse > 1) {
-    cli::cli_abort(c(
+    cli_abort(c(
       "`asparse` must be less than or equal to 1.",
       i = "You may want {.fn glmnet::glmnet} instead."
     ))
@@ -192,29 +191,29 @@ sparsegl <- function(
 
   if (asparse < 0) {
     asparse <- 0
-    cli::cli_warn("`asparse` must be in {.val [0, 1]}, running ordinary group lasso.")
+    cli_warn("`asparse` must be in {.val [0, 1]}, running ordinary group lasso.")
   }
   if (any(pf_sparse < 0)) cli::cli_abort("`pf_sparse` must be non-negative.")
   if (any(is.infinite(pf_sparse))) {
-    cli::cli_abort(
+    cli_abort(
       "`pf_sparse` may not be infinite. Simply remove the column from `x`."
     )
   }
-  if (any(pf_group < 0)) cli::cli_abort("`pf_group` must be non-negative.")
+  if (any(pf_group < 0)) cli_abort("`pf_group` must be non-negative.")
   if (any(is.infinite(pf_group))) {
-    cli::cli_abort(c(
+    cli_abort(c(
       "`pf_group` must be finite.",
       i = "Simply remove the group from `x`."
     ))
   }
   if (all(pf_sparse == 0)) {
     if (asparse > 0) {
-      cli::cli_abort(
+      cli_abort(
         "`pf_sparse` is identically 0 but `asparse` suggests some L1 penalty is desired."
       )
     } else {
-      cli::cli_warn("`pf_sparse` was set to 1 because `asparse` = {.val {0}}.")
-      pf_sparse = rep(1, nvars)
+      cli_warn("`pf_sparse` was set to 1 because `asparse` = {.val {0}}.")
+      pf_sparse <- rep(1, nvars)
     }
   }
 
@@ -227,14 +226,14 @@ sparsegl <- function(
   iy <- as.integer(iy)
   group <- as.integer(group)
 
-  #parameter setup
+  # parameter setup
   if (length(pf_group) != bn) {
-    cli::cli_abort(
+    cli_abort(
       "The length of `pf_group` must be the same as the number of groups: {.val {bn}}."
     )
   }
   if (length(pf_sparse) != nvars) {
-    cli::cli_abort(
+    cli_abort(
       "The length of `pf_sparse` must be equal to the number of predictors: {.val {nvars}}."
     )
   }
@@ -247,7 +246,7 @@ sparsegl <- function(
   dfmax <- as.integer(dfmax)
   pmax <- as.integer(pmax)
 
-  #lambda setup
+  # lambda setup
   nlam <- as.integer(nlambda)
   if (is.null(lambda)) {
     if (lambda.factor >= 1) {
@@ -256,28 +255,34 @@ sparsegl <- function(
     flmin <- as.double(lambda.factor)
     ulam <- double(1)
   } else {
-    #flmin = 1 if user define lambda
+    # flmin = 1 if user define lambda
     flmin <- as.double(1)
-    if (any(lambda < 0)) cli::cli_abort("`lambda` must be non-negative.")
+    if (any(lambda < 0)) cli_abort("`lambda` must be non-negative.")
     ulam <- as.double(rev(sort(lambda)))
     nlam <- as.integer(length(lambda))
   }
   intr <- as.integer(intercept)
 
   ### check on upper/lower bounds
-  if (any(lower_bnd > 0)) cli::cli_abort("`lower_bnd` must be non-positive.")
-  if (any(upper_bnd < 0)) cli::cli_abort("`upper_bnd` must be non-negative.")
+  if (any(lower_bnd > 0)) cli_abort("`lower_bnd` must be non-positive.")
+  if (any(upper_bnd < 0)) cli_abort("`upper_bnd` must be non-negative.")
   lower_bnd[lower_bnd == -Inf] <- -9.9e30
   upper_bnd[upper_bnd == Inf] <- 9.9e30
   if (length(lower_bnd) < bn) {
-    if (length(lower_bnd) == 1) lower_bnd <- rep(lower_bnd, bn)
-    else cli::cli_abort("`lower_bnd` must be length {.val {1}} or length {.val {bn}}.")
+    if (length(lower_bnd) == 1) {
+      lower_bnd <- rep(lower_bnd, bn)
+    } else {
+      cli_abort("`lower_bnd` must be length {.val {1}} or length {.val {bn}}.")
+    }
   } else {
     lower_bnd <- lower_bnd[seq_len(bn)]
   }
   if (length(upper_bnd) < bn) {
-    if (length(upper_bnd) == 1) upper_bnd <- rep(upper_bnd, bn)
-    else cli::cli_abort("`upper_bnd` must be length {.val {1}} or length {.val {bn}}.")
+    if (length(upper_bnd) == 1) {
+      upper_bnd <- rep(upper_bnd, bn)
+    } else {
+      cli_abort("`upper_bnd` must be length {.val {1}} or length {.val {bn}}.")
+    }
   } else {
     upper_bnd <- upper_bnd[seq_len(bn)]
   }
@@ -289,27 +294,28 @@ sparsegl <- function(
   if (fam$check == "char") {
     family <- match.arg(family)
     if (!is.null(weights)) {
-      cli::cli_warn(c(
+      cli_warn(c(
         "Currently, `weights` are only supported when `family` has class {.cls family}.",
         i = "Estimating unweighted sparse group lasso. See {.fn sparsegl::sparsegl}."
       ))
     }
     if (!is.null(offset)) {
-      cli::cli_warn(c(
+      cli_warn(c(
         "Currently, `offset` is only supported when `family` has class {.cls family}.",
         i = "Estimating sparse group lasso without any offset. See {.fn sparsegl::sparsegl}."
       ))
     }
-    fit <- switch(
-      family,
+    fit <- switch(family,
       gaussian = sgl_ls(
         bn, bs, ix, iy, nobs, nvars, x, y, pf_group, pf_sparse,
         dfmax, pmax, nlam, flmin, ulam, eps, maxit, vnames, group, intr,
-        as.double(asparse), standardize, lower_bnd, upper_bnd),
+        as.double(asparse), standardize, lower_bnd, upper_bnd
+      ),
       binomial = sgl_logit(
         bn, bs, ix, iy, nobs, nvars, x, y, pf_group, pf_sparse,
         dfmax, pmax, nlam, flmin, ulam, eps, maxit, vnames, group, intr,
-        as.double(asparse), standardize, lower_bnd, upper_bnd)
+        as.double(asparse), standardize, lower_bnd, upper_bnd
+      )
     )
   }
   if (fam$check == "fam") {
@@ -331,4 +337,3 @@ sparsegl <- function(
   class(fit) <- c(class(fit), "sparsegl")
   fit
 }
-

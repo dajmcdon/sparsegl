@@ -19,5 +19,4 @@ test_that("cv navigates the options properly", {
   expect_silent(cv.sparsegl(X, y, groups, family = "binomial", pred.loss = "deviance"))
   expect_silent(cv.sparsegl(X, y, groups, family = "binomial", pred.loss = "misclass"))
   expect_silent(cv.sparsegl(X, y, groups, family = binomial(), pred.loss = "misclass"))
-
 })

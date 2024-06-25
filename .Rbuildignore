@@ -10,3 +10,4 @@
 ^pkgdown$
 ^man-roxygen$
 ^data-raw$
+^cran-comments\.md$

@@ -32,10 +32,10 @@
 #' coef(cv_fit, s = c(0.02, 0.03))
 coef.cv.sparsegl <- function(object, s = c("lambda.1se", "lambda.min"), ...) {
   rlang::check_dots_empty()
-  if (!(is.numeric(s) || is.character(s)))
-    cli::cli_abort("Invalid form for `s`.")
-  if (is.numeric(s)) lambda <- s
-  else {
+  if (!(is.numeric(s) || is.character(s))) cli_abort("Invalid form for `s`.")
+  if (is.numeric(s)) {
+    lambda <- s
+  } else {
     s <- match.arg(s)
     lambda <- object[[s]]
   }
@@ -82,10 +82,10 @@ predict.cv.sparsegl <- function(
     type = c("link", "response", "coefficients", "nonzero", "class"), ...) {
   rlang::check_dots_empty()
   type <- match.arg(type)
-  if (!(is.numeric(s) || is.character(s)))
-    cli::cli_abort("Invalid form for `s`.")
-  if (is.numeric(s)) lambda <- s
-  else {
+  if (!(is.numeric(s) || is.character(s))) cli_abort("Invalid form for `s`.")
+  if (is.numeric(s)) {
+    lambda <- s
+  } else {
     s <- match.arg(s)
     lambda <- object[[s]]
   }
@@ -95,10 +95,11 @@ predict.cv.sparsegl <- function(
 #' @method fitted cv.sparsegl
 #' @export
 fitted.cv.sparsegl <- function(object, ...) {
-  cli::cli_abort(c(
+  cli_abort(c(
     "!" = "Because design matrices are typically large, these are not stored ",
     "!" = "in the estimated `cv.sparsegl` object. Use `predict()` instead, and ",
-    "!" = "pass in the original data."))
+    "!" = "pass in the original data."
+  ))
 }
 
 
@@ -114,8 +115,8 @@ summary.cv.sparsegl <- function(object, ...) {
     cvm = cvm[optlax],
     cvsd = cvsd[optlax],
     nnzero = nnzero[optlax],
-    active_grps = active_grps[optlax])
-  )
+    active_grps = active_grps[optlax]
+  ))
   rownames(tab) <- c("Max.", "lambda.1se", "lambda.min", "Min.")
   out <- structure(
     list(
@@ -126,27 +127,26 @@ summary.cv.sparsegl <- function(object, ...) {
     class = "summary.cvsparsegl"
   )
   out
-
 }
 
 #' @method print summary.cvsparsegl
 #' @export
 print.summary.cvsparsegl <- function(
     x,
-    digits = max(3, getOption("digits") - 3), ...
-) {
-
+    digits = max(3, getOption("digits") - 3), ...) {
   rlang::check_dots_empty()
-  lambda_warning = NULL
-  if (x$table$index[2] == 1) lambda_warning = "smallest"
-  if (x$table$index[3] == x$table$index[4]) lambda_warning = "largest"
+  lambda_warning <- NULL
+  if (x$table$index[2] == 1) lambda_warning <- "smallest"
+  if (x$table$index[3] == x$table$index[4]) lambda_warning <- "largest"
   cat("\nCall: ", deparse(x$call), "\n", fill = TRUE)
 
   cat("Error measure: ", x$error_measure, "\n\n")
 
   if (!is.null(lambda_warning)) {
-    cat("Warning: the CV minimum occurred at the", lambda_warning,
-        "lambda in the path.\n\n")
+    cat(
+      "Warning: the CV minimum occurred at the", lambda_warning,
+      "lambda in the path.\n\n"
+    )
   }
 
   print(x$tab, digits = digits)
@@ -157,8 +157,6 @@ print.summary.cvsparsegl <- function(
 #' @export
 print.cv.sparsegl <- function(x, digits = max(3, getOption("digits") - 3),
                               ...) {
-
   rlang::check_dots_empty()
   print(summary(x), digits = digits)
 }
-
