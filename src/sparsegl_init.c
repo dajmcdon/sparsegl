@@ -21,6 +21,7 @@ void F77_NAME(sparse_four)(
     double *y,
     double *pf,
     double *pfl1,
+    double *w,
     int *dfmax,
     int *pmax,
     int *nlam,

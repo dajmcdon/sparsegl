@@ -291,23 +291,17 @@ sparsegl <- function(
 
   # call R sub-function
   fam <- validate_family(family)
-  if (!is.null(weights)) {
+
+  if (fam$check == "char") {
+    family <- match.arg(family)
+    weights <- weights %||% rep(1, nobs)
     if (length(weights) != nobs) {
       cli_abort("`weights` has length {nobs} while `y` has {length(y)}.")
     }
     weights <- weights / sum(weights) * nobs
-  }
-  if (fam$check == "char") {
-    family <- match.arg(family)
-    if (!is.null(weights)) {
-      cli_warn(c(
-        "Currently, `weights` are only supported when `family` has class {.cls family}.",
-        i = "Estimating unweighted sparse group lasso. See {.fn sparsegl::sparsegl}."
-      ))
-    }
     if (!is.null(offset)) {
       cli_warn(c(
-        "Currently, `offset` is only supported when `family` has class {.cls family}.",
+        "`offset` is only supported when `family` has class {.cls family}.",
         i = "Estimating sparse group lasso without any offset. See {.fn sparsegl::sparsegl}."
       ))
     }
@@ -315,7 +309,7 @@ sparsegl <- function(
       gaussian = sgl_ls(
         bn, bs, ix, iy, nobs, nvars, x, y, pf_group, pf_sparse,
         dfmax, pmax, nlam, flmin, ulam, eps, maxit, vnames, group, intr,
-        as.double(asparse), standardize, lower_bnd, upper_bnd
+        as.double(asparse), standardize, lower_bnd, upper_bnd, weights
       ),
       binomial = sgl_logit(
         bn, bs, ix, iy, nobs, nvars, x, y, pf_group, pf_sparse,

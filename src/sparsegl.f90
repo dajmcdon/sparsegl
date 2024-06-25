@@ -1,9 +1,10 @@
 
 !---------------------------------------------
 
-SUBROUTINE sparse_four (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,pfl1,dfmax,pmax,nlam,&
-      flmin,ulam,eps,maxit,intr,nalam,b0,beta,activeGroup,nbeta,alam,npass,jerr,mse,&
-      alsparse,lb,ub)
+SUBROUTINE sparse_four (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,pfl1,w,&
+   dfmax,pmax,nlam,&
+   flmin,ulam,eps,maxit,intr,nalam,b0,beta,activeGroup,nbeta,alam,npass,jerr,mse,&
+   alsparse,lb,ub)
 
   USE sgl_subfuns
   IMPLICIT NONE
@@ -24,6 +25,7 @@ SUBROUTINE sparse_four (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,pfl1,dfmax,pmax,nlam,&
   DOUBLE PRECISION, INTENT(in) :: y(nobs)
   DOUBLE PRECISION, INTENT(in) :: pf(bn)
   DOUBLE PRECISION, INTENT(in) :: pfl1(nvars)
+  DOUBLE PRECISION, INTENT(in) :: w(nobs)
   DOUBLE PRECISION :: ulam(nlam)
   DOUBLE PRECISION :: gam(bn)
   DOUBLE PRECISION, INTENT(in) :: lb(bn), ub(bn)
@@ -152,7 +154,7 @@ SUBROUTINE sparse_four (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,pfl1,dfmax,pmax,nlam,&
               ENDIF
            ENDDO
            IF (intr .ne. 0) THEN
-            d = sum(r) / nobs
+            d = dot_product(r, w) / nobs
             IF (d .ne. 0.0D0) THEN
                b(0) = b(0) + d
                r = r - d
@@ -202,7 +204,7 @@ SUBROUTINE sparse_four (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,pfl1,dfmax,pmax,nlam,&
            CYCLE ! don't save anything, we're still decrementing lambda
         ELSE
            l = 2
-           mse(1) = DOT_PRODUCT(y/nobs, y)
+           mse(1) = DOT_PRODUCT(y, y) / nobs
            alam(1) = al / MAX(alf, .99D0) ! store previous, larger value
         ENDIF
      ENDIF
@@ -221,7 +223,7 @@ SUBROUTINE sparse_four (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,pfl1,dfmax,pmax,nlam,&
      nbeta(l) = ni
      b0(l) = b(0)
      alam(l) = al
-     mse(l) = DOT_PRODUCT(r/nobs, r)
+     mse(l) = DOT_PRODUCT(r, r) / nobs
      nalam = l
      IF (l < mnl) CYCLE
      me = 0
