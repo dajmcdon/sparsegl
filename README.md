@@ -31,7 +31,7 @@ install.packages("sparsegl")
 ```
 
 You can install the development version from
-[Github](https://github.com/) with:
+[GitHub](https://github.com/) with:
 
 ``` r
 # install.packages("remotes")
