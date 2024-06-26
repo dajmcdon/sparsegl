@@ -15,14 +15,14 @@ sgl_ls <- function(
   nulldev <- sum((y - my)^2 * weights)
   #if (intr) y <- y - mean(y)
 
-  # y <- y * sqrt(weights)
-  x <- sqrt(weights) * x
+  y <- y * sqrt(weights)
   if (standardize) {
     sx <- sqrt(Matrix::colSums(x^2))
     sx[sx < sqrt(.Machine$double.eps)] <- 1 # Don't divide by zero!]
     xs <- 1 / sx
     x <- x %*% Matrix::Diagonal(x = xs)
   }
+  x <- sqrt(weights) * x
   gamma <- calc_gamma(x, ix, iy, bn)
 
   if (!is.sparse) {
@@ -30,7 +30,7 @@ sgl_ls <- function(
       "sparse_four",
       SIGNATURE = c(
         "integer", "integer", "integer", "integer", "double",
-        "integer", "integer", "double", "double", "double", "double","double",
+        "integer", "integer", "double", "double", "double", "double", "double",
         "integer", "integer", "integer", "double", "double",
         "double", "integer", "integer", "integer", "double", "double", "integer",
         "integer", "double", "integer", "integer", "double",
@@ -39,7 +39,7 @@ sgl_ls <- function(
       # Read only
       bn = bn, bs = bs, ix = ix, iy = iy, gam = gamma, nobs = nobs,
       nvars = nvars, x = as.double(x),
-      y = as.double(sqrt(weights) * y), pf = pf,
+      y = as.double(y), pf = pf,
       pfl1 = pfl1, w = as.double(sqrt(weights)),
       # Read / write
       dfmax = dfmax, pmax = pmax, nlam = nlam, flmin = flmin, ulam = ulam,
@@ -77,7 +77,7 @@ sgl_ls <- function(
       # Read only
       bn = bn, bs = bs, ix = ix, iy = iy, gam = gamma, nobs = nobs,
       nvars = nvars, x = as.double(xval), xidx = xidx, xcptr = xcptr,
-      nnz = nnz, y = as.double(sqrt(weights) * y), pf = pf, pfl1 = pfl1, #w = as.double(weights),
+      nnz = nnz, y = as.double(y), pf = pf, pfl1 = pfl1, #w = as.double(weights),
       # Read write
       dfmax = dfmax, pmax = pmax, nlam = nlam, flmin = flmin,
       ulam = ulam, eps = eps, maxit = maxit, intr = as.integer(intr),

@@ -154,7 +154,7 @@ SUBROUTINE sparse_four (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,pfl1,w,&
               ENDIF
            ENDDO
            IF (intr .ne. 0) THEN
-            d = dot_product(r, w) / nobs
+            d = dot_product(r, w) / nobs !sum(r) / nobs
             IF (d .ne. 0.0D0) THEN
                b(0) = b(0) + d
                r = r - d
