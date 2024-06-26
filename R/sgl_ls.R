@@ -95,19 +95,8 @@ sgl_ls <- function(
   }
   # output
   outlist <- getoutput(x, group, fit, maxit, pmax, nvars, vnames, eps)
-  # print(outlist$b0)
-  # print(ym)
-  # print(my)
-  # print(mean(y))
-  # print(weighted.mean(y, weights))
-  # print(mean(x %*% outlist$beta))
-  # print(weighted.mean(x %*% outlist$beta, weights))
   if (standardize) outlist$beta <- outlist$beta * xs
-  if (!intr) {
-    outlist$b0 <- rep(0, dim(outlist$beta)[2])
-  } #else {
-    #outlist$b0 <- outlist$b0 + mean(y)
-  #}
+  if (!intr) outlist$b0 <- rep(0, dim(outlist$beta)[2])
 
   outlist$npasses <- fit$npass
   outlist$jerr <- fit$jerr
