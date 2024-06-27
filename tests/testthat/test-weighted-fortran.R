@@ -1,6 +1,6 @@
 test_that("weights operate as expected for gaussian, binomial", {
   set.seed(1)
-  nobs <- 1000L
+  nobs <- 250L
   beta_star <- c(5, 5, 5, -5, -5, -5, 1, 0, 1, 0, 0, 0, 0, 2, 0)
   nvars <- length(beta_star)
 

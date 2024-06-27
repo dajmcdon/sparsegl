@@ -13,7 +13,6 @@ sgl_ls <- function(
 
   my <- stats::weighted.mean(y, weights)
   nulldev <- sum((y - my)^2 * weights)
-  #if (intr) y <- y - mean(y)
 
   y <- y * sqrt(weights)
   if (standardize) {
