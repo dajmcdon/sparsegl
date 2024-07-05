@@ -6,7 +6,7 @@ status](https://www.r-pkg.org/badges/version/sparsegl)](https://CRAN.R-project.o
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# R-package `sparsegl`
+# sparsegl <a href="https://dajmcdon.github.io/sparsegl/"><img src="man/figures/logo.png" align="right" height="139" alt="sparsegl website" /></a>
 
 The goal of sparsegl is to fit regularization paths for sparse
 group-lasso penalized learning problems. The model is typically fit for
