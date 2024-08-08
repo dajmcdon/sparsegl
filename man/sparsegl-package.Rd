@@ -5,14 +5,22 @@
 \alias{sparsegl-package}
 \title{sparsegl: Sparse Group Lasso}
 \description{
-Efficient implementation of sparse group lasso with optional bound constraints on the coefficients. It supports the use of a sparse design matrix as well as returning coefficient estimates in a sparse matrix. Furthermore, it correctly calculates the degrees of freedom to allow for information criteria rather than cross-validation with very large data. Finally, the interface to compiled code avoids unnecessary copies and allows for the use of long integers.
+\if{html}{\figure{logo.png}{options: style='float: right' alt='logo' width='120'}}
+
+Efficient implementation of sparse group lasso with optional bound constraints on the coefficients; see \doi{10.18637/jss.v110.i06}. It supports the use of a sparse design matrix as well as returning coefficient estimates in a sparse matrix. Furthermore, it correctly calculates the degrees of freedom to allow for information criteria rather than cross-validation with very large data. Finally, the interface to compiled code avoids unnecessary copies and allows for the use of long integers.
+}
+\references{
+Liang, X., Cohen, A., Sólon Heinsfeld, A., Pestilli, F., and
+McDonald, D.J. 2024.
+\emph{sparsegl: An \code{R} Package for Estimating Sparse Group Lasso.}
+Journal of Statistical Software, Vol. 110(6): 1–23.
+\doi{10.18637/jss.v110.i06}.
 }
 \seealso{
 Useful links:
 \itemize{
-  \item \url{https://github.com/dajmcdon/sparsegl/}
-  \item \url{https://dajmcdon.github.io/sparsegl/}
   \item \url{https://github.com/dajmcdon/sparsegl}
+  \item \url{https://dajmcdon.github.io/sparsegl/}
   \item Report bugs at \url{https://github.com/dajmcdon/sparsegl/issues}
 }
 

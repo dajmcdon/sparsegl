@@ -19,7 +19,9 @@ $$
 
 The main focus of this package is for the case where the loglikelihood
 corresponds to Gaussian or logistic regression. But we also provide the
-ability to fit arbitrary GLMs using `stats::family()` objects.
+ability to fit arbitrary GLMs using `stats::family()` objects. Details
+may be found in Liang, Cohen, Sólon Heinsfeld, Pestilli, and McDonald
+([2024](#ref-sparsegl)).
 
 ## Installation
 
@@ -57,3 +59,18 @@ plot(fit1, y_axis = "coef", x_axis = "penalty", add_legend = FALSE)
 ```
 
 <img src="man/figures/README-minimal-ex-1.svg" width="100%" style="display: block; margin: auto;" />
+
+## References
+
+<div id="refs" class="references">
+
+<div id="ref-sparsegl">
+
+Liang, X., Cohen, A., Sólon Heinsfeld, A., Pestilli, F., and McDonald,
+D.J. 2024. “sparsegl: An `R` Package for Estimating Sparse Group Lasso.”
+*Journal of Statistical Software* 110(6), 1–23.
+<https://doi.org/10.18637/jss.v110.i06>.
+
+</div>
+
+</div>

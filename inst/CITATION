@@ -1,0 +1,22 @@
+bibentry(bibtype = "Article",
+  title        = "{sparsegl}: An {R} Package for Estimating Sparse Group Lasso",
+  author       = c(person(given = "Xiaoxuan",
+                          family = "Liang"),
+                   person(given = "Aaron",
+                          family = "Cohen"),
+                   person(given = "Anibal",
+                          family = "Sol{\\'o}n Heinsfeld"),
+                   person(given = "Franco",
+                          family = "Pestilli"),
+                   person(given = c("Daniel", "J."),
+                          family = "McDonald",
+                          email = "daniel@stat.ubc.ca")),
+  journal      = "Journal of Statistical Software",
+  year         = "2024",
+  volume       = "110",
+  number       = "6",
+  pages        = "1--23",
+  doi          = "10.18637/jss.v110.i06",
+  header       = "To cite sparsegl in publications use:"
+)
+
