@@ -14,7 +14,7 @@ a sequence of regularization parameters $\lambda$. Such estimators
 minimize
 
 $$
--\ell(\beta | y,\ \mathbf{X}) + \lambda(1-\alpha)\sum_{g\in G} ||\beta_g||_2 + \lambda\alpha ||\beta||_1.
+-\ell(\beta | y,\ \mathbf{X}) + \lambda(1-\alpha)\sum_{g\in G} \lVert\beta_g\rVert_2 + \lambda\alpha \lVert\beta\rVert_1.
 $$
 
 The main focus of this package is for the case where the loglikelihood
