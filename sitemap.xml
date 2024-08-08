@@ -1,72 +1,26 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url>
-    <loc>https://dajmcdon.github.io/sparsegl/404.html</loc>
-  </url>
-  <url>
-    <loc>https://dajmcdon.github.io/sparsegl/LICENSE-text.html</loc>
-  </url>
-  <url>
-    <loc>https://dajmcdon.github.io/sparsegl/LICENSE.html</loc>
-  </url>
-  <url>
-    <loc>https://dajmcdon.github.io/sparsegl/articles/index.html</loc>
-  </url>
-  <url>
-    <loc>https://dajmcdon.github.io/sparsegl/articles/sparsegl.html</loc>
-  </url>
-  <url>
-    <loc>https://dajmcdon.github.io/sparsegl/authors.html</loc>
-  </url>
-  <url>
-    <loc>https://dajmcdon.github.io/sparsegl/index.html</loc>
-  </url>
-  <url>
-    <loc>https://dajmcdon.github.io/sparsegl/news/index.html</loc>
-  </url>
-  <url>
-    <loc>https://dajmcdon.github.io/sparsegl/reference/coef.cv.sparsegl.html</loc>
-  </url>
-  <url>
-    <loc>https://dajmcdon.github.io/sparsegl/reference/coef.sparsegl.html</loc>
-  </url>
-  <url>
-    <loc>https://dajmcdon.github.io/sparsegl/reference/cv.sparsegl.html</loc>
-  </url>
-  <url>
-    <loc>https://dajmcdon.github.io/sparsegl/reference/estimate_risk.html</loc>
-  </url>
-  <url>
-    <loc>https://dajmcdon.github.io/sparsegl/reference/grouped_sp_norm.html</loc>
-  </url>
-  <url>
-    <loc>https://dajmcdon.github.io/sparsegl/reference/index.html</loc>
-  </url>
-  <url>
-    <loc>https://dajmcdon.github.io/sparsegl/reference/make_irls_warmup.html</loc>
-  </url>
-  <url>
-    <loc>https://dajmcdon.github.io/sparsegl/reference/pipe.html</loc>
-  </url>
-  <url>
-    <loc>https://dajmcdon.github.io/sparsegl/reference/plot.cv.sparsegl.html</loc>
-  </url>
-  <url>
-    <loc>https://dajmcdon.github.io/sparsegl/reference/plot.sparsegl.html</loc>
-  </url>
-  <url>
-    <loc>https://dajmcdon.github.io/sparsegl/reference/predict.cv.sparsegl.html</loc>
-  </url>
-  <url>
-    <loc>https://dajmcdon.github.io/sparsegl/reference/predict.sparsegl.html</loc>
-  </url>
-  <url>
-    <loc>https://dajmcdon.github.io/sparsegl/reference/sparsegl-package.html</loc>
-  </url>
-  <url>
-    <loc>https://dajmcdon.github.io/sparsegl/reference/sparsegl.html</loc>
-  </url>
-  <url>
-    <loc>https://dajmcdon.github.io/sparsegl/reference/trust_experts.html</loc>
-  </url>
+<urlset xmlns = 'http://www.sitemaps.org/schemas/sitemap/0.9'>
+<url><loc>https://dajmcdon.github.io/sparsegl/404.html</loc></url>
+<url><loc>https://dajmcdon.github.io/sparsegl/LICENSE-text.html</loc></url>
+<url><loc>https://dajmcdon.github.io/sparsegl/LICENSE.html</loc></url>
+<url><loc>https://dajmcdon.github.io/sparsegl/articles/index.html</loc></url>
+<url><loc>https://dajmcdon.github.io/sparsegl/articles/sparsegl.html</loc></url>
+<url><loc>https://dajmcdon.github.io/sparsegl/authors.html</loc></url>
+<url><loc>https://dajmcdon.github.io/sparsegl/index.html</loc></url>
+<url><loc>https://dajmcdon.github.io/sparsegl/news/index.html</loc></url>
+<url><loc>https://dajmcdon.github.io/sparsegl/reference/coef.cv.sparsegl.html</loc></url>
+<url><loc>https://dajmcdon.github.io/sparsegl/reference/coef.sparsegl.html</loc></url>
+<url><loc>https://dajmcdon.github.io/sparsegl/reference/cv.sparsegl.html</loc></url>
+<url><loc>https://dajmcdon.github.io/sparsegl/reference/estimate_risk.html</loc></url>
+<url><loc>https://dajmcdon.github.io/sparsegl/reference/grouped_sp_norm.html</loc></url>
+<url><loc>https://dajmcdon.github.io/sparsegl/reference/index.html</loc></url>
+<url><loc>https://dajmcdon.github.io/sparsegl/reference/make_irls_warmup.html</loc></url>
+<url><loc>https://dajmcdon.github.io/sparsegl/reference/pipe.html</loc></url>
+<url><loc>https://dajmcdon.github.io/sparsegl/reference/plot.cv.sparsegl.html</loc></url>
+<url><loc>https://dajmcdon.github.io/sparsegl/reference/plot.sparsegl.html</loc></url>
+<url><loc>https://dajmcdon.github.io/sparsegl/reference/predict.cv.sparsegl.html</loc></url>
+<url><loc>https://dajmcdon.github.io/sparsegl/reference/predict.sparsegl.html</loc></url>
+<url><loc>https://dajmcdon.github.io/sparsegl/reference/sparsegl-package.html</loc></url>
+<url><loc>https://dajmcdon.github.io/sparsegl/reference/sparsegl.html</loc></url>
+<url><loc>https://dajmcdon.github.io/sparsegl/reference/trust_experts.html</loc></url>
 </urlset>
+
