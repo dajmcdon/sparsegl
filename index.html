@@ -6,6 +6,12 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <title>Sparse Group Lasso • sparsegl</title>
+<!-- favicons --><link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
+<link rel="apple-touch-icon" type="image/png" sizes="180x180" href="apple-touch-icon.png">
+<link rel="apple-touch-icon" type="image/png" sizes="120x120" href="apple-touch-icon-120x120.png">
+<link rel="apple-touch-icon" type="image/png" sizes="76x76" href="apple-touch-icon-76x76.png">
+<link rel="apple-touch-icon" type="image/png" sizes="60x60" href="apple-touch-icon-60x60.png">
 <script src="deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <link href="deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
 <script src="deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="deps/font-awesome-6.4.2/css/all.min.css" rel="stylesheet">
@@ -57,8 +63,8 @@
 </h1>
 </div>
 <p>The goal of sparsegl is to fit regularization paths for sparse group-lasso penalized learning problems. The model is typically fit for a sequence of regularization parameters <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>λ</mi><annotation encoding="application/x-tex">\lambda</annotation></semantics></math>. Such estimators minimize</p>
-<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo>−</mo><mo>ℓ</mo><mo stretchy="false" form="prefix">(</mo><mi>β</mi><mrow><mo stretchy="true" form="prefix">|</mo><mi>y</mi><mo>,</mo><mspace width="0.222em"></mspace><mi>𝐗</mi><mo stretchy="false" form="postfix">)</mo><mo>+</mo><mi>λ</mi><mrow><mo stretchy="true" form="prefix">(</mo><mn>1</mn><mo>−</mo><mi>α</mi><mo stretchy="true" form="postfix">)</mo></mrow><munder><mo>∑</mo><mrow><mi>g</mi><mo>∈</mo><mi>G</mi></mrow></munder><mo stretchy="true" form="postfix">|</mo></mrow><mrow><mo stretchy="true" form="prefix">|</mo><msub><mi>β</mi><mi>g</mi></msub><mo stretchy="true" form="postfix">|</mo></mrow><mrow><mo stretchy="true" form="prefix">|</mo><msub><mi></mi><mn>2</mn></msub><mo>+</mo><mi>λ</mi><mi>α</mi><mo stretchy="true" form="postfix">|</mo></mrow><mrow><mo stretchy="true" form="prefix">|</mo><mi>β</mi><mo stretchy="true" form="postfix">|</mo></mrow><msub><mo stretchy="false" form="prefix">|</mo><mn>1</mn></msub><mi>.</mi></mrow><annotation encoding="application/x-tex">
--\ell(\beta | y,\ \mathbf{X}) + \lambda(1-\alpha)\sum_{g\in G} ||\beta_g||_2 + \lambda\alpha ||\beta||_1.
+<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo>−</mo><mo>ℓ</mo><mrow><mo stretchy="true" form="prefix">(</mo><mi>β</mi><mo stretchy="false" form="prefix">|</mo><mi>y</mi><mo>,</mo><mspace width="0.222em"></mspace><mi>𝐗</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo>+</mo><mi>λ</mi><mrow><mo stretchy="true" form="prefix">(</mo><mn>1</mn><mo>−</mo><mi>α</mi><mo stretchy="true" form="postfix">)</mo></mrow><munder><mo>∑</mo><mrow><mi>g</mi><mo>∈</mo><mi>G</mi></mrow></munder><mo stretchy="false" form="prefix">∥</mo><msub><mi>β</mi><mi>g</mi></msub><msub><mo stretchy="false" form="postfix">∥</mo><mn>2</mn></msub><mo>+</mo><mi>λ</mi><mi>α</mi><mo stretchy="false" form="prefix">∥</mo><mi>β</mi><msub><mo stretchy="false" form="postfix">∥</mo><mn>1</mn></msub><mi>.</mi></mrow><annotation encoding="application/x-tex">
+-\ell(\beta | y,\ \mathbf{X}) + \lambda(1-\alpha)\sum_{g\in G} \lVert\beta_g\rVert_2 + \lambda\alpha \lVert\beta\rVert_1.
 </annotation></semantics></math></p>
 <p>The main focus of this package is for the case where the loglikelihood corresponds to Gaussian or logistic regression. But we also provide the ability to fit arbitrary GLMs using <code><a href="https://rdrr.io/r/stats/family.html" class="external-link">stats::family()</a></code> objects. Details may be found in Liang, Cohen, Sólon Heinsfeld, Pestilli, and McDonald (<a href="#ref-sparsegl">2024</a>).</p>
 <div class="section level2">
