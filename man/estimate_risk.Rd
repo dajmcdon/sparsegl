@@ -41,6 +41,12 @@ fit1 <- sparsegl(X, y, group = groups)
 estimate_risk(fit1, type = "AIC", approx_df = TRUE)
 }
 \references{
+Liang, X., Cohen, A., Sólon Heinsfeld, A., Pestilli, F., and
+McDonald, D.J. 2024.
+\emph{sparsegl: An \code{R} Package for Estimating Sparse Group Lasso.}
+Journal of Statistical Software, Vol. 110(6): 1–23.
+\doi{10.18637/jss.v110.i06}.
+
 Vaiter S, Deledalle C, Peyré G, Fadili J, Dossal C. (2012). \emph{The
 Degrees of Freedom of the Group Lasso for a General Design}.
 \url{https://arxiv.org/abs/1212.6478}.

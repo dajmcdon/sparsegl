@@ -21,3 +21,5 @@ jss-sparsegl/*
 !jss-sparsegl/jss.cls
 !jss-sparsegl/jsslogo.jpg
 !jss-sparsegl/sparsegl.bib
+/doc/
+/Meta/
