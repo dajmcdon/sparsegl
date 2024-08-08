@@ -1,3 +1,7 @@
+# sparsegl 1.1.1
+
+* Add CITATION and links to JSS article
+
 # sparsegl 1.1.0
 
 * Address some CRAN issues for FORTRAN builds on GCC 14.1
