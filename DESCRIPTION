@@ -1,7 +1,7 @@
 Type: Package
 Package: sparsegl
 Title: Sparse Group Lasso
-Version: 1.1.0
+Version: 1.1.1
 Authors@R: c(
     person("Daniel J.", "McDonald", , "daniel@stat.ubc.ca", role = c("aut", "cre")),
     person("Xiaoxuan", "Liang", , "xiaoxuan.liang@stat.ubc.ca", role = "aut"),
@@ -19,16 +19,16 @@ Authors@R: c(
     person("James", "Yang", role = "ctb")
   )
 Description: Efficient implementation of sparse group lasso with optional
-    bound constraints on the coefficients. It supports the use of a sparse
-    design matrix as well as returning coefficient estimates in a sparse
-    matrix. Furthermore, it correctly calculates the degrees of freedom to
-    allow for information criteria rather than cross-validation with very
-    large data. Finally, the interface to compiled code avoids unnecessary
+    bound constraints on the coefficients; see
+    <doi:10.18637/jss.v110.i06>.  It supports the use of a sparse design
+    matrix as well as returning coefficient estimates in a sparse matrix.
+    Furthermore, it correctly calculates the degrees of freedom to allow
+    for information criteria rather than cross-validation with very large
+    data. Finally, the interface to compiled code avoids unnecessary
     copies and allows for the use of long integers.
 License: MIT + file LICENSE
-URL: https://github.com/dajmcdon/sparsegl/,
-    https://dajmcdon.github.io/sparsegl/,
-    https://github.com/dajmcdon/sparsegl
+URL: https://github.com/dajmcdon/sparsegl,
+    https://dajmcdon.github.io/sparsegl/
 BugReports: https://github.com/dajmcdon/sparsegl/issues
 Depends: 
     R (>= 3.5)
@@ -58,4 +58,4 @@ Encoding: UTF-8
 LazyData: true
 NeedsCompilation: yes
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.3.1
+RoxygenNote: 7.3.2

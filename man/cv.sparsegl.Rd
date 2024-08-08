@@ -123,6 +123,13 @@ groups <- rep(1:(p / 5), each = 5)
 cv_fit <- cv.sparsegl(X, y, groups)
 
 }
+\references{
+Liang, X., Cohen, A., Sólon Heinsfeld, A., Pestilli, F., and
+McDonald, D.J. 2024.
+\emph{sparsegl: An \code{R} Package for Estimating Sparse Group Lasso.}
+Journal of Statistical Software, Vol. 110(6): 1–23.
+\doi{10.18637/jss.v110.i06}.
+}
 \seealso{
 \code{\link[=sparsegl]{sparsegl()}}, as well as \code{\link[=plot.cv.sparsegl]{plot()}},
 \code{\link[=predict.cv.sparsegl]{predict()}}, and \code{\link[=coef.cv.sparsegl]{coef()}}

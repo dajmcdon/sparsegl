@@ -1,6 +1,5 @@
-# Revision to address CRAN check results
+# CRAN check results
 
-* Simplified Makevars to better match "Writing R Extensions"
 
 ## Test environments
 
@@ -41,9 +40,6 @@ Rhub:
 
 ## R CMD check results
 
-0 errors | 0 warnings | 1 notes
+0 errors | 0 warnings | 0 notes
 
-❯ checking HTML version of manual ... NOTE
-  Skipping checking math rendering: package 'V8' unavailable
-
-Response: This note does not seem to be related to our R package and can likely be ignored. 
+R CMD check succeeded

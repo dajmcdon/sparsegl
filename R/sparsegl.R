@@ -117,6 +117,12 @@
 #'   [`predict()`][predict.sparsegl()], and [`coef()`][coef.sparsegl()]
 #'   methods for `"sparsegl"` objects.
 #'
+#' @references Liang, X., Cohen, A., Sólon Heinsfeld, A., Pestilli, F., and
+#'   McDonald, D.J. 2024.
+#'   \emph{sparsegl: An `R` Package for Estimating Sparse Group Lasso.}
+#'   Journal of Statistical Software, Vol. 110(6): 1–23.
+#'   \doi{10.18637/jss.v110.i06}.
+#'
 #' @export
 #'
 #'

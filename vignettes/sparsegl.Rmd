@@ -31,10 +31,13 @@ The strengths and improvements that this package offers relative to other sparse
 
 * Additional exponential families may be fit (though this is typically slower).
 
+For additional details, see
+Liang, Cohen, Sólon Heinsfeld, Pestilli, and McDonald ([2024](#ref-sparsegl)).
+
 
 ## Installing
 
-You can install the released version of sparsegl from [CRAN](https://CRAN.R-project.org) with:
+You can install the released version of `{sparsegl}` from [CRAN](https://CRAN.R-project.org) with:
 
 ```{r, echo = TRUE, eval = FALSE}
 install.packages("sparsegl")
@@ -54,7 +57,8 @@ include vignettes, then use this modified command:
 ```{r, eval = FALSE}
 remotes::install_github(
   "dajmcdon/sparsegl",
-  build_vignettes = TRUE, dependencies = TRUE
+  build_vignettes = TRUE, 
+  dependencies = TRUE
 )
 ```
 
@@ -256,7 +260,7 @@ accurate one) to the actual degrees-of-freedom. However, computing the exact
 value requires inverting a portion of $\mathbf{X}^\top \mathbf{X}$.
 So this computation may take some time (the default computes the exact df). 
 For more details about how this formula, see
-(Vaiter, Deledalle, Peyré, et al., 2012).[^1] 
+Vaiter, Deledalle, Peyré, et al., ([2012](#ref-vaiter)). 
 
 ```{r}
 risk <- estimate_risk(fit1, X, approx_df = FALSE)
@@ -287,4 +291,21 @@ ggplot(er, aes(lambda, risk, color = name)) +
   theme(legend.title = element_blank())
 ```
 
-[^1]: Vaiter S, Deledalle C, Peyré G, Fadili J, Dossal C. (2012). _The Degrees of Freedom of the Group Lasso for a General Design._ <https://arxiv.org/abs/1212.6478>.
+## References
+
+<div id="refs" class="references">
+
+<div id="ref-sparsegl">
+Liang, X., Cohen, A., Sólon Heinsfeld, A., Pestilli, F., and McDonald, D.J. 2024.
+"sparsegl: An `R` Package for Estimating Sparse Group Lasso." 
+*Journal of Statistical Software* 110(6), 1–23.
+<https://doi.org/10.18637/jss.v110.i06>.
+</div>
+
+<div id="ref-vaiter">
+Vaiter S, Deledalle C, Peyré G, Fadili J, and Dossal C. 2012. 
+"The Degrees of Freedom of the Group Lasso for a General Design." 
+<https://arxiv.org/abs/1212.6478>.
+</div>
+
+</div>

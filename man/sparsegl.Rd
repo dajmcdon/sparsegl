@@ -180,6 +180,13 @@ fit <- sparsegl(X, y, group = groups)
 yp <- rpois(n, abs(X \%*\% beta_star))
 fit_pois <- sparsegl(X, yp, group = groups, family = poisson())
 }
+\references{
+Liang, X., Cohen, A., Sólon Heinsfeld, A., Pestilli, F., and
+McDonald, D.J. 2024.
+\emph{sparsegl: An \code{R} Package for Estimating Sparse Group Lasso.}
+Journal of Statistical Software, Vol. 110(6): 1–23.
+\doi{10.18637/jss.v110.i06}.
+}
 \seealso{
 \code{\link[=cv.sparsegl]{cv.sparsegl()}} and the \code{\link[=plot.sparsegl]{plot()}},
 \code{\link[=predict.sparsegl]{predict()}}, and \code{\link[=coef.sparsegl]{coef()}}
