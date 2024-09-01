@@ -61,7 +61,6 @@ SUBROUTINE sparse_four (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,pfl1,w,&
      jerr = 10000
      RETURN
   ENDIF
-
   ! - - - some initial setup - - -
   is_in_E_set = 0
   is_in_S_set = 0
@@ -77,11 +76,13 @@ SUBROUTINE sparse_four (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,pfl1,w,&
   alf = 0.0D0
   max_gam = MAXVAL(gam)
   t_for_s = 1 / gam
+  
   ! --------- lambda loop ----------------------------
   IF (flmin < 1.0D0) THEN ! THIS is the default...
      flmin = MAX(mfl, flmin) ! just sets a threshold above zero
      alf = flmin ** (1.0D0 / (nlam - 1.0D0))
   ENDIF
+
   ! PRINT *, alf
   vl = MATMUL(r, x)/nobs
   al0 = 0.0D0
@@ -154,12 +155,10 @@ SUBROUTINE sparse_four (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,pfl1,w,&
               ENDIF
            ENDDO
            IF (intr .ne. 0) THEN
-            d = dot_product(r, w) / nobs
-            IF (d .ne. 0.0D0) THEN
-               b(0) = b(0) + d
-               r = r - d
-               maxDif = max(maxDif, d**2)
-            ENDIF
+             d = dot_product(r, w) / nobs
+             b(0) = b(0) + d
+             r = r - d
+             maxDif = max(maxDif, d**2)
            ENDIF
            IF (ni > pmax) EXIT
            IF (maxDif < eps) EXIT
@@ -391,13 +390,11 @@ SUBROUTINE spmat_four (bn,bs,ix,iy,gam,nobs,nvars,x,xidx,xcptr,nnz,y,pf,pfl1,&
                  activeGroup(ni) = g
               ENDIF
            ENDDO
-           IF(intr .ne. 0) THEN
+           IF (intr .ne. 0) THEN
               d = sum(r) / nobs
-              IF(d .ne. 0.0D0) THEN
-                 b(0) = b(0) + d
-                 r = r - d
-                 maxDif = max(maxDif, d**2)
-              ENDIF
+              b(0) = b(0) + d
+              r = r - d
+              maxDif = max(maxDif, d**2)
            ENDIF
            IF (ni > pmax) EXIT
            IF (maxDif < eps) EXIT
