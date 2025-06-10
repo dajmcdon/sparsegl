@@ -19,7 +19,7 @@ Authors@R: c(
     person("James", "Yang", role = "ctb")
   )
 Description: Efficient implementation of sparse group lasso with optional
-    bound constraints on the coefficients; see
+    bound constraints on the coefficients; see Liang, et al., (2024)
     <doi:10.18637/jss.v110.i06>.  It supports the use of a sparse design
     matrix as well as returning coefficient estimates in a sparse matrix.
     Furthermore, it correctly calculates the degrees of freedom to allow

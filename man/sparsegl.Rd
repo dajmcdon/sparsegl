@@ -113,7 +113,8 @@ or of length the number of groups. Must be non-negative numbers only.
 Default value for each entry is \code{Inf}.}
 
 \item{weights}{Double vector. Optional observation weights. These can
-only be used with a \code{\link[stats:family]{stats::family()}} object.}
+only be used with a \code{\link[stats:family]{stats::family()}} object. Internally coerced to sum
+to the number of observations.}
 
 \item{offset}{Double vector. Optional offset (constant predictor without a
 corresponding coefficient). These can only be used with a

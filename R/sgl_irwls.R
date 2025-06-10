@@ -52,7 +52,7 @@ sgl_irwls <- function(
   if (is.null(weights)) {
     weights <- rep(1, nobs)
   } else {
-    weights <- weights / sum(weights)
+    weights <- weights / sum(weights) * nobs
   }
   etastart <- 0
   mustart <- NULL
