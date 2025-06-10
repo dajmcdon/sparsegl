@@ -1,3 +1,5 @@
+# sparsegl (development version)
+
 # sparsegl 1.1.1
 
 * Add CITATION and links to JSS article
