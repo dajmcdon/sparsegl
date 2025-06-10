@@ -1,5 +1,7 @@
 # sparsegl (development version)
 
+* Force `weights` to sum to `nobs` for all IRWLS cases.
+
 # sparsegl 1.1.1
 
 * Add CITATION and links to JSS article
