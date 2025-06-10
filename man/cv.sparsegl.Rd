@@ -74,7 +74,8 @@ identifying which fold each observation is in. If supplied, \code{nfolds} can
 be missing.}
 
 \item{weights}{Double vector. Optional observation weights. These can
-only be used with a \code{\link[stats:family]{stats::family()}} object.}
+only be used with a \code{\link[stats:family]{stats::family()}} object. Internally coerced to sum
+to the number of observations.}
 
 \item{offset}{Double vector. Optional offset (constant predictor without a
 corresponding coefficient). These can only be used with a

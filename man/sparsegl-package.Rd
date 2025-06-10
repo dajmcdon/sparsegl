@@ -7,14 +7,14 @@
 \description{
 \if{html}{\figure{logo.png}{options: style='float: right' alt='logo' width='120'}}
 
-Efficient implementation of sparse group lasso with optional bound constraints on the coefficients; see \doi{10.18637/jss.v110.i06}. It supports the use of a sparse design matrix as well as returning coefficient estimates in a sparse matrix. Furthermore, it correctly calculates the degrees of freedom to allow for information criteria rather than cross-validation with very large data. Finally, the interface to compiled code avoids unnecessary copies and allows for the use of long integers.
+Efficient implementation of sparse group lasso with optional bound constraints on the coefficients; see Liang, et al., (2024) \doi{10.18637/jss.v110.i06}. It supports the use of a sparse design matrix as well as returning coefficient estimates in a sparse matrix. Furthermore, it correctly calculates the degrees of freedom to allow for information criteria rather than cross-validation with very large data. Finally, the interface to compiled code avoids unnecessary copies and allows for the use of long integers.
 }
 \references{
 Liang, X., Cohen, A., Sólon Heinsfeld, A., Pestilli, F., and
 McDonald, D.J. 2024.
-\emph{sparsegl: An \code{R} Package for Estimating Sparse Group Lasso.}
-Journal of Statistical Software, Vol. 110(6): 1–23.
-\doi{10.18637/jss.v110.i06}.
+"sparsegl: An \code{R} Package for Estimating Sparse Group Lasso."
+\emph{Journal of Statistical Software}, \strong{110}(6): 1–23.
+\href{https://doi.org/10.18637/jss.v110.i06}{doi:10.18637/jss.v110.i06}.
 }
 \seealso{
 Useful links:
@@ -26,7 +26,7 @@ Useful links:
 
 }
 \author{
-\strong{Maintainer}: Daniel J. McDonald \email{daniel@stat.ubc.ca}
+\strong{Maintainer}: Daniel J. McDonald \email{daniel@stat.ubc.ca} [copyright holder]
 
 Authors:
 \itemize{

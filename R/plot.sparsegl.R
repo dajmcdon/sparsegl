@@ -60,8 +60,7 @@ plot.sparsegl <- function(x,
 
   df$lambda <- x$lambda
   df$penalty <- sgnorm / max(sgnorm)
-  df <- df %>%
-    tidyr::pivot_longer(!c(.data$lambda, .data$penalty), names_to = y_axis)
+  df <- tidyr::pivot_longer(df, !c(.data$lambda, .data$penalty), names_to = y_axis)
 
   plot_layer <- ggplot2::ggplot(
     df, ggplot2::aes(

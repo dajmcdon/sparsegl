@@ -3,7 +3,7 @@ Package: sparsegl
 Title: Sparse Group Lasso
 Version: 1.1.1.9000
 Authors@R: c(
-    person("Daniel J.", "McDonald", , "daniel@stat.ubc.ca", role = c("aut", "cre")),
+    person("Daniel J.", "McDonald", , "daniel@stat.ubc.ca", role = c("aut", "cre", "cph")),
     person("Xiaoxuan", "Liang", , "xiaoxuan.liang@stat.ubc.ca", role = "aut"),
     person("Anibal", "Solón Heinsfeld", , "anibalsolon@gmail.com", role = "aut"),
     person("Aaron", "Cohen", , "cohenaa@indiana.edu", role = "aut"),
@@ -19,7 +19,7 @@ Authors@R: c(
     person("James", "Yang", role = "ctb")
   )
 Description: Efficient implementation of sparse group lasso with optional
-    bound constraints on the coefficients; see
+    bound constraints on the coefficients; see Liang, et al., (2024)
     <doi:10.18637/jss.v110.i06>.  It supports the use of a sparse design
     matrix as well as returning coefficient estimates in a sparse matrix.
     Furthermore, it correctly calculates the degrees of freedom to allow
@@ -36,7 +36,6 @@ Imports:
     cli,
     dotCall64,
     ggplot2,
-    magrittr,
     Matrix,
     methods,
     rlang,

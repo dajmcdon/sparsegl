@@ -270,11 +270,11 @@ risk <- estimate_risk(fit1, X, approx_df = FALSE)
 library(dplyr)
 library(tidyr)
 library(ggplot2)
-er <- risk %>%
-  dplyr::select(-df) %>%
+er <- risk |>
+  dplyr::select(-df) |>
   pivot_longer(-lambda, values_to = "risk")
-err <- er %>%
-  group_by(name) %>%
+err <- er |>
+  group_by(name) |>
   summarise(lambda = lambda[which.min(risk)])
 ggplot(er, aes(lambda, risk, color = name)) +
   geom_line() +
