@@ -46,13 +46,13 @@
 #' \dontrun{
 #' library(splines)
 #' library(dplyr)
-#' library(magrittr)
 #' df <- 10
 #'
-#' trust_experts <- trust_experts %>%
-#'   mutate(across(
+#' trust_experts <- mutate(
+#'   trust_experts,
+#'   across(
 #'     where(is.factor),
-#'     ~ set_attr(.x, "contrasts", contr.sum(nlevels(.x), FALSE, TRUE))
+#'     ~ rlang::set_attrs(.x, "contrasts", contr.sum(nlevels(.x), FALSE, TRUE))
 #'   ))
 #'
 #' x <- Matrix::sparse.model.matrix(

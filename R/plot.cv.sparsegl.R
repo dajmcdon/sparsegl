@@ -36,8 +36,7 @@ plot.cv.sparsegl <- function(x, log_axis = c("xy", "x", "y", "none"),
   )
   log_axis <- match.arg(log_axis)
   sign.lambda <- sign(sign.lambda)
-  g <- dat %>%
-    ggplot2::ggplot(ggplot2::aes(x = .data$X, y = .data$y)) +
+  g <- ggplot2::ggplot(dat, ggplot2::aes(x = .data$X, y = .data$y)) +
     ggplot2::geom_errorbar(
       ggplot2::aes(ymin = .data$lower, ymax = .data$upper),
       color = "darkgrey"

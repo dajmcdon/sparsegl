@@ -1,6 +1,7 @@
 # sparsegl (development version)
 
 * Force `weights` to sum to `nobs` for all IRWLS cases.
+* Remove `magrittr` from imports
 
 # sparsegl 1.1.1
 

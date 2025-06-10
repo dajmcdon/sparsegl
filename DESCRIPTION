@@ -36,7 +36,6 @@ Imports:
     cli,
     dotCall64,
     ggplot2,
-    magrittr,
     Matrix,
     methods,
     rlang,
