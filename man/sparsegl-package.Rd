@@ -12,9 +12,9 @@ Efficient implementation of sparse group lasso with optional bound constraints o
 \references{
 Liang, X., Cohen, A., Sólon Heinsfeld, A., Pestilli, F., and
 McDonald, D.J. 2024.
-\emph{sparsegl: An \code{R} Package for Estimating Sparse Group Lasso.}
-Journal of Statistical Software, Vol. 110(6): 1–23.
-\doi{10.18637/jss.v110.i06}.
+"sparsegl: An \code{R} Package for Estimating Sparse Group Lasso."
+\emph{Journal of Statistical Software}, \strong{110}(6): 1–23.
+\href{https://doi.org/10.18637/jss.v110.i06}{doi:10.18637/jss.v110.i06}.
 }
 \seealso{
 Useful links:
@@ -26,7 +26,7 @@ Useful links:
 
 }
 \author{
-\strong{Maintainer}: Daniel J. McDonald \email{daniel@stat.ubc.ca}
+\strong{Maintainer}: Daniel J. McDonald \email{daniel@stat.ubc.ca} [copyright holder]
 
 Authors:
 \itemize{
