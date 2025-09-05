@@ -194,12 +194,12 @@ cverror.lsspgl <- function(
 #' @export
 cverror.logitspgl <- function(
     fullfit, outlist, lambda, x, y, foldid,
-    pred.loss = c("default", "mse", "deviance", "mae", "misclass"),
+    pred.loss = c("default", "mse", "deviance", "mae", "misclass", "auc"),
     ...) {
   typenames <- c(
     default = "Binomial deviance", mse = "Mean squared error",
     deviance = "Binomial deviance", mae = "Mean absolute error",
-    misclass = "Missclassification error"
+    misclass = "Missclassification error", auc = "Area under the curve"
   )
   pred.loss <- match.arg(pred.loss)
   prob_min <- 1e-05
@@ -207,8 +207,10 @@ cverror.logitspgl <- function(
   fmin <- -fmax
   y <- as.factor(y)
   y <- as.numeric(y) - 1 # 0 / 1 valued
+  N <- length(y)
+  nlambda <- length(lambda)
   nfolds <- max(foldid)
-  predmat <- matrix(NA, length(y), length(lambda))
+  predmat <- matrix(NA, N, nlambda)
   nlams <- double(nfolds)
   for (i in seq_len(nfolds)) {
     test_fold <- foldid == i
@@ -220,16 +222,30 @@ cverror.logitspgl <- function(
   }
   predmat <- pmin(pmax(predmat, fmin), fmax)
   binom_deviance <- function(m) stats::binomial()$dev.resids(y, m, 1)
-  cvraw <- switch(pred.loss,
-    mse = (y - predmat)^2,
-    mae = abs(y - predmat),
-    misclass = y != ifelse(predmat > 0.5, 1, 0),
-    apply(predmat, 2, binom_deviance)
-  )
-  N <- length(y) - apply(is.na(predmat), 2, sum)
+  if (pred.loss == "auc") {
+    cvraw <- matrix(NA, nfolds, nlams)
+    good <- matrix(0, nfolds, nlams)
+    for (i in seq_len(nfolds)) {
+      good[i, seq_len(nlams[i])] = 1
+      which = foldid == i
+      for (j in seq_len(nlams[i])) {
+        cvraw[i, j] = auc_mat(y[which, ], predmat[which, j]) #,  weights[which])
+      }
+    }
+    N <- colSums(good)
+  } else {
+    cvraw <- switch(
+      pred.loss,
+      mse = (y - predmat)^2,
+      mae = abs(y - predmat),
+      misclass = y != ifelse(predmat > 0.5, 1, 0),
+      apply(predmat, 2, binom_deviance)
+    )
+    N <- length(y) - apply(is.na(predmat), 2, sum)
+  }
   cvm <- apply(cvraw, 2, mean, na.rm = TRUE)
-  cvsd <- sqrt(apply(scale(cvraw, cvm, FALSE)^2, 2, mean, NA.RM = TRUE) /
-    (N - 1))
+  cvsd <- sqrt(apply(scale(cvraw, cvm, FALSE)^2, 2, mean, na.rm = TRUE) /
+                 (N - 1))
   list(cvm = cvm, cvsd = cvsd, name = typenames[pred.loss])
 }
 
