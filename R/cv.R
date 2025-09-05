@@ -17,6 +17,7 @@
 #'    log-likelihood otherwise)
 #'  * `"mae"` mean absolute error, can apply to any family
 #'  * `"misclass"` for classification only, misclassification error.
+#'  * `"auc"` for classification only, area under the ROC curve
 #' @param nfolds Number of folds - default is 10. Although `nfolds` can be
 #'   as large as the sample size (leave-one-out CV), it is not recommended for
 #'   large datasets. Smallest value allowable is `nfolds = 3`.

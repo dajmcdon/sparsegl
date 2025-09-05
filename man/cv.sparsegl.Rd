@@ -10,7 +10,7 @@ cv.sparsegl(
   group = NULL,
   family = c("gaussian", "binomial"),
   lambda = NULL,
-  pred.loss = c("default", "mse", "deviance", "mae", "misclass"),
+  pred.loss = c("default", "mse", "deviance", "mae", "misclass", "auc"),
   nfolds = 10,
   foldid = NULL,
   weights = NULL,
@@ -63,6 +63,7 @@ decreasing order.}
 log-likelihood otherwise)
 \item \code{"mae"} mean absolute error, can apply to any family
 \item \code{"misclass"} for classification only, misclassification error.
+\item \code{"auc"} for classification only, area under the ROC curve
 }}
 
 \item{nfolds}{Number of folds - default is 10. Although \code{nfolds} can be
