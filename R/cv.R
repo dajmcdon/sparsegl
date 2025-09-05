@@ -76,15 +76,17 @@ cv.sparsegl <- function(
     weights = NULL, offset = NULL,
     ...) {
   fam <- validate_family(family)
-
+  is_binomial <- FALSE
+  if (fam$check == "char") {
+    family <- match.arg(family)
+    if (family == "binomial") is_binomial <- TRUE
+  }
+  if (fam$check == "fam" && fam$family$family == "binomial") is_binomial <- TRUE
 
   # not allowed for some families
   pred.loss <- match.arg(pred.loss)
   if (pred.loss == "misclass" || pred.loss == "auc") {
-    bugger <- FALSE
-    if (fam$check == "char") if (fam$family != "binomial") bugger <- TRUE
-    if (fam$check == "fam") if (fam$family$family != "binomial") bugger <- TRUE
-    if (bugger) {
+    if (!is_binomial) {
       cli_abort(c(
         "When `pred.loss` is {.val {pred.loss}}, `family` must be either:",
         `!` = "{.val {'binomial'}}, or {.fn stats::binomial}."
@@ -132,7 +134,7 @@ cv.sparsegl <- function(
   ### What to do depends on the pred.loss and the model fit
   cvstuff <- cverror(
     sparsegl.object, outlist, lambda, x, y, foldid,
-    pred.loss, weights
+    pred.loss, weights, is_binomial
   )
   cvm <- cvstuff$cvm
   cvsd <- cvstuff$cvsd
@@ -153,60 +155,8 @@ cv.sparsegl <- function(
   obj
 }
 
-
-
-cverror <- function(fullfit, outlist, lambda, x, y, foldid, pred.loss, ...) {
-  UseMethod("cverror")
-}
-
-#' @export
-cverror.lsspgl <- function(
-    fullfit, outlist, lambda, x, y, foldid,
-    pred.loss = c("default", "mse", "deviance", "mae"),
-    ...) {
-  typenames <- c(
-    default = "Mean squared error", mse = "Mean squared error",
-    deviance = "Mean squared error", mae = "Mean absolute error"
-  )
-  pred.loss <- match.arg(pred.loss)
-  predmat <- matrix(NA, length(y), length(lambda))
-  nfolds <- max(foldid)
-  nlams <- double(nfolds)
-  for (i in seq_len(nfolds)) {
-    test_fold <- foldid == i
-    fitobj <- outlist[[i]]
-    preds <- predict(fitobj, x[test_fold, , drop = FALSE], type = "link")
-    nlami <- length(outlist[[i]]$lambda)
-    predmat[test_fold, seq_len(nlami)] <- preds
-    nlams[i] <- nlami
-  }
-  cvraw <- switch(pred.loss,
-    mae = abs(y - predmat),
-    (y - predmat)^2
-  )
-  N <- length(y) - apply(is.na(predmat), 2, sum)
-  cvm <- apply(cvraw, 2, mean, na.rm = TRUE)
-  scaled <- scale(cvraw, cvm, FALSE)^2
-  cvsd <- sqrt(apply(scaled, 2, mean, na.rm = TRUE) / (N - 1))
-  list(cvm = cvm, cvsd = cvsd, name = typenames[pred.loss])
-}
-
-#' @export
-cverror.logitspgl <- function(
-    fullfit, outlist, lambda, x, y, foldid,
-    pred.loss = c("default", "mse", "deviance", "mae", "misclass", "auc"),
-    ...) {
-  typenames <- c(
-    default = "Binomial deviance", mse = "Mean squared error",
-    deviance = "Binomial deviance", mae = "Mean absolute error",
-    misclass = "Missclassification error", auc = "Area under the curve"
-  )
-  pred.loss <- match.arg(pred.loss)
-  prob_min <- 1e-05
-  fmax <- log(1 / prob_min - 1)
-  fmin <- -fmax
-  y <- as.factor(y)
-  y <- as.numeric(y) - 1 # 0 / 1 valued
+cvall <- function(fullfit, outlist, lambda, x, y, foldid, pred.loss,
+                  dev_fun, weights = NULL, is_binomial = FALSE) {
   N <- length(y)
   nlambda <- length(lambda)
   nfolds <- max(foldid)
@@ -220,75 +170,108 @@ cverror.logitspgl <- function(
     predmat[test_fold, seq_len(nlami)] <- preds
     nlams[i] <- nlami
   }
-  predmat <- pmin(pmax(predmat, fmin), fmax)
-  binom_deviance <- function(m) stats::binomial()$dev.resids(y, m, 1)
+  if (is_binomial) {
+    prob_min <- 1e-05
+    fmax <- log(1 / prob_min - 1)
+    fmin <- -fmax
+    predmat <- pmin(pmax(predmat, fmin), fmax)
+  }
+
+  weights <- weights %||% rep(1, N)
   if (pred.loss == "auc") {
-    cvraw <- matrix(NA, nfolds, nlams)
+    err <- matrix(NA, nfolds, nlams)
     good <- matrix(0, nfolds, nlams)
     for (i in seq_len(nfolds)) {
       good[i, seq_len(nlams[i])] = 1
       which = foldid == i
       for (j in seq_len(nlams[i])) {
-        cvraw[i, j] = auc_mat(y[which, ], predmat[which, j]) #,  weights[which])
+        err[i, j] = auc_mat(y[which], predmat[which, j],  weights[which])
       }
     }
+    weights <- tapply(weights, foldid, sum)
     N <- colSums(good)
   } else {
-    cvraw <- switch(
+    err <- switch(
       pred.loss,
       mse = (y - predmat)^2,
       mae = abs(y - predmat),
       misclass = y != ifelse(predmat > 0.5, 1, 0),
-      apply(predmat, 2, binom_deviance)
+      deviance = apply(predmat, 2, dev_fun)
     )
     N <- length(y) - apply(is.na(predmat), 2, sum)
   }
-  cvm <- apply(cvraw, 2, mean, na.rm = TRUE)
-  cvsd <- sqrt(apply(scale(cvraw, cvm, FALSE)^2, 2, mean, na.rm = TRUE) /
-                 (N - 1))
-  list(cvm = cvm, cvsd = cvsd, name = typenames[pred.loss])
+  cvm <- apply(err, 2, stats::weighted.mean, na.rm = TRUE, w = weights)
+  scaled <- scale(err, cvm, FALSE)^2
+  cvsd <- sqrt(apply(
+    scaled, 2, stats::weighted.mean, w = weights, na.rm = TRUE
+  ) / (N - 1))
+  list(cvm = cvm, cvsd = cvsd)
+}
+
+cverror <- function(fullfit, outlist, lambda, x, y, foldid, pred.loss, ...) {
+  UseMethod("cverror")
+}
+
+
+#' @export
+cverror.lsspgl <- function(
+    fullfit, outlist, lambda, x, y, foldid,
+    pred.loss = c("default", "mse", "deviance", "mae"),
+    ...) {
+  typenames <- c(
+    default = "Mean squared error", mse = "Mean squared error",
+    deviance = "Mean squared error", mae = "Mean absolute error"
+  )
+  pred.loss <- match.arg(pred.loss)
+  if (pred.loss != "mae") pred.loss <- "mse"
+  dev_fun <- function(m) (y - m)^2
+  c(
+    cvall(fullfit, outlist, lambda, x, y, foldid, pred.loss, dev_fun,
+          is_binomial = FALSE),
+    name = typenames[pred.loss]
+  )
+}
+
+#' @export
+cverror.logitspgl <- function(
+    fullfit, outlist, lambda, x, y, foldid,
+    pred.loss = c("default", "mse", "deviance", "mae", "misclass", "auc"),
+    is_binomial = TRUE,
+    ...) {
+  typenames <- c(
+    default = "Binomial deviance", mse = "Mean squared error",
+    deviance = "Binomial deviance", mae = "Mean absolute error",
+    misclass = "Missclassification error", auc = "Area under the curve"
+  )
+  pred.loss <- match.arg(pred.loss)
+  if (pred.loss == "default") pred.loss <- "deviance"
+  dev_fun <- function(m) stats::binomial()$dev.resids(y, m, 1)
+  y <- as.factor(y)
+  y <- as.numeric(y) - 1 # 0 / 1 valued
+  c(
+    cvall(fullfit, outlist, lambda, x, y, foldid, pred.loss, dev_fun,
+          is_binomial = TRUE),
+    name = typenames[pred.loss]
+  )
 }
 
 #' @export
 cverror.irlsspgl <- function(
     fullfit, outlist, lambda, x, y, foldid,
-    pred.loss = c("default", "mse", "deviance", "mae", "misclass"),
-    weights = NULL, ...) {
+    pred.loss = c("default", "mse", "deviance", "mae", "misclass", "auc"),
+    weights = NULL, is_binomial, ...) {
   typenames <- c(
     default = "Deviance", mse = "Mean squared error",
-    deviance = "Deviance", mae = "Mean absolute error"
+    deviance = "Deviance", mae = "Mean absolute error",
+    misclass = "Missclassification error", auc = "Area under the curve"
   )
   pred.loss <- match.arg(pred.loss)
-
-  nfolds <- max(foldid)
-  predmat <- matrix(NA, length(y), length(lambda))
-  nlams <- double(nfolds)
-  for (i in seq_len(nfolds)) {
-    test_fold <- foldid == i
-    fitobj <- outlist[[i]]
-    preds <- predict(fitobj, x[test_fold, , drop = FALSE], type = "response")
-    nlami <- length(outlist[[i]]$lambda)
-    predmat[test_fold, seq_len(nlami)] <- preds
-    nlams[i] <- nlami
-  }
-
+  if (pred.loss == "default") pred.loss <- "deviance"
   dev_fun <- function(m) fullfit$family$dev.resids(y, m, 1)
-  cvraw <- switch(pred.loss,
-    mse = (y - predmat)^2,
-    mae = abs(y - predmat),
-    misclass = y != ifelse(predmat > 0.5, 1, 0),
-    apply(predmat, 2, dev_fun)
+  weights <- weights %||% rep(1, length(y))
+  c(
+    cvall(fullfit, outlist, lambda, x, y, foldid, pred.loss, dev_fun,
+          weights = weights, is_binomial = is_binomial),
+    name = typenames[pred.loss]
   )
-
-  N <- length(y) - apply(is.na(predmat), 2, sum)
-  if (is.null(weights)) weights <- rep(1, nrow(cvraw))
-  cvm <- apply(cvraw, 2, stats::weighted.mean, na.rm = TRUE, w = weights)
-  cvsd <- sqrt(
-    apply(
-      scale(cvraw, cvm, FALSE)^2,
-      2, stats::weighted.mean,
-      w = weights, NA.RM = TRUE
-    ) / (N - 1)
-  )
-  list(cvm = cvm, cvsd = cvsd, name = typenames[pred.loss])
 }
