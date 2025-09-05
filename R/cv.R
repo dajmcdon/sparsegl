@@ -71,7 +71,7 @@
 cv.sparsegl <- function(
     x, y, group = NULL, family = c("gaussian", "binomial"),
     lambda = NULL,
-    pred.loss = c("default", "mse", "deviance", "mae", "misclass"),
+    pred.loss = c("default", "mse", "deviance", "mae", "misclass", "auc"),
     nfolds = 10, foldid = NULL,
     weights = NULL, offset = NULL,
     ...) {
@@ -80,7 +80,7 @@ cv.sparsegl <- function(
 
   # not allowed for some families
   pred.loss <- match.arg(pred.loss)
-  if (pred.loss == "misclass") {
+  if (pred.loss == "misclass" || pred.loss == "auc") {
     bugger <- FALSE
     if (fam$check == "char") if (fam$family != "binomial") bugger <- TRUE
     if (fam$check == "fam") if (fam$family$family != "binomial") bugger <- TRUE
@@ -93,6 +93,14 @@ cv.sparsegl <- function(
   }
 
   N <- nrow(x)
+  if (pred.loss == "auc" && (N / nfolds < 10)) {
+    cli_warn(c(
+      "For `pred.loss = 'auc'`, at least {.val {10}} observations are needed per fold.",
+      `!` = "Here, only {.val {floor(N/nfolds)}} are avaliable.",
+      `!` = "The results use `pred.loss = 'deviance'` instead.",
+      `!` = "Alternatively, reduce `nfolds`."
+    ))
+  }
   ### Fit the model once to get dimensions etc of output
   y <- drop(y)
   sparsegl.object <- sparsegl(x, y, group,
