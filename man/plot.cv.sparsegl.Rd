@@ -17,8 +17,9 @@ reverse if \code{sign.lambda < 0}.}
 \item{...}{Not used.}
 }
 \description{
-Plots the cross-validation curve, and upper and lower standard deviation
-curves, as a function of the \code{lambda} values used.
+Plots the average cross-validation error and upper and lower 1 standard error
+bars. Dashed lines indicate the lambda that optimizes the CV error and the
+1 standard error lambda.
 }
 \details{
 A \code{\link[ggplot2:ggplot]{ggplot2::ggplot()}} plot is produced. Additional user

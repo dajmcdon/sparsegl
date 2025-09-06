@@ -10,7 +10,7 @@ cv.sparsegl(
   group = NULL,
   family = c("gaussian", "binomial"),
   lambda = NULL,
-  pred.loss = c("default", "mse", "deviance", "mae", "misclass"),
+  pred.loss = c("default", "mse", "deviance", "mae", "misclass", "auc"),
   nfolds = 10,
   foldid = NULL,
   weights = NULL,
@@ -63,6 +63,7 @@ decreasing order.}
 log-likelihood otherwise)
 \item \code{"mae"} mean absolute error, can apply to any family
 \item \code{"misclass"} for classification only, misclassification error.
+\item \code{"auc"} for classification only, area under the ROC curve
 }}
 
 \item{nfolds}{Number of folds - default is 10. Although \code{nfolds} can be
@@ -101,6 +102,8 @@ purposes).}
 minimum cross validation error \code{cvm}.}
 \item{lambda.1se}{The largest value of \code{lambda} such that error
 is within 1 standard error of the minimum.}
+\item{i.min}{The index of \code{lambda.min} in the \code{lambda} sequence.}
+\item{i.1se}{The index of \code{lambda.1se} in the \code{lambda} sequence.}
 \item{call}{The function call.}
 }
 \description{

@@ -170,7 +170,6 @@ sgl_irwls <- function(
     }
     warm$l <- as.integer(l)
 
-    # browser()
     # here we dispatch to wls
     warm <- irwls_fit(warm, static_args)
     if (trace_it == 1) utils::setTxtProgressBar(pb, l)
@@ -190,7 +189,6 @@ sgl_irwls <- function(
       }
     }
 
-    # browser()
     if (findlambda) { # we searched inside the FORTRAN code, now we found it
       ulam <- double(nlam)
       alf <- flmin^(1 / (nlam - 1))

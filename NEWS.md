@@ -2,6 +2,7 @@
 
 * Force `weights` to sum to `nobs` for all IRWLS cases.
 * Remove `magrittr` from imports
+* Add `auc` option for CV and binomial
 
 # sparsegl 1.1.1
 

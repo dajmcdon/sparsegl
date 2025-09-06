@@ -10,6 +10,7 @@ test_that("cv navigates the options properly", {
   expect_silent(cv.sparsegl(X, y, groups, pred.loss = "mae"))
   expect_silent(cv.sparsegl(X, y, groups, pred.loss = "deviance"))
   expect_error(cv.sparsegl(X, y, groups, pred.loss = "misclass"))
+  expect_error(cv.sparsegl(X, y, groups, pred.loss = "auc"))
   expect_error(cv.sparsegl(X, y, groups, family = gaussian(), pred.loss = "misclass"))
 
   y <- rbinom(n, 1, 0.5)
@@ -18,5 +19,6 @@ test_that("cv navigates the options properly", {
   expect_silent(cv.sparsegl(X, y, groups, family = "binomial", pred.loss = "mae"))
   expect_silent(cv.sparsegl(X, y, groups, family = "binomial", pred.loss = "deviance"))
   expect_silent(cv.sparsegl(X, y, groups, family = "binomial", pred.loss = "misclass"))
-  expect_silent(cv.sparsegl(X, y, groups, family = binomial(), pred.loss = "misclass"))
+  expect_silent(cv.sparsegl(X, y, groups, family = "binomial", pred.loss = "auc"))
+  expect_silent(cv.sparsegl(X, y, groups, family = binomial(), pred.loss = "auc"))
 })
