@@ -43,6 +43,8 @@
 #'     minimum cross validation error \code{cvm}.}
 #'   \item{lambda.1se}{The largest value of \code{lambda} such that error
 #'     is within 1 standard error of the minimum.}
+#'   \item{i.min}{The index of \code{lambda.min} in the \code{lambda} sequence.}
+#'   \item{i.1se}{The index of \code{lambda.1se} in the \code{lambda} sequence.}
 #'   \item{call}{The function call.}
 #'
 #'
@@ -150,7 +152,7 @@ cv.sparsegl <- function(
     sparsegl.fit = sparsegl.object,
     call = match.call()
   )
-  lamin <- getmin(lambda, cvm, cvsd)
+  lamin <- getmin(lambda, cvm, cvsd, pred.loss)
   obj <- c(out, as.list(lamin))
   class(obj) <- "cv.sparsegl"
   obj
