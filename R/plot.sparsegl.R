@@ -56,19 +56,18 @@ plot.sparsegl <- function(x,
   }
 
   n_legend_values <- nrow(xb)
-  df <- as.data.frame(t(as.matrix(xb)))
-
-  df$lambda <- x$lambda
-  df$penalty <- sgnorm / max(sgnorm)
-  df <- tidyr::pivot_longer(df, !c(.data$lambda, .data$penalty), names_to = y_axis)
+  df <- data.frame(
+    lambda = rep(x$lambda, times = nrow(xb)),
+    penalty = rep(sgnorm / max(sgnorm), times = nrow(xb)),
+    value = as.vector(t(as.matrix(xb)))
+  )
+  df[[y_axis]] <- rep(rownames(xb), each = ncol(xb))
 
   plot_layer <- ggplot2::ggplot(
     df, ggplot2::aes(
       x = !!rlang::sym(x_axis), y = .data$value, color = !!rlang::sym(y_axis)
     )
-  ) +
-    ggplot2::geom_hline(yintercept = 0)
-
+  )
   if (x_axis == "penalty") {
     xlab_layer <- ggplot2::xlab("penalty / max (penalty)")
   }
@@ -91,6 +90,8 @@ plot.sparsegl <- function(x,
     theme_layer <- theme_layer + ggplot2::theme(legend.position = "none")
   }
 
-  p <- plot_layer + xlab_layer + legend_layer + theme_layer
+  p <- plot_layer + xlab_layer + legend_layer + theme_layer +
+    ggplot2::geom_hline(yintercept = 0)
+
   return(p)
 }

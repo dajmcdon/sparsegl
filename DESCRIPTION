@@ -40,7 +40,7 @@ Imports:
     methods,
     rlang,
     RSpectra,
-    tidyr
+    survival
 Suggests: 
     dplyr,
     gglasso,
@@ -49,7 +49,8 @@ Suggests:
     markdown,
     rmarkdown,
     splines,
-    testthat (>= 3.0.0)
+    testthat (>= 3.0.0),
+    tidyr
 VignetteBuilder: 
     knitr
 Config/testthat/edition: 3
