@@ -55,15 +55,17 @@ err <- function(n, maxit, pmax) {
 
 
 
-getmin <- function(lambda, cvm, cvsd) {
-  cvmin <- min(cvm)
+getmin <- function(lambda, cvm, cvsd, pred.loss) {
+  if (pred.loss == "auc") cvm <- -1 * cvm
+  cvmin <- min(cvm, na.rm = TRUE)
   idmin <- cvm <= cvmin
-  lambda.min <- max(lambda[idmin])
-  idmin <- match(lambda.min, lambda)
-  semin <- (cvm + cvsd)[idmin]
+  lambda.min <- max(lambda[idmin], na.rm = TRUE)
+  i.min <- match(lambda.min, lambda)
+  semin <- (cvm + cvsd)[i.min]
   idmin <- cvm <= semin
-  lambda.1se <- max(lambda[idmin])
-  list(lambda.min = lambda.min, lambda.1se = lambda.1se)
+  lambda.1se <- max(lambda[idmin], na.rm = TRUE)
+  i.1se <- match(lambda.1se, lambda)
+  enlist(lambda.min, lambda.1se, i.min, i.1se)
 }
 
 
@@ -98,7 +100,7 @@ getoutput <- function(x, group, fit, maxit, pmax, nvars, vnames, eps) {
     b0 <- b0[seq(nalam)]
     names(b0) <- stepnames
   }
-  list(b0 = b0, beta = beta, df = df, dim = dd, lambda = lam)
+  enlist(b0, beta, df, dim = dd, lambda = lam)
 }
 
 lambda.interp <- function(lambda, s) {
@@ -127,7 +129,7 @@ lambda.interp <- function(lambda, s) {
     sfrac <- (sfrac - lambda[right]) / (lambda[left] - lambda[right])
     sfrac[left == right] <- 1
   }
-  list(left = left, right = right, frac = sfrac)
+  enlist(left, right, frac = sfrac)
 }
 
 
