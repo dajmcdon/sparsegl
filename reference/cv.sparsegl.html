@@ -9,7 +9,7 @@ This function is largely similar glmnet::cv.glmnet()."><meta property="og:image"
 
     <a class="navbar-brand me-2" href="../index.html">sparsegl</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.1.1.9000</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.1.1.9001</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -48,7 +48,7 @@ This function is largely similar <code><a href="https://glmnet.stanford.edu/refe
 <span>  group <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  family <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"gaussian"</span>, <span class="st">"binomial"</span><span class="op">)</span>,</span>
 <span>  lambda <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  pred.loss <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"default"</span>, <span class="st">"mse"</span>, <span class="st">"deviance"</span>, <span class="st">"mae"</span>, <span class="st">"misclass"</span><span class="op">)</span>,</span>
+<span>  pred.loss <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"default"</span>, <span class="st">"mse"</span>, <span class="st">"deviance"</span>, <span class="st">"mae"</span>, <span class="st">"misclass"</span>, <span class="st">"auc"</span><span class="op">)</span>,</span>
 <span>  nfolds <span class="op">=</span> <span class="fl">10</span>,</span>
 <span>  foldid <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  weights <span class="op">=</span> <span class="cn">NULL</span>,</span>
@@ -110,6 +110,7 @@ decreasing order.</p></dd>
 log-likelihood otherwise)</p></li>
 <li><p><code>"mae"</code> mean absolute error, can apply to any family</p></li>
 <li><p><code>"misclass"</code> for classification only, misclassification error.</p></li>
+<li><p><code>"auc"</code> for classification only, area under the ROC curve</p></li>
 </ul></dd>
 
 
@@ -181,6 +182,12 @@ minimum cross validation error <code>cvm</code>.</p></dd>
 <dt>lambda.1se</dt>
 <dd><p>The largest value of <code>lambda</code> such that error
 is within 1 standard error of the minimum.</p></dd>
+
+<dt>i.min</dt>
+<dd><p>The index of <code>lambda.min</code> in the <code>lambda</code> sequence.</p></dd>
+
+<dt>i.1se</dt>
+<dd><p>The index of <code>lambda.1se</code> in the <code>lambda</code> sequence.</p></dd>
 
 <dt>call</dt>
 <dd><p>The function call.</p></dd>

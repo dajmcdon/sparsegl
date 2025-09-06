@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">sparsegl</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.1.1.9000</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.1.1.9001</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -36,45 +36,46 @@
 <h2 class="pkg-version" data-toc-text="development version" id="sparsegl-development-version">sparsegl (development version)<a class="anchor" aria-label="anchor" href="#sparsegl-development-version"></a></h2>
 <ul><li>Force <code>weights</code> to sum to <code>nobs</code> for all IRWLS cases.</li>
 <li>Remove <code>magrittr</code> from imports</li>
+<li>Add <code>auc</code> option for CV and binomial</li>
 </ul></div>
     <div class="section level2">
-<h2 class="pkg-version" data-toc-text="1.1.1" id="sparsegl-111">sparsegl 1.1.1<a class="anchor" aria-label="anchor" href="#sparsegl-111"></a></h2><p class="text-muted">CRAN release: 2024-08-24</p>
+<h2 class="pkg-version" data-toc-text="1.1.1" id="sparsegl-111">sparsegl 1.1.1<a class="anchor" aria-label="anchor" href="#sparsegl-111"></a></h2>
 <ul><li>Add CITATION and links to JSS article</li>
 </ul></div>
     <div class="section level2">
-<h2 class="pkg-version" data-toc-text="1.1.0" id="sparsegl-110">sparsegl 1.1.0<a class="anchor" aria-label="anchor" href="#sparsegl-110"></a></h2><p class="text-muted">CRAN release: 2024-06-26</p>
+<h2 class="pkg-version" data-toc-text="1.1.0" id="sparsegl-110">sparsegl 1.1.0<a class="anchor" aria-label="anchor" href="#sparsegl-110"></a></h2>
 <ul><li>Address some CRAN issues for FORTRAN builds on GCC 14.1</li>
 </ul></div>
     <div class="section level2">
-<h2 class="pkg-version" data-toc-text="1.0.2" id="sparsegl-102">sparsegl 1.0.2<a class="anchor" aria-label="anchor" href="#sparsegl-102"></a></h2><p class="text-muted">CRAN release: 2023-09-25</p>
+<h2 class="pkg-version" data-toc-text="1.0.2" id="sparsegl-102">sparsegl 1.0.2<a class="anchor" aria-label="anchor" href="#sparsegl-102"></a></h2>
 <ul><li>Corrects a bug / adds support for <code>weights</code> and <code>offset</code> in cv</li>
 <li>Some minor tweaks to error and warning messages</li>
 </ul></div>
     <div class="section level2">
-<h2 class="pkg-version" data-toc-text="1.0.1" id="sparsegl-101">sparsegl 1.0.1<a class="anchor" aria-label="anchor" href="#sparsegl-101"></a></h2><p class="text-muted">CRAN release: 2023-01-27</p>
+<h2 class="pkg-version" data-toc-text="1.0.1" id="sparsegl-101">sparsegl 1.0.1<a class="anchor" aria-label="anchor" href="#sparsegl-101"></a></h2>
 <ul><li>Remove unnecessary attributes from the included data</li>
 </ul></div>
     <div class="section level2">
-<h2 class="pkg-version" data-toc-text="1.0.0" id="sparsegl-100">sparsegl 1.0.0<a class="anchor" aria-label="anchor" href="#sparsegl-100"></a></h2><p class="text-muted">CRAN release: 2022-11-28</p>
+<h2 class="pkg-version" data-toc-text="1.0.0" id="sparsegl-100">sparsegl 1.0.0<a class="anchor" aria-label="anchor" href="#sparsegl-100"></a></h2>
 <ul><li>Improved documentation</li>
 <li>Added functionality to implement arbitrary <code><a href="https://rdrr.io/r/stats/family.html" class="external-link">stats::family()</a></code> fitting.</li>
 <li>Enhanced (and corrected) S3 interface for <code>predict</code> and <code>coef</code> methods.</li>
 </ul></div>
     <div class="section level2">
-<h2 class="pkg-version" data-toc-text="0.5.0" id="sparsegl-050">sparsegl 0.5.0<a class="anchor" aria-label="anchor" href="#sparsegl-050"></a></h2><p class="text-muted">CRAN release: 2022-09-22</p>
+<h2 class="pkg-version" data-toc-text="0.5.0" id="sparsegl-050">sparsegl 0.5.0<a class="anchor" aria-label="anchor" href="#sparsegl-050"></a></h2>
 <ul><li>Minor internal updates to pass additional CRAN checks</li>
 <li>Refactor some documentation</li>
 <li>Intercept calculation is internal to Fortran source in all cases.</li>
 </ul></div>
     <div class="section level2">
-<h2 class="pkg-version" data-toc-text="0.4.0" id="sparsegl-040">sparsegl 0.4.0<a class="anchor" aria-label="anchor" href="#sparsegl-040"></a></h2><p class="text-muted">CRAN release: 2022-09-05</p>
+<h2 class="pkg-version" data-toc-text="0.4.0" id="sparsegl-040">sparsegl 0.4.0<a class="anchor" aria-label="anchor" href="#sparsegl-040"></a></h2>
 <ul><li>Add the option to weight individual coefficients in the l1 penalty.</li>
 <li>Remove coercions of the type <code>as(&lt;matrix&gt;, "dgCMatrix")</code>. These are deprecated in <a href="https://Matrix.R-forge.R-project.org" class="external-link">Matrix</a>&gt;=1.4-2 and will Warn on CRAN checks.</li>
 <li>Compute MSE internally in Fortran for <code>family = "Gaussian"</code>. Avoids the creation of a potentially large matrix of predicted values for the purposes of risk estimation.</li>
 <li>Revise <code><a href="../reference/estimate_risk.html">estimate_risk()</a></code> signature. Now <code>x</code> is optional and <code>y</code> is not required.</li>
 </ul></div>
     <div class="section level2">
-<h2 class="pkg-version" data-toc-text="0.3.0" id="sparsegl-030">sparsegl 0.3.0<a class="anchor" aria-label="anchor" href="#sparsegl-030"></a></h2><p class="text-muted">CRAN release: 2022-03-07</p>
+<h2 class="pkg-version" data-toc-text="0.3.0" id="sparsegl-030">sparsegl 0.3.0<a class="anchor" aria-label="anchor" href="#sparsegl-030"></a></h2>
 <ul><li>Initial version on CRAN.</li>
 </ul></div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
