@@ -1,7 +1,8 @@
 #' Plot cross-validation curves produced from a `cv.sparsegl` object.
 #'
-#' Plots the cross-validation curve, and upper and lower standard deviation
-#' curves, as a function of the `lambda` values used.
+#' Plots the average cross-validation error and upper and lower 1 standard error
+#' bars. Dashed lines indicate the lambda that optimizes the CV error and the
+#' 1 standard error lambda.
 #'
 #' A [ggplot2::ggplot()] plot is produced. Additional user
 #' modifications may be added as desired.
@@ -37,6 +38,8 @@ plot.cv.sparsegl <- function(x, log_axis = c("xy", "x", "y", "none"),
   log_axis <- match.arg(log_axis)
   sign.lambda <- sign(sign.lambda)
   g <- ggplot2::ggplot(dat, ggplot2::aes(x = .data$X, y = .data$y)) +
+    ggplot2::geom_vline(xintercept = cvobj$lambda.min, linetype = 2) +
+    ggplot2::geom_vline(xintercept = cvobj$lambda.1se, linetype = 2) +
     ggplot2::geom_errorbar(
       ggplot2::aes(ymin = .data$lower, ymax = .data$upper),
       color = "darkgrey"
